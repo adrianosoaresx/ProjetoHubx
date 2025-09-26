@@ -29,14 +29,18 @@ def test_promover_form_get(client):
     client.force_login(admin)
 
     url = reverse("accounts:associado_promover_form", args=[associado.pk])
+
     response = client.get(url)
+
 
     assert response.status_code == 200
     assert associado.username in response.content.decode()
 
 
 @pytest.mark.django_db
+
 def test_promover_form_promove_consultor(client):
+
     organizacao = OrganizacaoFactory()
     User = get_user_model()
     admin = User.objects.create_user(
@@ -53,6 +57,7 @@ def test_promover_form_promove_consultor(client):
         user_type=UserType.ASSOCIADO,
         organizacao=organizacao,
     )
+
     nucleo = NucleoFactory(organizacao=organizacao)
 
     client.force_login(admin)
@@ -97,6 +102,7 @@ def test_promover_form_promove_coordenador(client):
     )
     nucleo = NucleoFactory(organizacao=organizacao)
 
+
     client.force_login(admin)
 
     url = reverse("accounts:associado_promover_form", args=[associado.pk])
@@ -104,6 +110,7 @@ def test_promover_form_promove_coordenador(client):
     response = client.post(
         url,
         {
+
             "promover_coordenador": "1",
             "papel_coordenador": papel,
             "nucleos": [str(nucleo.pk)],
@@ -118,12 +125,14 @@ def test_promover_form_promove_coordenador(client):
     assert participacao.papel_coordenador == papel
     assert participacao.papel == "coordenador"
 
+
     associado.refresh_from_db()
     assert associado.user_type == UserType.COORDENADOR
     assert associado.is_coordenador is True
 
 
 @pytest.mark.django_db
+
 def test_promover_form_impede_selecao_simultanea(client):
     organizacao = OrganizacaoFactory()
     User = get_user_model()
@@ -166,6 +175,7 @@ def test_promover_form_impede_selecao_simultanea(client):
 
 
 @pytest.mark.django_db
+
 def test_promover_form_impede_papel_ja_ocupado(client):
     organizacao = OrganizacaoFactory()
     User = get_user_model()
@@ -208,6 +218,8 @@ def test_promover_form_impede_papel_ja_ocupado(client):
             "papel_coordenador": ParticipacaoNucleo.PapelCoordenador.MARKETING,
             "nucleos": [str(nucleo.pk)],
         },
+
+
     )
 
     assert response.status_code == 400
@@ -246,6 +258,8 @@ def test_promover_form_restringe_multiplos_nucleos_para_papeis_exclusivos(client
             "papel_coordenador": ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
             "nucleos": [str(nucleo1.pk), str(nucleo2.pk)],
         },
+
+
     )
 
     assert response.status_code == 400

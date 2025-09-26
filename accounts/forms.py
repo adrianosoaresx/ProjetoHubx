@@ -37,11 +37,13 @@ class CustomUserCreationForm(UserCreationForm):
             "cover",
             "phone_number",
             "whatsapp",
+            "birth_date",
             "redes_sociais",
             "organizacao",
             "nucleo",
         )
         labels = {"contato": "Contato"}
+        widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -107,11 +109,13 @@ class CustomUserChangeForm(UserChangeForm):
             "cover",
             "phone_number",
             "whatsapp",
+            "birth_date",
             "redes_sociais",
             "organizacao",
             "nucleo",
         )
         labels = {"contato": "Contato"}
+        widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
@@ -212,6 +216,11 @@ class InformacoesPessoaisForm(forms.ModelForm):
     twitter = forms.URLField(required=False, label=_("Twitter"), assume_scheme="https")
     instagram = forms.URLField(required=False, label=_("Instagram"), assume_scheme="https")
     linkedin = forms.URLField(required=False, label=_("LinkedIn"), assume_scheme="https")
+    birth_date = forms.DateField(
+        required=False,
+        label="Data de nascimento",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
 
     class Meta:
         model = User
@@ -228,6 +237,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "biografia",
             "phone_number",
             "whatsapp",
+            "birth_date",
             "endereco",
             "cidade",
             "estado",
@@ -244,6 +254,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         "cpf",
         "phone_number",
         "whatsapp",
+        "birth_date",
         "email",
         "endereco",
         "cidade",
@@ -266,6 +277,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
             self.initial["cnpj"] = self.instance.cnpj
             self.initial["razao_social"] = self.instance.razao_social
             self.initial["nome_fantasia"] = self.instance.nome_fantasia
+            self.initial["birth_date"] = self.instance.birth_date
             self.original_email = self.instance.email
         else:
             self.original_email = None
@@ -299,6 +311,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user.cnpj = self.cleaned_data.get("cnpj")
         user.razao_social = self.cleaned_data.get("razao_social")
         user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
+        user.birth_date = self.cleaned_data.get("birth_date")
         redes = {}
         for field in ("facebook", "twitter", "instagram", "linkedin"):
             value = self.cleaned_data.get(field)

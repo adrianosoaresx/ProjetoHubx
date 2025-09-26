@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load i18n string_filters %}
 
@@ -19,12 +20,14 @@
     <div class="card-body space-y-8">
       {% if form_errors %}
         <div class="rounded-lg border border-[var(--error)] bg-[var(--error-light)] px-4 py-3 text-sm text-[var(--error)]" role="alert">
+
           <ul class="list-disc list-inside space-y-1">
             {% for error in form_errors %}
               <li>{{ error }}</li>
             {% endfor %}
           </ul>
         </div>
+
       {% endif %}
 
       {% if success_message %}

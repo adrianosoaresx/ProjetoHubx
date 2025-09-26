@@ -74,4 +74,22 @@
   </div>
 </div>
 
+<div id="modal"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const form = document.querySelector('[data-promover-search-form]');
+      if (!form) {
+        return;
+      }
+      const input = form.querySelector('[data-search-input]');
+      const clearButton = form.querySelector('[data-clear-search]');
+      if (!input || !clearButton) {
+        return;
+      }
+
+
 {% endblock %}
