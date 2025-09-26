@@ -7,6 +7,6 @@
   {% elif classificacao == 'constituido' %}
     {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=nucleo.get_classificacao_display badge_style='--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);' %}
   {% else %}
-    {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=nucleo.get_classificacao_display badge_style='--primary:#2563eb; --primary-soft:rgba(37, 99, 235, 0.15); --primary-soft-border:rgba(37, 99, 235, 0.3);' %}
+    {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=_('Formação') badge_style='--primary:#2563eb; --primary-soft:rgba(37, 99, 235, 0.15); --primary-soft-border:rgba(37, 99, 235, 0.3);' %}
   {% endif %}
 {% endwith %}

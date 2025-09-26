@@ -231,6 +231,10 @@ msgstr ""
 msgid "Postar"
 msgstr ""
 
+#: templates/_components/card_nucleo.html:17
+msgid "Formação"
+msgstr "Formation"
+
 #: templates/nucleos/solicitar_modal.html:3
 msgid "Confirmar solicitação de participação?"
 msgstr ""
