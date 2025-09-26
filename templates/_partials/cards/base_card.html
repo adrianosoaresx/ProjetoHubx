@@ -4,6 +4,16 @@
   aria-label="{{ title }}">
   <article class="card overflow-hidden" role="article">
     <header class="relative">
+      {% if badge %}
+        <div class="px-4 pt-4 pb-3">
+          <span class="inline-flex items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))]">
+            <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M17.707 9.293 10.414 2H4a2 2 0 0 0-2 2v6.414l7.293 7.293a1 1 0 0 0 1.414 0l7-7a1 1 0 0 0 0-1.414ZM5.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
+            </svg>
+            <span>{{ badge }}</span>
+          </span>
+        </div>
+      {% endif %}
       {% if cover %}
         <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-24 w-full object-cover" loading="lazy" />
       {% else %}
