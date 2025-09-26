@@ -40,6 +40,13 @@
     </dl>
   </div>
   <div class="card-footer border-t border-[var(--border)] bg-[var(--bg-secondary)] p-4">
-    <button type="button" class="btn btn-secondary w-full" data-promover-associado-button data-user-id="{{ user.pk }}">{% trans 'Promover' %}</button>
+    <button
+      type="button"
+      class="btn btn-secondary w-full"
+      hx-get="{% url 'accounts:associado_promover_form' user.pk %}"
+      hx-target="#modal"
+      hx-trigger="click"
+      hx-swap="innerHTML"
+    >{% trans 'Promover' %}</button>
   </div>
 </article>

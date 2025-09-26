@@ -3,6 +3,9 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+import json
+from collections import defaultdict
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
@@ -15,7 +18,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
 from django.http import (
     HttpResponse,
@@ -29,7 +32,7 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -46,7 +49,7 @@ from core.permissions import (
     IsCoordenador,
     NoSuperadminMixin,
 )
-from nucleos.models import ConviteNucleo
+from nucleos.models import ConviteNucleo, Nucleo, ParticipacaoNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from .forms import (
@@ -1250,6 +1253,300 @@ class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
         context["has_search"] = bool(context["search_term"].strip())
         return context
 
+
+class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequiredMixin, TemplateView):
+    template_name = "associados/promover_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.organizacao = getattr(request.user, "organizacao", None)
+        if self.organizacao is None:
+            raise PermissionDenied(_("É necessário pertencer a uma organização para promover associados."))
+        self.associado = get_object_or_404(
+            User,
+            pk=kwargs.get("pk"),
+            organizacao=self.organizacao,
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self._build_modal_context(**kwargs))
+        return context
+
+    def post(self, request, *args, **kwargs):
+        promover_consultor = bool(request.POST.get("promover_consultor"))
+        promover_coordenador = bool(request.POST.get("promover_coordenador"))
+        selected_role = (request.POST.get("papel_coordenador") or "").strip()
+
+        raw_nucleos = request.POST.getlist("nucleos")
+        selected_ids: list[int] = []
+        for value in raw_nucleos:
+            try:
+                selected_ids.append(int(value))
+            except (TypeError, ValueError):
+                continue
+        # Remove duplicados preservando a ordem
+        seen: set[int] = set()
+        ordered_ids: list[int] = []
+        for nid in selected_ids:
+            if nid not in seen:
+                ordered_ids.append(nid)
+                seen.add(nid)
+        selected_ids = ordered_ids
+
+        form_errors: list[str] = []
+
+        if not promover_consultor and not promover_coordenador:
+            form_errors.append(_("Selecione ao menos uma opção de promoção."))
+
+        if (promover_consultor or promover_coordenador) and not selected_ids:
+            form_errors.append(_("Selecione ao menos um núcleo."))
+
+        valid_ids = set(
+            Nucleo.objects.filter(organizacao=self.organizacao, id__in=selected_ids).values_list("id", flat=True)
+        )
+        if len(valid_ids) != len(selected_ids):
+            form_errors.append(_("Selecione núcleos válidos da organização."))
+
+        papel_choices = {value for value, _ in ParticipacaoNucleo.PapelCoordenador.choices}
+        if promover_coordenador:
+            if not selected_role:
+                form_errors.append(_("Selecione um papel de coordenação."))
+            elif selected_role not in papel_choices:
+                form_errors.append(_("Selecione um papel de coordenação válido."))
+
+        role_labels = dict(ParticipacaoNucleo.PapelCoordenador.choices)
+
+        restricted_roles = {
+            ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+            ParticipacaoNucleo.PapelCoordenador.VICE_COORDENADOR,
+        }
+
+        if promover_coordenador and not form_errors and selected_role:
+            ocupados = (
+                ParticipacaoNucleo.objects.filter(
+                    nucleo_id__in=valid_ids,
+                    papel="coordenador",
+                    status="ativo",
+                    papel_coordenador=selected_role,
+                )
+                .exclude(user=self.associado)
+                .select_related("user", "nucleo")
+            )
+            for participacao in ocupados:
+                form_errors.append(
+                    _("O papel %(papel)s do núcleo %(nucleo)s já está ocupado por %(nome)s.")
+                    % {
+                        "papel": role_labels.get(selected_role, selected_role),
+                        "nucleo": participacao.nucleo.nome,
+                        "nome": participacao.user.display_name or participacao.user.username,
+                    }
+                )
+
+            if selected_role in restricted_roles:
+                existentes = set(
+                    ParticipacaoNucleo.objects.filter(
+                        user=self.associado,
+                        papel="coordenador",
+                        status="ativo",
+                        papel_coordenador=selected_role,
+                    ).values_list("nucleo_id", flat=True)
+                )
+                novos = valid_ids - existentes
+                if existentes and novos:
+                    form_errors.append(
+                        _("Coordenador geral e vice coordenador não podem assumir o mesmo papel em múltiplos núcleos.")
+                    )
+                elif not existentes and len(valid_ids) > 1:
+                    form_errors.append(_("Selecione apenas um núcleo para este papel de coordenação."))
+
+        if promover_consultor and not form_errors:
+            consultores_ocupados = (
+                Nucleo.objects.filter(id__in=valid_ids)
+                .exclude(consultor__isnull=True)
+                .exclude(consultor=self.associado)
+                .select_related("consultor")
+            )
+            for nucleo in consultores_ocupados:
+                form_errors.append(
+                    _("O núcleo %(nucleo)s já possui o consultor %(nome)s.")
+                    % {
+                        "nucleo": nucleo.nome,
+                        "nome": nucleo.consultor.display_name or nucleo.consultor.username,
+                    }
+                )
+
+        if form_errors:
+            context = self.get_context_data(
+                selected_nucleos=[str(pk) for pk in selected_ids],
+                selected_role=selected_role,
+                promover_consultor=promover_consultor,
+                promover_coordenador=promover_coordenador,
+                form_errors=form_errors,
+            )
+            return self.render_to_response(context, status=400)
+
+        nucleos_queryset = list(
+            Nucleo.objects.filter(organizacao=self.organizacao, id__in=valid_ids).select_for_update()
+        )
+
+        with transaction.atomic():
+            if promover_consultor:
+                for nucleo in nucleos_queryset:
+                    if nucleo.consultor_id != self.associado.pk:
+                        nucleo.consultor = self.associado
+                        nucleo.save(update_fields=["consultor"])
+
+            if promover_coordenador and selected_role:
+                for nucleo in nucleos_queryset:
+                    participacao, created = ParticipacaoNucleo.objects.get_or_create(
+                        nucleo=nucleo,
+                        user=self.associado,
+                        defaults={"status": "ativo"},
+                    )
+                    participacao.papel = "coordenador"
+                    participacao.status = "ativo"
+                    participacao.papel_coordenador = selected_role
+                    participacao.status_suspensao = False
+                    participacao.save(update_fields=["papel", "status", "papel_coordenador", "status_suspensao"])
+
+        updates: list[str] = []
+        if promover_coordenador:
+            if self.associado.user_type not in {
+                UserType.ROOT,
+                UserType.ADMIN,
+                UserType.COORDENADOR,
+            }:
+                self.associado.user_type = UserType.COORDENADOR
+                updates.append("user_type")
+            if not self.associado.is_coordenador:
+                self.associado.is_coordenador = True
+                updates.append("is_coordenador")
+        elif promover_consultor and self.associado.user_type in {
+            UserType.ASSOCIADO,
+            UserType.NUCLEADO,
+            UserType.CONSULTOR,
+        }:
+            if self.associado.user_type != UserType.CONSULTOR:
+                self.associado.user_type = UserType.CONSULTOR
+                updates.append("user_type")
+
+        if updates:
+            self.associado.save(update_fields=updates)
+
+        context = self.get_context_data(
+            selected_nucleos=[],
+            selected_role="",
+            promover_consultor=False,
+            promover_coordenador=False,
+            success_message=_("Promoção registrada com sucesso."),
+            form_errors=[],
+        )
+        return self.render_to_response(context)
+
+    def _build_modal_context(self, **kwargs):
+        raw_selected = kwargs.get("selected_nucleos") or []
+        selected_nucleos = [str(value) for value in raw_selected]
+        selected_role = (kwargs.get("selected_role") or "").strip()
+        promover_consultor = bool(kwargs.get("promover_consultor"))
+        promover_coordenador = bool(kwargs.get("promover_coordenador"))
+        form_errors = kwargs.get("form_errors") or []
+        success_message = kwargs.get("success_message")
+
+        nucleos_qs = (
+            Nucleo.objects.filter(organizacao=self.organizacao)
+            .select_related("consultor")
+            .prefetch_related(
+                Prefetch(
+                    "participacoes",
+                    queryset=ParticipacaoNucleo.objects.filter(status="ativo", papel="coordenador").select_related("user"),
+                )
+            )
+            .order_by("nome")
+        )
+
+        role_labels = dict(ParticipacaoNucleo.PapelCoordenador.choices)
+        nucleos: list[dict[str, object]] = []
+        for nucleo in nucleos_qs:
+            participacoes = list(nucleo.participacoes.all())
+            unavailable_roles: set[str] = set()
+            user_current_roles: list[str] = []
+            coordenadores: list[dict[str, object]] = []
+            unavailable_messages: dict[str, str] = {}
+
+            for participacao in participacoes:
+                papel = participacao.papel_coordenador
+                if not papel:
+                    continue
+                unavailable_roles.add(papel)
+                is_target = participacao.user_id == self.associado.pk
+                if is_target:
+                    user_current_roles.append(papel)
+                coordenadores.append(
+                    {
+                        "papel": papel,
+                        "user_name": participacao.user.display_name or participacao.user.username,
+                        "user_id": participacao.user_id,
+                        "is_target_user": is_target,
+                    }
+                )
+                if not is_target:
+                    unavailable_messages[papel] = _(
+                        "%(papel)s ocupado por %(nome)s."
+                    ) % {
+                        "papel": role_labels.get(papel, papel),
+                        "nome": participacao.user.display_name or participacao.user.username,
+                    }
+
+            coordenadores.sort(key=lambda item: role_labels.get(item["papel"], item["papel"]))
+
+            nucleos.append(
+                {
+                    "id": str(nucleo.pk),
+                    "nome": nucleo.nome,
+                    "consultor_name": (
+                        nucleo.consultor.display_name or nucleo.consultor.username
+                        if nucleo.consultor
+                        else ""
+                    ),
+                    "is_current_consultor": nucleo.consultor_id == self.associado.pk,
+                    "coordenadores": coordenadores,
+                    "unavailable_roles": sorted(unavailable_roles),
+                    "user_current_roles": user_current_roles,
+                    "unavailable_messages_json": json.dumps(unavailable_messages),
+                }
+            )
+
+        participacoes_usuario = ParticipacaoNucleo.objects.filter(
+            user=self.associado,
+            papel="coordenador",
+            status="ativo",
+            papel_coordenador__isnull=False,
+        ).values_list("papel_coordenador", "nucleo_id")
+
+        user_role_map: defaultdict[str, list[str]] = defaultdict(list)
+        for papel, nucleo_id in participacoes_usuario:
+            user_role_map[papel].append(str(nucleo_id))
+
+        restricted_roles = [
+            ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+            ParticipacaoNucleo.PapelCoordenador.VICE_COORDENADOR,
+        ]
+
+        return {
+            "associado": self.associado,
+            "nucleos": nucleos,
+            "coordenador_role_choices": ParticipacaoNucleo.PapelCoordenador.choices,
+            "coordenador_role_labels": role_labels,
+            "restricted_roles": [role for role in restricted_roles if role],
+            "selected_nucleos": selected_nucleos,
+            "selected_role": selected_role,
+            "promover_consultor": promover_consultor,
+            "promover_coordenador": promover_coordenador,
+            "form_errors": form_errors,
+            "success_message": success_message,
+            "user_role_map_json": json.dumps(dict(user_role_map)),
+        }
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
