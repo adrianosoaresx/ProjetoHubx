@@ -40,6 +40,13 @@
   </div>
   {% endif %}
 
+  {% if profile.birth_date %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Data de nascimento" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.birth_date|date:"d/m/Y" }}</dd>
+  </div>
+  {% endif %}
+
   {% if profile.phone_number %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
