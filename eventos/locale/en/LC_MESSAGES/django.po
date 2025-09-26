@@ -266,8 +266,12 @@ msgstr ""
 
 #: eventos/templates/eventos/partials/eventos/create.html:3
 #: eventos/views.py:285
-msgid "Cadastrar Evento"
-msgstr ""
+msgid "Adicionar evento"
+msgstr "Add event"
+
+#: eventos/views.py:286
+msgid "Cadastre novos eventos para a sua organização."
+msgstr "Register new events for your organization."
 
 #: eventos/templates/eventos/partials/eventos/delete.html:4
 #: eventos/views.py:360
