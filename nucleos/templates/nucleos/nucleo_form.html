@@ -13,7 +13,11 @@
 
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-8">
+  
   <div class="card">
+    <div class="card-header">
+    <h2 class="text-xl font-semibold">{% trans "Adicionar núcleo" %}</h2>
+  </div>
     <div class="card-body space-y-6">
       <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
