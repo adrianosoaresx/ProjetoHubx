@@ -2202,6 +2202,10 @@ a:focus {
   max-width: 48rem;
 }
 
+.max-w-4xl {
+  max-width: 56rem;
+}
+
 .max-w-5xl {
   max-width: 64rem;
 }
@@ -2240,6 +2244,10 @@ a:focus {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.list-inside {
+  list-style-position: inside;
 }
 
 .list-disc {
@@ -2393,6 +2401,10 @@ a:focus {
   border-color: var(--border);
 }
 
+.self-start {
+  align-self: flex-start;
+}
+
 .overflow-hidden {
   overflow: hidden;
 }
@@ -2473,6 +2485,10 @@ a:focus {
 
 .border-\[var\(--error\)\] {
   border-color: var(--error);
+}
+
+.border-\[var\(--success\)\] {
+  border-color: var(--success);
 }
 
 .border-gray-300 {
@@ -2784,6 +2800,10 @@ a:focus {
   font-size: 0.6rem;
 }
 
+.text-\[10px\] {
+  font-size: 10px;
+}
+
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -2815,6 +2835,10 @@ a:focus {
 
 .font-medium {
   font-weight: 500;
+}
+
+.font-normal {
+  font-weight: 400;
 }
 
 .font-semibold {
@@ -2901,6 +2925,10 @@ a:focus {
 
 .text-white\/90 {
   color: rgb(255 255 255 / 0.9);
+}
+
+.opacity-60 {
+  opacity: 0.6;
 }
 
 .shadow-lg {
@@ -3316,6 +3344,10 @@ a:focus {
   white-space: normal;
 }
 
+.focus\:border-primary:focus {
+  border-color: var(--primary);
+}
+
 .focus\:border-primary-500:focus {
   border-color: var(--color-primary-500);
 }
@@ -3442,6 +3474,10 @@ a:focus {
     align-items: flex-start;
   }
 
+  .sm\:items-center {
+    align-items: center;
+  }
+
   .sm\:justify-between {
     justify-content: space-between;
   }
@@ -3452,6 +3488,10 @@ a:focus {
 
   .sm\:gap-6 {
     gap: 1.5rem;
+  }
+
+  .sm\:self-auto {
+    align-self: auto;
   }
 
   .sm\:text-left {
