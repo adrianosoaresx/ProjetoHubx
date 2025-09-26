@@ -2,6 +2,8 @@ import os
 import uuid
 from pathlib import Path
 
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -26,6 +28,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 from django.views.generic import ListView
@@ -56,6 +59,23 @@ User = get_user_model()
 
 # Alias for compatibility with newer media query helpers
 Midia = UserMedia
+
+
+def _resolve_back_href(request):
+    allowed_hosts = {request.get_host()}
+    next_url = request.GET.get("next")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=allowed_hosts, require_https=request.is_secure()):
+        return next_url
+
+    referer = request.META.get("HTTP_REFERER")
+    if referer and url_has_allowed_host_and_scheme(referer, allowed_hosts=allowed_hosts, require_https=request.is_secure()):
+        parsed = urlparse(referer)
+        path = parsed.path or ""
+        if parsed.query:
+            path = f"{path}?{parsed.query}"
+        return path or None
+
+    return None
 
 
 PERFIL_DEFAULT_SECTION = "portfolio"
@@ -217,6 +237,7 @@ def perfil(request):
         {
             "perfil_default_section": default_section,
             "perfil_default_url": default_url,
+            "back_href": _resolve_back_href(request),
         }
     )
 
@@ -252,6 +273,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         {
             "perfil_default_section": default_section,
             "perfil_default_url": default_url,
+            "back_href": _resolve_back_href(request),
         }
     )
 
