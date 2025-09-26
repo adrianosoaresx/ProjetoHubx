@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from accounts.models import UserType
 from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
 
 pytestmark = pytest.mark.django_db
 
@@ -90,3 +91,52 @@ def test_associados_htmx_returns_partial_grid(client):
     assert 'hx-target="#associados-grid"' in content
     assert f'hx-get="{url}?page=2' in content
     assert 'hx-indicator="#associados-loading"' in content
+    assert 'hx-swap-oob="true"' in content
+
+
+def test_associados_filter_actions(client):
+    org = Organizacao.objects.create(nome="Org Filters", cnpj="11.111.111/1111-11", slug="org-filters")
+    nucleo = Nucleo.objects.create(organizacao=org, nome="Núcleo Alpha")
+    admin = create_user(
+        "filters-admin@example.com",
+        "filters-admin",
+        UserType.ADMIN,
+        organizacao=org,
+    )
+    associado = create_user(
+        "assoc-sem-nucleo@example.com",
+        "assoc-sem-nucleo",
+        UserType.ASSOCIADO,
+        is_associado=True,
+        organizacao=org,
+    )
+    nucleado = create_user(
+        "assoc-com-nucleo@example.com",
+        "assoc-com-nucleo",
+        UserType.ASSOCIADO,
+        is_associado=True,
+        organizacao=org,
+        nucleo=nucleo,
+    )
+
+    client.force_login(admin)
+    url = reverse("accounts:associados_lista")
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert 'data-associados-filter-card="associados"' in content
+    assert 'data-associados-filter-card="nucleados"' in content
+    assert resp.context["associados_filter_url"].endswith("?tipo=associados")
+    assert resp.context["nucleados_filter_url"].endswith("?tipo=nucleados")
+    assert 'id="associados-filter-state"' in content
+
+    resp = client.get(url, {"tipo": "associados"})
+    content = resp.content.decode()
+    assert associado.username in content
+    assert nucleado.username not in content
+
+    resp = client.get(url, {"tipo": "nucleados"})
+    content = resp.content.decode()
+    assert nucleado.username in content
+    assert associado.username not in content

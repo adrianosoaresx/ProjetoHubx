@@ -1073,12 +1073,41 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(Q(username__icontains=q) | Q(contato__icontains=q))
+
+        filtro_tipo = self.request.GET.get("tipo")
+        if filtro_tipo == "associados":
+            qs = qs.filter(is_associado=True, nucleo__isnull=True)
+        elif filtro_tipo == "nucleados":
+            qs = qs.filter(is_associado=True, nucleo__isnull=False)
+
         # Ordenação alfabética por username (case-insensitive)
         qs = qs.annotate(_user=Lower("username"))
         return qs.order_by("_user")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        current_filter = self.request.GET.get("tipo") or ""
+        if current_filter not in {"associados", "nucleados"}:
+            current_filter = "todos"
+
+        params = self.request.GET.copy()
+        if "page" in params:
+            params.pop("page")
+
+        def build_url(filter_value: str | None) -> str:
+            query_params = params.copy()
+            if filter_value in {"associados", "nucleados"}:
+                query_params["tipo"] = filter_value
+            else:
+                query_params.pop("tipo", None)
+            query_string = query_params.urlencode()
+            return f"{self.request.path}?{query_string}" if query_string else self.request.path
+
+        context["current_filter"] = current_filter
+        context["associados_filter_url"] = build_url("associados")
+        context["nucleados_filter_url"] = build_url("nucleados")
+        context["todos_filter_url"] = build_url(None)
+
         org = getattr(self.request.user, "organizacao", None)
         if org:
             # Totais por organização

@@ -13,7 +13,51 @@
   <div id="associados-grid">
     {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
   </div>
-  
+
+  <div id="associados-loading" class="htmx-indicator mt-6 text-center text-sm text-base-content/70" role="status" aria-live="polite">
+    {% trans 'Carregando associados...' %}
+  </div>
+
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function() {
+      const stateId = 'associados-filter-state';
+
+      function parseClasses(value) {
+        return value ? value.split(/\s+/).filter(Boolean) : [];
+      }
+
+      function updateFilterButtons() {
+        const stateEl = document.getElementById(stateId);
+        if (!stateEl) {
+          return;
+        }
+        const currentFilter = stateEl.dataset.currentFilter || 'todos';
+        const buttons = document.querySelectorAll('[data-associados-filter-card]');
+
+        buttons.forEach((button) => {
+          const activeClasses = parseClasses(button.dataset.activeClass || '');
+          const isActive = button.dataset.associadosFilterCard === currentFilter;
+          button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          activeClasses.forEach((cls) => {
+            if (cls) {
+              button.classList.toggle(cls, isActive);
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', updateFilterButtons);
+      document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.target && event.target.id === 'associados-grid') {
+          updateFilterButtons();
+        }
+      });
+    })();
+  </script>
 {% endblock %}
