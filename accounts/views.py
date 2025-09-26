@@ -1270,7 +1270,9 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(self._build_modal_context(**kwargs))
+
+        context.update(self._build_form_context(**kwargs))
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1295,6 +1297,11 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
         selected_ids = ordered_ids
 
         form_errors: list[str] = []
+
+
+        if promover_consultor and promover_coordenador:
+            form_errors.append(_("Selecione apenas uma opção de promoção."))
+
 
         if not promover_consultor and not promover_coordenador:
             form_errors.append(_("Selecione ao menos uma opção de promoção."))
@@ -1444,7 +1451,9 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
         )
         return self.render_to_response(context)
 
-    def _build_modal_context(self, **kwargs):
+
+    def _build_form_context(self, **kwargs):
+
         raw_selected = kwargs.get("selected_nucleos") or []
         selected_nucleos = [str(value) for value in raw_selected]
         selected_role = (kwargs.get("selected_role") or "").strip()
