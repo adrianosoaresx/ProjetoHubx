@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
@@ -49,12 +50,27 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     template_name = "nucleos/nucleo_list.html"
     paginate_by = 10
 
+    def get_classificacao(self) -> str | None:
+        if hasattr(self, "_classificacao"):
+            return self._classificacao
+
+        classificacao = self.request.GET.get("classificacao")
+        valid_choices = {choice.value for choice in Nucleo.Classificacao}
+        if classificacao not in valid_choices:
+            classificacao = None
+
+        self._classificacao = classificacao
+        return classificacao
+
     def get_queryset(self):
+        if hasattr(self, "_cached_queryset"):
+            return self._cached_queryset
+
         user = self.request.user
         q = self.request.GET.get("q", "")
+        classificacao = self.get_classificacao()
         version = get_cache_version("nucleos_list")
-        cache_key = f"nucleos_list:v{version}:{user.id}:{q}"
-        cached_ids = cache.get(cache_key)
+        cache_key = f"nucleos_list:v{version}:{user.id}:{q}:{classificacao or 'all'}"
 
         base_qs = (
             Nucleo.objects.select_related("organizacao")
@@ -71,10 +87,6 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             )
         )
 
-        if cached_ids is not None:
-            qs = base_qs.filter(pk__in=cached_ids).order_by("nome")
-            return list(qs)
-
         qs = base_qs.filter(deleted=False)
 
         if user.user_type == UserType.ADMIN:
@@ -87,10 +99,23 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         if q:
             qs = qs.filter(nome__icontains=q)
 
+        self._qs_for_counts = qs
+
+        cached_ids = cache.get(cache_key)
+        if cached_ids is not None:
+            result = list(base_qs.filter(pk__in=cached_ids).order_by("nome"))
+            self._cached_queryset = result
+            return result
+
+        if classificacao:
+            qs = qs.filter(classificacao=classificacao)
+
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
 
-        return list(base_qs.filter(pk__in=ids).order_by("nome"))
+        result = list(base_qs.filter(pk__in=ids).order_by("nome"))
+        self._cached_queryset = result
+        return result
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -118,6 +143,60 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
+
+        base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
+        counts = {choice.value: 0 for choice in Nucleo.Classificacao}
+        for row in base_qs.values("classificacao").annotate(total=Count("id")):
+            counts[row["classificacao"]] = row["total"]
+
+        selected_classificacao = self.get_classificacao()
+        ctx["selected_classificacao"] = selected_classificacao
+        ctx["is_all_classificacao_active"] = selected_classificacao is None
+
+        params_without_page = self.request.GET.copy()
+        params_without_page.pop("page", None)
+        params_without_classificacao = params_without_page.copy()
+        params_without_classificacao.pop("classificacao", None)
+
+        base_url = self.request.path
+        if params_without_classificacao:
+            base_query = params_without_classificacao.urlencode()
+            ctx["nucleos_reset_url"] = f"{base_url}?{base_query}"
+        else:
+            ctx["nucleos_reset_url"] = base_url
+
+        def card_extra_attributes(url: str):
+            return format_html(
+                'data-href="{}" onclick="window.location.href=this.dataset.href"', url
+            )
+
+        ctx["nucleos_reset_extra_attributes"] = card_extra_attributes(ctx["nucleos_reset_url"])
+
+        classificacao_filters = []
+        classificacao_labels = [
+            (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
+            (Nucleo.Classificacao.PLANEJAMENTO.value, _("Planejamento")),
+            (Nucleo.Classificacao.CONSTITUIDO.value, _("Constituído")),
+        ]
+
+        for classificacao, label in classificacao_labels:
+            params_for_filter = params_without_classificacao.copy()
+            params_for_filter["classificacao"] = classificacao
+            filter_query = params_for_filter.urlencode()
+            filter_url = f"{base_url}?{filter_query}" if filter_query else base_url
+            classificacao_filters.append(
+                {
+                    "value": classificacao,
+                    "label": label,
+                    "count": counts.get(classificacao, 0),
+                    "url": filter_url,
+                    "is_active": selected_classificacao == classificacao,
+                    "extra_attributes": card_extra_attributes(filter_url),
+                }
+            )
+
+        ctx["classificacao_filters"] = classificacao_filters
+
         return ctx
 
 

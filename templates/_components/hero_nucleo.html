@@ -18,17 +18,15 @@
         </div>
         
       </div>
-      {% if total_nucleos is not None or total_membros is not None or total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
+      {% if total_nucleos is not None or classificacao_filters %}
         <div class="mt-10 space-y-4 text-left">
-
           <div class="card-grid">
             {% if total_nucleos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Núcleos') valor=total_nucleos icon_name='network' card_class='card-compact' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Núcleos') valor=total_nucleos icon_name='network' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True button_type='button' active_class='border border-white/80 shadow-lg' is_active=is_all_classificacao_active extra_attributes=nucleos_reset_extra_attributes|default:'' %}
             {% endif %}
-            {% if total_membros is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-
+            {% for filtro in classificacao_filters %}
+              {% include '_partials/cards/total_card.html' with label=filtro.label valor=filtro.count card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True button_type='button' active_class='border border-white/80 shadow-lg' is_active=filtro.is_active extra_attributes=filtro.extra_attributes %}
+            {% endfor %}
           </div>
         </div>
       {% endif %}
