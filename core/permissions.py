@@ -39,6 +39,20 @@ class GerenteRequiredMixin(UserPassesTestMixin):
         }
 
 
+class AssociadosRequiredMixin(UserPassesTestMixin):
+    """Permite acesso a administradores, coordenadores e operadores."""
+
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.user_type in {
+            UserType.ROOT,
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.OPERADOR,
+        }
+
+
 class ClienteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a associados e nucleados."""
 
