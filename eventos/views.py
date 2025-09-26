@@ -169,6 +169,11 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         if q:
             qs = qs.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q) | Q(nucleo__nome__icontains=q))
 
+        status_filter = self.request.GET.get("status")
+        status_map = {"ativos": 0, "realizados": 1}
+        if status_filter in status_map:
+            qs = qs.filter(status=status_map[status_filter])
+
         # anotar número de inscritos por evento
         qs = qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
         return qs.order_by("-data_inicio")
@@ -177,17 +182,37 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
         ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
+        current_filter = self.request.GET.get("status") or ""
+        if current_filter not in {"ativos", "realizados"}:
+            current_filter = "todos"
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+
+        def build_url(filter_value: str | None) -> str:
+            query_params = params.copy()
+            if filter_value in {"ativos", "realizados"}:
+                query_params["status"] = filter_value
+            else:
+                query_params.pop("status", None)
+            query_string = query_params.urlencode()
+            return f"{self.request.path}?{query_string}" if query_string else self.request.path
+
+        ctx["current_filter"] = current_filter
+        ctx["ativos_filter_url"] = build_url("ativos")
+        ctx["realizados_filter_url"] = build_url("realizados")
+        ctx["todos_filter_url"] = build_url(None)
+        ctx["is_ativos_filter_active"] = current_filter == "ativos"
+        ctx["is_realizados_filter_active"] = current_filter == "realizados"
+
         # Totais baseados no queryset filtrado (sem paginação)
         qs = self.get_queryset()
         ctx["total_eventos"] = qs.count()
         ctx["total_eventos_ativos"] = qs.filter(status=0).count()
         ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
-        params = self.request.GET.copy()
-        try:
-            params.pop("page")
-        except KeyError:
-            pass
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
         return ctx

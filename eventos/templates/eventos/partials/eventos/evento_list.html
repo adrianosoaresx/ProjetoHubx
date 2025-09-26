@@ -12,8 +12,10 @@
             <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
           {% endfor %}
         </div>
-        {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
+        {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_target='#eventos-conteudo' hx_get=request.path hx_push_url='true' hx_indicator='#eventos-loading' %}
       </div>
     </div>
   </div>
- 
+
+<div id="eventos-filter-state" hx-swap-oob="true" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>
+
