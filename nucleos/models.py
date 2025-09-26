@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import SET_NULL
+from django.db.models import SET_NULL, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -18,8 +18,27 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participacoes")
     nucleo = models.ForeignKey("Nucleo", on_delete=models.CASCADE, related_name="participacoes")
 
+    class PapelCoordenador(models.TextChoices):
+        COORDENADOR_GERAL = "coordenador_geral", _("Coordenador Geral")
+        VICE_COORDENADOR = "vice_coordenador", _("Vice coordenador")
+        CAPACITACAO = "capacitacao", _("Capacitação")
+        MARKETING = "marketing", _("Marketing")
+        EVENTOS = "eventos", _("Eventos")
+        FINANCEIRO = "financeiro", _("Financeiro")
+        RELACOES_PUBLICAS = "relacoes_publicas", _("Relações públicas")
+        INOVACAO = "inovacao", _("Inovação")
+        VALORIZACAO_EMPRESARIA = "valorizacao_empresaria", _("Valorização empresária")
+        GESTAO_EXCELENCIA = "gestao_excelencia", _("Gestão e Excelência")
+
     PAPEL_CHOICES = [("membro", _("Membro")), ("coordenador", _("Coordenador"))]
     papel = models.CharField(max_length=20, choices=PAPEL_CHOICES, default="membro")
+    papel_coordenador = models.CharField(
+        max_length=50,
+        choices=PapelCoordenador.choices,
+        null=True,
+        blank=True,
+        verbose_name=_("Papel de coordenação"),
+    )
 
     STATUS_CHOICES = [
         ("pendente", _("Pendente")),
@@ -46,7 +65,21 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
     justificativa = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ("user", "nucleo")
+        constraints = [
+            models.UniqueConstraint(fields=("user", "nucleo"), name="uniq_participacao_usuario_nucleo"),
+            models.UniqueConstraint(
+                fields=("nucleo", "papel_coordenador"),
+                name="uniq_coordenador_papel",
+                condition=Q(papel="coordenador"),
+            ),
+            models.CheckConstraint(
+                check=(
+                    Q(papel="coordenador", papel_coordenador__isnull=False)
+                    | Q(papel="membro", papel_coordenador__isnull=True)
+                ),
+                name="papel_coordenador_valido",
+            ),
+        ]
         verbose_name = "Participação no Núcleo"
         verbose_name_plural = "Participações nos Núcleos"
 
@@ -76,6 +109,14 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
     ativo = models.BooleanField(default=True)
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
+    consultor = models.ForeignKey(
+        User,
+        on_delete=SET_NULL,
+        null=True,
+        blank=True,
+        related_name="nucleos_consultoria",
+        verbose_name=_("Consultor"),
+    )
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=("organizacao", "nome"), name="uniq_org_nome")]
