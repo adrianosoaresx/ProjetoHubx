@@ -27,18 +27,6 @@
             <h1 class="text-3xl font-bold md:text-4xl">{{ evento.titulo }}</h1>
           </div>
         </div>
-        {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
-          <div class="flex flex-wrap gap-3 md:justify-end">
-            {% if perms.eventos.change_evento %}
-              <a href="{% url 'eventos:evento_editar' evento.pk %}" class="btn btn-secondary"
-                 aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
-            {% endif %}
-            {% if perms.eventos.delete_evento %}
-              <a href="{% url 'eventos:evento_excluir' evento.pk %}" class="btn btn-danger"
-                 aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
-            {% endif %}
-          </div>
-        {% endif %}
       </div>
 
       {% if total_inscricoes is not None or total_inscricoes_confirmadas is not None or total_inscricoes_pendentes is not None or total_inscricoes_canceladas is not None or total_presentes is not None or vagas_disponiveis is not None or media_feedback is not None or total_feedbacks is not None %}

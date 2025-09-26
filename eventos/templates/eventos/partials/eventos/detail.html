@@ -71,6 +71,20 @@
           {% endif %}
         </dl>
       </div>
+      {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
+        <div class="mt-6 flex justify-end gap-6">
+          {% if perms.eventos.change_evento %}
+            <a href="{% url 'eventos:evento_editar' object.pk %}"
+               class="text-primary font-medium hover:underline"
+               aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
+          {% endif %}
+          {% if perms.eventos.delete_evento %}
+            <a href="{% url 'eventos:evento_excluir' object.pk %}"
+               class="font-medium text-[var(--danger-text)] hover:underline"
+               aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
+          {% endif %}
+        </div>
+      {% endif %}
     </article>
 
     {% if user.is_authenticated and user.user_type != 'admin' %}
