@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block hero %}
-  {% include "_components/hero_profile.html" with is_owner=is_owner profile=profile hero_title=hero_title hero_subtitle=hero_subtitle %}
+  {% include "_components/hero_profile.html" with is_owner=is_owner profile=profile hero_title=hero_title hero_subtitle=hero_subtitle back_href=back_href %}
 {% endblock %}
 
 {% block content %}
