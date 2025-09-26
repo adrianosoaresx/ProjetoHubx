@@ -350,6 +350,11 @@ class EventoCreateView(
 
     permission_required = "eventos.add_evento"
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.user_type == UserType.ROOT:
             raise PermissionDenied("Usuário root não pode criar eventos.")
@@ -383,6 +388,11 @@ class EventoUpdateView(
     painel_hero_template = "_components/hero_eventos_detail.html"
 
     permission_required = "eventos.change_evento"
+
+    def get_form_kwargs(self):  # pragma: no cover
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
