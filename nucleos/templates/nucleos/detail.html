@@ -117,13 +117,19 @@
         {% endif %}
       {% endwith %}
 
-      <div class="flex justify-end">
-        {% if perms.nucleos.delete_nucleo %}
+      <div class="mt-6 flex justify-end gap-6">
+        {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+          <a
+            href="{% url 'nucleos:update' object.pk %}"
+            class="text-primary font-medium hover:underline"
+          >{% trans "Editar núcleo" %}</a>
+        {% endif %}
+        {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
           <a
             href="{% url 'nucleos:delete' object.pk %}"
-            class="btn btn-danger btn-sm"
-            hx-confirm="Deseja realmente excluir?"
-          >{% trans "Excluir" %}</a>
+            class="font-medium text-[var(--danger-text)] hover:underline"
+            hx-confirm="{% trans 'Deseja realmente excluir?' %}"
+          >{% trans "Excluir núcleo" %}</a>
         {% endif %}
       </div>
     </div>

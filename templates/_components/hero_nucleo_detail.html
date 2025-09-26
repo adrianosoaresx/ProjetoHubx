@@ -27,18 +27,7 @@
             <h1 class="text-3xl font-bold md:text-4xl">{{ nucleo.nome }}</h1>
           </div>
         </div>
-        {% if perms.nucleos.change_nucleo or perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-          <div class="flex flex-wrap gap-3 md:justify-end">
-            {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-              <a href="{% url 'nucleos:update' nucleo.pk %}" class="btn btn-secondary"
-                 aria-label="{% trans 'Editar núcleo' %}">{% trans 'Editar' %}</a>
-            {% endif %}
-            {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-              <a href="{% url 'nucleos:delete' nucleo.pk %}" class="btn btn-danger"
-                 aria-label="{% trans 'Excluir núcleo' %}">{% trans 'Excluir' %}</a>
-            {% endif %}
-          </div>
-        {% endif %}
+
       </div>
 
       {% if total_membros is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
