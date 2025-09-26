@@ -99,7 +99,11 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         if q:
             qs = qs.filter(nome__icontains=q)
 
-        self._qs_for_counts = qs
+        # Armazena um queryset com os mesmos filtros aplicados para ser usado na
+        # contagem dos cartões de classificação. O ``distinct()`` garante que
+        # núcleos não sejam contabilizados mais de uma vez quando há múltiplas
+        # participações relacionadas ao mesmo usuário.
+        self._qs_for_counts = qs.distinct()
 
         cached_ids = cache.get(cache_key)
         if cached_ids is not None:
@@ -146,7 +150,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
         counts = {choice.value: 0 for choice in Nucleo.Classificacao}
-        for row in base_qs.values("classificacao").annotate(total=Count("id")):
+        for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
             counts[row["classificacao"]] = row["total"]
 
         selected_classificacao = self.get_classificacao()
