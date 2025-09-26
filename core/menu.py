@@ -321,7 +321,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             id="nucleos_novo",
             path=reverse("nucleos:create"),
-            label="Novo Núcleo",
+            label="Adicionar núcleo",
             icon=ICON_PLUS,
             permissions=["admin"],
         )
@@ -354,7 +354,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             id="eventos_novo",
             path=reverse("eventos:evento_novo"),
-            label="Novo Evento",
+            label="Adicionar evento",
             icon=ICON_PLUS,
             permissions=["admin"],
         ),
