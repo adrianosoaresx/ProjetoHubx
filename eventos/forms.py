@@ -1,8 +1,11 @@
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ClearableFileInput
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
+
+from nucleos.models import Nucleo
 
 from .validators import validate_uploaded_file
 from .models import Evento, FeedbackNota, InscricaoEvento, ParceriaEvento
@@ -21,6 +24,7 @@ class EventoForm(forms.ModelForm):
             "coordenador",
             "status",
             "publico_alvo",
+            "nucleo",
             "numero_convidados",
             "participantes_maximo",
             "valor_ingresso",
@@ -39,6 +43,48 @@ class EventoForm(forms.ModelForm):
             "avatar": ClearableFileInput(),
             "cover": ClearableFileInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+
+        nucleo_field = self.fields.get("nucleo")
+        if nucleo_field:
+            nucleo_field.required = False
+            nucleo_field.empty_label = _("Selecione um núcleo")
+
+            queryset = Nucleo.objects.none()
+            organizacao = None
+
+            if self.request:
+                try:
+                    organizacao = getattr(self.request.user, "organizacao", None)
+                except ObjectDoesNotExist:
+                    organizacao = None
+
+            if not organizacao and self.instance and getattr(self.instance, "organizacao_id", None):
+                organizacao = self.instance.organizacao
+
+            if organizacao:
+                queryset = Nucleo.objects.filter(organizacao=organizacao).order_by("nome")
+
+            if self.instance and self.instance.nucleo:
+                queryset = queryset | Nucleo.objects.filter(pk=self.instance.nucleo.pk)
+
+            nucleo_field.queryset = queryset.distinct()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        publico_alvo = cleaned_data.get("publico_alvo")
+        nucleo = cleaned_data.get("nucleo")
+
+        if publico_alvo == 1:
+            if not nucleo:
+                self.add_error("nucleo", _("Selecione um núcleo para eventos destinados apenas ao núcleo."))
+        else:
+            cleaned_data["nucleo"] = None
+
+        return cleaned_data
 
 
 class EventoWidget(s2forms.ModelSelect2Widget):

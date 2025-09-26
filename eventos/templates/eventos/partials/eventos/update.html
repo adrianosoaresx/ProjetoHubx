@@ -19,89 +19,38 @@
     {% endfor %}
 
     <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-  <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+      <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
       <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
     </div>
   </form>
 
-  <!-- Orçamento -->
-  <div class="mt-10">
-    <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-4">{% trans "Orçamento" %}</h2>
-    <form id="orcamento-form" method="post" action="{% url 'eventos:evento_orcamento' object.pk %}" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm p-6 space-y-6">
-      {% csrf_token %}
-      <div>
-        {% include '_forms/field.html' with id='id_orcamento_estimado' name='orcamento_estimado' type='number' step='0.01' label=_("Orçamento estimado") value=object.orcamento_estimado|default_if_none:'' %}
-      </div>
-      <div>
-        {% include '_forms/field.html' with id='id_valor_gasto' name='valor_gasto' type='number' step='0.01' label=_("Valor gasto") value=object.valor_gasto|default_if_none:'' %}
-      </div>
-      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
-      </div>
-    </form>
-    <p id="orcamento-feedback" class="text-sm mt-2"></p>
-  </div>
-
-  <!-- Inscritos -->
-  <h2 class="text-lg font-semibold text-[var(--text-primary)] mt-10 mb-4">{% trans "Inscritos" %}</h2>
-  {% if object.inscricoes.all %}
-    <div class="card-grid gap-4">
-      {% for ins in object.inscricoes.all %}
-        {% with inscrito=ins.user %}
-        <article class="card">
-          <div class="card-body flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-medium text-[var(--text-primary)]">{{ inscrito.display_name }}</h3>
-              <p class="text-xs text-[var(--text-secondary)]">{{ inscrito.email }}</p>
-            </div>
-            {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
-            <form method="post" action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-secondary text-sm" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
-            </form>
-            {% endif %}
-          </div>
-        </article>
-        {% endwith %}
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum inscrito." %}</p>
-  {% endif %}
 </section>
 
 {% block extra_js %}
 <script>
-  const orcamentoForm = document.getElementById('orcamento-form');
-  if (orcamentoForm) {
-    orcamentoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const feedback = document.getElementById('orcamento-feedback');
-      const formData = new FormData(orcamentoForm);
-      try {
-        const response = await fetch(orcamentoForm.action, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-          },
-          body: formData
-        });
-        if (response.ok) {
-          const data = await response.json();
-          document.getElementById('id_orcamento_estimado').value = data.orcamento_estimado;
-          document.getElementById('id_valor_gasto').value = data.valor_gasto;
-          feedback.textContent = '{% trans "Orçamento atualizado com sucesso." %}';
-          feedback.className = 'text-sm text-[var(--success)]';
-        } else {
-          feedback.textContent = '{% trans "Erro ao atualizar orçamento." %}';
-          feedback.className = 'text-sm text-[var(--error)]';
-        }
-      } catch (err) {
-        feedback.textContent = '{% trans "Erro ao atualizar orçamento." %}';
-        feedback.className = 'text-sm text-[var(--error)]';
+  document.addEventListener('DOMContentLoaded', function () {
+    const publicoAlvoSelect = document.getElementById('id_publico_alvo');
+    const nucleoInput = document.getElementById('id_nucleo');
+    const nucleoFieldWrapper = nucleoInput ? nucleoInput.closest('.space-y-1') : null;
 
+    const toggleNucleoField = () => {
+      if (!publicoAlvoSelect || !nucleoInput || !nucleoFieldWrapper) {
+        return;
       }
-    });
-  }
+
+      if (publicoAlvoSelect.value === '1') {
+        nucleoFieldWrapper.classList.remove('hidden');
+      } else {
+        nucleoFieldWrapper.classList.add('hidden');
+        nucleoInput.value = '';
+      }
+    };
+
+    toggleNucleoField();
+
+    if (publicoAlvoSelect) {
+      publicoAlvoSelect.addEventListener('change', toggleNucleoField);
+    }
+  });
 </script>
 {% endblock %}

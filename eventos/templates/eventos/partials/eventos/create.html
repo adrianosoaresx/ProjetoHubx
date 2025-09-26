@@ -20,11 +20,40 @@
         {% endfor %}
 
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-      <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+          <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
           <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
         </div>
       </form>
     </div>
   </div>
 </section>
- 
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const publicoAlvoSelect = document.getElementById('id_publico_alvo');
+    const nucleoInput = document.getElementById('id_nucleo');
+    const nucleoFieldWrapper = nucleoInput ? nucleoInput.closest('.space-y-1') : null;
+
+    const toggleNucleoField = () => {
+      if (!publicoAlvoSelect || !nucleoInput || !nucleoFieldWrapper) {
+        return;
+      }
+
+      if (publicoAlvoSelect.value === '1') {
+        nucleoFieldWrapper.classList.remove('hidden');
+      } else {
+        nucleoFieldWrapper.classList.add('hidden');
+        nucleoInput.value = '';
+      }
+    };
+
+    toggleNucleoField();
+
+    if (publicoAlvoSelect) {
+      publicoAlvoSelect.addEventListener('change', toggleNucleoField);
+    }
+  });
+</script>
+{% endblock %}
+
