@@ -1,12 +1,8 @@
 {% load i18n %}
 <p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
-<dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-[var(--text-tertiary)]">
+<dl class="mt-3 space-y-2 text-xs text-[var(--text-tertiary)]">
   <div>
     <dt class="text-[var(--text-muted)]">{% trans 'Status' %}</dt>
     <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
-  </div>
-  <div>
-    <dt class="text-[var(--text-muted)]">{% trans 'Tipo' %}</dt>
-    <dd class="font-medium">{{ user.get_user_type_display|default:user.user_type }}</dd>
   </div>
 </dl>

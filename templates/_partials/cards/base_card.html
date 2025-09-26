@@ -4,7 +4,9 @@
   aria-label="{{ title }}">
   <article class="card overflow-hidden" role="article">
     <header class="relative">
-      {% if badge %}
+      {% if badges %}
+        {% include '_partials/cards/badge_list.html' with badges=badges %}
+      {% elif badge %}
         <div class="px-4 pt-4 pb-3">
           <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap"{% if badge_style %} style="{{ badge_style }}"{% endif %}>
             <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

@@ -1,7 +1,9 @@
-{% load i18n %}
+{% load i18n associados_extras %}
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
+{% usuario_badges user as user_badges %}
 <article class="card h-full overflow-hidden flex flex-col">
   <header class="relative">
+    {% include '_partials/cards/badge_list.html' with badges=user_badges %}
     {% if user.cover %}
       <img src="{{ user.cover.url|default:user.cover }}" alt="{% trans 'Capa do associado' %}" class="h-24 w-full object-cover" loading="lazy" />
     {% else %}
@@ -28,14 +30,10 @@
         <span class="font-normal text-[var(--text-primary)]">{{ user.cnpj }}</span>
       </p>
     {% endif %}
-    <dl class="mt-4 grid grid-cols-2 gap-3 text-xs text-[var(--text-tertiary)]">
+    <dl class="mt-4 space-y-3 text-xs text-[var(--text-tertiary)]">
       <div>
         <dt class="text-[var(--text-muted)]">{% trans 'Status' %}</dt>
         <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
-      </div>
-      <div>
-        <dt class="text-[var(--text-muted)]">{% trans 'Tipo' %}</dt>
-        <dd class="font-medium">{{ user.get_user_type_display|default:user.user_type }}</dd>
       </div>
     </dl>
   </div>
