@@ -1590,7 +1590,8 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                 assign_nucleado = nucleo_id in nucleado_ids
                 if not assign_coordenador and not assign_nucleado:
                     continue
-                participacao, _ = ParticipacaoNucleo.objects.get_or_create(
+                # IMPORTANTE: não usar '_' aqui para não mascarar o alias de tradução gettext_lazy as _
+                participacao, created = ParticipacaoNucleo.objects.get_or_create(  # noqa: F841
                     nucleo=nucleo,
                     user=self.associado,
                     defaults={"status": "ativo"},

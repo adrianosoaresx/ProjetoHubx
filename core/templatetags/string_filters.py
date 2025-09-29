@@ -40,5 +40,13 @@ def get_item(mapping, key):
     if mapping is None:
         return None
     if isinstance(mapping, dict):
-        return mapping.get(key)
+        # Tenta primeiro a chave original; se não existir e for possível,
+        # tenta a versão str() para lidar com dicionários que armazenam
+        # chaves como string enquanto na template usamos inteiros (ex: IDs).
+        if key in mapping:
+            return mapping[key]
+        str_key = str(key)
+        if str_key in mapping:
+            return mapping[str_key]
+        return None
     return getattr(mapping, key, None)

@@ -153,7 +153,8 @@
                             data-role-value="{{ value }}"
                             data-locked="{% if value in nucleo.unavailable_roles and value not in nucleo.user_current_roles %}true{% else %}false{% endif %}"
                             {% if value in nucleo.unavailable_roles and value not in nucleo.user_current_roles %}disabled{% endif %}
-                            {% if value == (selected_coordenador_roles|get_item:nucleo.id) %}selected{% endif %}
+                            {# Removidos parênteses que quebravam o parser e comparação direta com filtro #}
+                            {% if value == selected_coordenador_roles|get_item:nucleo.id %}selected{% endif %}
                           >
                             {{ label }}{% if value in nucleo.unavailable_roles and value not in nucleo.user_current_roles %} — {% trans 'Indisponível' %}{% endif %}
                           </option>
