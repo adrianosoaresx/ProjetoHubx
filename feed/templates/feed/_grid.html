@@ -31,7 +31,8 @@
             </span>
           {% else %}
             <span class="{{ badge_classes }}" style="--primary:#f97316; --primary-soft:rgba(249,115,22,0.15); --primary-soft-border:rgba(249,115,22,0.3);">
-              {% lucide 'globe-2' class=icon_classes aria_hidden='true' %}
+              {# Ícone globe-2 não existe na versão lucide==1.1.3; substituído por globe #}
+              {% lucide 'globe' class=icon_classes aria_hidden='true' %}
               <span class="truncate">{% trans "Público" %}</span>
             </span>
           {% endif %}

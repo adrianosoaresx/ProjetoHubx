@@ -301,6 +301,11 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
     template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["back_href"] = self._resolve_back_href()
+        return context
+
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False)
         user = self.request.user
@@ -318,6 +323,25 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
             resp["HX-Redirect"] = str(self.get_success_url())
             return resp
         return response
+
+    def _resolve_back_href(self) -> str:
+        referer = self.request.META.get("HTTP_REFERER")
+        if referer:
+            parsed = urlparse(referer)
+            if parsed.netloc == self.request.get_host():
+                path = parsed.path
+                if parsed.query:
+                    path = f"{path}?{parsed.query}"
+                if path and path != self.request.path:
+                    return path
+
+        nucleo = getattr(self, "object", None)
+        if nucleo is None:
+            nucleo = self.get_object()
+
+        if nucleo:
+            return reverse("nucleos:detail", args=[nucleo.pk])
+        return reverse("nucleos:list")
 
 
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
