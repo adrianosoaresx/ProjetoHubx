@@ -130,9 +130,11 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
     context_object_name = "eventos"
     paginate_by = 12
 
-    def get_queryset(self):
+    def get_base_queryset(self):
+        if hasattr(self, "_base_queryset_cache"):
+            return self._base_queryset_cache
+
         user = self.request.user
-        from django.db.models import Count
 
         qs = (
             Evento.objects.filter(organizacao=user.organizacao)
@@ -149,15 +151,30 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
 
         q = self.request.GET.get("q", "").strip()
         if q:
-            qs = qs.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q) | Q(nucleo__nome__icontains=q))
+            qs = qs.filter(
+                Q(titulo__icontains=q)
+                | Q(descricao__icontains=q)
+                | Q(nucleo__nome__icontains=q)
+            )
+
+        self._base_queryset_cache = qs
+        return qs
+
+    def get_queryset(self):
+        from django.db.models import Count
+
+        qs = self.get_base_queryset()
 
         status_filter = self.request.GET.get("status")
-        status_map = {
-            "planejamento": Evento.Status.PLANEJAMENTO,
-            "ativos": Evento.Status.ATIVO,
-            "realizados": Evento.Status.CONCLUIDO,
-        }
-        if status_filter in status_map:
+
+        now = timezone.now()
+        status_map = {"ativos": 0, "realizados": 1}
+
+        if status_filter == "planejamento":
+            qs = qs.filter(status=0, data_inicio__gt=now)
+        elif status_filter == "cancelados":
+            qs = qs.filter(status=2)
+        elif status_filter in status_map:
             qs = qs.filter(status=status_map[status_filter])
 
         # anotar número de inscritos por evento
@@ -169,7 +186,9 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         user = self.request.user
         ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
         current_filter = self.request.GET.get("status") or ""
-        if current_filter not in {"planejamento", "ativos", "realizados"}:
+
+        if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
+
             current_filter = "todos"
         params = self.request.GET.copy()
         try:
@@ -179,7 +198,9 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
 
         def build_url(filter_value: str | None) -> str:
             query_params = params.copy()
-            if filter_value in {"planejamento", "ativos", "realizados"}:
+
+            if filter_value in {"ativos", "realizados", "planejamento", "cancelados"}:
+
                 query_params["status"] = filter_value
             else:
                 query_params.pop("status", None)
@@ -190,17 +211,27 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx["planejamento_filter_url"] = build_url("planejamento")
         ctx["ativos_filter_url"] = build_url("ativos")
         ctx["realizados_filter_url"] = build_url("realizados")
+        ctx["planejamento_filter_url"] = build_url("planejamento")
+        ctx["cancelados_filter_url"] = build_url("cancelados")
         ctx["todos_filter_url"] = build_url(None)
         ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
         ctx["is_ativos_filter_active"] = current_filter == "ativos"
         ctx["is_realizados_filter_active"] = current_filter == "realizados"
+        ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
+        ctx["is_cancelados_filter_active"] = current_filter == "cancelados"
 
         # Totais baseados no queryset filtrado (sem paginação)
+        base_qs = self.get_base_queryset()
         qs = self.get_queryset()
-        ctx["total_eventos"] = qs.count()
-        ctx["total_eventos_planejamento"] = qs.filter(status=Evento.Status.PLANEJAMENTO).count()
-        ctx["total_eventos_ativos"] = qs.filter(status=Evento.Status.ATIVO).count()
-        ctx["total_eventos_concluidos"] = qs.filter(status=Evento.Status.CONCLUIDO).count()
+
+        now = timezone.now()
+
+        ctx["total_eventos"] = base_qs.count()
+        ctx["total_eventos_planejamento"] = base_qs.filter(status=0, data_inicio__gt=now).count()
+        ctx["total_eventos_ativos"] = base_qs.filter(status=0).count()
+        ctx["total_eventos_concluidos"] = base_qs.filter(status=1).count()
+        ctx["total_eventos_cancelados"] = base_qs.filter(status=2).count()
+
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)

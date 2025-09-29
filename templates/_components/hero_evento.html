@@ -20,16 +20,20 @@
         </div>
 
       </div>
-      {% if total_eventos is not None or total_eventos_planejamento is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
 
-        {% lucide 'calendar' class='h-5 w-5' as icon_total_planejamento %}
+      {% if total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None or total_eventos_planejamento is not None or total_eventos_cancelados is not None %}
+
+        {% lucide 'calendar-clock' class='h-5 w-5' as icon_total_planejamento %}
+
         {% lucide 'activity' class='h-5 w-5' as icon_total_ativos %}
         {% lucide 'check' class='h-5 w-5' as icon_total_concluidos %}
+        {% lucide 'ban' class='h-5 w-5' as icon_total_cancelados %}
         <div class="mt-10 space-y-4 text-left">
           <div class="card-grid" data-eventos-filter-buttons>
 
             {% if total_eventos_planejamento is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Planejamento') valor=total_eventos_planejamento icon_svg=icon_total_planejamento card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_planejamento_filter_active hx_get=planejamento_filter_url hx_target='#eventos-conteudo' hx_push_url='true' hx_indicator='#eventos-loading' extra_attributes='data-eventos-filter-card="planejamento"' %}
+
+              {% include '_partials/cards/total_card.html' with label=_('Em planejamento') valor=total_eventos_planejamento icon_svg=icon_total_planejamento card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_planejamento_filter_active hx_get=planejamento_filter_url hx_target='#eventos-conteudo' hx_push_url='true' hx_indicator='#eventos-loading' extra_attributes='data-eventos-filter-card="planejamento"' %}
             {% endif %}
 
             {% if total_eventos_ativos is not None %}
@@ -37,6 +41,9 @@
             {% endif %}
             {% if total_eventos_concluidos is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_total_concluidos card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_realizados_filter_active hx_get=realizados_filter_url hx_target='#eventos-conteudo' hx_push_url='true' hx_indicator='#eventos-loading' extra_attributes='data-eventos-filter-card="realizados"' %}
+            {% endif %}
+            {% if total_eventos_cancelados is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Cancelados') valor=total_eventos_cancelados icon_svg=icon_total_cancelados card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_cancelados_filter_active hx_get=cancelados_filter_url hx_target='#eventos-conteudo' hx_push_url='true' hx_indicator='#eventos-loading' extra_attributes='data-eventos-filter-card="cancelados"' %}
             {% endif %}
           </div>
           <div id="eventos-filter-state" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>

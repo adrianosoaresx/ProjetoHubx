@@ -213,6 +213,119 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
     assert response.context["is_realizados_filter_active"] is False
 
 
+def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client):
+    evento_planejado = Evento.objects.create(
+        titulo="Evento Planejado",
+        descricao="Evento futuro",
+        data_inicio=make_aware(datetime.now() + timedelta(days=5)),
+        data_fim=make_aware(datetime.now() + timedelta(days=6)),
+        local="Rua Futuro, 789",
+        cidade="Cidade Futuro",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=50,
+        numero_presentes=0,
+        valor_ingresso=30.00,
+        participantes_maximo=80,
+        contato_nome="Contato Futuro",
+        contato_email="futuro@teste.com",
+        contato_whatsapp="12999997777",
+    )
+    Evento.objects.create(
+        titulo="Evento Passado",
+        descricao="Evento não planejado",
+        data_inicio=make_aware(datetime.now() - timedelta(days=5)),
+        data_fim=make_aware(datetime.now() - timedelta(days=4)),
+        local="Rua Passado, 101",
+        cidade="Cidade Passado",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=50,
+        numero_presentes=0,
+        valor_ingresso=30.00,
+        participantes_maximo=80,
+        contato_nome="Contato Passado",
+        contato_email="passado@teste.com",
+        contato_whatsapp="12999996666",
+    )
+
+    url = reverse("eventos:lista")
+    response = client.get(url, {"status": "planejamento"})
+
+    assert response.status_code == 200
+    eventos = list(response.context["eventos"])
+    assert evento_planejado in eventos
+    assert len(eventos) == 1
+    assert response.context["current_filter"] == "planejamento"
+    assert response.context["is_planejamento_filter_active"] is True
+    assert response.context["planejamento_filter_url"].endswith("?status=planejamento")
+    assert response.context["total_eventos_planejamento"] == 1
+
+
+def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
+    evento_cancelado = Evento.objects.create(
+        titulo="Evento Cancelado",
+        descricao="Evento cancelado",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Cancelada, 202",
+        cidade="Cidade Cancelada",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=2,
+        publico_alvo=0,
+        numero_convidados=40,
+        numero_presentes=0,
+        valor_ingresso=25.00,
+        participantes_maximo=60,
+        contato_nome="Contato Cancelado",
+        contato_email="cancelado@teste.com",
+        contato_whatsapp="12999995555",
+    )
+    Evento.objects.create(
+        titulo="Evento Ativo",
+        descricao="Evento ativo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=3)),
+        data_fim=make_aware(datetime.now() + timedelta(days=4)),
+        local="Rua Ativa, 303",
+        cidade="Cidade Ativa",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=40,
+        numero_presentes=0,
+        valor_ingresso=25.00,
+        participantes_maximo=60,
+        contato_nome="Contato Ativo",
+        contato_email="ativo@teste.com",
+        contato_whatsapp="12999994444",
+    )
+
+    url = reverse("eventos:lista")
+    response = client.get(url, {"status": "cancelados"})
+
+    assert response.status_code == 200
+    eventos = list(response.context["eventos"])
+    assert eventos == [evento_cancelado]
+    assert response.context["current_filter"] == "cancelados"
+    assert response.context["is_cancelados_filter_active"] is True
+    assert response.context["cancelados_filter_url"].endswith("?status=cancelados")
+    assert response.context["total_eventos_cancelados"] == 1
+
+
 def test_evento_create_view_post_invalido(usuario_logado, client):
     url = reverse("eventos:evento_novo")
     response = client.post(url, data={"titulo": ""})  # inválido
