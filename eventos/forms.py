@@ -86,6 +86,14 @@ class EventoForm(forms.ModelForm):
 
             nucleo_field.queryset = queryset.distinct()
 
+        for field_name, label in (
+            ("contato_nome", _("Contato")),
+            ("contato_email", _("Email")),
+            ("contato_whatsapp", _("Whatapp")),
+        ):
+            if field_name in self.fields:
+                self.fields[field_name].label = label
+
     def clean(self):
         cleaned_data = super().clean()
         publico_alvo = cleaned_data.get("publico_alvo")
