@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  .dark input,
+  .dark textarea,
+  .dark select {
+    color: theme('colors.slate.100');
+    caret-color: theme('colors.slate.100');
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: theme('colors.slate.400');
+  }
+}
+
 /* ========================================
    Hubx shared styles
    ======================================== */
