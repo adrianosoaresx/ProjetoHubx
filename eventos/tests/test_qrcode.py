@@ -45,7 +45,7 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
         cep="12345-678",
         coordenador=usuario,
         organizacao=organizacao,
-        status=0,
+        status=Evento.Status.ATIVO,
         publico_alvo=0,
         numero_convidados=10,
         numero_presentes=0,

@@ -37,7 +37,7 @@ def criar_evento(organizacao, usuario, inicio, fim):
         data_inicio=inicio,
         data_fim=fim,
         coordenador=usuario,
-        status=0,
+        status=Evento.Status.ATIVO,
         publico_alvo=1,
         numero_convidados=50,
         numero_presentes=30,

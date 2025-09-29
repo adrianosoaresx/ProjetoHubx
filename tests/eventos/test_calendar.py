@@ -52,7 +52,7 @@ class CalendarViewTests(TestCase):
             titulo="Evento",
             data_inicio=make_aware(datetime.combine(dia, datetime.min.time())),
             data_fim=make_aware(datetime.combine(dia, datetime.min.time()) + timedelta(hours=1)),
-            status=0,
+            status=Evento.Status.ATIVO,
             publico_alvo=0,
             numero_convidados=10,
             numero_presentes=0,
