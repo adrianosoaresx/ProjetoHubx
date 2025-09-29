@@ -21,14 +21,24 @@
           <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
-      {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None %}
+      {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None or total_consultores is not None or total_coordenadores is not None %}
         <div class="mt-10 space-y-4">
+          {% with target=filter_target|default:'#associados-grid' indicator=filter_indicator|default:'#associados-loading' %}
           <div class="card-grid" data-associados-filter-buttons>
-           {% include '_partials/cards/total_card.html' with label=_('Associados') valor=total_associados icon_name='badge-check' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_associados_filter_active hx_get=associados_filter_url hx_target='#associados-grid' hx_push_url='true' hx_indicator='#associados-loading' extra_attributes='data-associados-filter-card="associados"' %}
+           {% include '_partials/cards/total_card.html' with label=_('Associados') valor=total_associados icon_name='badge-check' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_associados_filter_active hx_get=associados_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="associados"' %}
 
-           {% include '_partials/cards/total_card.html' with label=_('Nucleados') valor=total_nucleados icon_name='network' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_nucleados_filter_active hx_get=nucleados_filter_url hx_target='#associados-grid' hx_push_url='true' hx_indicator='#associados-loading' extra_attributes='data-associados-filter-card="nucleados"' %}
+           {% include '_partials/cards/total_card.html' with label=_('Nucleados') valor=total_nucleados icon_name='network' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_nucleados_filter_active hx_get=nucleados_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="nucleados"' %}
+
+           {% if total_consultores is not None %}
+            {% include '_partials/cards/total_card.html' with label=_('Consultores') valor=total_consultores icon_name='briefcase' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_consultores_filter_active hx_get=consultores_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="consultores"' %}
+           {% endif %}
+
+           {% if total_coordenadores is not None %}
+            {% include '_partials/cards/total_card.html' with label=_('Coordenadores') valor=total_coordenadores icon_name='users' card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_coordenadores_filter_active hx_get=coordenadores_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="coordenadores"' %}
+           {% endif %}
 
           </div>
+          {% endwith %}
           <div id="associados-filter-state" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>
         </div>
       {% endif %}

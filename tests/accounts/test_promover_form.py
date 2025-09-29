@@ -42,6 +42,76 @@ def test_promover_list_includes_nucleados(client):
 
 
 @pytest.mark.django_db
+def test_promover_list_filter_actions(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin-promover@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="associado",
+        email="associado-promover@example.com",
+        password="pass",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    nucleado = User.objects.create_user(
+        username="nucleado",
+        email="nucleado-promover@example.com",
+        password="pass",
+        user_type=UserType.NUCLEADO,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    consultor_email = "consultor-promover@example.com"
+    consultor = User.objects.create_user(
+        username="consultor",
+        email=consultor_email,
+        password="pass",
+        user_type=UserType.CONSULTOR,
+        organizacao=organizacao,
+    )
+    coordenador_email = "coordenador-promover@example.com"
+    coordenador = User.objects.create_user(
+        username="coordenador",
+        email=coordenador_email,
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+        is_coordenador=True,
+    )
+
+    client.force_login(admin)
+
+    url = reverse("accounts:associados_promover")
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert resp.context["consultores_filter_url"].endswith("?tipo=consultores")
+    assert resp.context["coordenadores_filter_url"].endswith("?tipo=coordenadores")
+
+    resp = client.get(url, {"tipo": "consultores"})
+    content = resp.content.decode()
+    assert consultor_email in content
+    assert associado.username not in content
+    assert nucleado.username not in content
+    assert coordenador_email not in content
+
+    resp = client.get(url, {"tipo": "coordenadores"})
+    content = resp.content.decode()
+    assert coordenador_email in content
+    assert consultor_email not in content
+    assert associado.username not in content
+    assert nucleado.username not in content
+
+
+@pytest.mark.django_db
 def test_promover_form_get(client):
     organizacao = OrganizacaoFactory()
     User = get_user_model()
