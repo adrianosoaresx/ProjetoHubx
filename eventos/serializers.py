@@ -4,13 +4,12 @@ import os
 
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from validate_docbr import CNPJ
 from typing import Any, Dict
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from .validators import validate_uploaded_file
 
-from .models import Evento, EventoLog, InscricaoEvento, ParceriaEvento
+from .models import Evento, EventoLog, InscricaoEvento
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -110,40 +109,3 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             instance.delete()
             raise serializers.ValidationError(str(exc))
         return instance
-class ParceriaEventoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ParceriaEvento
-        exclude = ("deleted", "deleted_at")
-        read_only_fields = (
-            "id",
-            "avaliacao",
-            "comentario",
-            "created_at",
-            "updated_at",
-        )
-
-    def validate_acordo(self, arquivo):
-        if not arquivo:
-            return arquivo
-        try:
-            validate_uploaded_file(arquivo)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(e.messages)
-        return arquivo
-
-    def validate_cnpj(self, value: str) -> str:
-        if not CNPJ().validate(value):
-            raise serializers.ValidationError("CNPJ inválido")
-        return value
-
-    def validate(self, attrs):
-        if attrs.get("data_fim") and attrs.get("data_inicio") and attrs["data_fim"] < attrs["data_inicio"]:
-            raise serializers.ValidationError({"data_fim": "Data final deve ser posterior à inicial"})
-        return attrs
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        evento = validated_data["evento"]
-        if evento.organizacao != request.user.organizacao:
-            raise PermissionDenied("Evento de outra organização")
-        return super().create(validated_data)

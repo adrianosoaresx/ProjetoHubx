@@ -10,7 +10,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
-    UserPassesTestMixin,
 )
 from django import forms
 from django.core.exceptions import PermissionDenied
@@ -44,8 +43,8 @@ from core.permissions import (
     no_superadmin_required,
 )
 
-from .forms import EventoForm, InscricaoEventoForm, ParceriaEventoForm
-from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento, ParceriaEvento
+from .forms import EventoForm, InscricaoEventoForm
+from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 
 User = get_user_model()
 
@@ -717,53 +716,6 @@ def evento_orcamento(request, pk: int):
 
     data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
     return JsonResponse(data)
-@login_required
-@no_superadmin_required
-def avaliar_parceria(request, pk: int):
-    parceria = get_object_or_404(
-        ParceriaEvento.objects.filter(
-            Q(evento__organizacao=request.user.organizacao)
-            | Q(evento__nucleo__in=request.user.nucleos.values_list("id", flat=True))
-        ),
-        pk=pk,
-    )
-    if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
-        return HttpResponseForbidden()
-
-    if request.method == "POST":
-        if parceria.avaliacao is not None:
-            return JsonResponse({"error": _("Parceria já avaliada.")}, status=400)
-        try:
-            parceria.avaliacao = int(request.POST.get("nota"))
-            if not 1 <= parceria.avaliacao <= 5:
-                raise ValueError
-        except (TypeError, ValueError):
-            return JsonResponse({"error": _("Nota inválida.")}, status=400)
-        parceria.comentario = request.POST.get("comentario", "")
-        parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
-        return JsonResponse(
-            {
-                "success": _("Avaliação registrada com sucesso."),
-                "avaliacao": parceria.avaliacao,
-                "comentario": parceria.comentario,
-            }
-        )
-
-    context = {"parceria": parceria, "evento": parceria.evento}
-    hero_context = {
-        "painel_title": _("Avaliar parceria"),
-        "painel_hero_template": "_components/hero_eventos_detail.html",
-    }
-    is_htmx = request.headers.get("HX-Request") == "true"
-    context.update(hero_context)
-    context["is_htmx"] = is_htmx
-    if is_htmx:
-        return TemplateResponse(
-            request, "eventos/partials/parceria/parceria_avaliar.html", context
-        )
-    context["partial_template"] = "eventos/partials/parceria/parceria_avaliar.html"
-    return TemplateResponse(request, "eventos/painel.html", context)
-
 
 @login_required
 @no_superadmin_required
@@ -865,170 +817,4 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
 
     def get_success_url(self):
         return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
-
-
-class ParceriaPermissionMixin(UserPassesTestMixin):
-    def test_func(self) -> bool:  # pragma: no cover - simples
-        return self.request.user.user_type in {
-            UserType.ADMIN,
-            UserType.COORDENADOR,
-            UserType.ROOT,
-        }
-
-
-class ParceriaEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, ListView):
-    model = ParceriaEvento
-    template_name = "eventos/partials/parceria/parceria_list.html"
-    context_object_name = "parcerias"
-    painel_title = _("Parcerias")
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = ParceriaEvento.objects.select_related("evento", "nucleo")
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        evento_param = self.request.GET.get("evento")
-        if evento_param:
-            qs = qs.filter(evento_id=evento_param)
-        nucleo = self.request.GET.get("nucleo")
-        if nucleo:
-            qs = qs.filter(nucleo_id=nucleo)
-        return qs.order_by("-data_inicio")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-                context["painel_title"] = context["evento"].titulo
-            except Evento.DoesNotExist:
-                context["evento"] = None
-        return context
-
-
-class ParceriaEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
-    model = ParceriaEvento
-    form_class = ParceriaEventoForm
-    template_name = "eventos/partials/parceria/parceria_form.html"
-    success_url = reverse_lazy("eventos:parceria_list")
-    painel_title = _("Nova Parceria")
-    painel_hero_template = "_components/hero.html"
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            form.fields["evento"].queryset = Evento.objects.filter(
-                Q(organizacao=user.organizacao) | Q(nucleo__in=user.nucleos.values_list("id", flat=True))
-            )
-            form.fields["nucleo"].queryset = user.nucleos
-        return form
-
-    def form_valid(self, form):
-        evento = form.cleaned_data["evento"]
-        user = self.request.user
-        if user.user_type != UserType.ROOT and evento.organizacao != user.organizacao:
-            form.add_error("evento", _("Evento de outra organização"))
-            return self.form_invalid(form)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-                context.setdefault("painel_title", context["evento"].titulo)
-            except Evento.DoesNotExist:
-                pass
-        return context
-
-
-class ParceriaEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
-    model = ParceriaEvento
-    form_class = ParceriaEventoForm
-    template_name = "eventos/partials/parceria/parceria_form.html"
-    success_url = reverse_lazy("eventos:parceria_list")
-    painel_title = _("Editar Parceria")
-    painel_hero_template = "_components/hero_eventos_detail.html"
-
-    def get_queryset(self):
-        qs = ParceriaEvento.objects.all()
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        return qs
-
-    def get_form(self, form_class=None):
-        return ParceriaEventoCreateView.get_form(self, form_class)
-
-    def form_valid(self, form):
-        """Registra alterações da parceria."""
-        old_obj = self.get_object()
-        detalhes: dict[str, dict[str, Any]] = {}
-        for field in form.changed_data:
-            before = getattr(old_obj, field)
-            after = form.cleaned_data.get(field)
-            if before != after:
-                detalhes[field] = {"antes": before, "depois": after}
-        response = super().form_valid(form)
-        EventoLog.objects.create(
-            evento=self.object.evento,
-            usuario=self.request.user,
-            acao="parceria_atualizada",
-            detalhes=detalhes,
-        )
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["evento"] = self.object.evento
-        return context
-
-
-class ParceriaEventoDeleteView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
-    model = ParceriaEvento
-    template_name = "eventos/partials/parceria/parceria_confirm_delete.html"
-    success_url = reverse_lazy("eventos:parceria_list")
-    painel_title = _("Remover Parceria")
-    painel_hero_template = "_components/hero_eventos_detail.html"
-
-    def get_queryset(self):
-        qs = ParceriaEvento.objects.all()
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        return qs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["evento"] = self.object.evento
-        return context
-
-    def delete(self, request, *args, **kwargs):  # pragma: no cover
-        self.object = self.get_object()
-        EventoLog.objects.create(
-            evento=self.object.evento,
-            usuario=request.user,
-            acao="parceria_excluida",
-            detalhes={},
-        )
-        return super().delete(request, *args, **kwargs)
-
 

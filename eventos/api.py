@@ -11,9 +11,9 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
-from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento, ParceriaEvento
+from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 from .permissions import IsAdminOrCoordenadorOrReadOnly
-from .serializers import EventoSerializer, InscricaoEventoSerializer, ParceriaEventoSerializer
+from .serializers import EventoSerializer, InscricaoEventoSerializer
 
 
 class DefaultPagination(PageNumberPagination):
@@ -97,82 +97,4 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             comentario=request.data.get("feedback", ""),
         )
         return Response(self.get_serializer(inscricao).data, status=status.HTTP_200_OK)
-
-
-class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
-    serializer_class = ParceriaEventoSerializer
-    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
-    pagination_class = DefaultPagination
-    queryset = ParceriaEvento.objects.select_related("evento", "nucleo").all()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        qs = self.filter_by_organizacao(qs, "evento")
-        return qs
-
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=self.request.user,
-            acao="parceria_criada",
-            detalhes={"parceria": instance.pk},
-        )
-
-    def perform_update(self, serializer):
-        old_instance = ParceriaEvento.all_objects.get(pk=serializer.instance.pk)
-        instance = serializer.save()
-        changes = {}
-        for field, value in serializer.validated_data.items():
-            before = getattr(old_instance, field)
-            after = getattr(instance, field)
-            if before != after:
-                changes[field] = {"antes": before, "depois": after}
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=self.request.user,
-            acao="parceria_atualizada",
-            detalhes=changes,
-        )
-
-    def perform_destroy(self, instance: ParceriaEvento) -> None:
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=self.request.user,
-            acao="parceria_excluida",
-            detalhes={"parceria": instance.pk},
-        )
-        instance.soft_delete()
-
-    @action(detail=True, methods=["post"])
-    def avaliar(self, request, pk=None):
-        parceria = self.get_object()
-        if parceria.avaliacao is not None:
-            return Response(
-                {"error": "Parceria já avaliada."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            parceria.avaliacao = int(request.data.get("avaliacao"))
-        except (TypeError, ValueError):
-            return Response(
-                {"error": "Avaliação inválida."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        parceria.comentario = request.data.get("comentario", "")
-        parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
-        EventoLog.objects.create(
-            evento=parceria.evento,
-            usuario=request.user,
-            acao="parceria_avaliada",
-            detalhes={
-                "parceria": parceria.pk,
-                "avaliacao": parceria.avaliacao,
-                "comentario": parceria.comentario,
-            },
-        )
-        data = self.get_serializer(parceria).data
-        data["success"] = "Avaliação registrada com sucesso."
-        return Response(data)
-
 
