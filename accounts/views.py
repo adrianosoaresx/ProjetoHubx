@@ -305,8 +305,11 @@ def perfil_section(request, section):
 
     if section == "portfolio":
         q = request.GET.get("q", "").strip()
-        medias_qs = Midia.objects.visible_to(viewer, profile).select_related("user").prefetch_related("tags").order_by(
-            "-created_at"
+        medias_qs = (
+            Midia.objects.visible_to(viewer, profile)
+            .select_related("user")
+            .prefetch_related("tags")
+            .order_by("-created_at")
         )
         if q:
             medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
@@ -1021,11 +1024,7 @@ def termos(request):
                 request.session.pop("usuario", None)
                 return redirect("accounts:usuario")
 
-            convite_nucleo = (
-                ConviteNucleo.objects.select_related("nucleo")
-                .filter(token_obj=token_obj)
-                .first()
-            )
+            convite_nucleo = ConviteNucleo.objects.select_related("nucleo").filter(token_obj=token_obj).first()
             if convite_nucleo and convite_nucleo.nucleo_id:
                 user.nucleo = convite_nucleo.nucleo
                 user.save(update_fields=["nucleo"])
@@ -1101,9 +1100,7 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         tipo_display = type_labels.get(new_user.user_type, new_user.user_type)
         messages.success(
             self.request,
-            _(
-                "Usuário %(username)s (%(tipo)s) adicionado com sucesso."
-            )
+            _("Usuário %(username)s (%(tipo)s) adicionado com sucesso.")
             % {
                 "username": new_user.get_full_name(),
                 "tipo": tipo_display,
@@ -1143,10 +1140,14 @@ class AssociadoListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequire
 
         filtro_tipo = self.request.GET.get("tipo")
         consultor_filter = Q(user_type=UserType.CONSULTOR.value)
-        coordenador_filter = Q(user_type=UserType.COORDENADOR.value) | Q(is_coordenador=True) | Q(
-            participacoes__papel="coordenador",
-            participacoes__status="ativo",
-            participacoes__status_suspensao=False,
+        coordenador_filter = (
+            Q(user_type=UserType.COORDENADOR.value)
+            | Q(is_coordenador=True)
+            | Q(
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
         )
         if filtro_tipo == "associados":
             qs = qs.filter(is_associado=True, nucleo__isnull=True)
@@ -1208,21 +1209,19 @@ class AssociadoListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequire
             ).count()
             consultor_filter = Q(user_type=UserType.CONSULTOR.value)
             context["total_consultores"] = (
-                User.objects.filter(organizacao=org)
-                .filter(consultor_filter)
-                .distinct()
-                .count()
+                User.objects.filter(organizacao=org).filter(consultor_filter).distinct().count()
             )
-            coordenador_filter = Q(user_type=UserType.COORDENADOR.value) | Q(is_coordenador=True) | Q(
-                participacoes__papel="coordenador",
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
+            coordenador_filter = (
+                Q(user_type=UserType.COORDENADOR.value)
+                | Q(is_coordenador=True)
+                | Q(
+                    participacoes__papel="coordenador",
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                )
             )
             context["total_coordenadores"] = (
-                User.objects.filter(organizacao=org)
-                .filter(coordenador_filter)
-                .distinct()
-                .count()
+                User.objects.filter(organizacao=org).filter(coordenador_filter).distinct().count()
             )
         else:
             context["total_usuarios"] = 0
@@ -1289,10 +1288,14 @@ class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             )
 
         consultor_filter = Q(user_type=UserType.CONSULTOR.value)
-        coordenador_filter = Q(user_type=UserType.COORDENADOR.value) | Q(is_coordenador=True) | Q(
-            participacoes__papel="coordenador",
-            participacoes__status="ativo",
-            participacoes__status_suspensao=False,
+        coordenador_filter = (
+            Q(user_type=UserType.COORDENADOR.value)
+            | Q(is_coordenador=True)
+            | Q(
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
         )
 
         filtro_tipo = self.request.GET.get("tipo")
@@ -1355,21 +1358,19 @@ class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             ).count()
             consultor_filter = Q(user_type=UserType.CONSULTOR.value)
             context["total_consultores"] = (
-                User.objects.filter(organizacao=organizacao)
-                .filter(consultor_filter)
-                .distinct()
-                .count()
+                User.objects.filter(organizacao=organizacao).filter(consultor_filter).distinct().count()
             )
-            coordenador_filter = Q(user_type=UserType.COORDENADOR.value) | Q(is_coordenador=True) | Q(
-                participacoes__papel="coordenador",
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
+            coordenador_filter = (
+                Q(user_type=UserType.COORDENADOR.value)
+                | Q(is_coordenador=True)
+                | Q(
+                    participacoes__papel="coordenador",
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                )
             )
             context["total_coordenadores"] = (
-                User.objects.filter(organizacao=organizacao)
-                .filter(coordenador_filter)
-                .distinct()
-                .count()
+                User.objects.filter(organizacao=organizacao).filter(coordenador_filter).distinct().count()
             )
         else:
             context["total_usuarios"] = 0
@@ -1416,100 +1417,127 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
         return context
 
     def post(self, request, *args, **kwargs):
-        promover_consultor = bool(request.POST.get("promover_consultor"))
-        promover_coordenador = bool(request.POST.get("promover_coordenador"))
-        selected_role = (request.POST.get("papel_coordenador") or "").strip()
+        raw_nucleado = request.POST.getlist("nucleado_nucleos")
+        raw_consultor = request.POST.getlist("consultor_nucleos")
+        raw_coordenador = request.POST.getlist("coordenador_nucleos")
 
-        raw_nucleos = request.POST.getlist("nucleos")
-        selected_ids: list[int] = []
-        for value in raw_nucleos:
-            try:
-                selected_ids.append(int(value))
-            except (TypeError, ValueError):
-                continue
-        # Remove duplicados preservando a ordem
-        seen: set[int] = set()
-        ordered_ids: list[int] = []
-        for nid in selected_ids:
-            if nid not in seen:
-                ordered_ids.append(nid)
-                seen.add(nid)
-        selected_ids = ordered_ids
+        def _parse_ids(values: list[str]) -> list[int]:
+            parsed: list[int] = []
+            seen: set[int] = set()
+            for value in values:
+                try:
+                    pk = int(value)
+                except (TypeError, ValueError):
+                    continue
+                if pk not in seen:
+                    parsed.append(pk)
+                    seen.add(pk)
+            return parsed
+
+        nucleado_ids = _parse_ids(raw_nucleado)
+        consultor_ids = _parse_ids(raw_consultor)
+        coordenador_ids = _parse_ids(raw_coordenador)
+
+        selected_coordenador_roles: dict[str, str] = {}
+        coordenador_roles: dict[int, str] = {}
+        for nucleo_id in coordenador_ids:
+            role_value = (request.POST.get(f"coordenador_papel_{nucleo_id}") or "").strip()
+            selected_coordenador_roles[str(nucleo_id)] = role_value
+            if role_value:
+                coordenador_roles[nucleo_id] = role_value
+
+        all_selected_ids = set(nucleado_ids) | set(consultor_ids) | set(coordenador_ids)
 
         form_errors: list[str] = []
 
-
-        if promover_consultor and promover_coordenador:
-            form_errors.append(_("Selecione apenas uma opção de promoção."))
-
-
-        if not promover_consultor and not promover_coordenador:
-            form_errors.append(_("Selecione ao menos uma opção de promoção."))
-
-        if (promover_consultor or promover_coordenador) and not selected_ids:
-            form_errors.append(_("Selecione ao menos um núcleo."))
+        if not all_selected_ids:
+            form_errors.append(_("Selecione ao menos um núcleo e papel para promoção."))
 
         valid_ids = set(
-            Nucleo.objects.filter(organizacao=self.organizacao, id__in=selected_ids).values_list("id", flat=True)
+            Nucleo.objects.filter(organizacao=self.organizacao, id__in=all_selected_ids).values_list("id", flat=True)
         )
-        if len(valid_ids) != len(selected_ids):
+        if len(valid_ids) != len(all_selected_ids):
             form_errors.append(_("Selecione núcleos válidos da organização."))
 
         papel_choices = {value for value, _ in ParticipacaoNucleo.PapelCoordenador.choices}
-        if promover_coordenador:
-            if not selected_role:
-                form_errors.append(_("Selecione um papel de coordenação."))
-            elif selected_role not in papel_choices:
+        for nucleo_id in coordenador_ids:
+            papel = (request.POST.get(f"coordenador_papel_{nucleo_id}") or "").strip()
+            if not papel:
+                form_errors.append(_("Selecione um papel de coordenação para cada núcleo escolhido."))
+                break
+            if papel not in papel_choices:
                 form_errors.append(_("Selecione um papel de coordenação válido."))
+                break
 
         role_labels = dict(ParticipacaoNucleo.PapelCoordenador.choices)
 
-        restricted_roles = {
-            ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
-            ParticipacaoNucleo.PapelCoordenador.VICE_COORDENADOR,
-        }
+        valid_coordenador_ids = {nid for nid in coordenador_roles.keys() if nid in valid_ids}
 
-        if promover_coordenador and not form_errors and selected_role:
+        if valid_coordenador_ids and not form_errors:
             ocupados = (
                 ParticipacaoNucleo.objects.filter(
-                    nucleo_id__in=valid_ids,
+                    nucleo_id__in=valid_coordenador_ids,
                     papel="coordenador",
                     status="ativo",
-                    papel_coordenador=selected_role,
+                    papel_coordenador__in=set(coordenador_roles.values()),
                 )
                 .exclude(user=self.associado)
                 .select_related("user", "nucleo")
             )
             for participacao in ocupados:
-                form_errors.append(
-                    _("O papel %(papel)s do núcleo %(nucleo)s já está ocupado por %(nome)s.")
-                    % {
-                        "papel": role_labels.get(selected_role, selected_role),
-                        "nucleo": participacao.nucleo.nome,
-                        "nome": participacao.user.display_name or participacao.user.username,
-                    }
-                )
-
-            if selected_role in restricted_roles:
-                existentes = set(
-                    ParticipacaoNucleo.objects.filter(
-                        user=self.associado,
-                        papel="coordenador",
-                        status="ativo",
-                        papel_coordenador=selected_role,
-                    ).values_list("nucleo_id", flat=True)
-                )
-                novos = valid_ids - existentes
-                if existentes and novos:
+                papel = participacao.papel_coordenador
+                if papel and coordenador_roles.get(participacao.nucleo_id) == papel:
                     form_errors.append(
-                        _("Coordenador geral e vice coordenador não podem assumir o mesmo papel em múltiplos núcleos.")
+                        _("O papel %(papel)s do núcleo %(nucleo)s já está ocupado por %(nome)s.")
+                        % {
+                            "papel": role_labels.get(papel, papel),
+                            "nucleo": participacao.nucleo.nome,
+                            "nome": participacao.user.display_name or participacao.user.username,
+                        }
                     )
-                elif not existentes and len(valid_ids) > 1:
-                    form_errors.append(_("Selecione apenas um núcleo para este papel de coordenação."))
 
-        if promover_consultor and not form_errors:
+            restricted_roles = {
+                ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+                ParticipacaoNucleo.PapelCoordenador.VICE_COORDENADOR,
+            }
+            selected_by_role: defaultdict[str, set[int]] = defaultdict(set)
+            for nucleo_id, papel in coordenador_roles.items():
+                if nucleo_id not in valid_coordenador_ids:
+                    continue
+                selected_by_role[papel].add(nucleo_id)
+
+            existentes = defaultdict(set)
+            if restricted_roles:
+                existentes_qs = ParticipacaoNucleo.objects.filter(
+                    user=self.associado,
+                    papel="coordenador",
+                    status="ativo",
+                    papel_coordenador__in=restricted_roles,
+                ).values_list("papel_coordenador", "nucleo_id")
+                for papel, nucleo_id in existentes_qs:
+                    existentes[papel].add(nucleo_id)
+
+            for papel in restricted_roles:
+                novos = selected_by_role.get(papel, set())
+                if not novos:
+                    continue
+                atuais = existentes.get(papel, set())
+                novos_diferentes = {nid for nid in novos if nid not in atuais}
+                if atuais and novos_diferentes:
+                    form_errors.append(
+                        _("%(papel)s não pode ser atribuído a múltiplos núcleos diferentes.")
+                        % {"papel": role_labels.get(papel, papel)}
+                    )
+                elif not atuais and len(novos_diferentes) > 1:
+                    form_errors.append(
+                        _("Selecione apenas um núcleo para o papel %(papel)s.")
+                        % {"papel": role_labels.get(papel, papel)}
+                    )
+
+        valid_consultor_ids = {nid for nid in consultor_ids if nid in valid_ids}
+        if valid_consultor_ids and not form_errors:
             consultores_ocupados = (
-                Nucleo.objects.filter(id__in=valid_ids)
+                Nucleo.objects.filter(id__in=valid_consultor_ids)
                 .exclude(consultor__isnull=True)
                 .exclude(consultor=self.associado)
                 .select_related("consultor")
@@ -1525,40 +1553,64 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
 
         if form_errors:
             context = self.get_context_data(
-                selected_nucleos=[str(pk) for pk in selected_ids],
-                selected_role=selected_role,
-                promover_consultor=promover_consultor,
-                promover_coordenador=promover_coordenador,
+                selected_nucleado=[str(pk) for pk in nucleado_ids],
+                selected_consultor=[str(pk) for pk in consultor_ids],
+                selected_coordenador=[str(pk) for pk in coordenador_ids],
+                selected_coordenador_roles=selected_coordenador_roles,
                 form_errors=form_errors,
             )
             return self.render_to_response(context, status=400)
 
-        nucleos_queryset = list(
-            Nucleo.objects.filter(organizacao=self.organizacao, id__in=valid_ids).select_for_update()
-        )
+        if not valid_ids:
+            context = self.get_context_data(
+                selected_nucleado=[],
+                selected_consultor=[],
+                selected_coordenador=[],
+                selected_coordenador_roles={},
+                form_errors=[_("Nenhum núcleo válido foi selecionado.")],
+            )
+            return self.render_to_response(context, status=400)
+
+        nucleos_queryset = {
+            nucleo.id: nucleo
+            for nucleo in Nucleo.objects.filter(organizacao=self.organizacao, id__in=valid_ids).select_for_update()
+        }
 
         with transaction.atomic():
-            if promover_consultor:
-                for nucleo in nucleos_queryset:
+            if valid_consultor_ids:
+                for nucleo_id in valid_consultor_ids:
+                    nucleo = nucleos_queryset.get(nucleo_id)
+                    if not nucleo:
+                        continue
                     if nucleo.consultor_id != self.associado.pk:
                         nucleo.consultor = self.associado
                         nucleo.save(update_fields=["consultor"])
 
-            if promover_coordenador and selected_role:
-                for nucleo in nucleos_queryset:
-                    participacao, created = ParticipacaoNucleo.objects.get_or_create(
-                        nucleo=nucleo,
-                        user=self.associado,
-                        defaults={"status": "ativo"},
-                    )
+            for nucleo_id in valid_ids:
+                nucleo = nucleos_queryset.get(nucleo_id)
+                if not nucleo:
+                    continue
+                assign_coordenador = nucleo_id in coordenador_roles
+                assign_nucleado = nucleo_id in nucleado_ids
+                if not assign_coordenador and not assign_nucleado:
+                    continue
+                participacao, _ = ParticipacaoNucleo.objects.get_or_create(
+                    nucleo=nucleo,
+                    user=self.associado,
+                    defaults={"status": "ativo"},
+                )
+                participacao.status = "ativo"
+                participacao.status_suspensao = False
+                if assign_coordenador:
                     participacao.papel = "coordenador"
-                    participacao.status = "ativo"
-                    participacao.papel_coordenador = selected_role
-                    participacao.status_suspensao = False
-                    participacao.save(update_fields=["papel", "status", "papel_coordenador", "status_suspensao"])
+                    participacao.papel_coordenador = coordenador_roles.get(nucleo_id)
+                elif assign_nucleado and participacao.papel != "coordenador":
+                    participacao.papel = "membro"
+                    participacao.papel_coordenador = None
+                participacao.save(update_fields=["papel", "status", "papel_coordenador", "status_suspensao"])
 
         updates: list[str] = []
-        if promover_coordenador:
+        if coordenador_roles:
             if self.associado.user_type not in {
                 UserType.ROOT,
                 UserType.ADMIN,
@@ -1569,7 +1621,7 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             if not self.associado.is_coordenador:
                 self.associado.is_coordenador = True
                 updates.append("is_coordenador")
-        elif promover_consultor and self.associado.user_type in {
+        elif consultor_ids and self.associado.user_type in {
             UserType.ASSOCIADO,
             UserType.NUCLEADO,
             UserType.CONSULTOR,
@@ -1577,28 +1629,33 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             if self.associado.user_type != UserType.CONSULTOR:
                 self.associado.user_type = UserType.CONSULTOR
                 updates.append("user_type")
+        elif nucleado_ids and self.associado.user_type in {
+            UserType.ASSOCIADO,
+            UserType.NUCLEADO,
+        }:
+            if self.associado.user_type != UserType.NUCLEADO:
+                self.associado.user_type = UserType.NUCLEADO
+                updates.append("user_type")
 
         if updates:
             self.associado.save(update_fields=updates)
 
         context = self.get_context_data(
-            selected_nucleos=[],
-            selected_role="",
-            promover_consultor=False,
-            promover_coordenador=False,
+            selected_nucleado=[],
+            selected_consultor=[],
+            selected_coordenador=[],
+            selected_coordenador_roles={},
             success_message=_("Promoção registrada com sucesso."),
             form_errors=[],
         )
         return self.render_to_response(context)
 
-
     def _build_form_context(self, **kwargs):
-
-        raw_selected = kwargs.get("selected_nucleos") or []
-        selected_nucleos = [str(value) for value in raw_selected]
-        selected_role = (kwargs.get("selected_role") or "").strip()
-        promover_consultor = bool(kwargs.get("promover_consultor"))
-        promover_coordenador = bool(kwargs.get("promover_coordenador"))
+        selected_nucleado = [str(value) for value in kwargs.get("selected_nucleado") or []]
+        selected_consultor = [str(value) for value in kwargs.get("selected_consultor") or []]
+        selected_coordenador = [str(value) for value in kwargs.get("selected_coordenador") or []]
+        raw_roles = kwargs.get("selected_coordenador_roles") or {}
+        selected_coordenador_roles = {str(key): value for key, value in raw_roles.items()}
         form_errors = kwargs.get("form_errors") or []
         success_message = kwargs.get("success_message")
 
@@ -1608,18 +1665,38 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             .prefetch_related(
                 Prefetch(
                     "participacoes",
-                    queryset=ParticipacaoNucleo.objects.filter(status="ativo", papel="coordenador").select_related("user"),
+                    queryset=ParticipacaoNucleo.objects.filter(status="ativo", papel="coordenador").select_related(
+                        "user"
+                    ),
                 )
             )
             .order_by("nome")
         )
 
         role_labels = dict(ParticipacaoNucleo.PapelCoordenador.choices)
+        participacoes_usuario = list(
+            ParticipacaoNucleo.objects.filter(
+                user=self.associado,
+                status="ativo",
+                status_suspensao=False,
+            ).values("nucleo_id", "papel", "papel_coordenador")
+        )
+
+        current_memberships: set[str] = set()
+        user_roles_by_nucleo: defaultdict[str, list[str]] = defaultdict(list)
+        user_role_map: defaultdict[str, list[str]] = defaultdict(list)
+        for participacao in participacoes_usuario:
+            nucleo_id = str(participacao["nucleo_id"])
+            current_memberships.add(nucleo_id)
+            if participacao["papel"] == "coordenador" and participacao["papel_coordenador"]:
+                papel = participacao["papel_coordenador"]
+                user_roles_by_nucleo[nucleo_id].append(papel)
+                user_role_map[papel].append(nucleo_id)
+
         nucleos: list[dict[str, object]] = []
         for nucleo in nucleos_qs:
             participacoes = list(nucleo.participacoes.all())
             unavailable_roles: set[str] = set()
-            user_current_roles: list[str] = []
             coordenadores: list[dict[str, object]] = []
             unavailable_messages: dict[str, str] = {}
 
@@ -1629,8 +1706,6 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                     continue
                 unavailable_roles.add(papel)
                 is_target = participacao.user_id == self.associado.pk
-                if is_target:
-                    user_current_roles.append(papel)
                 coordenadores.append(
                     {
                         "papel": papel,
@@ -1640,9 +1715,7 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                     }
                 )
                 if not is_target:
-                    unavailable_messages[papel] = _(
-                        "%(papel)s ocupado por %(nome)s."
-                    ) % {
+                    unavailable_messages[papel] = _("%(papel)s ocupado por %(nome)s.") % {
                         "papel": role_labels.get(papel, papel),
                         "nome": participacao.user.display_name or participacao.user.username,
                     }
@@ -1654,28 +1727,16 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                     "id": str(nucleo.pk),
                     "nome": nucleo.nome,
                     "consultor_name": (
-                        nucleo.consultor.display_name or nucleo.consultor.username
-                        if nucleo.consultor
-                        else ""
+                        nucleo.consultor.display_name or nucleo.consultor.username if nucleo.consultor else ""
                     ),
                     "is_current_consultor": nucleo.consultor_id == self.associado.pk,
+                    "is_current_member": str(nucleo.pk) in current_memberships,
                     "coordenadores": coordenadores,
                     "unavailable_roles": sorted(unavailable_roles),
-                    "user_current_roles": user_current_roles,
+                    "user_current_roles": user_roles_by_nucleo.get(str(nucleo.pk), []),
                     "unavailable_messages_json": json.dumps(unavailable_messages),
                 }
             )
-
-        participacoes_usuario = ParticipacaoNucleo.objects.filter(
-            user=self.associado,
-            papel="coordenador",
-            status="ativo",
-            papel_coordenador__isnull=False,
-        ).values_list("papel_coordenador", "nucleo_id")
-
-        user_role_map: defaultdict[str, list[str]] = defaultdict(list)
-        for papel, nucleo_id in participacoes_usuario:
-            user_role_map[papel].append(str(nucleo_id))
 
         restricted_roles = [
             ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
@@ -1688,14 +1749,15 @@ class AssociadoPromoverFormView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
             "coordenador_role_choices": ParticipacaoNucleo.PapelCoordenador.choices,
             "coordenador_role_labels": role_labels,
             "restricted_roles": [role for role in restricted_roles if role],
-            "selected_nucleos": selected_nucleos,
-            "selected_role": selected_role,
-            "promover_consultor": promover_consultor,
-            "promover_coordenador": promover_coordenador,
+            "selected_nucleado": selected_nucleado,
+            "selected_consultor": selected_consultor,
+            "selected_coordenador": selected_coordenador,
+            "selected_coordenador_roles": selected_coordenador_roles,
             "form_errors": form_errors,
             "success_message": success_message,
             "user_role_map_json": json.dumps(dict(user_role_map)),
         }
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
