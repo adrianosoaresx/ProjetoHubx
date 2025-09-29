@@ -108,103 +108,131 @@
                   </div>
                 </header>
 
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div class="grid auto-rows-fr content-start items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {% if not nucleo.is_current_member and not nucleo.is_current_coordinator %}
-                    <label class="group flex items-start gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40
- p-4 shadow-sm transition hover:border-primary/40 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/30">
-                      <input
-                        type="checkbox"
-                        name="nucleado_nucleos"
-                        value="{{ nucleo.id }}"
-                        class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
-                        data-role-checkbox="nucleado"
-                        {% if nucleo.id in selected_nucleado %}checked{% endif %}
-                      >
-                      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
-                        {% lucide 'user-round-plus' class='h-5 w-5' %}
-                      </span>
-                      <span class="flex-1 space-y-1">
-                        <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a nucleado' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Garante participação ativa como membro do núcleo escolhido.' %}</span>
-                      </span>
+                    <label class="group flex h-full flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40 p-4 shadow-sm transition hover:border-primary/40 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/30">
+                      <div class="flex items-center justify-start">
+                        <div class="flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="nucleado_nucleos"
+                            value="{{ nucleo.id }}"
+                            class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
+                            data-role-checkbox="nucleado"
+                            {% if nucleo.id in selected_nucleado %}checked{% endif %}
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
+                          {% lucide 'user-round-plus' class='h-6 w-6' %}
+                        </span>
+                        <div class="space-y-1">
+                          <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a nucleado' %}</span>
+                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Garante participação ativa como membro do núcleo escolhido.' %}</span>
+                        </div>
+                      </div>
                     </label>
                   {% endif %}
                   {% if nucleo.is_current_member and not nucleo.is_current_coordinator %}
-                    <label class="group flex items-start gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
-                      <input
-                        type="checkbox"
-                        name="remover_nucleado_nucleos"
-                        value="{{ nucleo.id }}"
-                        class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
-                        {% if nucleo.id in selected_remover_nucleado %}checked{% endif %}
-                      >
-                      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
-                        {% lucide 'user-round-minus' class='h-5 w-5' %}
-                      </span>
-                      <span class="flex-1 space-y-1">
-                        <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de nucleado' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Interrompe a participação ativa do associado neste núcleo.' %}</span>
-                      </span>
+                    <label class="group flex h-full flex-col gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
+                      <div class="flex items-center justify-start">
+                        <div class="flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="remover_nucleado_nucleos"
+                            value="{{ nucleo.id }}"
+                            class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
+                            {% if nucleo.id in selected_remover_nucleado %}checked{% endif %}
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
+                          {% lucide 'user-round-minus' class='h-6 w-6' %}
+                        </span>
+                        <div class="space-y-1">
+                          <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de nucleado' %}</span>
+                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Interrompe a participação ativa do associado neste núcleo.' %}</span>
+                        </div>
+                      </div>
                     </label>
                   {% endif %}
 
                   {% if not nucleo.is_current_consultor and not nucleo.consultor_name %}
-                    <label class="group flex items-start gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40
- p-4 shadow-sm transition hover:border-primary/40 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/30">
-                      <input
-                        type="checkbox"
-                        name="consultor_nucleos"
-                        value="{{ nucleo.id }}"
-                        class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
-                        data-role-checkbox="consultor"
-                        {% if nucleo.id in selected_consultor %}checked{% endif %}
-                      >
-                      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
-                        {% lucide 'user-round-cog' class='h-5 w-5' %}
-                      </span>
-                      <span class="flex-1 space-y-1">
-                        <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a consultor' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Permite atuação consultiva em estratégias e ações do núcleo.' %}</span>
-                      </span>
+                    <label class="group flex h-full flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40 p-4 shadow-sm transition hover:border-primary/40 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/30">
+                      <div class="flex items-center justify-start">
+                        <div class="flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="consultor_nucleos"
+                            value="{{ nucleo.id }}"
+                            class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
+                            data-role-checkbox="consultor"
+                            {% if nucleo.id in selected_consultor %}checked{% endif %}
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
+                          {% lucide 'user-round-cog' class='h-6 w-6' %}
+                        </span>
+                        <div class="space-y-1">
+                          <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a consultor' %}</span>
+                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Permite atuação consultiva em estratégias e ações do núcleo.' %}</span>
+                        </div>
+                      </div>
                     </label>
                   {% endif %}
                   {% if nucleo.is_current_consultor %}
-                    <label class="group flex items-start gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
-                      <input
-                        type="checkbox"
-                        name="remover_consultor_nucleos"
-                        value="{{ nucleo.id }}"
-                        class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
-                        {% if nucleo.id in selected_remover_consultor %}checked{% endif %}
-                      >
-                      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
-                        {% lucide 'user-round-x' class='h-5 w-5' %}
-                      </span>
-                      <span class="flex-1 space-y-1">
-                        <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de consultor' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Libera o núcleo para definir um novo consultor.' %}</span>
-                      </span>
+                    <label class="group flex h-full flex-col gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
+                      <div class="flex items-center justify-start">
+                        <div class="flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="remover_consultor_nucleos"
+                            value="{{ nucleo.id }}"
+                            class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
+                            {% if nucleo.id in selected_remover_consultor %}checked{% endif %}
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
+                          {% lucide 'user-round-x' class='h-6 w-6' %}
+                        </span>
+                        <div class="space-y-1">
+                          <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de consultor' %}</span>
+                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Libera o núcleo para definir um novo consultor.' %}</span>
+                        </div>
+                      </div>
                     </label>
                   {% endif %}
 
                   {% if not nucleo.is_current_coordinator %}
-                    <div class="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40 p-4 shadow-sm" data-coordenador-card>
-                      <label class="group flex items-start gap-4">
-                        <input
-                          type="checkbox"
-                          name="coordenador_nucleos"
-                          value="{{ nucleo.id }}"
-                          class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
-                          data-role-checkbox="coordenador"
-                          {% if nucleo.id in selected_coordenador %}checked{% endif %}
-                        >
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
-                          {% lucide 'shield-check' class='h-5 w-5' %}
-                        </span>
-                        <span class="flex-1 space-y-1">
-                          <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a coordenador' %}</span>
-                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Escolha o papel de coordenação específico para este núcleo.' %}</span>
-                        </span>
+                    <div class="flex h-full flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40 p-4 shadow-sm" data-coordenador-card>
+                      <label class="group flex flex-col gap-4">
+                        <div class="flex items-center justify-start">
+                          <div class="flex h-5 w-5 items-center justify-center">
+                            <input
+                              type="checkbox"
+                              name="coordenador_nucleos"
+                              value="{{ nucleo.id }}"
+                              class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-primary focus:ring-primary"
+                              data-role-checkbox="coordenador"
+                              {% if nucleo.id in selected_coordenador %}checked{% endif %}
+                            >
+                          </div>
+                        </div>
+                        <div class="flex flex-1 flex-col gap-3">
+                          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-primary" aria-hidden="true">
+                            {% lucide 'shield-check' class='h-6 w-6' %}
+                          </span>
+                          <div class="space-y-1">
+                            <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a coordenador' %}</span>
+                            <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Escolha o papel de coordenação específico para este núcleo.' %}</span>
+                          </div>
+                        </div>
                       </label>
                       <div class="space-y-2 rounded-lg bg-[var(--bg-primary)]/60 p-3 {% if nucleo.id not in selected_coordenador %}hidden{% endif %}" data-coordenador-fields>
                         <label class="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]" for="coordenador-papel-{{ nucleo.id }}">{% trans 'Papel de coordenação' %}</label>
@@ -233,21 +261,27 @@
                     </div>
                   {% endif %}
                   {% if nucleo.is_current_coordinator %}
-                    <label class="group flex items-start gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
-                      <input
-                        type="checkbox"
-                        name="remover_coordenador_nucleos"
-                        value="{{ nucleo.id }}"
-                        class="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
-                        {% if nucleo.id in selected_remover_coordenador %}checked{% endif %}
-                      >
-                      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
-                        {% lucide 'shield-x' class='h-5 w-5' %}
-                      </span>
-                      <span class="flex-1 space-y-1">
-                        <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de coordenador' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Retira o papel de coordenação mantendo a participação como membro.' %}</span>
-                      </span>
+                    <label class="group flex h-full flex-col gap-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-primary)]/20 p-4 shadow-sm transition hover:border-[var(--error)]/40 focus-within:border-[var(--error)]/50 focus-within:ring-2 focus-within:ring-[var(--error)]/30">
+                      <div class="flex items-center justify-start">
+                        <div class="flex h-5 w-5 items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="remover_coordenador_nucleos"
+                            value="{{ nucleo.id }}"
+                            class="h-5 w-5 shrink-0 rounded border-[var(--border)] text-[var(--error)] focus:ring-[var(--error)]"
+                            {% if nucleo.id in selected_remover_coordenador %}checked{% endif %}
+                          >
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-tertiary)] text-[var(--error)]" aria-hidden="true">
+                          {% lucide 'shield-x' class='h-6 w-6' %}
+                        </span>
+                        <div class="space-y-1">
+                          <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de coordenador' %}</span>
+                          <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Retira o papel de coordenação mantendo a participação como membro.' %}</span>
+                        </div>
+                      </div>
                     </label>
                   {% endif %}
                 </div>
