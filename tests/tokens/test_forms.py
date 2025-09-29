@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 
 from accounts.factories import UserFactory
+from accounts.models import UserType
 
 from organizacoes.factories import OrganizacaoFactory
 
@@ -26,19 +27,26 @@ pytestmark = pytest.mark.django_db
 
 def test_token_acesso_form_choices():
     form = TokenAcessoForm()
-    choices = [c[0] for c in form.fields["tipo_destino"].choices]
-    for choice in TokenAcesso.TipoUsuario.values:
-        assert choice in choices
+    assert form.fields["tipo_destino"].choices == [
+        (
+            TokenAcesso.TipoUsuario.CONVIDADO.value,
+            TokenAcesso.TipoUsuario.CONVIDADO.label,
+        )
+    ]
 
 
 
-def test_gerar_token_convite_form_querysets():
-    user = UserFactory(is_staff=True)
-    org1 = OrganizacaoFactory()
-    org1.users.add(user)
+def test_gerar_token_convite_form_choices():
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    org.users.add(user)
     form = GerarTokenConviteForm(user=user)
-    assert list(form.fields["organizacao"].queryset) == [org1]
-    assert "nucleos" not in form.fields
+    assert form.fields["tipo_destino"].choices == [
+        (
+            TokenAcesso.TipoUsuario.CONVIDADO.value,
+            TokenAcesso.TipoUsuario.CONVIDADO.label,
+        )
+    ]
 
 
 

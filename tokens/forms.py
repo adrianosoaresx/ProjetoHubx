@@ -13,6 +13,14 @@ from .services import find_token_by_code
 User = get_user_model()
 
 
+GUEST_TOKEN_CHOICES = [
+    (
+        TokenAcesso.TipoUsuario.CONVIDADO.value,
+        TokenAcesso.TipoUsuario.CONVIDADO.label,
+    )
+]
+
+
 class TokenAcessoForm(forms.ModelForm):
     class Meta:
         model = TokenAcesso
@@ -20,19 +28,17 @@ class TokenAcessoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["tipo_destino"].choices = TokenAcesso.TipoUsuario.choices
+        self.fields["tipo_destino"].choices = GUEST_TOKEN_CHOICES
 
 
 class GerarTokenConviteForm(forms.Form):
-    tipo_destino = forms.ChoiceField(choices=TokenAcesso.TipoUsuario.choices)
+    tipo_destino = forms.ChoiceField(choices=GUEST_TOKEN_CHOICES)
 
     def __init__(self, *args, user=None, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
-        if user:
-            self.fields["tipo_destino"].choices = [
-                choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(user, choice[0])
-            ]
+        if user and not can_issue_invite(user, TokenAcesso.TipoUsuario.CONVIDADO.value):
+            self.fields["tipo_destino"].choices = []
 
 
 class ValidarTokenConviteForm(forms.Form):

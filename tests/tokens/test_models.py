@@ -9,14 +9,18 @@ from django.utils import timezone
 
 from accounts.factories import UserFactory
 from tokens.models import CodigoAutenticacao, TokenAcesso, TOTPDevice
+from tokens.services import create_invite_token
 
 pytestmark = pytest.mark.django_db
 
 
 def test_token_acesso_creation_defaults():
     user = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
-    assert len(token.codigo) == 32
+    token, codigo = create_invite_token(
+        gerado_por=user,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+    )
+    assert len(codigo) >= 32
     assert token.estado == TokenAcesso.Estado.NOVO
     assert token.created_at is not None
 
@@ -24,11 +28,12 @@ def test_token_acesso_creation_defaults():
 def test_token_acesso_states():
     user = UserFactory(is_staff=True)
     for estado in TokenAcesso.Estado.values:
-        token = TokenAcesso.objects.create(
+        token, _ = create_invite_token(
             gerado_por=user,
-            tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO,
-            estado=estado,
+            tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
         )
+        token.estado = estado
+        token.save(update_fields=["estado"])
         token.refresh_from_db()
         assert token.estado == estado
 

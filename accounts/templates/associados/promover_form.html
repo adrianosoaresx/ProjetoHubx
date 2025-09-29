@@ -48,118 +48,156 @@
             readonly
           >
         </div>
-
-        <fieldset class="space-y-3">
-          <legend class="text-sm font-medium text-[var(--text-muted)]">{% trans 'Promoção desejada' %}</legend>
-          <div class="grid gap-3 sm:grid-cols-2">
-            <label class="flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
-              <input
-                type="checkbox"
-                name="promover_consultor"
-                value="1"
-                class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
-                data-role-checkbox="consultor"
-                {% if promover_consultor %}checked{% endif %}
-              >
-              <span>
-                <span class="text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a consultor' %}</span>
-                <span class="mt-1 block text-xs text-[var(--text-secondary)]">{% trans 'O associado poderá atuar como consultor em um ou mais núcleos.' %}</span>
-              </span>
-            </label>
-            <label class="flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
-              <input
-                type="checkbox"
-                name="promover_coordenador"
-                value="1"
-                class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
-                data-role-checkbox="coordenador"
-                {% if promover_coordenador %}checked{% endif %}
-              >
-              <span>
-                <span class="text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a coordenador' %}</span>
-                <span class="mt-1 block text-xs text-[var(--text-secondary)]">{% trans 'Defina o papel de coordenação e os núcleos correspondentes.' %}</span>
-              </span>
-            </label>
-          </div>
-        </fieldset>
-
-        <div data-coordenador-fields class="space-y-2 {% if not promover_coordenador %}hidden{% endif %}">
-          <label class="block text-sm font-medium text-[var(--text-muted)]" for="papel-coordenador">{% trans 'Papel de coordenação' %}</label>
-          <select
-            id="papel-coordenador"
-            name="papel_coordenador"
-            class="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
-            data-coordenador-papel
-          >
-            <option value="">{% trans 'Selecione um papel' %}</option>
-            {% for value, label in coordenador_role_choices %}
-              <option value="{{ value }}" {% if value == selected_role %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-          <p class="text-xs text-[var(--text-secondary)]">{% trans 'Coordenador geral e vice coordenador não podem repetir o mesmo papel em núcleos diferentes.' %}</p>
+        <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-tertiary)]/60 px-4 py-3 text-sm text-[var(--text-secondary)]">
+          <p>{% trans 'Defina abaixo em quais núcleos o associado atuará e quais papéis deverá assumir.' %}</p>
+          <ul class="mt-2 list-disc list-inside space-y-1">
+            <li>{% trans 'É possível combinar mais de um papel por núcleo.' %}</li>
+            <li>{% trans 'Ao escolher coordenador, selecione também o papel correspondente.' %}</li>
+            <li>{% trans 'Coordenador geral e vice coordenador não podem repetir o mesmo papel em núcleos diferentes.' %}</li>
+          </ul>
         </div>
 
-        <fieldset class="space-y-4" data-nucleos-list>
-          <legend class="text-sm font-medium text-[var(--text-muted)]">{% trans 'Selecione os núcleos' %}</legend>
+        <fieldset class="space-y-5" data-nucleos-list>
+          <legend class="text-sm font-medium text-[var(--text-muted)]">{% trans 'Promoções por núcleo' %}</legend>
           {% if nucleos %}
             {% for nucleo in nucleos %}
-            <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-4 transition" data-nucleo-item>
-              <label class="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  name="nucleos"
-                  value="{{ nucleo.id }}"
-                  class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
-                  data-nucleo-checkbox
-                  data-unavailable-roles="{{ nucleo.unavailable_roles|join:',' }}"
-                  data-user-current-roles="{{ nucleo.user_current_roles|join:',' }}"
-                  data-unavailable-message-map="{{ nucleo.unavailable_messages_json|default:'{}'|escapejs }}"
-                  {% if nucleo.id in selected_nucleos %}checked{% endif %}
-                >
-                <span class="flex-1 space-y-2">
-                  <span class="flex flex-wrap items-center gap-2">
-                    <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</span>
-                    {% if nucleo.is_current_consultor %}
-                      <span class="inline-flex items-center gap-1 rounded-full bg-[var(--success-light)] px-2 py-0.5 text-xs font-medium text-[var(--success)]">{% trans 'Consultor atual' %}</span>
-                    {% endif %}
-                    {% for role in nucleo.user_current_roles %}
-                      <span class="inline-flex items-center gap-1 rounded-full bg-[var(--primary-light)] px-2 py-0.5 text-xs font-medium text-primary">{{ coordenador_role_labels|get_item:role }}</span>
-                    {% endfor %}
-                  </span>
-                  <div class="space-y-1 text-xs text-[var(--text-secondary)]">
-                    {% if nucleo.consultor_name %}
-                      <p><span class="font-medium">{% trans 'Consultor atual:' %}</span> {{ nucleo.consultor_name }}</p>
-                    {% endif %}
-                    <div>
-                      <p class="font-medium text-[var(--text-muted)]">{% trans 'Coordenadores ativos' %}</p>
-                      {% if nucleo.coordenadores %}
-                        <ul class="mt-1 space-y-1">
-                          {% for coord in nucleo.coordenadores %}
-                            <li class="flex flex-wrap items-center gap-2">
-                              <span class="inline-flex items-center gap-1 rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{{ coordenador_role_labels|get_item:coord.papel }}</span>
-                              <span class="text-xs text-[var(--text-secondary)]">{{ coord.user_name }}</span>
-                              {% if coord.is_target_user %}
-                                <span class="inline-flex items-center gap-1 rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[10px] font-medium uppercase text-[var(--success)]">{% trans 'Associado selecionado' %}</span>
-                              {% endif %}
-                            </li>
-                          {% endfor %}
-                        </ul>
-                      {% else %}
-                        <p class="text-[var(--text-muted)]">{% trans 'Nenhum coordenador cadastrado.' %}</p>
+              <article
+                class="space-y-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 shadow-sm transition"
+                data-nucleo-item
+                data-nucleo-id="{{ nucleo.id }}"
+                data-unavailable-roles="{{ nucleo.unavailable_roles|join:',' }}"
+                data-user-current-roles="{{ nucleo.user_current_roles|join:',' }}"
+                data-unavailable-message-map="{{ nucleo.unavailable_messages_json|default:'{}'|escapejs }}"
+              >
+                <header class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="space-y-1">
+                    <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ nucleo.nome }}</h3>
+                    <div class="flex flex-wrap gap-2">
+                      {% if nucleo.is_current_member %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Membro atual' %}</span>
                       {% endif %}
+                      {% if nucleo.is_current_consultor %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--success)]">{% trans 'Consultor atual' %}</span>
+                      {% endif %}
+                      {% for role in nucleo.user_current_roles %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--primary-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">{{ coordenador_role_labels|get_item:role }}</span>
+                      {% endfor %}
                     </div>
                   </div>
-                  <p class="hidden text-xs font-medium text-[var(--error)]" data-nucleo-warning></p>
-                </span>
-              </label>
-            </div>
+                </header>
+
+                <div class="grid gap-3 lg:grid-cols-3">
+                  <label class="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]/40 p-3">
+                    <input
+                      type="checkbox"
+                      name="nucleado_nucleos"
+                      value="{{ nucleo.id }}"
+                      class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
+                      data-role-checkbox="nucleado"
+                      {% if nucleo.id in selected_nucleado %}checked{% endif %}
+                    >
+                    <span class="flex-1 space-y-1">
+                      <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a nucleado' %}</span>
+                      <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Garante participação ativa como membro do núcleo escolhido.' %}</span>
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]/40 p-3">
+                    <input
+                      type="checkbox"
+                      name="consultor_nucleos"
+                      value="{{ nucleo.id }}"
+                      class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
+                      data-role-checkbox="consultor"
+                      {% if nucleo.id in selected_consultor %}checked{% endif %}
+                      {% if nucleo.consultor_name and not nucleo.is_current_consultor %}disabled{% endif %}
+                    >
+                    <span class="flex-1 space-y-1">
+                      <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a consultor' %}</span>
+                      {% if nucleo.consultor_name and not nucleo.is_current_consultor %}
+                        <span class="block text-xs text-[var(--error)]">{% blocktrans with nome=nucleo.consultor_name %}Consultoria em andamento com {{ nome }}.{% endblocktrans %}</span>
+                      {% else %}
+                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Permite atuação consultiva em estratégias e ações do núcleo.' %}</span>
+                      {% endif %}
+                    </span>
+                  </label>
+
+                  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]/40 p-3" data-coordenador-card>
+                    <label class="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        name="coordenador_nucleos"
+                        value="{{ nucleo.id }}"
+                        class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
+                        data-role-checkbox="coordenador"
+                        {% if nucleo.id in selected_coordenador %}checked{% endif %}
+                      >
+                      <span class="flex-1 space-y-1">
+                        <span class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Promover a coordenador' %}</span>
+                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Escolha o papel de coordenação específico para este núcleo.' %}</span>
+                      </span>
+                    </label>
+                    <div class="mt-3 space-y-2 {% if nucleo.id not in selected_coordenador %}hidden{% endif %}" data-coordenador-fields>
+                      <label class="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]" for="coordenador-papel-{{ nucleo.id }}">{% trans 'Papel de coordenação' %}</label>
+                      <select
+                        id="coordenador-papel-{{ nucleo.id }}"
+                        name="coordenador_papel_{{ nucleo.id }}"
+                        class="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        data-coordenador-select
+                        {% if nucleo.id not in selected_coordenador %}disabled{% endif %}
+                      >
+                        <option value="">{% trans 'Selecione um papel' %}</option>
+                        {% for value, label in coordenador_role_choices %}
+                          {% with is_unavailable=value in nucleo.unavailable_roles and value not in nucleo.user_current_roles %}
+                            <option
+                              value="{{ value }}"
+                              data-role-value="{{ value }}"
+                              data-locked="{% if is_unavailable %}true{% else %}false{% endif %}"
+                              {% if is_unavailable %}disabled{% endif %}
+                              {% if value == (selected_coordenador_roles|get_item:nucleo.id) %}selected{% endif %}
+                            >
+                              {{ label }}{% if is_unavailable %} — {% trans 'Indisponível' %}{% endif %}
+                            </option>
+                          {% endwith %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 rounded-lg bg-[var(--bg-primary)]/40 p-3 text-xs text-[var(--text-secondary)]">
+                  {% if nucleo.consultor_name %}
+                    <p><span class="font-medium text-[var(--text-muted)]">{% trans 'Consultor atual:' %}</span> {{ nucleo.consultor_name }}</p>
+                  {% endif %}
+                  <div>
+                    <p class="font-medium uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Coordenadores ativos' %}</p>
+                    {% if nucleo.coordenadores %}
+                      <ul class="mt-2 space-y-1">
+                        {% for coord in nucleo.coordenadores %}
+                          <li class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{{ coordenador_role_labels|get_item:coord.papel }}</span>
+                            <span>{{ coord.user_name }}</span>
+                            {% if coord.is_target_user %}
+                              <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--success)]">{% trans 'Associado selecionado' %}</span>
+                            {% endif %}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% else %}
+                      <p>{% trans 'Nenhum coordenador cadastrado.' %}</p>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <p class="hidden text-xs font-medium text-[var(--error)]" data-nucleo-warning></p>
+              </article>
             {% endfor %}
           {% else %}
             <p class="text-sm text-[var(--text-muted)]">{% trans 'Nenhum núcleo disponível na organização.' %}</p>
           {% endif %}
         </fieldset>
 
-        <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div class="flex flex-wrap justify-end gap-3 border-t border-[var(--border)] pt-4">
           <a href="{% url 'accounts:associados_promover' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
           <button type="submit" class="btn btn-primary">{% trans 'Salvar promoção' %}</button>
         </div>
@@ -178,121 +216,150 @@
         return;
       }
 
-      const consultorCheckbox = form.querySelector('[data-role-checkbox="consultor"]');
-      const coordenadorCheckbox = form.querySelector('[data-role-checkbox="coordenador"]');
-      const papelContainer = form.querySelector('[data-coordenador-fields]');
-      const papelSelect = form.querySelector('[data-coordenador-papel]');
-      const nucleosList = form.querySelector('[data-nucleos-list]');
-      const nucleosInputs = nucleosList ? Array.from(nucleosList.querySelectorAll('[data-nucleo-checkbox]')) : [];
-
       let userRoleMap = {};
       try {
         userRoleMap = JSON.parse(form.dataset.userRoleMap || '{}');
       } catch (err) {
         userRoleMap = {};
       }
-      const restrictedRoles = (form.dataset.restrictedRoles || '').split(',').filter(Boolean);
+      const restrictedRoles = new Set((form.dataset.restrictedRoles || '').split(',').filter(Boolean));
+      const nucleoItems = Array.from(form.querySelectorAll('[data-nucleo-item]'));
 
-      function toggleCoordenadorFields() {
-        const isCoordenador = Boolean(coordenadorCheckbox && coordenadorCheckbox.checked);
-        if (papelContainer) {
-          papelContainer.classList.toggle('hidden', !isCoordenador);
+      function parseMessageMap(item) {
+        if (item._messageMap) {
+          return item._messageMap;
         }
-        if (!isCoordenador && papelSelect) {
-          papelSelect.value = '';
+        try {
+          item._messageMap = JSON.parse(item.dataset.unavailableMessageMap || '{}');
+        } catch (err) {
+          item._messageMap = {};
         }
-        updateNucleoAvailability();
+        return item._messageMap;
       }
 
-      function enforceExclusiveSelection(changedCheckbox) {
-        if (!consultorCheckbox || !coordenadorCheckbox) {
-          return;
+      function toggleCoordinatorSection(item) {
+        const checkbox = item.querySelector('[data-role-checkbox="coordenador"]');
+        const fields = item.querySelector('[data-coordenador-fields]');
+        const select = item.querySelector('[data-coordenador-select]');
+        const warningEl = item.querySelector('[data-nucleo-warning]');
+        const active = Boolean(checkbox && checkbox.checked);
+        if (fields) {
+          fields.classList.toggle('hidden', !active);
         }
-        if (changedCheckbox === consultorCheckbox && consultorCheckbox.checked) {
-          coordenadorCheckbox.checked = false;
-        } else if (changedCheckbox === coordenadorCheckbox && coordenadorCheckbox.checked) {
-          consultorCheckbox.checked = false;
+        if (select) {
+          select.disabled = !active;
+          if (!active) {
+            select.value = '';
+          }
         }
-        toggleCoordenadorFields();
+        if (!active && warningEl) {
+          warningEl.classList.add('hidden');
+          warningEl.textContent = '';
+        }
       }
 
-      function updateNucleoAvailability() {
-        const selectedRole = papelSelect ? papelSelect.value : '';
-        nucleosInputs.forEach((input) => {
-          const item = input.closest('[data-nucleo-item]');
-          const messageEl = item ? item.querySelector('[data-nucleo-warning]') : null;
-          let warning = '';
-          input.disabled = false;
-          if (item) {
-            item.classList.remove('opacity-60');
+      function buildCurrentSelections() {
+        const selections = {};
+        nucleoItems.forEach((item) => {
+          const checkbox = item.querySelector('[data-role-checkbox="coordenador"]');
+          const select = item.querySelector('[data-coordenador-select]');
+          if (!checkbox || !select || !checkbox.checked || !select.value) {
+            return;
+          }
+          selections[select.value] = item.dataset.nucleoId;
+        });
+        return selections;
+      }
+
+      function updateCoordinatorOptions() {
+        const selectedElsewhere = buildCurrentSelections();
+        nucleoItems.forEach((item) => {
+          const checkbox = item.querySelector('[data-role-checkbox="coordenador"]');
+          const select = item.querySelector('[data-coordenador-select]');
+          const warningEl = item.querySelector('[data-nucleo-warning]');
+          if (!checkbox || !select) {
+            return;
           }
 
-          const unavailableRoles = (input.dataset.unavailableRoles || '').split(',').filter(Boolean);
-          const userCurrentRoles = (input.dataset.userCurrentRoles || '').split(',').filter(Boolean);
-          let messageMap = {};
-          try {
-            messageMap = JSON.parse(input.dataset.unavailableMessageMap || '{}');
-          } catch (err) {
-            messageMap = {};
-          }
-
-          if (coordenadorCheckbox && coordenadorCheckbox.checked && selectedRole) {
-            if (unavailableRoles.includes(selectedRole) && !userCurrentRoles.includes(selectedRole)) {
-              input.disabled = true;
-              warning = messageMap[selectedRole] || gettext('Este papel já possui um coordenador definido.');
+          const messageMap = parseMessageMap(item);
+          if (!checkbox.checked) {
+            if (warningEl) {
+              warningEl.classList.add('hidden');
+              warningEl.textContent = '';
             }
+            return;
+          }
 
-            if (restrictedRoles.includes(selectedRole)) {
-              const allowed = (userRoleMap[selectedRole] || []).map(String);
-              if (allowed.length > 0 && !allowed.includes(String(input.value)) && !userCurrentRoles.includes(selectedRole)) {
-                input.disabled = true;
-                warning = gettext('Coordenador geral e vice não podem repetir este papel em outros núcleos.');
+          const nucleoId = item.dataset.nucleoId;
+          const options = Array.from(select.options);
+          let warning = '';
+
+          options.forEach((option) => {
+            const role = option.value;
+            if (!role) {
+              option.disabled = false;
+              option.dataset.disabledReason = '';
+              return;
+            }
+            let disabled = option.dataset.locked === 'true';
+            let reason = disabled ? 'occupied' : '';
+            if (!disabled && restrictedRoles.has(role)) {
+              const existing = new Set((userRoleMap[role] || []).map(String));
+              if (existing.size > 0 && !existing.has(nucleoId)) {
+                disabled = true;
+                reason = 'existing';
+              } else if (selectedElsewhere[role] && selectedElsewhere[role] !== nucleoId) {
+                disabled = true;
+                reason = 'selected';
               }
             }
+            option.disabled = disabled;
+            option.dataset.disabledReason = reason;
+          });
+
+          if (select.value) {
+            const selectedOption = select.selectedOptions[0];
+            if (selectedOption && selectedOption.disabled) {
+              const reason = selectedOption.dataset.disabledReason;
+              if (reason === 'occupied') {
+                warning = messageMap[select.value] || gettext('Este papel já possui um coordenador definido.');
+              } else if (reason === 'existing') {
+                warning = gettext('Você já possui este papel em outro núcleo.');
+              } else if (reason === 'selected') {
+                warning = gettext('Selecione um papel diferente para este núcleo.');
+              }
+              select.value = '';
+            }
           }
 
-          if (messageEl) {
-            messageEl.textContent = warning;
-            messageEl.classList.toggle('hidden', !warning);
+          const hasAvailableRole = options.some((option) => option.value && !option.disabled);
+          if (!hasAvailableRole) {
+            warning = warning || gettext('Nenhum papel disponível para coordenação neste núcleo.');
           }
-          if (item) {
-            item.classList.toggle('opacity-60', input.disabled);
+
+          if (warningEl) {
+            warningEl.textContent = warning;
+            warningEl.classList.toggle('hidden', !warning);
           }
         });
-
-        enforceRestrictedSelection();
       }
 
-      function enforceRestrictedSelection() {
-        const selectedRole = papelSelect ? papelSelect.value : '';
-        if (!restrictedRoles.includes(selectedRole)) {
-          return;
+      nucleoItems.forEach((item) => {
+        const coordinatorCheckbox = item.querySelector('[data-role-checkbox="coordenador"]');
+        const select = item.querySelector('[data-coordenador-select]');
+        if (coordinatorCheckbox) {
+          coordinatorCheckbox.addEventListener('change', () => {
+            toggleCoordinatorSection(item);
+            updateCoordinatorOptions();
+          });
         }
-        const checked = nucleosInputs.filter((input) => input.checked);
-        if (checked.length <= 1) {
-          return;
+        if (select) {
+          select.addEventListener('change', updateCoordinatorOptions);
         }
-        checked.slice(1).forEach((input) => {
-          input.checked = false;
-        });
-      }
-
-      if (consultorCheckbox) {
-        consultorCheckbox.addEventListener('change', () => enforceExclusiveSelection(consultorCheckbox));
-      }
-      if (coordenadorCheckbox) {
-        coordenadorCheckbox.addEventListener('change', () => enforceExclusiveSelection(coordenadorCheckbox));
-      }
-      if (papelSelect) {
-        papelSelect.addEventListener('change', updateNucleoAvailability);
-      }
-      nucleosInputs.forEach((input) => {
-        input.addEventListener('change', () => {
-          enforceRestrictedSelection();
-        });
+        toggleCoordinatorSection(item);
       });
 
-      toggleCoordenadorFields();
+      updateCoordinatorOptions();
     })();
   </script>
 {% endblock %}

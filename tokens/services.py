@@ -38,11 +38,19 @@ def create_invite_token(
 ) -> Tuple[TokenAcesso, str]:
     """Cria um ``TokenAcesso`` com código secreto e retorna (token, codigo)."""
 
+    try:
+        target_role = TokenAcesso.TipoUsuario(tipo_destino)
+    except ValueError as exc:  # pragma: no cover - validação defensiva
+        raise ValueError("Tipo de token inválido") from exc
+
+    if target_role != TokenAcesso.TipoUsuario.CONVIDADO:
+        raise ValueError("Somente tokens para convidados podem ser gerados.")
+
     codigo = TokenAcesso.generate_code()
     codigo_preview = TokenAcesso.build_codigo_preview(codigo)
     token = TokenAcesso(
         gerado_por=gerado_por,
-        tipo_destino=tipo_destino,
+        tipo_destino=target_role.value,
         data_expiracao=data_expiracao,
         organizacao=organizacao,
         codigo_preview=codigo_preview,

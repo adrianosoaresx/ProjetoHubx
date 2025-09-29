@@ -25,9 +25,7 @@ def test_gerar_convite_form_fields(client):
     assert resp.status_code == 200
     content = resp.content.decode()
     assert 'name="tipo_destino"' in content
-
-    assert 'name="organizacao"' in content
-
+    assert 'name="organizacao"' not in content
     assert 'name="nucleos"' not in content
 
 
@@ -37,7 +35,7 @@ def test_gerar_token_convite_view(client):
     org.users.add(user)
     _login(client, user)
     data = {
-        "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
+        "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value,
         "organizacao": org.pk,
 
     }
@@ -59,7 +57,7 @@ def test_convite_respeita_organizacao_do_usuario(client):
     resp = client.post(
         reverse("tokens:gerar_convite"),
         {
-            "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
+            "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value,
             "organizacao": outra_org.pk,
         },
     )
@@ -69,19 +67,19 @@ def test_convite_respeita_organizacao_do_usuario(client):
 
 
 def test_convite_permission_denied(client):
-    user = UserFactory(is_staff=True, user_type=UserType.COORDENADOR.value)
+    user = UserFactory(is_staff=True, user_type=UserType.NUCLEADO.value)
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO},
+        {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value},
     )
     assert resp.status_code == 403
 
 
 def test_convite_permission_denied_no_side_effects(client):
-    user = UserFactory(is_staff=True, user_type=UserType.COORDENADOR.value)
+    user = UserFactory(is_staff=True, user_type=UserType.NUCLEADO.value)
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
@@ -89,7 +87,7 @@ def test_convite_permission_denied_no_side_effects(client):
     assert TokenUsoLog.objects.count() == 0
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO},
+        {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value},
     )
     assert resp.status_code == 403
     assert TokenAcesso.objects.count() == 0
@@ -101,7 +99,7 @@ def test_convite_daily_limit(client):
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
-    data = {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO}
+    data = {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value}
     for _ in range(5):
         resp = client.post(reverse("tokens:gerar_convite"), data)
         assert resp.status_code == 200
