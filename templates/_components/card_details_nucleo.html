@@ -5,15 +5,25 @@
     <dd class="font-medium">{{ nucleo.num_membros|default:nucleo.membros.count }}</dd>
   </div>
   <div>
-    <dt class="text-[var(--text-secondary)]">{% trans 'Coordenador' %}</dt>
+    <dt class="text-[var(--text-secondary)]">{% trans 'Consultor' %}</dt>
     <dd class="font-medium">
-      {% with coord=nucleo.coordenadores.first %}
-        {% if coord %}{{ coord.display_name }}{% else %}-{% endif %}
-      {% endwith %}
+      {% if nucleo.consultor %}
+        {{ nucleo.consultor.display_name|default:nucleo.consultor.username }}
+      {% else %}
+        -
+      {% endif %}
     </dd>
   </div>
   <div>
-    <dt class="text-[var(--text-secondary)]">{% trans 'Eventos' %}</dt>
-    <dd class="font-medium">{{ nucleo.num_eventos|default:0 }}</dd>
+    <dt class="text-[var(--text-secondary)]">{% trans 'Coordenador Geral' %}</dt>
+    <dd class="font-medium">
+      {% with coord=nucleo.coordenador_geral %}
+        {% if coord %}
+          {{ coord.display_name|default:coord.username }}
+        {% else %}
+          -
+        {% endif %}
+      {% endwith %}
+    </dd>
   </div>
 </dl>

@@ -138,6 +138,12 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     def coordenadores(self):
         return self.membros.filter(participacoes__papel="coordenador")
 
+    @property
+    def coordenador_geral(self):
+        return self.coordenadores.filter(
+            participacoes__papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL
+        ).first()
+
 
 class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
