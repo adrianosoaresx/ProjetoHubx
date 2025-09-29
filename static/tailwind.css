@@ -752,8 +752,20 @@ select {
 .dark input,
   .dark textarea,
   .dark select {
+
+  background-color: #0f172a;
+  border-color: #334155;
+
   color: #f1f5f9;
   caret-color: #f1f5f9;
+}
+
+
+.dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+  border-color: #64748b;
+  background-color: #0f172a;
 }
 
 .dark input::-moz-placeholder, .dark textarea::-moz-placeholder {
