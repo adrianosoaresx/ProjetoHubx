@@ -118,6 +118,19 @@ def test_associados_filter_actions(client):
         organizacao=org,
         nucleo=nucleo,
     )
+    consultor = create_user(
+        "consultor@example.com",
+        "consultor",
+        UserType.CONSULTOR,
+        organizacao=org,
+    )
+    coordenador = create_user(
+        "coordenador@example.com",
+        "coordenador",
+        UserType.COORDENADOR,
+        organizacao=org,
+        is_coordenador=True,
+    )
 
     client.force_login(admin)
     url = reverse("accounts:associados_lista")
@@ -127,16 +140,36 @@ def test_associados_filter_actions(client):
     content = resp.content.decode()
     assert 'data-associados-filter-card="associados"' in content
     assert 'data-associados-filter-card="nucleados"' in content
+    assert 'data-associados-filter-card="consultores"' in content
+    assert 'data-associados-filter-card="coordenadores"' in content
     assert resp.context["associados_filter_url"].endswith("?tipo=associados")
     assert resp.context["nucleados_filter_url"].endswith("?tipo=nucleados")
+    assert resp.context["consultores_filter_url"].endswith("?tipo=consultores")
+    assert resp.context["coordenadores_filter_url"].endswith("?tipo=coordenadores")
     assert 'id="associados-filter-state"' in content
 
     resp = client.get(url, {"tipo": "associados"})
     content = resp.content.decode()
     assert associado.username in content
     assert nucleado.username not in content
+    assert "consultor@example.com" not in content
+    assert "coordenador@example.com" not in content
 
     resp = client.get(url, {"tipo": "nucleados"})
     content = resp.content.decode()
     assert nucleado.username in content
     assert associado.username not in content
+    assert "consultor@example.com" not in content
+
+    resp = client.get(url, {"tipo": "consultores"})
+    content = resp.content.decode()
+    assert "consultor@example.com" in content
+    assert associado.username not in content
+    assert nucleado.username not in content
+
+    resp = client.get(url, {"tipo": "coordenadores"})
+    content = resp.content.decode()
+    assert "coordenador@example.com" in content
+    assert "consultor@example.com" not in content
+    assert associado.username not in content
+    assert nucleado.username not in content
