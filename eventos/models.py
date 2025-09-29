@@ -169,6 +169,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 
 
 class Evento(TimeStampedModel, SoftDeleteModel):
+    class Status(models.IntegerChoices):
+        ATIVO = 0, _("Ativo")
+        CONCLUIDO = 1, _("Concluído")
+        CANCELADO = 2, _("Cancelado")
+        PLANEJAMENTO = 3, _("Planejamento")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     titulo = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True, null=True)
@@ -195,7 +201,7 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     )
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.PositiveSmallIntegerField(choices=[(0, "Ativo"), (1, "Concluído"), (2, "Cancelado")])
+    status = models.PositiveSmallIntegerField(choices=Status.choices)
     publico_alvo = models.PositiveSmallIntegerField(
         choices=[(0, "Público"), (1, "Somente nucleados"), (2, "Apenas associados")]
     )

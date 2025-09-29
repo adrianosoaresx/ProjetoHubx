@@ -63,7 +63,7 @@ def evento(organizacao, usuario_logado):
         cep="12345-678",
         coordenador=usuario_logado,
         organizacao=organizacao,
-        status=0,
+        status=Evento.Status.PLANEJAMENTO,
         publico_alvo=0,
         numero_convidados=100,
         numero_presentes=0,
@@ -142,7 +142,7 @@ def test_evento_list_filters_by_status(usuario_logado, organizacao, client, even
         cep="12345-678",
         coordenador=usuario_logado,
         organizacao=organizacao,
-        status=1,
+        status=Evento.Status.CONCLUIDO,
         publico_alvo=0,
         numero_convidados=80,
         numero_presentes=60,
@@ -165,8 +165,52 @@ def test_evento_list_filters_by_status(usuario_logado, organizacao, client, even
     assert response.context["current_filter"] == "realizados"
     assert response.context["is_realizados_filter_active"] is True
     assert response.context["is_ativos_filter_active"] is False
+    assert response.context["is_planejamento_filter_active"] is False
     assert response.context["realizados_filter_url"].endswith("?status=realizados")
     assert response.context["ativos_filter_url"].endswith("?status=ativos")
+    assert response.context["planejamento_filter_url"].endswith("?status=planejamento")
+
+
+def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client, evento):
+    evento_planejamento = evento
+    evento_planejamento.status = Evento.Status.PLANEJAMENTO
+    evento_planejamento.save(update_fields=["status"])
+
+    evento_ativo = Evento.objects.create(
+        titulo="Evento Ativo",
+        descricao="Descrição do evento ativo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=2)),
+        data_fim=make_aware(datetime.now() + timedelta(days=3)),
+        local="Rua Teste, 789",
+        cidade="Cidade Teste",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_convidados=80,
+        numero_presentes=0,
+        valor_ingresso=30.00,
+        orcamento_estimado=2500.00,
+        valor_gasto=2000.00,
+        participantes_maximo=90,
+        contato_nome="Contato Ativo",
+        contato_email="ativo@teste.com",
+        contato_whatsapp="12999997777",
+    )
+
+    url = reverse("eventos:lista")
+    response = client.get(url, {"status": "planejamento"})
+
+    assert response.status_code == 200
+    eventos = list(response.context["eventos"])
+    assert evento_planejamento in eventos
+    assert evento_ativo not in eventos
+    assert response.context["current_filter"] == "planejamento"
+    assert response.context["is_planejamento_filter_active"] is True
+    assert response.context["is_ativos_filter_active"] is False
+    assert response.context["is_realizados_filter_active"] is False
 
 
 def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client):

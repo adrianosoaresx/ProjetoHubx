@@ -43,7 +43,7 @@ def evento(organizacao, usuario_logado):
         cep="12345-678",
         coordenador=usuario_logado,
         organizacao=organizacao,
-        status=0,
+        status=Evento.Status.ATIVO,
         publico_alvo=0,
         numero_convidados=100,
         numero_presentes=0,

@@ -40,8 +40,15 @@
 
       <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
         {% csrf_token %}
+        {% if form and form.non_field_errors %}
+        <div class="alert alert-error" role="alert">
+          {% for error in form.non_field_errors %}
+          {{ error }}{% if not forloop.last %}<br>{% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
         <div>
-          {% include "_forms/field.html" with id="token" name="token" label=_("Token de Convite") placeholder=_("Token de convite") required=True autofocus=True describedby="token_help" extra_classes="text-center font-mono tracking-widest" %}
+          {% include "_forms/field.html" with field=form.token %}
           <p id="token_help" class="mt-1 text-sm text-[var(--text-secondary)]">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
         </div>
 

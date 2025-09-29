@@ -166,6 +166,7 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         qs = self.get_base_queryset()
 
         status_filter = self.request.GET.get("status")
+
         now = timezone.now()
         status_map = {"ativos": 0, "realizados": 1}
 
@@ -185,7 +186,9 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         user = self.request.user
         ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
         current_filter = self.request.GET.get("status") or ""
+
         if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
+
             current_filter = "todos"
         params = self.request.GET.copy()
         try:
@@ -195,7 +198,9 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
 
         def build_url(filter_value: str | None) -> str:
             query_params = params.copy()
+
             if filter_value in {"ativos", "realizados", "planejamento", "cancelados"}:
+
                 query_params["status"] = filter_value
             else:
                 query_params.pop("status", None)
@@ -203,11 +208,13 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
             return f"{self.request.path}?{query_string}" if query_string else self.request.path
 
         ctx["current_filter"] = current_filter
+        ctx["planejamento_filter_url"] = build_url("planejamento")
         ctx["ativos_filter_url"] = build_url("ativos")
         ctx["realizados_filter_url"] = build_url("realizados")
         ctx["planejamento_filter_url"] = build_url("planejamento")
         ctx["cancelados_filter_url"] = build_url("cancelados")
         ctx["todos_filter_url"] = build_url(None)
+        ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
         ctx["is_ativos_filter_active"] = current_filter == "ativos"
         ctx["is_realizados_filter_active"] = current_filter == "realizados"
         ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
@@ -216,6 +223,7 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         # Totais baseados no queryset filtrado (sem paginação)
         base_qs = self.get_base_queryset()
         qs = self.get_queryset()
+
         now = timezone.now()
 
         ctx["total_eventos"] = base_qs.count()
@@ -223,6 +231,7 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx["total_eventos_ativos"] = base_qs.filter(status=0).count()
         ctx["total_eventos_concluidos"] = base_qs.filter(status=1).count()
         ctx["total_eventos_cancelados"] = base_qs.filter(status=2).count()
+
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
