@@ -203,7 +203,7 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.PositiveSmallIntegerField(choices=Status.choices)
     publico_alvo = models.PositiveSmallIntegerField(
-        choices=[(0, "Público"), (1, "Somente nucleados"), (2, "Apenas associados")]
+        choices=[(0, "Público"), (1, "Nucleados"), (2, "Associados")]
     )
     numero_convidados = models.PositiveIntegerField()
     numero_presentes = models.PositiveIntegerField(default=0, editable=False)

@@ -21,10 +21,6 @@
       </div>
 
       <div>
-        {% include '_forms/field.html' with field=form.informacoes_adicionais %}
-      </div>
-
-      <div>
         {% include '_forms/field.html' with field=form.local %}
       </div>
 
@@ -97,6 +93,10 @@
         <div>
           {% include '_forms/field.html' with field=form.contato_whatsapp %}
         </div>
+      </div>
+
+      <div>
+        {% include '_forms/field.html' with field=form.informacoes_adicionais %}
       </div>
 
       <div class="grid gap-6 md:grid-cols-2">
