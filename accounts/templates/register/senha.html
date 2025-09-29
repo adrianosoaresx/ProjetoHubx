@@ -10,43 +10,38 @@
 {% block content %}
 <div class="card-grid">
   <div class="card">
-    <div class="mb-8">
-      {% with step=6 total=8 %}
-      <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        {% widthratio step total 100 as progress %}
-        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
-      </div>
-      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
-        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
-      </div>
-      {% endwith %}
-    </div>
-
-    <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Crie uma senha segura" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Proteja sua conta com uma senha forte" %}</p>
-    </div>
-
-    <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6">
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       <div>
-        {% include "_forms/field.html" with id="senha" name="senha" type="password" label=_("Senha") placeholder=_("Senha") required=True autofocus=True describedby="senha_help senha_validation" %}
-        <div class="text-sm text-[var(--error)]" id="senha_validation"></div>
-        <small id="senha_help" class="text-sm text-[var(--text-secondary)]">{% trans "Use ao menos 8 caracteres com letras e números" %}</small>
+        {% with step=6 total=8 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
       </div>
 
-      <div>
-        {% include "_forms/field.html" with id="confirmar_senha" name="confirmar_senha" type="password" label=_("Confirmar Senha") placeholder=_("Confirme a senha") required=True describedby="confirmar_senha_help confirmar_senha_validation" %}
-        <div class="text-sm text-[var(--error)]" id="confirmar_senha_validation"></div>
-        <small id="confirmar_senha_help" class="text-sm text-[var(--text-secondary)]">{% trans "Repita a senha para confirmação" %}</small>
+      <div class="space-y-2 text-center">
+        <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Crie sua senha" %}</h1>
+        <p class="text-[var(--text-secondary)]">{% trans "Use uma senha forte para proteger sua conta" %}</p>
       </div>
 
-      <div class="flex gap-4">
-        <a href="{% url 'accounts:email' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
-      </div>
-    </form>
+      <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6">
+        {% csrf_token %}
+        <div class="grid gap-4 md:grid-cols-2">
+          {% include "_forms/field.html" with id="senha" name="senha" type="password" label=_("Senha") placeholder=_("Digite sua senha") required=True %}
+          {% include "_forms/field.html" with id="confirmar_senha" name="confirmar_senha" type="password" label=_("Confirmar senha") placeholder=_("Repita sua senha") required=True %}
+        </div>
+
+        <div class="flex gap-4">
+          <a href="{% url 'accounts:email' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

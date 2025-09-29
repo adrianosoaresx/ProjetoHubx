@@ -10,36 +10,38 @@
 {% block content %}
 <div class="card-grid">
   <div class="card">
-    <div class="mb-8">
-      {% with step=3 total=8 %}
-      <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        {% widthratio step total 100 as progress %}
-        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
-      </div>
-      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
-        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
-      </div>
-      {% endwith %}
-    </div>
-
-    <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Quem será o contato principal?" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Informe o nome da pessoa responsável pelo contato." %}</p>
-    </div>
-
-    <form id="nomeForm" method="post" action="{% url 'accounts:nome' %}" class="space-y-6">
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       <div>
-        {% include "_forms/field.html" with id="nome" name="nome" label=_("Contato principal") placeholder=_("Nome do contato principal") required=True autofocus=True describedby="nome_validation" %}
-        <div class="text-sm text-[var(--error)]" id="nome_validation"></div>
+        {% with step=3 total=8 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
       </div>
 
-      <div class="flex gap-4">
-        <a href="{% url 'accounts:usuario' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+      <div class="space-y-2 text-center">
+        <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Quem será o contato principal?" %}</h1>
+        <p class="text-[var(--text-secondary)]">{% trans "Informe o nome da pessoa responsável pelo contato." %}</p>
       </div>
-    </form>
+
+      <form id="nomeForm" method="post" action="{% url 'accounts:nome' %}" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          {% include "_forms/field.html" with id="nome" name="nome" label=_("Contato principal") placeholder=_("Nome do contato principal") required=True autofocus=True describedby="nome_validation" %}
+          <div class="text-sm text-[var(--error)]" id="nome_validation"></div>
+        </div>
+
+        <div class="flex gap-4">
+          <a href="{% url 'accounts:usuario' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

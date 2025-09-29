@@ -10,37 +10,39 @@
 {% block content %}
 <div class="card-grid">
   <div class="card">
-    <div class="mb-8">
-      {% with step=2 total=8 %}
-      <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        {% widthratio step total 100 as progress %}
-        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
-      </div>
-      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
-        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
-      </div>
-      {% endwith %}
-    </div>
-
-    <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Escolha seu nome de usuário" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Como você será identificado na plataforma" %}</p>
-    </div>
-
-    <form id="usuarioForm" method="post" action="{% url 'accounts:usuario' %}" class="space-y-6">
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       <div>
-        {% include "_forms/field.html" with id="usuario" name="usuario" label=_("Nome de Usuário") placeholder=_("Nome de usuário") required=True autofocus=True describedby="usuario_help usuario_validation" %}
-        <div class="text-sm text-[var(--error)]" id="usuario_validation"></div>
-        <small id="usuario_help" class="text-sm text-[var(--text-secondary)]">{% trans "Use apenas letras, números e underscore (_)" %}</small>
+        {% with step=2 total=8 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
       </div>
 
-      <div class="flex gap-4">
-        <a href="{% url 'tokens:token' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+      <div class="space-y-2 text-center">
+        <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Escolha seu nome de usuário" %}</h1>
+        <p class="text-[var(--text-secondary)]">{% trans "Como você será identificado na plataforma" %}</p>
       </div>
-    </form>
+
+      <form id="usuarioForm" method="post" action="{% url 'accounts:usuario' %}" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          {% include "_forms/field.html" with id="usuario" name="usuario" label=_("Nome de Usuário") placeholder=_("Nome de usuário") required=True autofocus=True describedby="usuario_help usuario_validation" %}
+          <div class="text-sm text-[var(--error)]" id="usuario_validation"></div>
+          <small id="usuario_help" class="text-sm text-[var(--text-secondary)]">{% trans "Use apenas letras, números e underscore (_)" %}</small>
+        </div>
+
+        <div class="flex gap-4">
+          <a href="{% url 'tokens:token' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

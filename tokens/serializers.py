@@ -6,6 +6,15 @@ from .models import TokenAcesso, TokenUsoLog
 
 
 class TokenAcessoSerializer(serializers.ModelSerializer):
+    tipo_destino = serializers.ChoiceField(
+        choices=[
+            (
+                TokenAcesso.TipoUsuario.CONVIDADO.value,
+                TokenAcesso.TipoUsuario.CONVIDADO.label,
+            )
+        ],
+        default=TokenAcesso.TipoUsuario.CONVIDADO.value,
+    )
     codigo = serializers.CharField(read_only=True)
     revogado_por_email = serializers.EmailField(source="revogado_por.email", default=None, read_only=True)
     ip_gerado = serializers.IPAddressField(read_only=True, allow_null=True)

@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
+from organizacoes.factories import OrganizacaoFactory
 from tokens import metrics as m
 from tokens.models import TokenAcesso
 
@@ -32,11 +33,13 @@ def test_metrics_flow():
 
         cache.clear()
     reset_metrics()
-    user = UserFactory(user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    user = UserFactory(user_type=UserType.ADMIN.value, organizacao=org)
+    org.users.add(user)
     client = APIClient()
     client.force_authenticate(user=user)
     url = reverse("tokens_api:token-list")
-    resp = client.post(url, {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO})
+    resp = client.post(url, {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value})
     codigo = resp.data["codigo"]
     token_id = resp.data["id"]
     validate_url = reverse("tokens_api:token-validate") + f"?codigo={codigo}"

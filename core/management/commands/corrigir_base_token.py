@@ -28,7 +28,7 @@ class Command(BaseCommand):
         for token in tokens:
             changed = False
             if not token.tipo_destino:
-                token.tipo_destino = TokenAcesso.TipoUsuario.ASSOCIADO
+                token.tipo_destino = TokenAcesso.TipoUsuario.CONVIDADO
                 changed = True
             if not token.codigo:
                 token.codigo = uuid.uuid4().hex
@@ -43,10 +43,9 @@ class Command(BaseCommand):
 
         # Criar tokens de exemplo para testes
         exemplo_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
-        for tipo in TokenAcesso.TipoUsuario.values:
-            TokenAcesso.objects.get_or_create(
-                gerado_por=exemplo_user,
-                tipo_destino=tipo,
-                defaults={"data_expiracao": timezone.now() + timedelta(days=30)},
-            )
-        self.stdout.write("Tokens de exemplo criados para os novos tipos suportados")
+        TokenAcesso.objects.get_or_create(
+            gerado_por=exemplo_user,
+            tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO,
+            defaults={"data_expiracao": timezone.now() + timedelta(days=30)},
+        )
+        self.stdout.write("Token de exemplo criado para convidados")

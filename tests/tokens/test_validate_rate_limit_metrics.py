@@ -26,7 +26,10 @@ def test_validate_ratelimit_increments_metric():
     user = UserFactory(user_type=UserType.ADMIN.value)
     client = APIClient()
     client.force_authenticate(user=user)
-    token, codigo = create_invite_token(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    token, codigo = create_invite_token(
+        gerado_por=user,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+    )
     url = reverse("tokens_api:token-validate") + f"?codigo={codigo}"
 
     resp1 = client.get(url)

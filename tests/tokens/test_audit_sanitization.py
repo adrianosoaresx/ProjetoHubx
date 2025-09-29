@@ -11,11 +11,11 @@ pytestmark = pytest.mark.django_db
 
 
 def test_audit_sanitization():
-    issuer = UserFactory(user_type=UserType.COORDENADOR.value)
+    issuer = UserFactory(user_type=UserType.NUCLEADO.value)
     client = APIClient()
     client.force_authenticate(user=issuer)
     url = reverse("tokens_api:token-list")
-    resp = client.post(url, {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO})
+    resp = client.post(url, {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value})
     assert resp.status_code == 403
     log = AuditLog.objects.latest("created_at")
     assert "codigo" not in log.metadata
