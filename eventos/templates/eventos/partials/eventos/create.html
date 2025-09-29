@@ -11,13 +11,107 @@
         {% csrf_token %}
 
         {{ form.non_field_errors }}
-        {% for field in form %}
-          {% if field.name == 'avatar' or field.name == 'cover' %}
-            {% include '_forms/field.html' with field=field|attr:'accept:image/*' %}
-          {% else %}
-            {% include '_forms/field.html' with field=field %}
-          {% endif %}
-        {% endfor %}
+
+        <div class="space-y-6">
+          <div>
+            {% include '_forms/field.html' with field=form.titulo %}
+          </div>
+
+          <div>
+            {% include '_forms/field.html' with field=form.descricao %}
+          </div>
+
+          <div>
+            {% include '_forms/field.html' with field=form.cronograma %}
+          </div>
+
+          <div>
+            {% include '_forms/field.html' with field=form.informacoes_adicionais %}
+          </div>
+
+          <div>
+            {% include '_forms/field.html' with field=form.local %}
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              {% include '_forms/field.html' with field=form.data_inicio %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.data_fim %}
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-3">
+            <div>
+              {% include '_forms/field.html' with field=form.cidade %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.estado %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.cep %}
+            </div>
+          </div>
+
+          <div>
+            {% include '_forms/field.html' with field=form.coordenador %}
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-3">
+            <div>
+              {% include '_forms/field.html' with field=form.status %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.publico_alvo %}
+            </div>
+            <div id="nucleo-field-container">
+              {% include '_forms/field.html' with field=form.nucleo %}
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-3">
+            <div>
+              {% include '_forms/field.html' with field=form.numero_convidados %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.participantes_maximo %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.valor_ingresso %}
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              {% include '_forms/field.html' with field=form.briefing %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.parcerias %}
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-3">
+            <div>
+              {% include '_forms/field.html' with field=form.contato_nome %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.contato_email %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.contato_whatsapp %}
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              {% include '_forms/field.html' with field=form.avatar|attr:'accept:image/*' %}
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.cover|attr:'accept:image/*' %}
+            </div>
+          </div>
+        </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
           <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
@@ -33,7 +127,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     const publicoAlvoSelect = document.getElementById('id_publico_alvo');
     const nucleoInput = document.getElementById('id_nucleo');
-    const nucleoFieldWrapper = nucleoInput ? nucleoInput.closest('.space-y-1') : null;
+    const nucleoFieldWrapper = document.getElementById('nucleo-field-container');
 
     const toggleNucleoField = () => {
       if (!publicoAlvoSelect || !nucleoInput || !nucleoFieldWrapper) {
