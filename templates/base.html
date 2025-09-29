@@ -120,7 +120,7 @@
       const content = document.getElementById('content');
       if (sidebarToggle && sidebar && content) {
         const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
-        const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label'));
+        const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
 
         const getSubmenu = (toggle) => {
