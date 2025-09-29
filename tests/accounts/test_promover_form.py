@@ -76,6 +76,7 @@ def test_promover_list_filter_actions(client):
         password="pass",
         user_type=UserType.CONSULTOR,
         organizacao=organizacao,
+        is_associado=True,
     )
     coordenador_email = "coordenador-promover@example.com"
     coordenador = User.objects.create_user(
@@ -85,6 +86,7 @@ def test_promover_list_filter_actions(client):
         user_type=UserType.COORDENADOR,
         organizacao=organizacao,
         is_coordenador=True,
+        is_associado=True,
     )
 
     client.force_login(admin)
@@ -98,17 +100,17 @@ def test_promover_list_filter_actions(client):
 
     resp = client.get(url, {"tipo": "consultores"})
     content = resp.content.decode()
-    assert consultor_email in content
-    assert associado.username not in content
-    assert nucleado.username not in content
-    assert coordenador_email not in content
+    assert consultor.username in content
+    assert associado.email not in content
+    assert nucleado.email not in content
+    assert coordenador.email not in content
 
     resp = client.get(url, {"tipo": "coordenadores"})
     content = resp.content.decode()
-    assert coordenador_email in content
+    assert coordenador.username in content
     assert consultor_email not in content
-    assert associado.username not in content
-    assert nucleado.username not in content
+    assert associado.email not in content
+    assert nucleado.email not in content
 
 
 @pytest.mark.django_db
@@ -169,8 +171,7 @@ def test_promover_form_promove_consultor(client):
     response = client.post(
         url,
         {
-            "promover_consultor": "1",
-            "nucleos": [str(nucleo.pk)],
+            "consultor_nucleos": [str(nucleo.pk)],
         },
     )
 
@@ -213,10 +214,8 @@ def test_promover_form_promove_coordenador(client):
     response = client.post(
         url,
         {
-
-            "promover_coordenador": "1",
-            "papel_coordenador": papel,
-            "nucleos": [str(nucleo.pk)],
+            "coordenador_nucleos": [str(nucleo.pk)],
+            f"coordenador_papel_{nucleo.pk}": papel,
         },
     )
 
@@ -262,10 +261,9 @@ def test_promover_form_impede_selecao_simultanea(client):
     response = client.post(
         url,
         {
-            "promover_consultor": "1",
-            "promover_coordenador": "1",
-            "papel_coordenador": papel,
-            "nucleos": [str(nucleo.pk)],
+            "consultor_nucleos": [str(nucleo.pk)],
+            "coordenador_nucleos": [str(nucleo.pk)],
+            f"coordenador_papel_{nucleo.pk}": papel,
         },
     )
 
@@ -317,12 +315,9 @@ def test_promover_form_impede_papel_ja_ocupado(client):
     response = client.post(
         url,
         {
-            "promover_coordenador": "1",
-            "papel_coordenador": ParticipacaoNucleo.PapelCoordenador.MARKETING,
-            "nucleos": [str(nucleo.pk)],
+            "coordenador_nucleos": [str(nucleo.pk)],
+            f"coordenador_papel_{nucleo.pk}": ParticipacaoNucleo.PapelCoordenador.MARKETING,
         },
-
-
     )
 
     assert response.status_code == 400
@@ -357,13 +352,186 @@ def test_promover_form_restringe_multiplos_nucleos_para_papeis_exclusivos(client
     response = client.post(
         url,
         {
-            "promover_coordenador": "1",
-            "papel_coordenador": ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
-            "nucleos": [str(nucleo1.pk), str(nucleo2.pk)],
+            "coordenador_nucleos": [str(nucleo1.pk), str(nucleo2.pk)],
+            f"coordenador_papel_{nucleo1.pk}": ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+            f"coordenador_papel_{nucleo2.pk}": ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
         },
-
-
     )
 
     assert response.status_code == 400
     assert "apenas um núcleo" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_promover_form_remove_nucleado(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="membro",
+        email="membro-remove@example.com",
+        password="pass",
+        user_type=UserType.NUCLEADO,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    nucleo = NucleoFactory(organizacao=organizacao)
+    participacao = ParticipacaoNucleo.objects.create(
+        user=associado,
+        nucleo=nucleo,
+        papel="membro",
+        status="ativo",
+    )
+
+    client.force_login(admin)
+    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    response = client.post(
+        url,
+        {
+            "remover_nucleado_nucleos": [str(nucleo.pk)],
+        },
+    )
+
+    assert response.status_code == 200
+    participacao.refresh_from_db()
+    assert participacao.status == "inativo"
+    assert participacao.papel == "membro"
+    assert participacao.papel_coordenador is None
+
+    associado.refresh_from_db()
+    assert associado.user_type == UserType.ASSOCIADO
+
+
+@pytest.mark.django_db
+def test_promover_form_remove_consultor(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="consultor-user",
+        email="consultor-remove@example.com",
+        password="pass",
+        user_type=UserType.CONSULTOR,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    nucleo = NucleoFactory(organizacao=organizacao, consultor=associado)
+
+    client.force_login(admin)
+    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    response = client.post(
+        url,
+        {
+            "remover_consultor_nucleos": [str(nucleo.pk)],
+        },
+    )
+
+    assert response.status_code == 200
+    nucleo.refresh_from_db()
+    assert nucleo.consultor is None
+
+    associado.refresh_from_db()
+    assert associado.user_type == UserType.ASSOCIADO
+
+
+@pytest.mark.django_db
+def test_promover_form_remove_coordenador(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="coord-user",
+        email="coord-remove@example.com",
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+        is_associado=True,
+        is_coordenador=True,
+    )
+    nucleo = NucleoFactory(organizacao=organizacao)
+    participacao = ParticipacaoNucleo.objects.create(
+        user=associado,
+        nucleo=nucleo,
+        papel="coordenador",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.MARKETING,
+        status="ativo",
+    )
+
+    client.force_login(admin)
+    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    response = client.post(
+        url,
+        {
+            "remover_coordenador_nucleos": [str(nucleo.pk)],
+        },
+    )
+
+    assert response.status_code == 200
+    participacao.refresh_from_db()
+    assert participacao.papel == "membro"
+    assert participacao.papel_coordenador is None
+    assert participacao.status == "ativo"
+
+    associado.refresh_from_db()
+    assert associado.user_type == UserType.NUCLEADO
+    assert associado.is_coordenador is False
+
+
+@pytest.mark.django_db
+def test_promover_form_remove_nucleado_exige_remover_coordenacao(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="coord",
+        email="coord@example.com",
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+        is_associado=True,
+        is_coordenador=True,
+    )
+    nucleo = NucleoFactory(organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(
+        user=associado,
+        nucleo=nucleo,
+        papel="coordenador",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.MARKETING,
+        status="ativo",
+    )
+
+    client.force_login(admin)
+    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    response = client.post(
+        url,
+        {
+            "remover_nucleado_nucleos": [str(nucleo.pk)],
+        },
+    )
+
+    assert response.status_code == 400
+    assert "Remova a coordenação do núcleo" in response.content.decode()
