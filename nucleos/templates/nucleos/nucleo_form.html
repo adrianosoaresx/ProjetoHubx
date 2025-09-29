@@ -14,24 +14,33 @@
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-8">
   
+  {% url 'nucleos:list' as cancel_url %}
+  {% if object %}{% url 'nucleos:detail_uuid' object.public_id as cancel_url %}{% endif %}
+  {% with back_link=back_href|default:cancel_url %}
   <div class="card">
-    <div class="card-header">
-    <h2 class="text-xl font-semibold">{% trans "Adicionar núcleo" %}</h2>
-  </div>
+    <div class="card-header flex items-center justify-between gap-3">
+      {% include '_components/back_button.html' with href=back_link classes='btn btn-secondary btn-sm' %}
+      <h2 class="text-xl font-semibold">
+        {% if object %}
+          {% trans "Editar núcleo" %}
+        {% else %}
+          {% trans "Adicionar núcleo" %}
+        {% endif %}
+      </h2>
+    </div>
     <div class="card-body space-y-6">
       <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
-        {% url 'nucleos:list' as cancel_url %}
-        {% if object %}{% url 'nucleos:detail_uuid' object.public_id as cancel_url %}{% endif %}
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-          <a href="{{ cancel_url }}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+          <a href="{{ back_link }}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
           <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
       </form>
     </div>
   </div>
+  {% endwith %}
 </section>
 {% endblock %}

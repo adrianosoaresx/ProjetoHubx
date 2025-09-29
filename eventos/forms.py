@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ClearableFileInput
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from nucleos.models import Nucleo
@@ -49,6 +50,16 @@ class EventoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
+
+        if not self.is_bound:
+            for field_name in ("data_inicio", "data_fim"):
+                dt_value = getattr(self.instance, field_name, None)
+                if dt_value:
+                    if timezone.is_naive(dt_value):
+                        local_dt = timezone.make_naive(dt_value, timezone.get_current_timezone())
+                    else:
+                        local_dt = timezone.localtime(dt_value)
+                    self.initial[field_name] = local_dt.strftime("%Y-%m-%dT%H:%M")
 
         nucleo_field = self.fields.get("nucleo")
         if nucleo_field:
