@@ -69,6 +69,26 @@
             <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
           </div>
           {% endif %}
+          {% if object.briefing %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">
+              <a href="{{ object.briefing }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+                {% trans "Abrir briefing" %}
+              </a>
+            </dd>
+          </div>
+          {% endif %}
+          {% if object.parcerias %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">
+              <a href="{{ object.parcerias }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+                {% trans "Abrir parcerias" %}
+              </a>
+            </dd>
+          </div>
+          {% endif %}
         </dl>
       </div>
       {% if perms.eventos.change_evento or perms.eventos.delete_evento %}

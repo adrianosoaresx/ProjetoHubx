@@ -32,6 +32,8 @@ class EventoFactory(DjangoModelFactory):
     valor_ingresso = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
+    briefing = factory.Faker("url")
+    parcerias = factory.Faker("url")
     contato_nome = factory.Faker("name", locale="pt_BR")
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_whatsapp = factory.Faker("msisdn")

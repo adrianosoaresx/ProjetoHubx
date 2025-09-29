@@ -30,6 +30,8 @@ class EventoForm(forms.ModelForm):
             "valor_ingresso",
             "cronograma",
             "informacoes_adicionais",
+            "briefing",
+            "parcerias",
             "contato_nome",
             "contato_email",
             "contato_whatsapp",

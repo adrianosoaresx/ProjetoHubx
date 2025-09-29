@@ -211,6 +211,8 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
     cronograma = models.TextField(blank=True)
     informacoes_adicionais = models.TextField(blank=True)
+    briefing = models.URLField(blank=True)
+    parcerias = models.URLField(blank=True)
     contato_nome = models.CharField(max_length=100)
     contato_email = models.EmailField(blank=True)
     contato_whatsapp = models.CharField(max_length=15, blank=True)
