@@ -164,6 +164,8 @@ def main() -> None:
                         "participantes_maximo": None,
                         "cronograma": "",
                         "informacoes_adicionais": "",
+                        "briefing": "",
+                        "parcerias": "",
                         "contato_nome": "Contato",
                         "contato_email": f"contato@{slugify(org.nome)}.com",
                         "contato_whatsapp": "",
