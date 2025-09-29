@@ -2,6 +2,7 @@ import pyotp
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 from accounts.models import UserType
@@ -42,20 +43,31 @@ class GerarTokenConviteForm(forms.Form):
 
 
 class ValidarTokenConviteForm(forms.Form):
-    codigo = forms.CharField(max_length=32)
+    token = forms.CharField(
+        max_length=64,
+        label=_("Token de Convite"),
+        widget=forms.TextInput(
+            attrs={
+                "class": "text-center font-mono tracking-widest",
+                "placeholder": _("Token de convite"),
+                "autofocus": True,
+                "aria-describedby": "token_help",
+            }
+        ),
+    )
 
-    def clean_codigo(self):
-        codigo = self.cleaned_data["codigo"]
+    def clean_token(self):
+        token_code = self.cleaned_data["token"]
         try:
-            token = find_token_by_code(codigo)
+            token = find_token_by_code(token_code)
         except TokenAcesso.DoesNotExist:
-            raise forms.ValidationError("Token inválido")
+            raise forms.ValidationError(_("Token inválido"))
         if token.estado != TokenAcesso.Estado.NOVO:
-            raise forms.ValidationError("Token inválido")
+            raise forms.ValidationError(_("Token inválido"))
         if token.data_expiracao and token.data_expiracao < timezone.now():
-            raise forms.ValidationError("Token expirado")
+            raise forms.ValidationError(_("Token expirado"))
         self.token = token
-        return codigo
+        return token_code
 
 
 class GerarCodigoAutenticacaoForm(forms.Form):

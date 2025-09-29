@@ -25,6 +25,7 @@ from .forms import (
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
+    ValidarTokenConviteForm,
 )
 from .metrics import (
     tokens_invites_created_total,
@@ -45,12 +46,14 @@ def token(request):
     ):
         return redirect("tokens:listar_convites")
 
+    form = ValidarTokenConviteForm()
     if request.method == "POST":
-        tkn = request.POST.get("token")
-        if tkn:
+        form = ValidarTokenConviteForm(request.POST)
+        if form.is_valid():
+            tkn = form.cleaned_data["token"]
             request.session["invite_token"] = tkn
             return redirect("accounts:usuario")
-    return render(request, "register/token.html")
+    return render(request, "register/token.html", {"form": form})
 
 
 @login_required

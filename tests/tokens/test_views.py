@@ -8,12 +8,33 @@ from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 
 from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
+from tokens.services import create_invite_token
 
 pytestmark = pytest.mark.django_db
 
 
 def _login(client, user):
     client.force_login(user)
+
+
+def test_token_view_rejects_invalid_token(client):
+    resp = client.post(reverse("tokens:token"), {"token": "INVALID"})
+    assert resp.status_code == 200
+    assert "Token inválido" in resp.content.decode()
+
+
+def test_token_view_accepts_valid_token(client):
+    user = UserFactory()
+    _, codigo = create_invite_token(
+        gerado_por=user,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+    )
+
+    resp = client.post(reverse("tokens:token"), {"token": codigo})
+
+    assert resp.status_code == 302
+    assert resp.url == reverse("accounts:usuario")
+    assert client.session["invite_token"] == codigo
 
 
 def test_gerar_convite_form_fields(client):
