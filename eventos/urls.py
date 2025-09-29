@@ -11,10 +11,6 @@ from .views import (
     EventoUpdateView,
     InscricaoEventoCreateView,
     InscricaoEventoListView,
-    ParceriaEventoCreateView,
-    ParceriaEventoDeleteView,
-    ParceriaEventoListView,
-    ParceriaEventoUpdateView,
 )
 
 app_name = "eventos"
@@ -57,11 +53,6 @@ urlpatterns = [
         name="inscricao_checkin",
     ),
     path("api/eventos/<uuid:pk>/orcamento/", views.evento_orcamento, name="evento_orcamento"),
-    path("parceria/<int:pk>/avaliar/", views.avaliar_parceria, name="parceria_avaliar"),
     path("eventos_por_dia/", views.eventos_por_dia, name="eventos_por_dia"),
     path("inscricoes/", InscricaoEventoListView.as_view(), name="inscricao_list"),
-    path("parcerias/", ParceriaEventoListView.as_view(), name="parceria_list"),
-    path("parceria/novo/", ParceriaEventoCreateView.as_view(), name="parceria_criar"),
-    path("parceria/<int:pk>/editar/", ParceriaEventoUpdateView.as_view(), name="parceria_editar"),
-    path("parceria/<int:pk>/excluir/", ParceriaEventoDeleteView.as_view(), name="parceria_excluir"),
 ]

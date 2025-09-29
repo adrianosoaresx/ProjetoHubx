@@ -106,7 +106,7 @@ python scripts/populate_test_data.py
 ```
 
 Ele cria organizações, núcleos, **todos os perfis de usuários** (incluindo o superusuário `root`),
-eventos, inscrições, feed, discussões, empresas, parcerias e tokens.
+eventos, inscrições, feed, discussões, empresas e tokens.
 
 ---
 
@@ -182,11 +182,6 @@ npm run build
 - **Suspensão de Membros**: coordenadores podem suspender ou reativar participantes (`POST /api/nucleos/<id>/membros/<user_id>/suspender` / `.../reativar`).
 - **Membro Status**: consulta de papel e suspensão em `GET /api/nucleos/<id>/membro-status/`.
 - **Feed do Núcleo**: membros ativos podem publicar via `POST /api/nucleos/<id>/posts/`.
-
-
-### Parcerias de Eventos
-
-- **CRUD Web**: gerenciamento de `ParceriaEvento` em `/eventos/parcerias/` com criação, edição e exclusão restritas a administradores e coordenadores.
 
 
 ### Monitoramento de Desempenho

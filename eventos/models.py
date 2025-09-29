@@ -11,11 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.validators import (
-    MaxValueValidator,
-    MinValueValidator,
-    RegexValidator,
-)
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
@@ -291,44 +287,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
                     )
         super().save(*args, **kwargs)
 
-
-class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    cnpj = models.CharField(
-        max_length=14,
-        validators=[RegexValidator(r"^\d{14}$", "CNPJ inválido")],
-    )
-    contato = models.CharField(max_length=150)
-    representante_legal = models.CharField(max_length=150)
-    tipo_parceria = models.CharField(
-        max_length=20,
-        choices=[
-            ("patrocinio", "Patrocínio"),
-            ("mentoria", "Mentoria"),
-            ("mantenedor", "Mantenedor"),
-            ("outro", "Outro"),
-        ],
-        default="patrocinio",
-    )
-    acordo = models.FileField(upload_to="parcerias/contratos/", blank=True, null=True)
-    data_inicio = models.DateField()
-    data_fim = models.DateField()
-    descricao = models.TextField(blank=True)
-    avaliacao = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        null=True,
-        blank=True,
-    )
-    comentario = models.TextField(blank=True)
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        ordering = ["-data_inicio"]
-        verbose_name = "Parceria de Evento"
-        verbose_name_plural = "Parcerias de Eventos"
 
 class FeedbackNota(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(
