@@ -49,10 +49,6 @@
         </div>
       </div>
 
-      <div>
-        {% include '_forms/field.html' with field=form.coordenador %}
-      </div>
-
       <div class="grid gap-6 md:grid-cols-3">
         <div>
           {% include '_forms/field.html' with field=form.status %}
@@ -60,8 +56,13 @@
         <div>
           {% include '_forms/field.html' with field=form.publico_alvo %}
         </div>
-        <div id="nucleo-field-container">
-          {% include '_forms/field.html' with field=form.nucleo %}
+        <div class="space-y-6">
+          <div>
+            {% include '_forms/field.html' with field=form.coordenador %}
+          </div>
+          <div id="nucleo-field-container">
+            {% include '_forms/field.html' with field=form.nucleo %}
+          </div>
         </div>
       </div>
 
