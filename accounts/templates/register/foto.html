@@ -10,37 +10,39 @@
 {% block content %}
 <div class="card-grid">
   <div class="card">
-    <div class="mb-8">
-      {% with step=7 total=8 %}
-      <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        {% widthratio step total 100 as progress %}
-        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
-      </div>
-      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
-        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
-      </div>
-      {% endwith %}
-    </div>
-
-    <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Adicione uma foto de perfil" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Personalize sua presença na comunidade" %}</p>
-    </div>
-
-    <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6">
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       <div>
-        {% include "_forms/field.html" with id="foto" name="foto" type="file" label=_("Escolher Foto") placeholder=_("Selecione uma foto") describedby="foto_validation" attrs="accept='image/*'" %}
-        <div class="text-sm text-[var(--error)]" id="foto_validation"></div>
-        <small class="text-sm text-[var(--text-secondary)]">{% trans "Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB" %}</small>
+        {% with step=7 total=8 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
       </div>
 
-      <div class="flex gap-4">
-        <a href="{% url 'accounts:senha' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+      <div class="space-y-2 text-center">
+        <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Adicione uma foto de perfil" %}</h1>
+        <p class="text-[var(--text-secondary)]">{% trans "Personalize sua presença na comunidade" %}</p>
       </div>
-    </form>
+
+      <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          {% include "_forms/field.html" with id="foto" name="foto" type="file" label=_("Escolher Foto") placeholder=_("Selecione uma foto") describedby="foto_validation" attrs="accept='image/*'" %}
+          <div class="text-sm text-[var(--error)]" id="foto_validation"></div>
+          <small class="text-sm text-[var(--text-secondary)]">{% trans "Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB" %}</small>
+        </div>
+
+        <div class="flex gap-4">
+          <a href="{% url 'accounts:senha' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

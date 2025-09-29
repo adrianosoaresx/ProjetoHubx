@@ -993,14 +993,10 @@ def termos(request):
         contato = (request.session.get("nome") or "").strip()
 
         if username and pwd_hash:
-            tipo_mapping = {
-                TokenAcesso.TipoUsuario.ASSOCIADO: UserType.ASSOCIADO,
-                TokenAcesso.TipoUsuario.CONVIDADO: UserType.CONVIDADO,
-            }
-            mapped_user_type = tipo_mapping.get(token_obj.tipo_destino)
-            if not mapped_user_type:
+            if token_obj.tipo_destino != TokenAcesso.TipoUsuario.CONVIDADO:
                 messages.error(request, _("Convite inválido."))
                 return redirect("tokens:token")
+            mapped_user_type = UserType.CONVIDADO
             try:
                 with transaction.atomic():
                     user = User.objects.create(

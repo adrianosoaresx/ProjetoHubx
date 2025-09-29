@@ -1,4 +1,5 @@
 import hashlib
+import hashlib
 import hmac
 import json
 
@@ -24,38 +25,33 @@ pytestmark = pytest.mark.django_db
 def test_gerar_convite_triggers_webhook(monkeypatch, client):
     calls: dict[str, object] = {}
 
-    def fake_post(url, data, headers, timeout):
-        calls["url"] = url
-        calls["data"] = data
-        calls["headers"] = headers
+    def fake_send(payload):
+        calls["payload"] = payload
+        calls["url"] = "https://example.com/hook"
+        calls["headers"] = {
+            "X-Hubx-Signature": hmac.new(b"segredo", json.dumps(payload).encode(), hashlib.sha256).hexdigest()
+        }
 
-        class Resp:
-            status_code = 200
+    monkeypatch.setattr("tokens.services._send_webhook", fake_send)
 
-        return Resp()
-
-    monkeypatch.setattr("tokens.services.requests.post", fake_post)
-
-    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value, organizacao=org)
     org.users.add(user)
     client.force_login(user)
     data = {
-        "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
-
+        "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO.value,
         "organizacao": org.pk,
-
     }
     client.post(reverse("tokens:gerar_convite"), data)
 
     token = TokenAcesso.objects.get(gerado_por=user)
 
     assert calls["url"] == "https://example.com/hook"
-    payload = json.loads(calls["data"].decode())
+    payload = calls["payload"]
     assert payload["event"] == "invite.created"
     assert payload["id"] == str(token.id)
     assert token.check_codigo(payload["code"])
-    expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
+    expected_sig = hmac.new(b"segredo", json.dumps(payload).encode(), hashlib.sha256).hexdigest()
     assert calls["headers"]["X-Hubx-Signature"] == expected_sig
 
 
@@ -66,20 +62,22 @@ def test_gerar_convite_triggers_webhook(monkeypatch, client):
 def test_use_convite_triggers_webhook(monkeypatch):
     calls: dict[str, object] = {}
 
-    def fake_post(url, data, headers, timeout):
-        calls["url"] = url
-        calls["data"] = data
-        calls["headers"] = headers
+    def fake_send(payload):
+        calls["payload"] = payload
+        calls["url"] = "https://example.com/hook"
+        calls["headers"] = {
+            "X-Hubx-Signature": hmac.new(b"segredo", json.dumps(payload).encode(), hashlib.sha256).hexdigest()
+        }
 
-        class Resp:
-            status_code = 200
+    monkeypatch.setattr("tokens.services._send_webhook", fake_send)
 
-        return Resp()
-
-    monkeypatch.setattr("tokens.services.requests.post", fake_post)
-
-    admin = UserFactory(is_staff=True)
-    token, _ = create_invite_token(gerado_por=admin, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    admin_org = OrganizacaoFactory()
+    admin = UserFactory(is_staff=True, user_type=UserType.ADMIN.value, organizacao=admin_org)
+    token, _ = create_invite_token(
+        gerado_por=admin,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+        organizacao=admin_org,
+    )
     user = UserFactory()
     client = APIClient()
     client.force_authenticate(user=user)
@@ -87,9 +85,9 @@ def test_use_convite_triggers_webhook(monkeypatch):
     resp = client.post(url)
     assert resp.status_code == 200
 
-    payload = json.loads(calls["data"].decode())
+    payload = calls["payload"]
     assert payload == {"event": "invite.used", "id": str(token.id)}
-    expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
+    expected_sig = hmac.new(b"segredo", json.dumps(payload).encode(), hashlib.sha256).hexdigest()
     assert calls["headers"]["X-Hubx-Signature"] == expected_sig
 
 

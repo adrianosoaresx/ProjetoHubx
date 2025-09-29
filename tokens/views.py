@@ -173,9 +173,32 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 },
                 status=400,
             )
+        target_role_value = TokenAcesso.TipoUsuario.CONVIDADO.value
         requested_role = request.POST.get("tipo_destino")
-        if requested_role and not can_issue_invite(request.user, requested_role):
-            message = _("Seu perfil não permite gerar convites para este tipo de usuário.")
+        if requested_role and requested_role != target_role_value:
+            message = _("Somente convites para convidados estão disponíveis.")
+            if request.headers.get("HX-Request") == "true":
+                return render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": message},
+                    status=400,
+                )
+            messages.error(request, message)
+            return render(
+                request,
+                "tokens/tokens.html",
+                {
+                    "partial_template": "tokens/gerar_token.html",
+                    "form": form,
+                    "error": message,
+                    "hero_title": _("Gerar Token"),
+                },
+                status=400,
+            )
+
+        if not can_issue_invite(request.user, target_role_value):
+            message = _("Seu perfil não permite gerar convites.")
             if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
@@ -196,7 +219,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 status=403,
             )
         if form.is_valid():
-            target_role = form.cleaned_data["tipo_destino"]
+            target_role = target_role_value
 
             start_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
             end_day = start_day + timezone.timedelta(days=1)

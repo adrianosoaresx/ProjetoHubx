@@ -10,13 +10,16 @@ def can_issue_invite(issuer, target_role: str) -> bool:
     """Retorna True se *issuer* puder emitir convite para *target_role* (RF-05)."""
 
     issuer_type = getattr(issuer, "user_type", None)
-    if issuer_type == UserType.ROOT:
-        return target_role == TokenAcesso.TipoUsuario.ASSOCIADO
-    if issuer_type == UserType.ADMIN:
-        return target_role in {
-            TokenAcesso.TipoUsuario.ASSOCIADO,
-            TokenAcesso.TipoUsuario.CONVIDADO,
-        }
-    if issuer_type == UserType.COORDENADOR:
-        return target_role == TokenAcesso.TipoUsuario.CONVIDADO
-    return False
+    try:
+        role = TokenAcesso.TipoUsuario(target_role)
+    except ValueError:
+        return False
+
+    if role != TokenAcesso.TipoUsuario.CONVIDADO:
+        return False
+
+    return issuer_type in {
+        UserType.ROOT,
+        UserType.ADMIN,
+        UserType.COORDENADOR,
+    }

@@ -50,11 +50,28 @@ class TokenViewSet(viewsets.GenericViewSet):
 
     def create(self, request):
         ip = get_client_ip(request)
-        target_role = request.data.get("tipo_destino")
-        if not can_issue_invite(request.user, target_role):
+        raw_target_role = request.data.get("tipo_destino") or TokenAcesso.TipoUsuario.CONVIDADO.value
+        try:
+            target_role = TokenAcesso.TipoUsuario(raw_target_role)
+        except ValueError:
+            return Response(
+                {"detail": _("Tipo de token inválido.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if target_role != TokenAcesso.TipoUsuario.CONVIDADO:
+            return Response(
+                {"detail": _("Somente convites para convidados podem ser gerados.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not can_issue_invite(request.user, target_role.value):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("module", "tokens")
-                scope.set_context("invite", {"target_role": target_role, "user_id": request.user.id})
+                scope.set_context(
+                    "invite",
+                    {"target_role": target_role.value, "user_id": request.user.id},
+                )
                 sentry_sdk.capture_message("token_invite_denied", level="warning")
             log_audit(
                 request.user,
@@ -62,7 +79,7 @@ class TokenViewSet(viewsets.GenericViewSet):
                 object_type="TokenAcesso",
                 ip_hash=hash_ip(ip),
                 status=AuditLog.Status.FAILURE,
-                metadata={"target_role": target_role},
+                metadata={"target_role": target_role.value},
             )
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -81,7 +98,9 @@ class TokenViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        data["tipo_destino"] = target_role.value
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         organizacao = getattr(request.user, "organizacao", None)
         if not organizacao:
@@ -92,7 +111,7 @@ class TokenViewSet(viewsets.GenericViewSet):
         with transaction.atomic():
             token, codigo = create_invite_token(
                 gerado_por=request.user,
-                tipo_destino=serializer.validated_data["tipo_destino"],
+                tipo_destino=target_role.value,
                 data_expiracao=serializer.validated_data.get("data_expiracao"),
                 organizacao=organizacao,
             )
@@ -116,7 +135,7 @@ class TokenViewSet(viewsets.GenericViewSet):
             object_type="TokenAcesso",
             object_id=str(token.id),
             ip_hash=hash_ip(ip),
-            metadata={"target_role": target_role},
+            metadata={"target_role": target_role.value},
         )
         token.codigo = codigo
         out = self.get_serializer(token)

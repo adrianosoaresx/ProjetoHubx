@@ -10,37 +10,39 @@
 {% block content %}
 <div class="card-grid">
   <div class="card">
-    <div class="mb-8">
-      {% with step=5 total=8 %}
-      <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        {% widthratio step total 100 as progress %}
-        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
-      </div>
-      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
-        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
-      </div>
-      {% endwith %}
-    </div>
-
-    <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Qual seu email?" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Usaremos para comunicação e recuperação de conta" %}</p>
-    </div>
-
-    <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       <div>
-        {% include "_forms/field.html" with id="email" name="email" type="email" label=_("Email") placeholder=_("Seu e-mail") required=True autofocus=True describedby="email_help email_validation" %}
-        <div class="text-sm text-[var(--error)]" id="email_validation"></div>
-        <small id="email_help" class="text-sm text-[var(--text-secondary)]">{% trans "Enviaremos um link de confirmação" %}</small>
+        {% with step=5 total=8 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
       </div>
 
-      <div class="flex gap-4">
-        <a href="{% url 'accounts:cpf' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+      <div class="space-y-2 text-center">
+        <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Qual seu email?" %}</h1>
+        <p class="text-[var(--text-secondary)]">{% trans "Usaremos para comunicação e recuperação de conta" %}</p>
       </div>
-    </form>
+
+      <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          {% include "_forms/field.html" with id="email" name="email" type="email" label=_("Email") placeholder=_("Seu e-mail") required=True autofocus=True describedby="email_help email_validation" %}
+          <div class="text-sm text-[var(--error)]" id="email_validation"></div>
+          <small id="email_help" class="text-sm text-[var(--text-secondary)]">{% trans "Enviaremos um link de confirmação" %}</small>
+        </div>
+
+        <div class="flex gap-4">
+          <a href="{% url 'accounts:cpf' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

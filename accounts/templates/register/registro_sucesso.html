@@ -9,10 +9,12 @@
 
 {% block content %}
 <div class="card-grid">
-  <div class="card p-8 text-center">
-    <h1 class="mb-4 text-3xl font-bold text-[var(--text-primary)]">{% trans "Bem-vindo ao HubX!" %}</h1>
-    <p class="mb-6 text-[var(--text-secondary)]">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
-    <a href="{% url 'accounts:login' %}" class="btn btn-primary">{% trans "Ir para login" %}</a>
+  <div class="card">
+    <div class="card-body space-y-6 text-center">
+      <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Bem-vindo ao HubX!" %}</h1>
+      <p class="text-[var(--text-secondary)]">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary inline-flex justify-center">{% trans "Ir para login" %}</a>
+    </div>
   </div>
 </div>
 {% endblock %}
