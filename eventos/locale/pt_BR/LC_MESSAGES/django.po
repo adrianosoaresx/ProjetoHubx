@@ -121,30 +121,6 @@ msgstr ""
 msgid "Tarefas"
 msgstr ""
 
-#: eventos/templates/eventos/partials/eventos/avaliacao_form.html:7
-#: eventos/templates/eventos/partials/eventos/detail.html:69
-#: eventos/templates/eventos/partials/parceria/parceria_avaliar.html:7
-msgid "Nota"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/avaliacao_form.html:15
-#: eventos/templates/eventos/partials/eventos/detail.html:73
-#: eventos/templates/eventos/partials/parceria/parceria_avaliar.html:15
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:17
-msgid "Comentário"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/avaliacao_form.html:16
-#: eventos/templates/eventos/partials/parceria/parceria_avaliar.html:16
-msgid "Opcional"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/avaliacao_form.html:19
-#: eventos/templates/eventos/partials/eventos/detail.html:76
-#: eventos/templates/eventos/partials/parceria/parceria_avaliar.html:19
-msgid "Enviar avaliação"
-msgstr ""
-
 #: eventos/templates/eventos/partials/eventos/create.html:3
 #: eventos/views.py:285
 msgid "Adicionar evento"
@@ -162,12 +138,6 @@ msgstr ""
 #: eventos/templates/eventos/partials/eventos/delete.html:5
 #, python-format
 msgid "Tem certeza que deseja remover <strong>%(title)s</strong>?"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/delete.html:10
-#: eventos/templates/eventos/partials/eventos/update.html:59
-#: eventos/templates/eventos/partials/parceria/parceria_confirm_delete.html:9
-msgid "Remover"
 msgstr ""
 
 #: eventos/templates/eventos/partials/eventos/detail.html:11
@@ -231,11 +201,6 @@ msgstr ""
 #: eventos/templates/eventos/partials/eventos/detail.html:44
 #: eventos/templates/eventos/partials/eventos/update.html:35
 msgid "Valor gasto"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/detail.html:53
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:16
-msgid "Avaliação"
 msgstr ""
 
 #: eventos/templates/eventos/partials/eventos/detail.html:55
@@ -418,46 +383,6 @@ msgstr ""
 msgid "Nenhuma inscrição encontrada."
 msgstr ""
 
-#: eventos/templates/eventos/partials/parceria/parceria_confirm_delete.html:4
-#: eventos/views.py:948
-msgid "Remover Parceria"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_confirm_delete.html:5
-#, python-format
-msgid ""
-"Tem certeza que deseja remover <strong>%(object.empresa.nome)s</strong>?"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_form.html:3
-msgid "Parceria"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:6
-#: eventos/views.py:881
-msgid "Nova Parceria"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:13
-msgid "Empresa"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:15
-msgid "Tipo"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:36
-msgid "Avaliar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:39
-msgid "Excluir"
-msgstr ""
-
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:44
-msgid "Nenhuma parceria encontrada."
-msgstr ""
-
 #: eventos/validators.py:22
 msgid "Tipo de arquivo não permitido."
 msgstr ""
@@ -524,10 +449,6 @@ msgstr ""
 
 #: eventos/views.py:737
 msgid "Avaliação registrada com sucesso."
-msgstr ""
-
-#: eventos/views.py:751
-msgid "Avaliar parceria"
 msgstr ""
 
 #: eventos/views.py:770

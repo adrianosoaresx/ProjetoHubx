@@ -53,12 +53,11 @@ def hard_delete_queryset(queryset, description: str) -> int:
 def purge_evento(evento) -> None:
     """Remove o evento e todos os relacionamentos associados."""
 
-    from eventos.models import EventoLog, FeedbackNota, InscricaoEvento, ParceriaEvento
+    from eventos.models import EventoLog, FeedbackNota, InscricaoEvento
 
     print(f"  Removendo evento {evento.pk} ({evento.titulo})")
     hard_delete_queryset(InscricaoEvento.all_objects.filter(evento=evento), "inscrições")
     hard_delete_queryset(FeedbackNota.all_objects.filter(evento=evento), "feedbacks")
-    hard_delete_queryset(ParceriaEvento.all_objects.filter(evento=evento), "parcerias")
     hard_delete_queryset(EventoLog.all_objects.filter(evento=evento), "logs")
     evento.delete(soft=False)
 

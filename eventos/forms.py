@@ -3,12 +3,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ClearableFileInput
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
-from validate_docbr import CNPJ
-
 from nucleos.models import Nucleo
 
 from .validators import validate_uploaded_file
-from .models import Evento, FeedbackNota, InscricaoEvento, ParceriaEvento
+from .models import Evento, FeedbackNota, InscricaoEvento
+
+
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
@@ -135,33 +135,4 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = FeedbackNota
         fields = ["nota", "comentario"]
-class ParceriaEventoForm(forms.ModelForm):
-    class Meta:
-        model = ParceriaEvento
-        fields = [
-            "evento",
-            "nucleo",
-            "cnpj",
-            "contato",
-            "representante_legal",
-            "data_inicio",
-            "data_fim",
-            "tipo_parceria",
-            "descricao",
-            "acordo",
-        ]
 
-    def clean_cnpj(self):
-        cnpj = self.cleaned_data.get("cnpj", "")
-        if not cnpj.isdigit() or len(cnpj) != 14:
-            raise forms.ValidationError(_("CNPJ deve conter 14 dígitos."))
-        if not CNPJ().validate(cnpj):
-            raise forms.ValidationError(_("CNPJ inválido."))
-        return cnpj
-
-    def clean_acordo(self):
-        arquivo = self.cleaned_data.get("acordo")
-        if not arquivo:
-            return arquivo
-        validate_uploaded_file(arquivo)
-        return arquivo
