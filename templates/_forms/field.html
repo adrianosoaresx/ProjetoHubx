@@ -1,60 +1,112 @@
 
 {% load widget_tweaks %}
 <div class="space-y-1">
-  {% if field|widget_type == 'checkboxinput' %}
-  <div class="flex items-center gap-2">
-    {% if field.errors %}
-      {% render_field field|attr:"aria-invalid:true" class+="form-checkbox" %}
+  {% if field %}
+    {% if field|widget_type == 'checkboxinput' %}
+    <div class="flex items-center gap-2">
+      {% if field.errors %}
+        {% render_field field|attr:"aria-invalid:true" class+="form-checkbox" %}
+      {% else %}
+        {% render_field field class+="form-checkbox" %}
+      {% endif %}
+      <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-primary)]">
+        {{ field.label }}{% if field.field.required %} *{% endif %}
+      </label>
+    </div>
     {% else %}
-      {% render_field field class+="form-checkbox" %}
-    {% endif %}
-    <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-primary)]">
+    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
       {{ field.label }}{% if field.field.required %} *{% endif %}
     </label>
-  </div>
-  {% else %}
-  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-    {{ field.label }}{% if field.field.required %} *{% endif %}
-  </label>
-  {% if field|widget_type == 'select' %}
-    {% if readonly %}
-      {% if field.errors %}
-        {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" readonly="readonly" %}
+    {% if field|widget_type == 'select' %}
+      {% if readonly %}
+        {% if field.errors %}
+          {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" readonly="readonly" %}
+        {% else %}
+          {% render_field field class+="form-select w-full" readonly="readonly" %}
+        {% endif %}
       {% else %}
-        {% render_field field class+="form-select w-full" readonly="readonly" %}
+        {% if field.errors %}
+          {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" %}
+        {% else %}
+          {% render_field field class+="form-select w-full" %}
+        {% endif %}
       {% endif %}
     {% else %}
-      {% if field.errors %}
-        {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" %}
+      {% if readonly %}
+        {% if field.errors %}
+          {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" readonly="readonly" %}
+        {% else %}
+          {% render_field field class+="form-input w-full" readonly="readonly" %}
+        {% endif %}
       {% else %}
-        {% render_field field class+="form-select w-full" %}
+        {% if field.errors %}
+          {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" %}
+        {% else %}
+          {% render_field field class+="form-input w-full" %}
+        {% endif %}
       {% endif %}
+    {% endif %}
+    {% endif %}
+    {% if field.errors %}
+    <ul class="errorlist">
+      {% for error in field.errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if field.help_text %}
+    <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
     {% endif %}
   {% else %}
-    {% if readonly %}
-      {% if field.errors %}
-        {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" readonly="readonly" %}
-      {% else %}
-        {% render_field field class+="form-input w-full" readonly="readonly" %}
-      {% endif %}
+    {% with input_id=id|default:name input_name=name|default:id input_type=type|default:'text' %}
+    <label for="{{ input_id }}" class="block text-sm font-medium text-[var(--text-primary)]">
+      {{ label }}{% if required %} *{% endif %}
+    </label>
+    {% if input_type == 'textarea' %}
+      <textarea
+        id="{{ input_id }}"
+        name="{{ input_name }}"
+        class="form-input w-full{% if extra_classes %} {{ extra_classes }}{% endif %}"
+        {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+        {% if required %}required{% endif %}
+        {% if autofocus %}autofocus{% endif %}
+        {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
+        {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+        {% if minlength %}minlength="{{ minlength }}"{% endif %}
+        {% if rows %}rows="{{ rows }}"{% endif %}
+        {% if attrs %}{{ attrs|safe }}{% endif %}>{{ value|default_if_none:"" }}</textarea>
     {% else %}
-      {% if field.errors %}
-        {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" %}
-      {% else %}
-        {% render_field field class+="form-input w-full" %}
-      {% endif %}
+      <input
+        type="{{ input_type }}"
+        id="{{ input_id }}"
+        name="{{ input_name }}"
+        class="form-input w-full{% if extra_classes %} {{ extra_classes }}{% endif %}"
+        {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+        {% if value %}value="{{ value }}"{% endif %}
+        {% if required %}required{% endif %}
+        {% if autofocus %}autofocus{% endif %}
+        {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
+        {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+        {% if minlength %}minlength="{{ minlength }}"{% endif %}
+        {% if pattern %}pattern="{{ pattern }}"{% endif %}
+        {% if step %}step="{{ step }}"{% endif %}
+        {% if min %}min="{{ min }}"{% endif %}
+        {% if max %}max="{{ max }}"{% endif %}
+        {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}
+        {% if attrs %}{{ attrs|safe }}{% endif %}
+      />
     {% endif %}
-  {% endif %}
-  {% endif %}
-  {% if field.errors %}
-  <ul class="errorlist">
-    {% for error in field.errors %}
-    <li>{{ error }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-  {% if field.help_text %}
-  <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+    {% endwith %}
+    {% if errors %}
+    <ul class="errorlist">
+      {% for error in errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if help_text %}
+    <p class="text-xs text-[var(--text-secondary)]">{{ help_text }}</p>
+    {% endif %}
   {% endif %}
 
 </div>
