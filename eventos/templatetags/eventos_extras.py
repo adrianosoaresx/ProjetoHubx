@@ -16,7 +16,7 @@ STATUS_BADGE_STYLE_MAP = {
 }
 TARGET_BADGE_MAP = {
     1: {
-        "label": _("Somente nucleados"),
+        "label": _("Nucleados"),
         "style": "--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);",
     },
     2: {

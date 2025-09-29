@@ -89,7 +89,8 @@ class EventoForm(forms.ModelForm):
         for field_name, label in (
             ("contato_nome", _("Contato")),
             ("contato_email", _("Email")),
-            ("contato_whatsapp", _("Whatapp")),
+            ("contato_whatsapp", _("Whatsapp")),
+            ("cover", _("Capa")),
         ):
             if field_name in self.fields:
                 self.fields[field_name].label = label
