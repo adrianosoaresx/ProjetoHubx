@@ -3,6 +3,14 @@
   <h3 class="text-xl font-semibold mb-1">{% trans "Informações do perfil" %}</h3>
   <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
 
+  {% if not is_self %}
+    <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+      {% blocktrans with nome=target_user.get_full_name %}
+        Você está editando o perfil de {{ nome }}.
+      {% endblocktrans %}
+    </div>
+  {% endif %}
+
   <form
     method="post"
     action="{% url 'accounts:perfil_sections_info' %}"
@@ -10,6 +18,10 @@
     class="space-y-6"
   >
     {% csrf_token %}
+    {% if not is_self %}
+      <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
+      <input type="hidden" name="username" value="{{ target_user.username }}" />
+    {% endif %}
     {% for field in form %}
       {% include '_forms/field.html' with field=field %}
     {% endfor %}

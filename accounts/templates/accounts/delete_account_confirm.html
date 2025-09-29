@@ -9,6 +9,15 @@
   </p>
   <form method="post" class="rounded-2xl card p-6 space-y-4 bg-[var(--bg-secondary)]">
     {% csrf_token %}
+    {% if not is_self %}
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% blocktrans with nome=target_user.get_full_name %}
+          Você está excluindo a conta de {{ nome }}.
+        {% endblocktrans %}
+      </p>
+      <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
+      <input type="hidden" name="username" value="{{ target_user.username }}" />
+    {% endif %}
     <div>
       <label for="confirm" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Digite EXCLUIR para confirmar" %}</label>
       <input

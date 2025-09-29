@@ -21,6 +21,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
 from django.http import (
+    Http404,
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -33,6 +34,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 from django.views.generic import FormView, ListView, TemplateView
+from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -223,6 +225,56 @@ def _resolve_profile_for_partial(request):
     return profile, is_owner, None
 
 
+def _can_manage_profile(viewer, profile) -> bool:
+    if viewer is None or not getattr(viewer, "is_authenticated", False):
+        return False
+    if viewer == profile:
+        return True
+
+    viewer_type = getattr(viewer, "get_tipo_usuario", None)
+    if viewer_type == UserType.ROOT.value:
+        return True
+
+    if viewer_type in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        viewer_org = getattr(viewer, "organizacao_id", None)
+        profile_org = getattr(profile, "organizacao_id", None)
+        return viewer_org is not None and viewer_org == profile_org
+
+    return False
+
+
+def _resolve_management_target_user(request):
+    viewer = request.user
+    if not getattr(viewer, "is_authenticated", False):
+        raise PermissionDenied
+
+    target = viewer
+    lookup_candidates = (
+        (request.POST, ("public_id", "public_id")),
+        (request.POST, ("username", "username")),
+        (request.POST, ("user_id", "pk")),
+        (request.POST, ("pk", "pk")),
+        (request.GET, ("public_id", "public_id")),
+        (request.GET, ("username", "username")),
+        (request.GET, ("user_id", "pk")),
+        (request.GET, ("pk", "pk")),
+    )
+
+    for params, (param, field) in lookup_candidates:
+        value = params.get(param)
+        if value:
+            try:
+                target = get_object_or_404(User, **{field: value})
+            except (TypeError, ValueError):
+                raise Http404
+            break
+
+    if not _can_manage_profile(viewer, target):
+        raise PermissionDenied
+
+    return target
+
+
 # ====================== PERFIL ======================
 
 
@@ -303,6 +355,9 @@ def perfil_section(request, section):
         "is_owner": is_owner,
     }
 
+    can_manage = _can_manage_profile(viewer, profile) if viewer else False
+    context["can_manage"] = can_manage
+
     if section == "portfolio":
         q = request.GET.get("q", "").strip()
         medias_qs = (
@@ -334,12 +389,14 @@ def perfil_section(request, section):
         template = "perfil/partials/portfolio.html"
 
     elif section == "info":
-        if is_owner:
+        if can_manage:
             bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
             context.update(
                 {
                     "user": profile,
                     "bio": bio,
+                    "manage_target_public_id": profile.public_id,
+                    "manage_target_username": profile.username,
                 }
             )
             template = "perfil/partials/detail_informacoes.html"
@@ -383,27 +440,58 @@ def perfil_section(request, section):
 
 @login_required
 def perfil_info(request):
+    target_user = _resolve_management_target_user(request)
+    is_self = target_user == request.user
+
     if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
-        extra_params = {"info_view": "edit"} if request.method == "GET" else None
+        extra_params: dict[str, str | None] | None = {"info_view": "edit"}
+        if not is_self:
+            extra_params.update(
+                {
+                    "public_id": str(target_user.public_id),
+                    "username": target_user.username,
+                }
+            )
         return _redirect_to_profile_section(request, "info", extra_params)
 
     if request.method == "POST":
-        form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
+        form = InformacoesPessoaisForm(request.POST, request.FILES, instance=target_user)
         if form.is_valid():
             form.save()
             if getattr(form, "email_changed", False):
-                messages.info(request, _("Confirme o novo e-mail enviado."))
+                if is_self:
+                    messages.info(request, _("Confirme o novo e-mail enviado."))
+                else:
+                    messages.info(request, _("O usuário deverá confirmar o novo e-mail enviado."))
             else:
-                messages.success(request, _("Informações do perfil atualizadas."))
-            return _redirect_to_profile_section(request, "info")
+                if is_self:
+                    messages.success(request, _("Informações do perfil atualizadas."))
+                else:
+                    messages.success(
+                        request,
+                        _("Informações do perfil de %(username)s atualizadas.")
+                        % {"username": target_user.get_full_name()},
+                    )
+
+            extra_params: dict[str, str | None] | None = {"info_view": None}
+            if not is_self:
+                extra_params.update(
+                    {
+                        "public_id": str(target_user.public_id),
+                        "username": target_user.username,
+                    }
+                )
+            return _redirect_to_profile_section(request, "info", extra_params)
     else:
-        form = InformacoesPessoaisForm(instance=request.user)
+        form = InformacoesPessoaisForm(instance=target_user)
 
     return render(
         request,
         "perfil/partials/info_form.html",
         {
             "form": form,
+            "target_user": target_user,
+            "is_self": is_self,
         },
     )
 
@@ -660,18 +748,37 @@ def conta_inativa(request):
 def excluir_conta(request):
     """Permite que o usuário exclua sua própria conta."""
 
+    target_user = _resolve_management_target_user(request)
+    is_self = target_user == request.user
+
+    def _redirect_to_form():
+        url = reverse("accounts:excluir_conta")
+        if not is_self:
+            params = urlencode(
+                {
+                    "public_id": str(target_user.public_id),
+                    "username": target_user.username,
+                }
+            )
+            url = f"{url}?{params}"
+        return redirect(url)
+
     if request.method == "GET":
-        return render(request, "accounts/delete_account_confirm.html")
+        return render(
+            request,
+            "accounts/delete_account_confirm.html",
+            {"target_user": target_user, "is_self": is_self},
+        )
 
     if request.method != "POST":
-        return redirect("accounts:excluir_conta")
+        return _redirect_to_form()
 
     if request.POST.get("confirm") != "EXCLUIR":
         messages.error(request, _("Confirme digitando EXCLUIR."))
-        return redirect("accounts:excluir_conta")
+        return _redirect_to_form()
 
     with transaction.atomic():
-        user = request.user
+        user = target_user
         user.delete()
         user.exclusao_confirmada = True
         user.is_active = False
@@ -689,12 +796,21 @@ def excluir_conta(request):
         )
 
     send_cancel_delete_email.delay(token.id)
-    logout(request)
+
+    if is_self:
+        logout(request)
+        messages.success(
+            request,
+            _("Sua conta foi excluída com sucesso. Você pode reativá-la em até 30 dias."),
+        )
+        return redirect("core:home")
+
     messages.success(
         request,
-        _("Sua conta foi excluída com sucesso. Você pode reativá-la em até 30 dias."),
+        _("Conta de %(username)s excluída com sucesso.")
+        % {"username": target_user.get_full_name()},
     )
-    return redirect("core:home")
+    return redirect("accounts:associados_lista")
 
 
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)

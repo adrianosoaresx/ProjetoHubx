@@ -83,6 +83,17 @@
 
 
 
-<div class="mt-6 text-right">
-  <a href="{% url 'accounts:perfil_sections_info' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
-</div>
+{% if can_manage %}
+  <div class="mt-6 text-right">
+    {% if is_owner %}
+      <a href="{% url 'accounts:perfil_sections_info' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
+    {% else %}
+      <a
+        href="{% url 'accounts:perfil_sections_info' %}?public_id={{ manage_target_public_id }}&username={{ manage_target_username|urlencode }}"
+        class="text-primary font-medium hover:underline"
+      >
+        {% trans "Editar perfil" %}
+      </a>
+    {% endif %}
+  </div>
+{% endif %}

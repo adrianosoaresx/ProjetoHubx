@@ -2,6 +2,9 @@ import pytest
 from django.test.utils import override_settings
 from django.urls import reverse
 
+from accounts.models import UserType
+from organizacoes.factories import OrganizacaoFactory
+
 pytestmark = pytest.mark.django_db
 
 
@@ -88,3 +91,116 @@ def test_perfil_info_section_edit_renders_form(client, django_user_model):
         for template in getattr(ajax_response, "templates", [])
     )
 
+
+def test_admin_can_access_edit_form_for_other_user(client, django_user_model):
+    organizacao = OrganizacaoFactory()
+    admin = django_user_model.objects.create_user(
+        email="admin@example.com",
+        username="admin",
+        password="pass123",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+        is_staff=True,
+    )
+    target = django_user_model.objects.create_user(
+        email="target@example.com",
+        username="target",
+        password="pass123",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=True,
+        contato="Usuário alvo",
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("accounts:perfil_sections_info"),
+        {"public_id": str(target.public_id)},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert str(target.public_id) in content
+    assert "Você está editando o perfil" in content
+
+
+def test_operator_can_update_other_user_profile(client, django_user_model):
+    organizacao = OrganizacaoFactory()
+    operator = django_user_model.objects.create_user(
+        email="operator@example.com",
+        username="operator",
+        password="pass123",
+        user_type=UserType.OPERADOR,
+        organizacao=organizacao,
+    )
+    target = django_user_model.objects.create_user(
+        email="member@example.com",
+        username="member",
+        password="pass123",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=True,
+        contato="Membro",
+    )
+
+    client.force_login(operator)
+    url = reverse("accounts:perfil_sections_info")
+    data = {
+        "contato": "Perfil Atualizado",
+        "username": target.username,
+        "email": target.email,
+        "cpf": target.cpf or "",
+        "cnpj": target.cnpj or "",
+        "razao_social": target.razao_social or "",
+        "nome_fantasia": target.nome_fantasia or "",
+        "biografia": target.biografia or "",
+        "phone_number": target.phone_number.as_e164 if getattr(target, "phone_number", None) else "",
+        "whatsapp": target.whatsapp or "",
+        "birth_date": target.birth_date.isoformat() if target.birth_date else "",
+        "endereco": target.endereco or "",
+        "cidade": target.cidade or "",
+        "estado": target.estado or "",
+        "cep": target.cep or "",
+        "facebook": "",
+        "twitter": "",
+        "instagram": "",
+        "linkedin": "",
+        "public_id": str(target.public_id),
+    }
+
+    response = client.post(url, data)
+
+    assert response.status_code == 302
+    target.refresh_from_db()
+    assert target.contato == "Perfil Atualizado"
+
+
+def test_admin_cannot_manage_user_from_other_organization(client, django_user_model):
+    org_a = OrganizacaoFactory()
+    org_b = OrganizacaoFactory()
+    admin = django_user_model.objects.create_user(
+        email="admin@example.com",
+        username="admin",
+        password="pass123",
+        user_type=UserType.ADMIN,
+        organizacao=org_a,
+        is_staff=True,
+    )
+    outsider = django_user_model.objects.create_user(
+        email="outsider@example.com",
+        username="outsider",
+        password="pass123",
+        user_type=UserType.ASSOCIADO,
+        organizacao=org_b,
+        is_associado=True,
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("accounts:perfil_sections_info"),
+        {"public_id": str(outsider.public_id)},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 403
