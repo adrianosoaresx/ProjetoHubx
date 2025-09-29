@@ -53,7 +53,7 @@ def evento(organizacao, gerente):
         cep="00000-000",
         coordenador=gerente,
         organizacao=organizacao,
-        status=0,
+        status=Evento.Status.ATIVO,
         publico_alvo=0,
         numero_convidados=10,
         numero_presentes=0,

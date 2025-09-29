@@ -25,7 +25,7 @@ class EventoFactory(DjangoModelFactory):
     cidade = factory.Faker("city", locale="pt_BR")
     estado = factory.Faker("state_abbr", locale="pt_BR")
     cep = factory.Faker("postcode", locale="pt_BR")
-    status = factory.Faker("random_element", elements=[0, 1, 2])
+    status = factory.Faker("random_element", elements=[0, 1, 2, 3])
     publico_alvo = factory.Faker("random_element", elements=[0, 1, 2])
     numero_convidados = factory.Faker("pyint", min_value=10, max_value=100)
     numero_presentes = factory.LazyAttribute(lambda o: o.numero_convidados // 2)

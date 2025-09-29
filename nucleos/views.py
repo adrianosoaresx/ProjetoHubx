@@ -139,8 +139,18 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         )
         # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
         ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
-        ctx["total_eventos_ativos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=0).count()
-        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=1).count()
+        ctx["total_eventos_planejamento_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.PLANEJAMENTO,
+        ).count()
+        ctx["total_eventos_ativos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.ATIVO,
+        ).count()
+        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.CONCLUIDO,
+        ).count()
         params = self.request.GET.copy()
         try:
             params.pop("page")
@@ -399,10 +409,23 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         ctx["eventos"] = eventos_qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
         # Totais para cards
         ctx["total_membros"] = paginator.count
-        # Total de eventos considerando apenas ativos (0) e concluídos (1)
-        ctx["total_eventos"] = eventos_qs.filter(status__in=[0, 1]).count()
-        ctx["total_eventos_ativos"] = eventos_qs.filter(status=0).count()
-        ctx["total_eventos_concluidos"] = eventos_qs.filter(status=1).count()
+        # Totais de eventos por status
+        ctx["total_eventos"] = eventos_qs.filter(
+            status__in=[
+                Evento.Status.PLANEJAMENTO,
+                Evento.Status.ATIVO,
+                Evento.Status.CONCLUIDO,
+            ]
+        ).count()
+        ctx["total_eventos_planejamento"] = eventos_qs.filter(
+            status=Evento.Status.PLANEJAMENTO
+        ).count()
+        ctx["total_eventos_ativos"] = eventos_qs.filter(
+            status=Evento.Status.ATIVO
+        ).count()
+        ctx["total_eventos_concluidos"] = eventos_qs.filter(
+            status=Evento.Status.CONCLUIDO
+        ).count()
 
         section = self.request.GET.get("section", "membros")
         if section not in {"membros", "eventos", "feed"}:
