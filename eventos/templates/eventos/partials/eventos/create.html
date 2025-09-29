@@ -114,7 +114,7 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-          <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+          <a id="btn-voltar" href="{% url 'eventos:calendario' %}" data-fallback-url="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}" data-behavior="back">{% trans "Voltar" %}</a>
           <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
         </div>
       </form>
@@ -124,6 +124,27 @@
 
 {% block extra_js %}
 <script>
+  // Comportamento do botão Voltar: tenta voltar no histórico; se não houver origem válida, usa fallback
+  (function(){
+    const btn = document.getElementById('btn-voltar');
+    if(!btn) return;
+    btn.addEventListener('click', function(e){
+      const ref = document.referrer;
+      const fallback = btn.getAttribute('data-fallback-url');
+      const sameOrigin = ref && ref.startsWith(window.location.origin);
+      // Evita voltar para a própria página ou páginas de criação/edição em loop
+      const invalid = !sameOrigin || ref === window.location.href;
+      if(invalid || window.history.length <= 1) {
+        if(fallback) {
+          e.preventDefault();
+          window.location.href = fallback;
+        }
+      } else {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  })();
   document.addEventListener('DOMContentLoaded', function () {
     const publicoAlvoSelect = document.getElementById('id_publico_alvo');
     const nucleoInput = document.getElementById('id_nucleo');
