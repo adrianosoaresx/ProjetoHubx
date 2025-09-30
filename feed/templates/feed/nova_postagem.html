@@ -147,15 +147,11 @@
 
       <!-- Ações -->
       <div class="flex justify-end gap-3 mt-6">
+        {% url 'feed:listar' as feed_list_url %}
+        {% include '_components/back_button.html' with href=feed_list_url label=_('Cancelar') aria_label=_('Cancelar') %}
         <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
           {% trans "Salvar" %}
         </button>
-        <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">
-          {% trans "Cancelar" %}
-        </a>
-        <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">
-          {% trans "Voltar" %}
-        </a>
       </div>
       </div>
     </form>

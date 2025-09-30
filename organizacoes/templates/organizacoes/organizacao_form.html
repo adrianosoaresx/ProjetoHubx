@@ -21,13 +21,7 @@
 <section class="max-w-2xl mx-auto px-4 py-10">
 
   <!-- Cabeçalho -->
-    <div class="mb-6 flex items-center gap-4">
-      <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">
-        <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="15,18 9,12 15,6"/>
-      </svg>
-      {% trans 'Voltar' %}
-    </a>
+    <div class="mb-6">
       <h1 class="text-2xl font-bold text-[var(--text-primary)]">
         {% if form.instance.pk %}
           {% trans 'Editar Organização' %}
@@ -46,9 +40,12 @@
     {% endfor %}
 
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary" aria-label="{% if form.instance.pk %}{% trans 'Cancelar edição' %}{% else %}{% trans 'Cancelar' %}{% endif %}">
-          {% trans 'Cancelar' %}
-        </a>
+        {% url 'organizacoes:list' as organizacoes_list_url %}
+        {% if form.instance.pk %}
+          {% include '_components/back_button.html' with href=organizacoes_list_url label=_('Cancelar') aria_label=_('Cancelar edição') %}
+        {% else %}
+          {% include '_components/back_button.html' with href=organizacoes_list_url label=_('Cancelar') aria_label=_('Cancelar') %}
+        {% endif %}
         <button type="submit" class="btn{% if form.instance.pk %} btn-primary{% endif %}" aria-label="{% trans 'Salvar organização' %}">
           {% trans 'Salvar' %}
         </button>
