@@ -58,6 +58,51 @@
     <main id="main-content" class="container mx-auto p-6 flex-grow">
       {% block content %}{% endblock %}
     </main>
+    {% block back_button %}
+      {% if back_component_config %}
+        {% with
+          href=back_component_config.href
+          fallback_href=back_component_config.fallback_href
+          variant=back_component_config.variant
+          classes=back_component_config.classes
+          label=back_component_config.label
+          aria_label=back_component_config.aria_label
+          icon=back_component_config.icon
+          show_icon=back_component_config.show_icon
+          prevent_history=back_component_config.prevent_history
+          hx_get=back_component_config.hx_get
+          hx_post=back_component_config.hx_post
+          hx_put=back_component_config.hx_put
+          hx_delete=back_component_config.hx_delete
+          hx_patch=back_component_config.hx_patch
+          hx_target=back_component_config.hx_target
+          hx_swap=back_component_config.hx_swap
+          hx_trigger=back_component_config.hx_trigger
+          hx_push_url=back_component_config.hx_push_url
+          hx_include=back_component_config.hx_include
+          hx_indicator=back_component_config.hx_indicator
+          hx_confirm=back_component_config.hx_confirm
+          hx_params=back_component_config.hx_params
+          hx_ext=back_component_config.hx_ext
+          hx_on=back_component_config.hx_on
+          hx_vals=back_component_config.hx_vals
+          hx_select=back_component_config.hx_select
+          hx_select_oob=back_component_config.hx_select_oob
+          hx_replace_url=back_component_config.hx_replace_url
+          hx_headers=back_component_config.hx_headers
+          hx_prompt=back_component_config.hx_prompt
+          hx_validate=back_component_config.hx_validate
+          hx_sync=back_component_config.hx_sync
+          hx_boost=back_component_config.hx_boost
+          hx_disable=back_component_config.hx_disable
+          hx_history=back_component_config.hx_history
+        %}
+          {% include '_components/back_button.html' %}
+        {% endwith %}
+      {% elif back_href %}
+        {% include '_components/back_button.html' with href=back_href %}
+      {% endif %}
+    {% endblock %}
     {% include '_partials/toasts.html' %}
 
     {% include '_partials/footer.html' %}

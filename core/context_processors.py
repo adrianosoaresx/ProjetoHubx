@@ -1,5 +1,7 @@
 from django.conf import settings
 
+from core.utils import resolve_back_href
+
 
 def htmx_version(request):
     return {
@@ -13,3 +15,7 @@ def menu_items(request):
     from .menu import build_menu
 
     return {"NAV_MENU": build_menu(request)}
+
+
+def back_navigation(request):
+    return {"back_href": resolve_back_href(request)}

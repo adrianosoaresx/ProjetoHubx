@@ -138,6 +138,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.htmx_version",
                 "core.context_processors.menu_items",
+                "core.context_processors.back_navigation",
             ],
             # Torna os filtros/tags do widget_tweaks disponíveis globalmente
             # evitando a necessidade de `{% load widget_tweaks %}` em cada template.
