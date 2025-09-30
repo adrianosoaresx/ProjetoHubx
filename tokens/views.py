@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -78,13 +77,7 @@ def listar_convites(request):
         convite.preview_display = preview
         convites.append(convite)
 
-    fallback_url = reverse("core:home")
-    back_button = {
-        "href": fallback_url,
-        "fallback_href": fallback_url,
-        "use_history": True,
-    }
-    context = {"convites": convites, "totais": totais, "back_component_config": back_button}
+    context = {"convites": convites, "totais": totais}
     if request.headers.get("Hx-Request") == "true":
         return render(request, "tokens/token_list.html", context)
     full_context = {
@@ -113,13 +106,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 _("Seu usuário não está associado a nenhuma organização."),
             )
             return redirect("accounts:perfil")
-        back_button = {
-            "href": reverse("tokens:listar_convites"),
-            "fallback_href": reverse("tokens:listar_convites"),
-            "use_history": True,
-        }
         if request.headers.get("Hx-Request") == "true":
-            return render(request, "tokens/gerar_token.html", {"form": form, "back_component_config": back_button})
+            return render(request, "tokens/gerar_token.html", {"form": form})
         return render(
             request,
             "tokens/tokens.html",
@@ -127,7 +115,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 "partial_template": "tokens/gerar_token.html",
                 "form": form,
                 "hero_title": _("Gerar Token"),
-                "back_component_config": back_button,
             },
         )
 

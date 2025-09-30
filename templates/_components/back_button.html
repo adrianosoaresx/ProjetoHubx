@@ -1,40 +1,7 @@
-{% load i18n lucide_icons %}
-{#
-  Componente padronizado de botão de retorno.
-
-  Parâmetros disponíveis:
-    - label: texto visível do botão. Padrão "Voltar".
-    - aria_label: rótulo acessível. Caso não seja informado, utiliza o label.
-    - href: URL primária para navegação padrão.
-    - fallback_href: URL utilizada quando não há histórico válido.
-    - use_history: quando verdadeiro (padrão), tenta voltar no histórico antes de usar href/fallback.
-    - variant: "button" (padrão), "link" ou "compact".
-    - size: tamanho aplicado quando variant == "button" (ex.: "sm").
-    - classes: classes extras adicionadas ao elemento.
-    - icon: nome do ícone Lucide (padrão "arrow-left").
-    - hide_icon: desativa o ícone quando verdadeiro.
-    - element: "a" (padrão) ou "button" para alterar o elemento renderizado.
-    - button_type: tipo do botão quando element == "button" (padrão "button").
-    - htmx_attrs: dicionário com atributos HTMX (ex.: { 'get': url, 'target': '#id' }).
-    - extra_attrs: dicionário com atributos adicionais arbitrários.
-#}
-
-{% with raw_use_history=use_history %}
-  {% if raw_use_history is not None and raw_use_history != '' %}
-    {% with normalized_use_history=raw_use_history|stringformat:'s'|lower %}
-      {% if normalized_use_history == 'false' or normalized_use_history == '0' %}
-        {% with resolved_use_history=False %}
-          {% include '_components/back_button_core.html' %}
-        {% endwith %}
-      {% else %}
-        {% with resolved_use_history=True %}
-          {% include '_components/back_button_core.html' %}
-        {% endwith %}
-      {% endif %}
-    {% endwith %}
-  {% else %}
-    {% with resolved_use_history=True %}
-      {% include '_components/back_button_core.html' %}
-    {% endwith %}
-  {% endif %}
-{% endwith %}
+{% load i18n %}
+<a href="{{ href|default:'#' }}"
+   class="{{ classes|default:'btn btn-secondary' }}"
+   aria-label="{% if aria_label %}{{ aria_label }}{% else %}{% trans 'Voltar' %}{% endif %}"
+   onclick="if (document.referrer) { try { var u = new URL(document.referrer); if (u.origin === window.location.origin) { history.back(); return false; } } catch (e) {} }">
+  {% if label %}{{ label }}{% else %}{% trans 'Voltar' %}{% endif %}
+</a>
