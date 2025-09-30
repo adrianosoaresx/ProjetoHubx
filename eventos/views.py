@@ -397,6 +397,25 @@ class EventoCreateView(
             raise PermissionDenied("Usuário root não pode criar eventos.")
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        fallback_url = str(self.success_url)
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context.update(
+            {
+                "back_href": back_href,
+                "back_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                },
+                "cancel_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                },
+            }
+        )
+        return context
+
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
         messages.success(self.request, _("Evento criado com sucesso."))
@@ -437,6 +456,22 @@ class EventoUpdateView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["evento"] = self.object
+        fallback_url = reverse("eventos:calendario")
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context.update(
+            {
+                "back_href": back_href,
+                "back_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                },
+                "cancel_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                    "aria_label": _("Cancelar edição"),
+                },
+            }
+        )
         return context
 
     def form_valid(self, form):  # pragma: no cover
