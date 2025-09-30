@@ -1263,15 +1263,6 @@ a:focus {
   line-height: 1rem;
 }
 
-.btn-lg {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
 .alert {
   margin-bottom: 1rem;
   display: flex;
@@ -3499,10 +3490,6 @@ a:focus {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.hover\:border-\[var\(--border-stronger\)\]:hover {
-  border-color: var(--border-stronger);
-}
-
 .hover\:bg-\[var\(--bg-tertiary\)\]:hover {
   background-color: var(--bg-tertiary);
 }
@@ -3525,6 +3512,10 @@ a:focus {
 
 .hover\:text-primary:hover {
   color: var(--primary);
+}
+
+.hover\:text-primary-700:hover {
+  color: var(--color-primary-700);
 }
 
 .hover\:underline:hover {
@@ -3603,8 +3594,8 @@ a:focus {
   outline-offset: 2px;
 }
 
-.focus-visible\:outline-\[var\(--focus\)\]:focus-visible {
-  outline-color: var(--focus);
+.focus-visible\:outline-primary-500:focus-visible {
+  outline-color: var(--color-primary-500);
 }
 
 .focus-visible\:ring:focus-visible {
