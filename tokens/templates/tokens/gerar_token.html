@@ -29,7 +29,8 @@
       </div>
 
       <footer class="mt-6">
-        <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
+        {% url 'tokens:listar_convites' as convites_url %}
+        {% include '_components/back_button.html' with href=back_href fallback_href=convites_url %}
       </footer>
     </div>
   </div>

@@ -37,7 +37,8 @@
       {% endif %}
 
       <div>
-        <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
+        {% url 'accounts:perfil' as perfil_url %}
+        {% include '_components/back_button.html' with href=back_href fallback_href=perfil_url %}
       </div>
     </div>
   </div>
