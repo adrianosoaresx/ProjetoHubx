@@ -2,15 +2,39 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
-    <button
-      type="button"
-      class="btn-secondary btn-sm"
-      hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
-      hx-target="#perfil-content"
-      hx-push-url="?section=conexoes"
-    >
-      {% trans "Voltar" %}
-    </button>
+    {% url 'accounts:perfil_sections_conexoes' as conexoes_partial_url %}
+    {% url 'accounts:perfil' as perfil_url %}
+    {% with partial_query='?view=buscar' full_query='?section=conexoes&view=buscar' %}
+      {% if q %}
+        {% with encoded_q=q|urlencode %}
+          {% with partial_query=partial_query|add:'&q='|add:encoded_q full_query=full_query|add:'&q='|add:encoded_q %}
+            {% include '_components/back_button.html' with
+              label=_('Voltar')
+              show_icon=False
+              classes='btn-sm'
+              hx_get=conexoes_partial_url
+              hx_target='#perfil-content'
+              hx_push_url='?section=conexoes'
+              prevent_history=True
+              href=conexoes_partial_url|add:partial_query
+              fallback_href=perfil_url|add:full_query
+            %}
+          {% endwith %}
+        {% endwith %}
+      {% else %}
+        {% include '_components/back_button.html' with
+          label=_('Voltar')
+          show_icon=False
+          classes='btn-sm'
+          hx_get=conexoes_partial_url
+          hx_target='#perfil-content'
+          hx_push_url='?section=conexoes'
+          prevent_history=True
+          href=conexoes_partial_url|add:partial_query
+          fallback_href=perfil_url|add:full_query
+        %}
+      {% endif %}
+    {% endwith %}
   </div>
 
   <form
