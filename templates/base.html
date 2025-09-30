@@ -56,32 +56,6 @@
     {% include '_partials/header.html' %}
     {% block hero %}{% endblock %}
     <main id="main-content" class="container mx-auto p-6 flex-grow">
-      {% block back_button %}
-        {% if back_component_config %}
-          <div class="mb-6">
-            {% include '_components/back_button.html' with
-              label=back_component_config.label
-              aria_label=back_component_config.aria_label
-              href=back_component_config.href
-              fallback_href=back_component_config.fallback_href
-              use_history=back_component_config.use_history
-              variant=back_component_config.variant
-              size=back_component_config.size
-              classes=back_component_config.classes
-              icon=back_component_config.icon
-              hide_icon=back_component_config.hide_icon
-              element=back_component_config.element
-              button_type=back_component_config.button_type
-              htmx_attrs=back_component_config.htmx_attrs
-              extra_attrs=back_component_config.extra_attrs
-            %}
-          </div>
-        {% elif back_href %}
-          <div class="mb-6">
-            {% include '_components/back_button.html' with href=back_href %}
-          </div>
-        {% endif %}
-      {% endblock %}
       {% block content %}{% endblock %}
     </main>
     {% include '_partials/toasts.html' %}
@@ -103,99 +77,6 @@
         alert(gettext('Você não tem permissão para realizar esta ação.'));
       }
     });
-  </script>
-  <script>
-    (function () {
-      if (window.__hubxBackButtonInitialized) {
-        return;
-      }
-      window.__hubxBackButtonInitialized = true;
-
-      const shouldUseHistory = (referer) => {
-        if (!referer) {
-          return false;
-        }
-        try {
-          const refUrl = new URL(referer, window.location.href);
-          return refUrl.origin === window.location.origin;
-        } catch (error) {
-          return false;
-        }
-      };
-
-      const navigateTo = (url) => {
-        if (!url) {
-          return false;
-        }
-        window.location.href = url;
-        return true;
-      };
-
-      const handleClick = (event) => {
-        const target = event.currentTarget;
-        if (!target) {
-          return;
-        }
-
-        const mode = target.dataset.backMode || 'history';
-        const fallback = target.dataset.backFallback || '';
-        const referer = document.referrer;
-        const currentUrl = window.location.href;
-
-        if (mode === 'history') {
-          const canGoBack = shouldUseHistory(referer) && window.history.length > 1 && referer !== currentUrl;
-          if (canGoBack) {
-            event.preventDefault();
-            window.history.back();
-            return;
-          }
-
-          if (fallback) {
-            const href = typeof target.getAttribute === 'function' ? target.getAttribute('href') : null;
-            if (
-              !href ||
-              href === '#' ||
-              href === '' ||
-              href === currentUrl ||
-              target.tagName !== 'A'
-            ) {
-              event.preventDefault();
-              navigateTo(fallback);
-            }
-          }
-          return;
-        }
-
-        if (mode === 'href' && target.tagName !== 'A') {
-          const href = typeof target.getAttribute === 'function' ? target.getAttribute('href') : null;
-          const destination = href && href !== '#' ? href : fallback;
-          if (destination) {
-            event.preventDefault();
-            navigateTo(destination);
-          }
-        }
-      };
-
-      const initialise = (element) => {
-        if (!element || element.dataset.backBound === 'true') {
-          return;
-        }
-        element.addEventListener('click', handleClick);
-        element.dataset.backBound = 'true';
-      };
-
-      const bindAll = () => {
-        document.querySelectorAll('[data-back-button]').forEach(initialise);
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bindAll);
-      } else {
-        bindAll();
-      }
-
-      document.addEventListener('htmx:afterSwap', bindAll);
-    })();
   </script>
   <script>
     (function () {
