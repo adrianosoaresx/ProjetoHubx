@@ -182,7 +182,7 @@
   </div>
 
   <div class="flex justify-end mt-6">
-    {% url 'eventos:calendario' as back_href %}
-    {% include '_components/back_button.html' with href=back_href %}
+    {% url 'eventos:calendario' as calendario_url %}
+    {% include '_components/back_button.html' with href=back_href|default:calendario_url %}
   </div>
 </section>
