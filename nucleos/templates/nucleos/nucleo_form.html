@@ -19,6 +19,7 @@
   {% with back_link=back_href|default:cancel_url %}
   <div class="card">
     <div class="card-header flex items-center justify-between gap-3">
+      {% include '_components/back_button.html' with href=back_link classes='btn btn-secondary btn-sm' %}
       <h2 class="text-xl font-semibold">
         {% if object %}
           {% trans "Editar núcleo" %}
