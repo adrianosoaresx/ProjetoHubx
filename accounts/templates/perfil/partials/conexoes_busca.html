@@ -1,0 +1,72 @@
+{% load i18n lucide_icons %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
+    <button
+      type="button"
+      class="btn-secondary btn-sm"
+      hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
+      hx-target="#perfil-content"
+      hx-push-url="?section=conexoes"
+    >
+      {% trans "Voltar" %}
+    </button>
+  </div>
+
+  <form
+    method="get"
+    class="flex gap-2"
+    hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
+    hx-target="#perfil-content"
+    hx-push-url="?section=conexoes&view=buscar"
+  >
+    <input
+      type="text"
+      name="q"
+      value="{{ q }}"
+      placeholder="{% trans 'Buscar por nome, razão social ou CNPJ...' %}"
+      class="flex-grow border rounded-lg p-2 text-sm"
+      aria-label="{% trans 'Buscar por nome, razão social ou CNPJ' %}"
+    />
+    <button type="submit" class="btn btn-primary btn-sm" aria-label="{% trans 'Buscar' %}">
+      {% lucide 'search' class='w-4 h-4' aria_hidden='true' %}
+    </button>
+  </form>
+
+  {% if tem_organizacao %}
+    <div class="space-y-4">
+      {% for associado in associados %}
+        <article class="card">
+          <div class="card-body flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              {% if associado.avatar %}
+                <img src="{{ associado.avatar.url }}" alt="{{ associado.display_name|default:associado.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
+              {% else %}
+                <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ associado.display_name|default:associado.username }}">
+                  {{ associado.username|first|upper }}
+                </div>
+              {% endif %}
+              <div>
+                <p class="font-medium">{{ associado.display_name }}</p>
+                {% if associado.razao_social %}
+                  <p class="text-sm text-[var(--text-secondary)]">{{ associado.razao_social }}</p>
+                {% endif %}
+                {% if associado.cnpj %}
+                  <p class="text-xs text-[var(--text-secondary)]">CNPJ: {{ associado.cnpj }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="text-center text-sm text-[var(--text-secondary)]">
+          <p>{% trans "Nenhum associado encontrado para os critérios informados." %}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center text-sm text-[var(--text-secondary)]">
+      <p>{% trans "Você não está vinculado a uma organização no momento." %}</p>
+    </div>
+  {% endif %}
+</div>

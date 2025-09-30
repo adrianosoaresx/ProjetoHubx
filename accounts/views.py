@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Prefetch, Q
-from django.db.models.functions import Lower
+from django.db.models import F, Prefetch, Q, Value
+from django.db.models.functions import Lower, Replace
 from django.http import (
     Http404,
     HttpResponse,
@@ -558,6 +559,58 @@ def perfil_conexoes(request):
         "q": q,
     }
     return render(request, template_name, context)
+
+
+@login_required
+def perfil_conexoes_buscar(request):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(request, "conexoes")
+
+    q = request.GET.get("q", "").strip()
+    organizacao = getattr(request.user, "organizacao", None)
+
+    associados = User.objects.none()
+
+    if organizacao:
+        associados = (
+            User.objects.filter(organizacao=organizacao, is_associado=True)
+            .exclude(pk=request.user.pk)
+            .select_related("organizacao", "nucleo")
+            .annotate(
+                cnpj_digits=Replace(
+                    Replace(
+                        Replace(Replace(F("cnpj"), Value("."), Value("")), Value("-"), Value("")),
+                        Value("/"),
+                        Value(""),
+                    ),
+                    Value(" "),
+                    Value(""),
+                )
+            )
+        )
+
+        if q:
+            digits = re.sub(r"\D", "", q)
+            filters = (
+                Q(contato__icontains=q)
+                | Q(nome_fantasia__icontains=q)
+                | Q(username__icontains=q)
+                | Q(razao_social__icontains=q)
+                | Q(cnpj__icontains=q)
+            )
+            if digits:
+                filters |= Q(cnpj_digits__icontains=digits)
+            associados = associados.filter(filters)
+
+        associados = associados.order_by("nome_fantasia", "contato", "username")
+
+    context = {
+        "associados": associados,
+        "q": q,
+        "tem_organizacao": bool(organizacao),
+    }
+
+    return render(request, "perfil/partials/conexoes_busca.html", context)
 
 
 @login_required
