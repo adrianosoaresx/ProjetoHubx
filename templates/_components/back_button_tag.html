@@ -1,0 +1,14 @@
+{% load i18n lucide_icons %}
+{% with
+  final_href=href|default:fallback_href|default:'#'
+  computed_fallback=fallback_href|default_if_none:None
+  back_mode=resolved_use_history|yesno:'history,href'
+%}
+  {% if not computed_fallback and resolved_element == 'button' %}
+    {% with computed_fallback=final_href %}
+      {% include '_components/back_button_tag_inner.html' %}
+    {% endwith %}
+  {% else %}
+    {% include '_components/back_button_tag_inner.html' %}
+  {% endif %}
+{% endwith %}

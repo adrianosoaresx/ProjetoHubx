@@ -1,0 +1,11 @@
+{% with base_classes=variant_classes %}
+  {% if classes %}
+    {% with final_classes=base_classes|add:' '|add:classes %}
+      {% include '_components/back_button_tag.html' %}
+    {% endwith %}
+  {% else %}
+    {% with final_classes=base_classes %}
+      {% include '_components/back_button_tag.html' %}
+    {% endwith %}
+  {% endif %}
+{% endwith %}

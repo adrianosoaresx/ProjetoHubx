@@ -2,15 +2,17 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
-    <button
-      type="button"
-      class="btn-secondary btn-sm"
-      hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
-      hx-target="#perfil-content"
-      hx-push-url="?section=conexoes"
-    >
-      {% trans "Voltar" %}
-    </button>
+    {% url 'accounts:perfil_conexoes_partial' as conexoes_partial_url %}
+    {% include '_components/back_button.html' with
+        variant='button'
+        size='sm'
+        use_history=False
+        hx_get=conexoes_partial_url
+        hx_target='#perfil-content'
+        hx_push_url='?section=conexoes'
+        href=conexoes_partial_url
+        label=_('Voltar')
+    %}
   </div>
 
   <form

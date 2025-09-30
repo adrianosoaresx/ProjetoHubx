@@ -294,6 +294,16 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
             return resp
         return response
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        lista_url = reverse("nucleos:list")
+        context["back_component_config"] = {
+            "href": lista_url,
+            "fallback_href": lista_url,
+            "use_history": True,
+        }
+        return context
+
 
 class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
