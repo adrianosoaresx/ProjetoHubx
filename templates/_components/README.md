@@ -37,35 +37,61 @@ Essas cores podem ser sobrescritas ao incluir o componente passando o atributo
 
 ## back_button.html
 
-Botão de navegação que prioriza o histórico do navegador. Quando houver
+Botão/link de retorno que prioriza o histórico do navegador. Quando houver
 referência válida (`document.referrer` ou cabeçalhos do HTMX), o componente
 executa `history.back()`. Caso contrário, utiliza o `href` informado ou um
-`fallback_href` explícito.
+`fallback_href` explícito antes de seguir com o link padrão.
 
-Parâmetros suportados:
+### Parâmetros
 
-- `href`: link preferencial para o botão. Opcional quando existir histórico.
-- `fallback_href`: URL utilizada quando não há histórico válido.
-- `prevent_history`: booleano que desabilita a lógica de `history.back()` —
-  útil para cliques tratados por HTMX ou fluxos customizados (a presença de
-  qualquer atributo `hx-*` já impede o retorno automático).
-- `label` / `aria_label`: textos visíveis e de acessibilidade. Ambos aceitam
-  valores traduzidos.
-- `classes`: classes CSS extras para o `<a>`.
-- `hx_*`: atributos HTMX como `hx_get`, `hx_target`, `hx_swap`, `hx_push_url`,
-  entre outros. Passe os valores diretamente via `{% include %}`.
+| Nome | Tipo / Valores | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `href` | URL | `'#'` | Destino preferencial quando não há histórico aproveitável. |
+| `fallback_href` | URL | — | Link alternativo quando `history.back()` falha; também define `data-fallback-href`. |
+| `variant` | `'button'`, `'link'`, `'compact'` | `'button'` | Seleciona presets para botão, link ou modo compacto. |
+| `classes` | string | — | Classes adicionais mescladas ao preset da variante. |
+| `label` | texto | `gettext('Voltar')` | Texto visível do botão. |
+| `aria_label` | texto | mesmo que `label` | Alternativa para leitores de tela. |
+| `icon` | nome Lucide | `'arrow-left'` | Ícone exibido antes do texto. Usa a tag `{% lucide %}`. |
+| `show_icon` | booleano | `True` | Define se o ícone padrão/personalizado deve ser renderizado. |
+| `prevent_history` | booleano | `None` | Quando `True`, ignora a lógica de histórico e emite `data-prevent-history="true"`. |
+| `hx_*` | atributos HTMX | — | Parâmetros `hx-*` são repassados diretamente; booleanos viram `true`/`false`. |
 
-Exemplo:
+### Exemplos
 
-```django
-{% include "_components/back_button.html" with href=back_href fallback_href=default_url classes='btn btn-secondary' %}
-```
-
-Para interações HTMX, desative o histórico:
+**Botão grande (padrão)**
 
 ```django
-{% include "_components/back_button.html" with hx_get=api_url hx_target='#modal' prevent_history=True %}
+{% include "_components/back_button.html" with href=back_href fallback_href=default_url %}
 ```
+
+**Link inline com rótulo customizado**
+
+```django
+{% include "_components/back_button.html" with variant='link' label=_('Voltar para a listagem') show_icon=False %}
+```
+
+**Ação compacta com HTMX**
+
+```django
+{% include "_components/back_button.html" with
+    variant='compact'
+    hx_get=modal_url
+    hx_target='#modal'
+    hx_swap='innerHTML'
+    prevent_history=True
+    fallback_href=default_url
+%}
+```
+
+### Convenções
+
+- Ícones utilizam a biblioteca Lucide via `{% lucide %}` e devem receber `aria_hidden='true'`.
+- Sempre forneça `label` traduzido ou use o padrão `gettext('Voltar')`.
+- Prefira `prevent_history=True` quando o clique abre conteúdo via HTMX e a
+  navegação do usuário não deve retroceder.
+- `fallback_href` garante uma rota segura quando o histórico do navegador não
+  está disponível (ex.: acesso direto por URL compartilhada).
 
 ## Convenções de i18n
 
