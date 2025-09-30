@@ -50,3 +50,20 @@ def get_item(mapping, key):
             return mapping[str_key]
         return None
     return getattr(mapping, key, None)
+
+
+@register.filter(name="coalesce")
+def coalesce(value, fallback):
+    """Return ``value`` unless it is empty, otherwise ``fallback``.
+
+    ``None`` and empty strings (``""``) are considered empty. Boolean ``False``
+    is treated as a meaningful value so it is preserved instead of being
+    replaced by ``fallback``. This is useful for template parameters where
+    ``False`` should propagate (e.g. HTMX attributes that accept "false").
+    """
+
+    if value is None:
+        return fallback
+    if isinstance(value, str) and value == "":
+        return fallback
+    return value
