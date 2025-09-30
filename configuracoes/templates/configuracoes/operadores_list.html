@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Operadores' %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle action_template='configuracoes/_partials/operadores_action.html' %}
+{% endblock %}
+
+{% block content %}
+  <section class="space-y-6">
+    <div class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+      <div class="card-body p-6 space-y-6">
+        <header class="space-y-1">
+          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Lista de operadores' %}</h2>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Veja quem já possui acesso como operador e mantenha as informações sempre atualizadas.' %}</p>
+        </header>
+        {% if operadores %}
+          <div class="grid gap-4 md:grid-cols-2">
+            {% for operador in operadores %}
+              <article class="border border-[var(--border)] rounded-xl p-4 bg-[var(--bg-secondary)] flex flex-col gap-3 shadow-sm">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ operador.contato|default:operador.username }}</h3>
+                    <p class="text-sm text-[var(--text-secondary)]">@{{ operador.username }}</p>
+                  </div>
+                  <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-semibold uppercase">
+                    {{ operador.contato|default:operador.username|slice:':1'|upper }}
+                  </span>
+                </div>
+                <dl class="space-y-2 text-sm">
+                  <div class="flex items-center gap-2">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 14c-4.97 0-9 2.686-9 6v1h18v-1c0-3.314-4.03-6-9-6Z" />
+                    </svg>
+                    <span class="text-[var(--text-secondary)]">{% trans 'Vinculado à organização:' %}</span>
+                    <strong class="text-[var(--text-primary)]">{{ operador.organizacao.nome|default:_('Nenhuma') }}</strong>
+                  </div>
+                  <div class="flex items-center gap-2 break-all">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m22 6-10 7L2 6" />
+                    </svg>
+                    <span class="text-[var(--text-secondary)]">{{ operador.email }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" />
+                    </svg>
+                    <span class="text-[var(--text-secondary)]">{% blocktrans with created=operador.date_joined|date:'d/m/Y H:i' %}Criado em {{ created }}{% endblocktrans %}</span>
+                  </div>
+                </dl>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="py-10 text-center border border-dashed border-[var(--border)] rounded-xl bg-[var(--bg-secondary)]">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+            </svg>
+            <p class="mt-4 text-sm text-[var(--text-secondary)]">{% trans 'Ainda não há operadores cadastrados. Clique no botão acima para adicionar o primeiro.' %}</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

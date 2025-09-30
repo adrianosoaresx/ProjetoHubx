@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Adicionar operador' %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle %}
+{% endblock %}
+
+{% block content %}
+  <section class="max-w-3xl mx-auto space-y-6">
+    <div class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+      <div class="card-body p-6">
+        <header class="mb-6 space-y-2">
+          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Dados do operador' %}</h2>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Informe os dados básicos para criar um novo usuário operador.' %}</p>
+        </header>
+        <form method="post" class="space-y-6">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error" role="alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-1">
+              <label for="id_username" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Nome de usuário' %}</label>
+              {{ form.username }}
+              {% if form.username.errors %}
+                <p class="text-sm text-[var(--error)]">{{ form.username.errors|join:', ' }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label for="id_email" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'E-mail' %}</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <p class="text-sm text-[var(--error)]">{{ form.email.errors|join:', ' }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label for="id_contato" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Nome completo' %}</label>
+              {{ form.contato }}
+              {% if form.contato.errors %}
+                <p class="text-sm text-[var(--error)]">{{ form.contato.errors|join:', ' }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label for="id_password1" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Senha' %}</label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}
+                <p class="text-sm text-[var(--error)]">{{ form.password1.errors|join:', ' }}</p>
+              {% endif %}
+            </div>
+            <div class="space-y-1">
+              <label for="id_password2" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Confirmar senha' %}</label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <p class="text-sm text-[var(--error)]">{{ form.password2.errors|join:', ' }}</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <a href="{% url 'configuracoes:operadores' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+            <button type="submit" class="btn btn-primary">{% trans 'Salvar operador' %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

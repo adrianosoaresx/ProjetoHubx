@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
+from accounts.models import UserType
 from configuracoes.models import ConfiguracaoConta
+
+
+User = get_user_model()
 
 
 class ConfiguracaoContaForm(forms.ModelForm):
@@ -68,3 +74,51 @@ class ConfiguracaoContaForm(forms.ModelForm):
             if data.get("dia_semana_notificacao") is None:
                 self.add_error("dia_semana_notificacao", _("Obrigatório para frequência semanal."))
         return data
+
+
+class OperadorCreateForm(UserCreationForm):
+    """Formulário simplificado para criação de operadores."""
+
+    email = forms.EmailField(label=_("E-mail"))
+    contato = forms.CharField(label=_("Nome completo"), max_length=150, required=False)
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "email", "contato")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = _("Nome de usuário")
+        self.fields["password1"].label = _("Senha")
+        self.fields["password2"].label = _("Confirmar senha")
+        self.fields["username"].help_text = ""
+        self.fields["password1"].help_text = ""
+        self.fields["password2"].help_text = ""
+        for name in ("username", "email", "contato", "password1", "password2"):
+            field = self.fields.get(name)
+            if field is None:
+                continue
+            classes = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = (classes + " form-input w-full").strip()
+            if not field.widget.attrs.get("placeholder"):
+                field.widget.attrs["placeholder"] = field.label
+
+    def clean_email(self) -> str:
+        email = self.cleaned_data.get("email", "").strip()
+        if not email:
+            raise forms.ValidationError(_("Informe um e-mail válido."))
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_("Este e-mail já está em uso."))
+        return email
+
+    def save(self, commit: bool = True, *, organizacao=None):  # type: ignore[override]
+        user = super().save(commit=False)
+        user.email = self.cleaned_data.get("email", "")
+        user.contato = self.cleaned_data.get("contato", "")
+        user.user_type = getattr(UserType.OPERADOR, "value", UserType.OPERADOR)
+        user.is_active = True
+        if organizacao is not None:
+            user.organizacao = organizacao
+        if commit:
+            user.save()
+        return user

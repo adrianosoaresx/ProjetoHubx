@@ -315,6 +315,13 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_SETTINGS,
             permissions=["authenticated"],
         ),
+        MenuItem(
+            id="configuracoes_operadores",
+            path=reverse("configuracoes:operadores"),
+            label="Operadores",
+            icon=ICON_USERS,
+            permissions=["admin", "root"],
+        ),
     ]
 
     nucleos_children = [
