@@ -281,23 +281,38 @@ def _resolve_management_target_user(request):
 @login_required
 def perfil(request):
     """Exibe a página de perfil privado do usuário."""
-    user = request.user
 
-    portfolio_recent = _portfolio_for(user, request.user, limit=6)
-    hero_title, hero_subtitle = _profile_hero_names(user)
+    viewer = request.user
+    target_user = viewer
+    is_owner = True
+
+    lookup_params = ("public_id", "username", "pk", "user_id")
+    if any(request.GET.get(param) for param in lookup_params):
+        target_user = _resolve_management_target_user(request)
+        is_owner = target_user == viewer
+
+    if not getattr(target_user, "is_authenticated", False):
+        raise PermissionDenied
+
+    portfolio_recent = _portfolio_for(target_user, request.user, limit=6)
+    hero_title, hero_subtitle = _profile_hero_names(target_user)
+
+    allow_owner_sections = _can_manage_profile(viewer, target_user)
 
     context = {
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
-        "profile": user,
-        "is_owner": True,
+        "profile": target_user,
+        "is_owner": is_owner,
         "portfolio_recent": portfolio_recent,
-        "portfolio_form": MediaForm(),
+        "portfolio_form": MediaForm() if allow_owner_sections else None,
         "portfolio_show_form": False,
         "portfolio_q": "",
     }
 
-    default_section, default_url = _perfil_default_section_url(request, allow_owner_sections=True)
+    default_section, default_url = _perfil_default_section_url(
+        request, allow_owner_sections=allow_owner_sections
+    )
     context.update(
         {
             "perfil_default_section": default_section,
