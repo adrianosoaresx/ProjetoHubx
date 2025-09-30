@@ -123,3 +123,48 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
 
     resp_cnpj = client.get(url, {"q": cnpj_valido.replace(".", "").replace("/", "").replace("-", "")}, HTTP_HX_REQUEST="true")
     assert list(resp_cnpj.context["associados"]) == [associado_cnpj]
+
+
+@pytest.mark.django_db
+def test_solicitar_conexao_cria_solicitacao(client):
+    organizacao = OrganizacaoFactory()
+    user = User.objects.create_user(
+        email="owner@example.com",
+        username="owner",
+        password="x",
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    outro = User.objects.create_user(
+        email="outro@example.com",
+        username="outro",
+        password="x",
+        organizacao=organizacao,
+        is_associado=True,
+    )
+
+    client.force_login(user)
+    url = reverse("accounts:solicitar_conexao", args=[outro.id])
+    response = client.post(url, {"q": ""}, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 200
+    assert outro.followers.filter(id=user.id).exists()
+
+
+@pytest.mark.django_db
+def test_remover_conexao_htmx_retorna_template(client):
+    user = User.objects.create_user(email="a@example.com", username="a", password="x")
+    other = User.objects.create_user(email="b@example.com", username="b", password="x")
+    user.connections.add(other)
+
+    client.force_login(user)
+    url = reverse("accounts:remover_conexao", args=[other.id])
+    response = client.post(
+        url,
+        {"q": ""},
+        HTTP_HX_REQUEST="true",
+        HTTP_HX_TARGET="perfil-content",
+    )
+
+    assert response.status_code == 200
+    assert not user.connections.filter(id=other.id).exists()

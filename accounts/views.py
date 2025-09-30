@@ -567,14 +567,19 @@ def perfil_conexoes_buscar(request):
         return _redirect_to_profile_section(request, "conexoes")
 
     q = request.GET.get("q", "").strip()
-    organizacao = getattr(request.user, "organizacao", None)
+    context = _build_conexoes_busca_context(request.user, q)
+    return render(request, "perfil/partials/conexoes_busca.html", context)
+
+
+def _build_conexoes_busca_context(user, query):
+    organizacao = getattr(user, "organizacao", None)
 
     associados = User.objects.none()
 
     if organizacao:
         associados = (
             User.objects.filter(organizacao=organizacao, is_associado=True)
-            .exclude(pk=request.user.pk)
+            .exclude(pk=user.pk)
             .select_related("organizacao", "nucleo")
             .annotate(
                 cnpj_digits=Replace(
@@ -589,14 +594,14 @@ def perfil_conexoes_buscar(request):
             )
         )
 
-        if q:
-            digits = re.sub(r"\D", "", q)
+        if query:
+            digits = re.sub(r"\D", "", query)
             filters = (
-                Q(contato__icontains=q)
-                | Q(nome_fantasia__icontains=q)
-                | Q(username__icontains=q)
-                | Q(razao_social__icontains=q)
-                | Q(cnpj__icontains=q)
+                Q(contato__icontains=query)
+                | Q(nome_fantasia__icontains=query)
+                | Q(username__icontains=query)
+                | Q(razao_social__icontains=query)
+                | Q(cnpj__icontains=query)
             )
             if digits:
                 filters |= Q(cnpj_digits__icontains=digits)
@@ -604,13 +609,58 @@ def perfil_conexoes_buscar(request):
 
         associados = associados.order_by("nome_fantasia", "contato", "username")
 
-    context = {
+    conexoes_ids = set()
+    solicitacoes_enviadas_ids = set()
+    solicitacoes_recebidas_ids = set()
+
+    if hasattr(user, "connections"):
+        conexoes_ids = set(user.connections.values_list("id", flat=True))
+    if hasattr(user, "following"):
+        solicitacoes_enviadas_ids = set(user.following.values_list("id", flat=True))
+    if hasattr(user, "followers"):
+        solicitacoes_recebidas_ids = set(user.followers.values_list("id", flat=True))
+
+    if conexoes_ids:
+        solicitacoes_enviadas_ids -= conexoes_ids
+        solicitacoes_recebidas_ids -= conexoes_ids
+
+    return {
         "associados": associados,
-        "q": q,
+        "q": query,
         "tem_organizacao": bool(organizacao),
+        "conexoes_ids": conexoes_ids,
+        "solicitacoes_enviadas_ids": solicitacoes_enviadas_ids,
+        "solicitacoes_recebidas_ids": solicitacoes_recebidas_ids,
     }
 
-    return render(request, "perfil/partials/conexoes_busca.html", context)
+
+@login_required
+def solicitar_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    other_user = get_object_or_404(User, id=id)
+
+    if other_user == request.user:
+        messages.error(request, _("Você não pode conectar-se consigo mesmo."))
+    elif request.user.connections.filter(id=other_user.id).exists():
+        messages.info(request, _("Vocês já estão conectados."))
+    elif other_user.followers.filter(id=request.user.id).exists():
+        messages.info(request, _("Solicitação de conexão já enviada."))
+    else:
+        other_user.followers.add(request.user)
+        messages.success(request, _("Solicitação de conexão enviada."))
+
+    q = request.POST.get("q", "").strip()
+
+    if _is_htmx_or_ajax(request):
+        context = _build_conexoes_busca_context(request.user, q)
+        return render(request, "perfil/partials/conexoes_busca.html", context)
+
+    params = {"section": "conexoes", "view": "buscar"}
+    if q:
+        params["q"] = q
+    return redirect(f"{reverse('accounts:perfil_sections_conexoes')}?{urlencode(params)}")
 
 
 @login_required
@@ -623,7 +673,12 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
+    q = request.POST.get("q", "").strip()
     if _is_htmx_or_ajax(request):
+        hx_target = request.headers.get("HX-Target", "")
+        if hx_target == "perfil-content":
+            context = _build_conexoes_busca_context(request.user, q)
+            return render(request, "perfil/partials/conexoes_busca.html", context)
         return HttpResponse(status=204)
     return redirect("accounts:perfil_sections_conexoes")
 
