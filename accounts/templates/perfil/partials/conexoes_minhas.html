@@ -12,50 +12,59 @@
   </button>
 </form>
 
-  <div class="card-grid">
-  {% for connection in connections %}
-    <article class="card connection-card">
-      <div class="card-body flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        {% if connection.avatar %}
-          <img src="{{ connection.avatar.url }}" alt="{{ connection.display_name|default:connection.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
-        {% else %}
-          <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ connection.display_name|default:connection.username }}">
-            {{ connection.username|first|upper }}
+  <div role="list" class="space-y-3">
+    {% for connection in connections %}
+      <article
+        role="listitem"
+        class="connection-card flex items-center justify-between gap-4 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 shadow-sm"
+      >
+        <div class="flex items-center gap-3">
+          {% if connection.avatar %}
+            <img src="{{ connection.avatar.url }}" alt="{{ connection.display_name|default:connection.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ connection.display_name|default:connection.username }}">
+              {{ connection.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <p class="font-semibold text-[var(--text-primary)]">{{ connection.display_name }}</p>
+            <p class="text-sm text-[var(--text-secondary)]">@{{ connection.username }}</p>
           </div>
-        {% endif %}
-        <div>
-          <p class="font-medium">{{ connection.display_name }}</p>
-          <p class="text-sm text-[var(--text-secondary)]">@{{ connection.username }}</p>
         </div>
-      </div>
-      <div class="flex gap-2">
-        <form
-          hx-post="{% url 'accounts:remover_conexao' connection.id %}"
-          hx-target="closest .connection-card"
-          hx-swap="outerHTML"
-          hx-confirm="{% trans 'Tem certeza que deseja remover esta conexão?' %}"
-        >
-          {% csrf_token %}
-          <button title="{% trans 'Remover conexão' %}" class="btn-danger btn-sm" aria-label="{% trans 'Remover conexão' %}">
-            {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
-          </button>
-        </form>
-      </div>
+        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+          <a
+            href="{% url 'accounts:perfil_publico_uuid' connection.public_id %}"
+            class="btn-secondary btn-sm"
+          >
+            {% trans "Ver perfil" %}
+          </a>
+          <form
+            hx-post="{% url 'accounts:remover_conexao' connection.id %}"
+            hx-target="closest .connection-card"
+            hx-swap="outerHTML"
+            hx-confirm="{% trans 'Tem certeza que deseja remover esta conexão?' %}"
+            class="sm:w-auto"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn-danger btn-sm">
+              {% trans "Desconectar" %}
+            </button>
+          </form>
+        </div>
       </article>
     {% empty %}
-    <div class="text-center text-sm text-[var(--text-secondary)] col-span-full">
-    <p>{% trans "Você ainda não tem conexões." %}</p>
-    <button
-      type="button"
-      class="mt-2 inline-flex items-center justify-center btn btn-primary btn-sm"
-      hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
-      hx-target="#perfil-content"
-      hx-push-url="?section=conexoes&view=buscar"
-    >
-      {% trans "Buscar Pessoas" %}
-    </button>
+      <div class="text-center text-sm text-[var(--text-secondary)]">
+        <p>{% trans "Você ainda não tem conexões." %}</p>
+        <button
+          type="button"
+          class="mt-2 inline-flex items-center justify-center btn btn-primary btn-sm"
+          hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
+          hx-target="#perfil-content"
+          hx-push-url="?section=conexoes&view=buscar"
+        >
+          {% trans "Buscar Pessoas" %}
+        </button>
+      </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
 
