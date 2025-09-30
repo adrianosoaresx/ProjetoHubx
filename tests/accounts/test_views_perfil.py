@@ -1,4 +1,6 @@
 import pytest
+from urllib.parse import parse_qs, urlsplit
+
 from django.test.utils import override_settings
 from django.urls import reverse
 
@@ -204,3 +206,28 @@ def test_admin_cannot_manage_user_from_other_organization(client, django_user_mo
     )
 
     assert response.status_code == 403
+
+
+def test_perfil_connections_search_uses_search_partial(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        email="owner@example.com",
+        username="owner",
+        password="pass123",
+    )
+
+    client.force_login(user)
+
+    response = client.get(
+        reverse("accounts:perfil"),
+        {"section": "conexoes", "view": "buscar"},
+    )
+
+    assert response.status_code == 200
+    assert response.context["perfil_default_section"] == "conexoes"
+
+    default_url = response.context["perfil_default_url"]
+    parsed = urlsplit(default_url)
+
+    assert parsed.path == reverse("accounts:perfil_conexoes_buscar")
+    query_params = parse_qs(parsed.query)
+    assert query_params.get("view") == ["buscar"]

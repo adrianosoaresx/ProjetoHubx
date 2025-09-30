@@ -164,6 +164,10 @@ def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
         elif section == "info" and params.get("info_view") == "edit":
             url_name = "accounts:perfil_sections_info"
             params.pop("info_view", None)
+        elif section == "conexoes":
+            view_mode = (params.get("view") or "").strip().lower()
+            if view_mode == "buscar":
+                url_name = "accounts:perfil_conexoes_buscar"
 
     url = reverse(url_name, args=url_args)
     query_string = params.urlencode()
