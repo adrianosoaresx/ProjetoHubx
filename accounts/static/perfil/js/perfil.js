@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     })
 
+    initConnectionReturn()
     // Marca a aba ativa quando usando HTMX
     initPerfilActiveHighlight()
 })
@@ -155,5 +156,93 @@ function initPerfilActiveHighlight() {
     // Suporte a back/forward do navegador
     window.addEventListener('popstate', () => {
         setActiveBySection(getUrlSection())
+    })
+}
+
+function initConnectionReturn() {
+    const STORAGE_KEY = "perfilConnectionReturn"
+
+    const getLocationKey = () => `${location.pathname}${location.search}`
+
+    const saveAnchor = anchorId => {
+        if (!anchorId) return
+        try {
+            const payload = {
+                anchor: anchorId,
+                url: getLocationKey(),
+                timestamp: Date.now(),
+            }
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+        } catch (error) {
+            console.warn("Não foi possível salvar a posição da conexão:", error)
+        }
+    }
+
+    const attachHandlers = (root = document) => {
+        const links = root.querySelectorAll("[data-connection-link]")
+        links.forEach(link => {
+            if (link.dataset.connectionLinkBound === "true") return
+            link.addEventListener("click", () => {
+                saveAnchor(link.dataset.connectionLink || "")
+            })
+            link.dataset.connectionLinkBound = "true"
+        })
+    }
+
+    const restorePosition = root => {
+        let stored
+        try {
+            stored = sessionStorage.getItem(STORAGE_KEY)
+        } catch (error) {
+            return
+        }
+        if (!stored) return
+
+        let data
+        try {
+            data = JSON.parse(stored)
+        } catch (error) {
+            sessionStorage.removeItem(STORAGE_KEY)
+            return
+        }
+
+        if (!data || data.url !== getLocationKey() || !data.anchor) {
+            return
+        }
+
+        const targetElement = document.getElementById(data.anchor)
+        if (!(targetElement instanceof Element)) {
+            return
+        }
+
+        if (root instanceof Element && !root.contains(targetElement)) {
+            return
+        }
+
+        requestAnimationFrame(() => {
+            targetElement.scrollIntoView({ behavior: "smooth", block: "center" })
+        })
+
+        try {
+            sessionStorage.removeItem(STORAGE_KEY)
+        } catch (error) {
+            console.warn("Não foi possível limpar o estado da conexão:", error)
+        }
+    }
+
+    attachHandlers()
+    restorePosition(document)
+
+    document.addEventListener("htmx:afterOnLoad", event => {
+        const target = event.detail && event.detail.target
+        if (!(target instanceof Element) || target.id !== "perfil-content") return
+        attachHandlers(target)
+        restorePosition(target)
+    })
+
+    window.addEventListener("pageshow", event => {
+        if (event.persisted) {
+            restorePosition(document)
+        }
     })
 }
