@@ -16,6 +16,7 @@
     {% for connection in connections %}
       <article
         role="listitem"
+        id="connection-{{ connection.id }}"
         class="connection-card flex items-center justify-between gap-4 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 shadow-sm"
       >
         <div class="flex items-center gap-3">
@@ -35,6 +36,7 @@
           <a
             href="{% url 'accounts:perfil_publico_uuid' connection.public_id %}"
             class="btn-secondary btn-sm"
+            data-connection-link="connection-{{ connection.id }}"
           >
             {% trans "Ver perfil" %}
           </a>
