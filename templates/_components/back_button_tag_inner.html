@@ -1,0 +1,78 @@
+{% load i18n lucide_icons %}
+  {% if resolved_element == 'button' %}
+    <button
+      type="{{ resolved_button_type }}"
+      class="{{ final_classes }}"
+      aria-label="{{ resolved_aria_label }}"
+      data-back-button="true"
+      data-back-mode="{{ back_mode }}"
+      {% if computed_fallback %}data-back-fallback="{{ computed_fallback }}"{% endif %}
+      {% if extra_attrs %}{% for attr, value in extra_attrs.items %} {{ attr }}="{{ value }}"{% endfor %}{% endif %}
+      {% if htmx_attrs %}{% for attr, value in htmx_attrs.items %} hx-{{ attr|slugify }}="{{ value }}"{% endfor %}{% endif %}
+      {% if hx_get %} hx-get="{{ hx_get }}"{% endif %}
+      {% if hx_post %} hx-post="{{ hx_post }}"{% endif %}
+      {% if hx_put %} hx-put="{{ hx_put }}"{% endif %}
+      {% if hx_delete %} hx-delete="{{ hx_delete }}"{% endif %}
+      {% if hx_patch %} hx-patch="{{ hx_patch }}"{% endif %}
+      {% if hx_target %} hx-target="{{ hx_target }}"{% endif %}
+      {% if hx_trigger %} hx-trigger="{{ hx_trigger }}"{% endif %}
+      {% if hx_confirm %} hx-confirm="{{ hx_confirm }}"{% endif %}
+      {% if hx_swap %} hx-swap="{{ hx_swap }}"{% endif %}
+      {% if hx_swap_oob %} hx-swap-oob="{{ hx_swap_oob }}"{% endif %}
+      {% if hx_push_url %} hx-push-url="{{ hx_push_url }}"{% endif %}
+      {% if hx_select %} hx-select="{{ hx_select }}"{% endif %}
+      {% if hx_select_oob %} hx-select-oob="{{ hx_select_oob }}"{% endif %}
+      {% if hx_include %} hx-include="{{ hx_include }}"{% endif %}
+      {% if hx_params %} hx-params="{{ hx_params }}"{% endif %}
+      {% if hx_vals %} hx-vals="{{ hx_vals }}"{% endif %}
+      {% if hx_ext %} hx-ext="{{ hx_ext }}"{% endif %}
+      {% if hx_headers %} hx-headers="{{ hx_headers }}"{% endif %}
+    >
+      {% if not resolved_hide_icon %}
+        {% lucide resolved_icon class=icon_classes aria_hidden='true' %}
+      {% endif %}
+      {% if resolved_variant == 'compact' %}
+        <span class="sr-only">{{ resolved_label }}</span>
+      {% else %}
+        <span>{{ resolved_label }}</span>
+      {% endif %}
+    </button>
+  {% else %}
+    <a
+      href="{{ final_href }}"
+      class="{{ final_classes }}"
+      aria-label="{{ resolved_aria_label }}"
+      data-back-button="true"
+      data-back-mode="{{ back_mode }}"
+      {% if computed_fallback %}data-back-fallback="{{ computed_fallback }}"{% endif %}
+      {% if extra_attrs %}{% for attr, value in extra_attrs.items %} {{ attr }}="{{ value }}"{% endfor %}{% endif %}
+      {% if htmx_attrs %}{% for attr, value in htmx_attrs.items %} hx-{{ attr|slugify }}="{{ value }}"{% endfor %}{% endif %}
+      {% if hx_get %} hx-get="{{ hx_get }}"{% endif %}
+      {% if hx_post %} hx-post="{{ hx_post }}"{% endif %}
+      {% if hx_put %} hx-put="{{ hx_put }}"{% endif %}
+      {% if hx_delete %} hx-delete="{{ hx_delete }}"{% endif %}
+      {% if hx_patch %} hx-patch="{{ hx_patch }}"{% endif %}
+      {% if hx_target %} hx-target="{{ hx_target }}"{% endif %}
+      {% if hx_trigger %} hx-trigger="{{ hx_trigger }}"{% endif %}
+      {% if hx_confirm %} hx-confirm="{{ hx_confirm }}"{% endif %}
+      {% if hx_swap %} hx-swap="{{ hx_swap }}"{% endif %}
+      {% if hx_swap_oob %} hx-swap-oob="{{ hx_swap_oob }}"{% endif %}
+      {% if hx_push_url %} hx-push-url="{{ hx_push_url }}"{% endif %}
+      {% if hx_select %} hx-select="{{ hx_select }}"{% endif %}
+      {% if hx_select_oob %} hx-select-oob="{{ hx_select_oob }}"{% endif %}
+      {% if hx_include %} hx-include="{{ hx_include }}"{% endif %}
+      {% if hx_params %} hx-params="{{ hx_params }}"{% endif %}
+      {% if hx_vals %} hx-vals="{{ hx_vals }}"{% endif %}
+      {% if hx_ext %} hx-ext="{{ hx_ext }}"{% endif %}
+      {% if hx_headers %} hx-headers="{{ hx_headers }}"{% endif %}
+    >
+      {% if not resolved_hide_icon %}
+        {% lucide resolved_icon class=icon_classes aria_hidden='true' %}
+      {% endif %}
+      {% if resolved_variant == 'compact' %}
+        <span class="sr-only">{{ resolved_label }}</span>
+      {% else %}
+        <span>{{ resolved_label }}</span>
+      {% endif %}
+    </a>
+  {% endif %}

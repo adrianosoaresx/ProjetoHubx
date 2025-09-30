@@ -1,0 +1,54 @@
+{% load i18n %}
+{% with
+  resolved_label=label|default:_('Voltar')
+  resolved_aria_label=aria_label|default:label|default:_('Voltar')
+  resolved_variant=variant|default:'button'
+  resolved_element=element|default:'a'
+  resolved_size=size|default:'md'
+  resolved_icon=icon|default:'arrow-left'
+  resolved_hide_icon=hide_icon|default_if_none:False
+  resolved_button_type=button_type|default:'button'
+%}
+  {% if resolved_variant == 'link' %}
+    {% with
+      variant_classes='inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)] transition-colors'
+      icon_classes='w-4 h-4'
+    %}
+      {% include '_components/back_button_element.html' %}
+    {% endwith %}
+  {% elif resolved_variant == 'compact' %}
+    {% with
+      variant_classes='inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-stronger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)] transition-colors bg-[var(--bg-primary)]'
+      icon_classes='w-5 h-5'
+    %}
+      {% include '_components/back_button_element.html' %}
+    {% endwith %}
+  {% else %}
+    {% if resolved_size == 'sm' %}
+      {% with size_suffix=' btn-sm' %}
+        {% with
+          variant_classes='btn btn-secondary inline-flex items-center gap-2'|add:size_suffix
+          icon_classes='w-4 h-4'
+        %}
+          {% include '_components/back_button_element.html' %}
+        {% endwith %}
+      {% endwith %}
+    {% elif resolved_size == 'lg' %}
+      {% with size_suffix=' btn-lg' %}
+        {% with
+          variant_classes='btn btn-secondary inline-flex items-center gap-2'|add:size_suffix
+          icon_classes='w-4 h-4'
+        %}
+          {% include '_components/back_button_element.html' %}
+        {% endwith %}
+      {% endwith %}
+    {% else %}
+      {% with
+        variant_classes='btn btn-secondary inline-flex items-center gap-2'
+        icon_classes='w-4 h-4'
+      %}
+        {% include '_components/back_button_element.html' %}
+      {% endwith %}
+    {% endif %}
+  {% endif %}
+{% endwith %}

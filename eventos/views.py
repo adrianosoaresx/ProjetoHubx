@@ -393,6 +393,16 @@ class EventoCreateView(
         kwargs["request"] = self.request
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        calendario_url = reverse("eventos:calendario")
+        context["back_component_config"] = {
+            "href": calendario_url,
+            "fallback_href": calendario_url,
+            "use_history": True,
+        }
+        return context
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.user_type == UserType.ROOT:
             raise PermissionDenied("Usuário root não pode criar eventos.")
@@ -438,6 +448,12 @@ class EventoUpdateView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["evento"] = self.object
+        calendario_url = reverse("eventos:calendario")
+        context["back_component_config"] = {
+            "href": calendario_url,
+            "fallback_href": calendario_url,
+            "use_history": True,
+        }
         return context
 
     def form_valid(self, form):  # pragma: no cover
