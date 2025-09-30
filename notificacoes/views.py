@@ -6,9 +6,12 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+from core.utils import resolve_back_href
 
 from .forms import NotificationTemplateForm
 from .models import (
@@ -55,7 +58,22 @@ def create_template(request):
             return redirect("notificacoes:templates_list")
     else:
         form = NotificationTemplateForm()
-    return render(request, "notificacoes/template_form.html", {"form": form})
+
+    fallback_url = reverse("notificacoes:templates_list")
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "form": form,
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+        "cancel_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+    }
+    return render(request, "notificacoes/template_form.html", context)
 
 
 @login_required
@@ -70,7 +88,24 @@ def edit_template(request, codigo: str):
             return redirect("notificacoes:templates_list")
     else:
         form = NotificationTemplateForm(instance=template)
-    return render(request, "notificacoes/template_form.html", {"form": form, "template": template})
+
+    fallback_url = reverse("notificacoes:templates_list")
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "form": form,
+        "template": template,
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+        "cancel_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar edição"),
+        },
+    }
+    return render(request, "notificacoes/template_form.html", context)
 
 
 @login_required
@@ -148,10 +183,25 @@ def delete_template(request, codigo: str):
             messages.success(request, _("Template excluído com sucesso."))
         return redirect("notificacoes:templates_list")
 
+    fallback_url = reverse("notificacoes:templates_list")
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "template": template,
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+        "cancel_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar exclusão"),
+        },
+    }
     return render(
         request,
         "notificacoes/template_confirm_delete.html",
-        {"template": template},
+        context,
     )
 
 

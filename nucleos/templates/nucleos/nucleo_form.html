@@ -30,7 +30,8 @@
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
-        <div class="flex justify-end pt-4 border-t border-[var(--border)]">
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
           <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
       </form>

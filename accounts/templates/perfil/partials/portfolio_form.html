@@ -10,8 +10,9 @@
       {% for field in form %}
         {% include '_forms/field.html' with field=field %}
       {% endfor %}
+      {% url 'accounts:perfil_sections_portfolio' as portfolio_url %}
       <div class="flex justify-end gap-2">
-        <a href="{% url 'accounts:perfil_sections_portfolio' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+        {% include '_components/cancel_button.html' with href=portfolio_url fallback_href=portfolio_url %}
         <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
       </div>
     </div>

@@ -379,9 +379,10 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "label": _("Cancelar"),
-            "aria_label": _("Cancelar"),
-            "variant": "button",
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
         }
         return context
 
@@ -531,7 +532,23 @@ def post_update(request, pk):
     else:
         form = PostForm(instance=post, user=request.user)
 
-    return render(request, "feed/post_update.html", {"form": form, "post": post})
+    fallback_url = reverse("feed:post_detail", args=[post.pk])
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "form": form,
+        "post": post,
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+        "cancel_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar edição"),
+        },
+    }
+    return render(request, "feed/post_update.html", context)
 
 
 @login_required
@@ -551,7 +568,22 @@ def post_delete(request, pk):
         messages.success(request, "Postagem removida.")
         return redirect("feed:listar")
 
-    return render(request, "feed/post_delete.html", {"post": post})
+    fallback_url = reverse("feed:post_detail", args=[post.pk])
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "post": post,
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+        "cancel_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar exclusão"),
+        },
+    }
+    return render(request, "feed/post_delete.html", context)
 
 
 # Moderação desativada: endpoint removido

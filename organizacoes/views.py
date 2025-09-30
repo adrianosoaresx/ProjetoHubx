@@ -159,9 +159,10 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "label": _("Cancelar"),
-            "aria_label": _("Cancelar"),
-            "variant": "button",
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
         }
         return context
 
@@ -197,9 +198,11 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "label": _("Cancelar"),
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
             "aria_label": _("Cancelar edição"),
-            "variant": "button",
         }
         return context
 
@@ -245,6 +248,22 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
     model = Organizacao
     template_name = "organizacoes/delete.html"
     success_url = reverse_lazy("organizacoes:list")
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        fallback_url = str(self.success_url)
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar exclusão"),
+        }
+        return context
 
     def get_queryset(self):
         return super().get_queryset().filter(inativa=False)

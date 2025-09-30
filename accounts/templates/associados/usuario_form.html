@@ -33,7 +33,7 @@
         {% include '_forms/field.html' with field=field %}
       {% endfor %}
       <div class="flex justify-end gap-2 pt-2">
-        <a href="{% url 'accounts:associados_lista' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+        {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
         <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
       </div>
     </form>

@@ -14,6 +14,8 @@ from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
 from django.views.generic import FormView, TemplateView, View
 
+from core.utils import resolve_back_href
+
 # Project‑specific imports.  These may vary depending on your actual project
 # structure.  Adjust the module paths as necessary.
 try:
@@ -299,6 +301,17 @@ class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
                 "hero_subtitle": _("Crie novos operadores para apoiar a gestão."),
             }
         )
+        fallback_url = str(self.success_url)
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
         return context
 
     def form_valid(self, form: OperadorCreateForm) -> HttpResponse:  # type: ignore[override]

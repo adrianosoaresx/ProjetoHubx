@@ -293,9 +293,11 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "label": _("Cancelar"),
-            "aria_label": _("Cancelar"),
             "variant": "compact",
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
         }
         return context
 
@@ -332,9 +334,12 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "label": _("Cancelar"),
-            "aria_label": _("Cancelar"),
             "variant": "compact",
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "aria_label": _("Cancelar edição"),
         }
         return context
 
@@ -715,6 +720,17 @@ class SuplenteCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredM
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["pk"] = self.kwargs["pk"]
+        fallback_url = reverse("nucleos:detail", kwargs={"pk": self.kwargs["pk"]})
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        ctx["back_href"] = back_href
+        ctx["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
+        ctx["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
         return ctx
 
 
