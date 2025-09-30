@@ -93,6 +93,26 @@ executa `history.back()`. Caso contrário, utiliza o `href` informado ou um
 - `fallback_href` garante uma rota segura quando o histórico do navegador não
   está disponível (ex.: acesso direto por URL compartilhada).
 
+### Populando `back_component_config`
+
+Views que desejam personalizar o botão exibido automaticamente em
+`templates/base.html` devem preencher o dicionário `back_component_config` no
+contexto. Os campos aceitos correspondem aos parâmetros da partial e serão
+mesclados antes da inclusão:
+
+```python
+context["back_component_config"] = {
+    "href": resolve_back_href(request, fallback="minha-rota"),
+    "variant": "link",
+    "label": _("Voltar para a listagem"),
+    "show_icon": False,
+}
+```
+
+Quando `back_component_config` não é informado, o template usa `back_href`,
+preenchido automaticamente pelo context processor
+`core.context_processors.back_navigation` (que utiliza `resolve_back_href`).
+
 ## Convenções de i18n
 
 - Todo texto visível deve estar dentro de `{% trans %}` ou `{% blocktrans %}`.
