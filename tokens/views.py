@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -19,6 +20,8 @@ from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 from notificacoes.services.email_client import send_email
 from notificacoes.services.whatsapp_client import send_whatsapp
+
+from core.utils import resolve_back_href
 
 from .forms import (
     Ativar2FAForm,
@@ -77,7 +80,17 @@ def listar_convites(request):
         convite.preview_display = preview
         convites.append(convite)
 
-    context = {"convites": convites, "totais": totais}
+    fallback_url = reverse("feed:meu_mural")
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    navigation_context = {
+        "back_href": back_href,
+        "back_component_config": {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        },
+    }
+
+    context = {"convites": convites, "totais": totais, **navigation_context}
     if request.headers.get("Hx-Request") == "true":
         return render(request, "tokens/token_list.html", context)
     full_context = {
@@ -92,6 +105,21 @@ def listar_convites(request):
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
+    def _navigation_context(self, request):
+        fallback_url = reverse("tokens:listar_convites")
+        back_href = resolve_back_href(request, fallback=fallback_url)
+        return {
+            "back_href": back_href,
+            "back_component_config": {
+                "href": back_href,
+                "fallback_href": fallback_url,
+            },
+            "cancel_component_config": {
+                "href": back_href,
+                "fallback_href": fallback_url,
+            },
+        }
+
     def get(self, request, *args, **kwargs):
         form = GerarTokenConviteForm(user=request.user)
         if not form.fields["tipo_destino"].choices:
@@ -106,14 +134,15 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 _("Seu usuário não está associado a nenhuma organização."),
             )
             return redirect("accounts:perfil")
+        context = {"form": form, **self._navigation_context(request)}
         if request.headers.get("Hx-Request") == "true":
-            return render(request, "tokens/gerar_token.html", {"form": form})
+            return render(request, "tokens/gerar_token.html", context)
         return render(
             request,
             "tokens/tokens.html",
             {
                 "partial_template": "tokens/gerar_token.html",
-                "form": form,
+                **context,
                 "hero_title": _("Gerar Token"),
             },
         )
@@ -147,6 +176,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         "partial_template": "tokens/gerar_token.html",
                         "form": form,
                         "hero_title": _("Gerar Token"),
+                        **self._navigation_context(request),
                     },
                     status=429,
                 )
@@ -173,6 +203,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "form": form,
                     "error": message,
                     "hero_title": _("Gerar Token"),
+                    **self._navigation_context(request),
                 },
                 status=400,
             )
@@ -196,6 +227,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "form": form,
                     "error": message,
                     "hero_title": _("Gerar Token"),
+                    **self._navigation_context(request),
                 },
                 status=400,
             )
@@ -218,6 +250,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "form": form,
                     "error": message,
                     "hero_title": _("Gerar Token"),
+                    **self._navigation_context(request),
                 },
                 status=403,
             )
@@ -250,6 +283,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         "form": form,
                         "error": _("Limite diário atingido."),
                         "hero_title": _("Gerar Token"),
+                        **self._navigation_context(request),
                     },
                     status=429,
                 )
@@ -287,6 +321,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "form": form,
                     "token": codigo,
                     "hero_title": _("Gerar Token"),
+                    **self._navigation_context(request),
                 },
             )
         if request.headers.get("HX-Request") == "true":
@@ -305,6 +340,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 "form": form,
                 "error": _("Dados inválidos"),
                 "hero_title": _("Gerar Token"),
+                **self._navigation_context(request),
             },
             status=400,
         )
