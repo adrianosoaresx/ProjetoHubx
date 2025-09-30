@@ -1,7 +1,7 @@
 from django.urls import path
 
 
-from .views import ConfiguracoesView
+from .views import ConfiguracoesView, OperadorCreateView, OperadorListView
 
 app_name = "configuracoes"
 
@@ -10,4 +10,6 @@ urlpatterns = [
     path("", ConfiguracoesView.as_view(), name="configuracoes"),
     path("seguranca/", ConfiguracoesView.as_view(), {"section": "seguranca"}, name="configuracoes_seguranca"),
     path("preferencias/", ConfiguracoesView.as_view(), {"section": "preferencias"}, name="configuracoes_preferencias"),
+    path("operadores/", OperadorListView.as_view(), name="operadores"),
+    path("operadores/novo/", OperadorCreateView.as_view(), name="operadores_adicionar"),
 ]

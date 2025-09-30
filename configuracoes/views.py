@@ -11,17 +11,19 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.generic import View
+from django.urls import reverse_lazy
+from django.views.generic import FormView, TemplateView, View
 
 # Project‑specific imports.  These may vary depending on your actual project
 # structure.  Adjust the module paths as necessary.
 try:
-    from configuracoes.forms import ConfiguracaoContaForm  # type: ignore
+    from configuracoes.forms import ConfiguracaoContaForm, OperadorCreateForm  # type: ignore
     from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta  # type: ignore
-    from accounts.models import AccountToken  # type: ignore
+    from accounts.models import AccountToken, UserType  # type: ignore
     from tokens.utils import get_client_ip  # type: ignore
 except Exception:
     ConfiguracaoContaForm = None  # type: ignore
+    OperadorCreateForm = None  # type: ignore
     def atualizar_preferencias_usuario(user, data):  # type: ignore
         return None
     def get_configuracao_conta(user):  # type: ignore
@@ -30,8 +32,12 @@ except Exception:
         class Tipo:
             PASSWORD_RESET = "password_reset"
         objects = None
+    class UserType:  # type: ignore
+        OPERADOR = "operador"
     def get_client_ip(request: HttpRequest) -> str:  # type: ignore
         return "0.0.0.0"
+
+from core.permissions import AdminRequiredMixin
 
 
 def _is_htmx(request: HttpRequest) -> bool:
@@ -236,3 +242,72 @@ class ConfiguracoesView(LoginRequiredMixin, View):
                         samesite="Lax",
                     )
         return response
+
+
+class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    """Lista operadores da organização para usuários administradores."""
+
+    template_name = "configuracoes/operadores_list.html"
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if UserType is None:  # type: ignore
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        User = get_user_model()
+        operador_value = getattr(UserType.OPERADOR, "value", UserType.OPERADOR)  # type: ignore[attr-defined]
+        qs = User.objects.filter(user_type=operador_value)
+        user_org_id = getattr(self.request.user, "organizacao_id", None)
+        user_type_value = getattr(getattr(self.request.user, "user_type", None), "value", getattr(self.request.user, "user_type", None))
+        if user_org_id and user_type_value != getattr(UserType.ROOT, "value", UserType.ROOT):  # type: ignore[attr-defined]
+            qs = qs.filter(organizacao_id=user_org_id)
+        operadores = qs.select_related("organizacao").order_by("contato", "username")
+        context.update(
+            {
+                "operadores": operadores,
+                "hero_title": _("Operadores"),
+                "hero_subtitle": _("Gerencie os operadores da sua organização."),
+            }
+        )
+        return context
+
+
+class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
+    """Formulário para criação de usuários operadores."""
+
+    template_name = "configuracoes/operador_form.html"
+    form_class = OperadorCreateForm  # type: ignore[assignment]
+    success_url = reverse_lazy("configuracoes:operadores")
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if OperadorCreateForm is None:  # type: ignore
+            raise Http404("Formulário de operador não disponível.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_class(self):  # type: ignore[override]
+        if OperadorCreateForm is None:  # type: ignore
+            raise Http404("Formulário de operador não disponível.")
+        return OperadorCreateForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "hero_title": _("Adicionar operador"),
+                "hero_subtitle": _("Crie novos operadores para apoiar a gestão."),
+            }
+        )
+        return context
+
+    def form_valid(self, form: OperadorCreateForm) -> HttpResponse:  # type: ignore[override]
+        organizacao = getattr(self.request.user, "organizacao", None)
+        saved_user = form.save(organizacao=organizacao)  # type: ignore[attr-defined]
+        messages.success(
+            self.request,
+            _("Operador %(username)s criado com sucesso.")
+            % {"username": getattr(saved_user, "username", "")},
+        )
+        self.object = saved_user  # type: ignore[assignment]
+        return super().form_valid(form)
