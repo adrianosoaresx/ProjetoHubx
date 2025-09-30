@@ -1,7 +1,73 @@
 {% load i18n %}
-<a href="{{ href|default:'#' }}"
+{% with button_label=label|default:_('Voltar') %}
+<a href="{{ href|default:fallback_href|default:'#' }}"
    class="{{ classes|default:'btn btn-secondary' }}"
-   aria-label="{% if aria_label %}{{ aria_label }}{% else %}{% trans 'Voltar' %}{% endif %}"
-   onclick="if (document.referrer) { try { var u = new URL(document.referrer); if (u.origin === window.location.origin) { history.back(); return false; } } catch (e) {} }">
-  {% if label %}{{ label }}{% else %}{% trans 'Voltar' %}{% endif %}
+   aria-label="{{ aria_label|default:button_label }}"
+   {% if fallback_href %}data-fallback-href="{{ fallback_href }}"{% endif %}
+   {% if prevent_history %}data-prevent-history="true"{% endif %}
+   {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
+   {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+   {% if hx_put %}hx-put="{{ hx_put }}"{% endif %}
+   {% if hx_delete %}hx-delete="{{ hx_delete }}"{% endif %}
+   {% if hx_patch %}hx-patch="{{ hx_patch }}"{% endif %}
+   {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+   {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+   {% if hx_trigger %}hx-trigger="{{ hx_trigger }}"{% endif %}
+   {% if hx_push_url is not None %}hx-push-url="{{ hx_push_url|stringformat:'s'|lower }}"{% endif %}
+   {% if hx_include %}hx-include="{{ hx_include }}"{% endif %}
+   {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
+   {% if hx_confirm %}hx-confirm="{{ hx_confirm }}"{% endif %}
+   {% if hx_params %}hx-params="{{ hx_params }}"{% endif %}
+   {% if hx_ext %}hx-ext="{{ hx_ext }}"{% endif %}
+   {% if hx_on %}hx-on="{{ hx_on }}"{% endif %}
+   {% if hx_vals %}hx-vals='{{ hx_vals }}'{% endif %}
+   {% if hx_select %}hx-select="{{ hx_select }}"{% endif %}
+   {% if hx_select_oob %}hx-select-oob="{{ hx_select_oob }}"{% endif %}
+   {% if hx_replace_url is not None %}hx-replace-url="{{ hx_replace_url|stringformat:'s'|lower }}"{% endif %}
+   {% if hx_headers %}hx-headers='{{ hx_headers }}'{% endif %}
+   {% if hx_prompt %}hx-prompt="{{ hx_prompt }}"{% endif %}
+   {% if hx_validate %}hx-validate="{{ hx_validate }}"{% endif %}
+   {% if hx_sync %}hx-sync="{{ hx_sync }}"{% endif %}
+   {% if hx_boost is not None %}hx-boost="{{ hx_boost|stringformat:'s'|lower }}"{% endif %}
+   {% if hx_disable %}hx-disable="{{ hx_disable }}"{% endif %}
+   {% if hx_history is not None %}hx-history="{{ hx_history|stringformat:'s'|lower }}"{% endif %}
+   onclick="return (function(el) {
+     if (el.dataset.preventHistory === 'true') {
+       return true;
+     }
+     var hasHx = false;
+     if (el.attributes) {
+       for (var i = 0; i < el.attributes.length; i++) {
+         if (el.attributes[i].name.indexOf('hx-') === 0) {
+           hasHx = true;
+           break;
+         }
+       }
+     }
+     if (hasHx) {
+       return true;
+     }
+     var ref = document.referrer;
+     if (ref) {
+       try {
+         var u = new URL(ref);
+         if (u.origin === window.location.origin) {
+           var current = window.location.pathname + window.location.search + window.location.hash;
+           var target = u.pathname + u.search + u.hash;
+           if (target && target !== current) {
+             history.back();
+             return false;
+           }
+         }
+       } catch (e) {}
+     }
+     var fallback = el.dataset.fallbackHref;
+     if (fallback) {
+       window.location.href = fallback;
+       return false;
+     }
+     return true;
+   })(this);">
+  {{ button_label }}
 </a>
+{% endwith %}

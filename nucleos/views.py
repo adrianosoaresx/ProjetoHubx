@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import logging
 
-from urllib.parse import urlparse
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -30,6 +28,7 @@ from django.views.generic import (
 from accounts.models import UserType
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from core.utils import resolve_back_href
 from eventos.models import Evento
 
 from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
@@ -283,6 +282,14 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
     template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["back_href"] = resolve_back_href(
+            self.request,
+            fallback=str(self.success_url),
+        )
+        return context
+
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, _("Núcleo criado com sucesso."))
@@ -325,23 +332,16 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
         return response
 
     def _resolve_back_href(self) -> str:
-        referer = self.request.META.get("HTTP_REFERER")
-        if referer:
-            parsed = urlparse(referer)
-            if parsed.netloc == self.request.get_host():
-                path = parsed.path
-                if parsed.query:
-                    path = f"{path}?{parsed.query}"
-                if path and path != self.request.path:
-                    return path
-
         nucleo = getattr(self, "object", None)
         if nucleo is None:
             nucleo = self.get_object()
 
         if nucleo:
-            return reverse("nucleos:detail", args=[nucleo.pk])
-        return reverse("nucleos:list")
+            fallback = reverse("nucleos:detail", args=[nucleo.pk])
+        else:
+            fallback = reverse("nucleos:list")
+
+        return resolve_back_href(self.request, fallback=fallback)
 
 
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
@@ -367,16 +367,8 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return redirect("nucleos:list")
 
     def _resolve_back_href(self, request, nucleo: Nucleo) -> str:
-        referer = request.META.get("HTTP_REFERER")
-        if referer:
-            parsed = urlparse(referer)
-            if parsed.netloc == request.get_host():
-                path = parsed.path
-                if parsed.query:
-                    path = f"{path}?{parsed.query}"
-                if path and path != request.path:
-                    return path
-        return reverse("nucleos:detail", args=[nucleo.pk])
+        fallback = reverse("nucleos:detail", args=[nucleo.pk])
+        return resolve_back_href(request, fallback=fallback)
 
 
 class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
