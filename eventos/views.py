@@ -3,6 +3,7 @@ from collections import Counter
 from datetime import date, timedelta, datetime, time
 from decimal import Decimal
 from typing import Any
+from urllib.parse import urlparse
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -30,7 +31,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.functional import Promise
-from django.utils.http import urlencode
+from django.utils.http import urlencode, url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -543,6 +544,7 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
         context["inscricao"] = minha_inscricao
+        context["back_href"] = self._resolve_back_href()
 
         evento = context["object"]
         inscricoes = list(evento.inscricoes.all())
@@ -586,6 +588,33 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context["painel_hero_template"] = self.get_painel_hero_template()
 
         return context
+
+    def _resolve_back_href(self) -> str:
+        request = self.request
+        allowed_hosts = {request.get_host()}
+        current_path = request.get_full_path()
+        candidates = [
+            request.headers.get("HX-Current-URL"),
+            request.META.get("HTTP_REFERER"),
+        ]
+
+        for candidate in candidates:
+            if not candidate:
+                continue
+            if not url_has_allowed_host_and_scheme(
+                candidate,
+                allowed_hosts=allowed_hosts,
+                require_https=request.is_secure(),
+            ):
+                continue
+            parsed = urlparse(candidate)
+            path = parsed.path or ""
+            if parsed.query:
+                path = f"{path}?{parsed.query}"
+            if path and path != current_path:
+                return path
+
+        return reverse("eventos:calendario")
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
