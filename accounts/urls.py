@@ -68,6 +68,11 @@ urlpatterns = [
         name="remover_conexao",
     ),
     path(
+        "perfil/conexoes/<int:id>/solicitar/",
+        views.solicitar_conexao,
+        name="solicitar_conexao",
+    ),
+    path(
         "perfil/conexoes/<int:id>/aceitar/",
         views.aceitar_conexao,
         name="aceitar_conexao",

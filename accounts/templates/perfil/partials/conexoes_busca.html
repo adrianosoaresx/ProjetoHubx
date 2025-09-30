@@ -34,36 +34,89 @@
   </form>
 
   {% if tem_organizacao %}
-    <div class="space-y-4">
-      {% for associado in associados %}
-        <article class="card">
-          <div class="card-body flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              {% if associado.avatar %}
-                <img src="{{ associado.avatar.url }}" alt="{{ associado.display_name|default:associado.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
-              {% else %}
-                <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ associado.display_name|default:associado.username }}">
-                  {{ associado.username|first|upper }}
+    {% if associados %}
+      <div role="list" class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {% for associado in associados %}
+          <div role="listitem" data-connection-card>
+            <article class="card h-full">
+              <div class="card-body flex h-full flex-col gap-4">
+                <div class="flex items-center gap-3">
+                  {% if associado.avatar %}
+                    <img src="{{ associado.avatar.url }}" alt="{{ associado.display_name|default:associado.username }}" class="h-12 w-12 rounded-full object-cover" loading="lazy" />
+                  {% else %}
+                    <div class="h-12 w-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ associado.display_name|default:associado.username }}">
+                      {{ associado.username|first|upper }}
+                    </div>
+                  {% endif %}
+                  <div class="min-w-0">
+                    <p class="truncate font-semibold text-[var(--text-primary)]">{{ associado.display_name }}</p>
+                    <p class="text-sm text-[var(--text-secondary)]">@{{ associado.username }}</p>
+                    {% if associado.razao_social %}
+                      <p class="text-xs text-[var(--text-secondary)]">{{ associado.razao_social }}</p>
+                    {% endif %}
+                    {% if associado.cnpj %}
+                      <p class="text-xs text-[var(--text-tertiary)]">CNPJ: {{ associado.cnpj }}</p>
+                    {% endif %}
+                  </div>
                 </div>
-              {% endif %}
-              <div>
-                <p class="font-medium">{{ associado.display_name }}</p>
-                {% if associado.razao_social %}
-                  <p class="text-sm text-[var(--text-secondary)]">{{ associado.razao_social }}</p>
-                {% endif %}
-                {% if associado.cnpj %}
-                  <p class="text-xs text-[var(--text-secondary)]">CNPJ: {{ associado.cnpj }}</p>
-                {% endif %}
+
+                <div class="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <a
+                    href="{% url 'accounts:perfil_publico_uuid' associado.public_id %}"
+                    class="btn-secondary btn-sm w-full sm:w-auto"
+                  >
+                    {% trans "Ver perfil" %}
+                  </a>
+
+                  {% if associado.id in conexoes_ids %}
+                    <form
+                      hx-post="{% url 'accounts:remover_conexao' associado.id %}"
+                      hx-target="#perfil-content"
+                      hx-swap="innerHTML"
+                      class="w-full sm:w-auto"
+                    >
+                      {% csrf_token %}
+                      <input type="hidden" name="q" value="{{ q }}" />
+                      <button type="submit" class="btn-danger btn-sm w-full">
+                        {% trans "Remover conexão" %}
+                      </button>
+                    </form>
+                  {% elif associado.id in solicitacoes_enviadas_ids %}
+                    <button type="button" class="btn-secondary btn-sm w-full cursor-default opacity-70" disabled>
+                      {% trans "Solicitação enviada" %}
+                    </button>
+                  {% elif associado.id in solicitacoes_recebidas_ids %}
+                    <a
+                      href="{% url 'accounts:perfil_sections_conexoes' %}?tab=solicitacoes"
+                      class="btn-outline btn-sm w-full text-center"
+                    >
+                      {% trans "Responder solicitação" %}
+                    </a>
+                  {% else %}
+                    <form
+                      hx-post="{% url 'accounts:solicitar_conexao' associado.id %}"
+                      hx-target="#perfil-content"
+                      hx-swap="innerHTML"
+                      class="w-full sm:w-auto"
+                    >
+                      {% csrf_token %}
+                      <input type="hidden" name="q" value="{{ q }}" />
+                      <button type="submit" class="btn btn-primary btn-sm w-full">
+                        {% trans "Conectar" %}
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
               </div>
-            </div>
+            </article>
           </div>
-        </article>
-      {% empty %}
-        <div class="text-center text-sm text-[var(--text-secondary)]">
-          <p>{% trans "Nenhum associado encontrado para os critérios informados." %}</p>
-        </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center text-sm text-[var(--text-secondary)]">
+        <p>{% trans "Nenhum associado encontrado para os critérios informados." %}</p>
+      </div>
+    {% endif %}
   {% else %}
     <div class="text-center text-sm text-[var(--text-secondary)]">
       <p>{% trans "Você não está vinculado a uma organização no momento." %}</p>
