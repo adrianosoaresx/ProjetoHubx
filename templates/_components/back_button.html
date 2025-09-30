@@ -1,10 +1,11 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 {% with button_label=label|default:_('Voltar') %}
+{% with resolved_variant=variant|default:'button' icon_name=icon|default:'arrow-left' %}
 <a href="{{ href|default:fallback_href|default:'#' }}"
-   class="{{ classes|default:'btn btn-secondary' }}"
+   class="{% if resolved_variant == 'link' %}inline-flex items-center gap-1 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500{% elif resolved_variant == 'compact' %}inline-flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500{% else %}btn btn-secondary inline-flex items-center gap-2{% endif %}{% if classes %} {{ classes }}{% endif %}"
    aria-label="{{ aria_label|default:button_label }}"
    {% if fallback_href %}data-fallback-href="{{ fallback_href }}"{% endif %}
-   {% if prevent_history %}data-prevent-history="true"{% endif %}
+   {% if prevent_history is not None and prevent_history != '' %}data-prevent-history="{{ prevent_history|yesno:'true,false' }}"{% endif %}
    {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
    {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
    {% if hx_put %}hx-put="{{ hx_put }}"{% endif %}
@@ -68,6 +69,14 @@
      }
      return true;
    })(this);">
-  {{ button_label }}
+  {% if show_icon is not False %}
+    {% if resolved_variant == 'compact' %}
+      {% lucide icon_name class='w-3.5 h-3.5' aria_hidden='true' %}
+    {% else %}
+      {% lucide icon_name class='w-4 h-4' aria_hidden='true' %}
+    {% endif %}
+  {% endif %}
+  <span class="{% if resolved_variant == 'compact' %}text-xs{% elif resolved_variant == 'link' %}text-sm{% else %}text-sm font-medium{% endif %}">{{ button_label }}</span>
 </a>
+{% endwith %}
 {% endwith %}
