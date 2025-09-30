@@ -46,7 +46,15 @@
     {% empty %}
     <div class="text-center text-sm text-[var(--text-secondary)] col-span-full">
     <p>{% trans "Você ainda não tem conexões." %}</p>
-    <a href="#" class="mt-2 inline-block btn btn-primary btn-sm">{% trans "Encontrar Pessoas" %}</a>
+    <button
+      type="button"
+      class="mt-2 inline-flex items-center justify-center btn btn-primary btn-sm"
+      hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
+      hx-target="#perfil-content"
+      hx-push-url="?section=conexoes&view=buscar"
+    >
+      {% trans "Buscar Pessoas" %}
+    </button>
   </div>
   {% endfor %}
 </div>

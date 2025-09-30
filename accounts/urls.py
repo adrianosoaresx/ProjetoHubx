@@ -77,6 +77,11 @@ urlpatterns = [
         views.recusar_conexao,
         name="recusar_conexao",
     ),
+    path(
+        "perfil/conexoes/buscar/",
+        views.perfil_conexoes_buscar,
+        name="perfil_conexoes_buscar",
+    ),
 
     path(
         "perfil/partials/portfolio/",
