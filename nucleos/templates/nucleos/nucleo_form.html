@@ -14,12 +14,8 @@
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-8">
   
-  {% url 'nucleos:list' as cancel_url %}
-  {% if object %}{% url 'nucleos:detail_uuid' object.public_id as cancel_url %}{% endif %}
-  {% with back_link=back_href|default:cancel_url %}
   <div class="card">
-    <div class="card-header flex items-center justify-between gap-3">
-      {% include '_components/back_button.html' with href=back_href fallback_href=cancel_url classes='btn btn-secondary btn-sm' %}
+    <div class="card-header">
       <h2 class="text-xl font-semibold">
         {% if object %}
           {% trans "Editar núcleo" %}
@@ -34,13 +30,11 @@
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
-        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-          <a href="{{ back_link }}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+        <div class="flex justify-end pt-4 border-t border-[var(--border)]">
           <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
       </form>
     </div>
   </div>
-  {% endwith %}
 </section>
 {% endblock %}

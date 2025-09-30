@@ -146,9 +146,7 @@
       <div class="mt-2 text-xs text-[var(--text-secondary)]">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</div>
 
       <!-- Ações -->
-      <div class="flex justify-end gap-3 mt-6">
-        {% url 'feed:listar' as feed_list_url %}
-        {% include '_components/back_button.html' with href=feed_list_url label=_('Cancelar') aria_label=_('Cancelar') %}
+      <div class="flex justify-end mt-6">
         <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
           {% trans "Salvar" %}
         </button>

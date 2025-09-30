@@ -22,6 +22,7 @@ from accounts.models import User, UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
+from core.utils import resolve_back_href
 
 # Moderação desativada: não é necessário notificar moderação
 from nucleos.models import Nucleo
@@ -372,6 +373,16 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         selected_tipo = (self.request.POST.get("tipo_feed") or self.request.GET.get("tipo_feed") or "global").strip()
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
+        fallback_url = reverse("feed:listar")
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "label": _("Cancelar"),
+            "aria_label": _("Cancelar"),
+            "variant": "button",
+        }
         return context
 
     def form_valid(self, form):

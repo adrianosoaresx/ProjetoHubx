@@ -284,10 +284,19 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["back_href"] = resolve_back_href(
+        fallback_url = str(self.success_url)
+        back_href = resolve_back_href(
             self.request,
-            fallback=str(self.success_url),
+            fallback=fallback_url,
         )
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "label": _("Cancelar"),
+            "aria_label": _("Cancelar"),
+            "variant": "compact",
+        }
         return context
 
     def form_valid(self, form):
@@ -310,7 +319,23 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["back_href"] = self._resolve_back_href()
+        nucleo = context.get("object") or getattr(self, "object", None)
+        if nucleo:
+            fallback_url = reverse("nucleos:detail", args=[nucleo.pk])
+        else:
+            fallback_url = reverse("nucleos:list")
+        back_href = resolve_back_href(
+            self.request,
+            fallback=fallback_url,
+        )
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "label": _("Cancelar"),
+            "aria_label": _("Cancelar"),
+            "variant": "compact",
+        }
         return context
 
     def get_queryset(self):
@@ -331,30 +356,24 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
             return resp
         return response
 
-    def _resolve_back_href(self) -> str:
-        nucleo = getattr(self, "object", None)
-        if nucleo is None:
-            nucleo = self.get_object()
-
-        if nucleo:
-            fallback = reverse("nucleos:detail", args=[nucleo.pk])
-        else:
-            fallback = reverse("nucleos:list")
-
-        return resolve_back_href(self.request, fallback=fallback)
-
-
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
+        back_href = self._resolve_back_href(request, nucleo)
+        fallback_url = reverse("nucleos:detail", args=[nucleo.pk])
         return render(
             request,
             "nucleos/delete.html",
             {
                 "object": nucleo,
-                "back_href": self._resolve_back_href(request, nucleo),
+                "back_href": back_href,
+                "back_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                    "variant": "compact",
+                },
             },
         )
 
