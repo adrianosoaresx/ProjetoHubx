@@ -26,6 +26,7 @@ from accounts.models import UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
+from core.utils import resolve_back_href
 from feed.models import Post
 from nucleos.models import Nucleo
 
@@ -150,6 +151,20 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
     template_name = "organizacoes/organizacao_form.html"
     success_url = reverse_lazy("organizacoes:list")
 
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        fallback_url = reverse("organizacoes:list")
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "label": _("Cancelar"),
+            "aria_label": _("Cancelar"),
+            "variant": "button",
+        }
+        return context
+
     def form_valid(self, form):
         try:
             form.instance.created_by = self.request.user
@@ -173,6 +188,20 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
     form_class = OrganizacaoForm
     template_name = "organizacoes/organizacao_form.html"
     success_url = reverse_lazy("organizacoes:list")
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        fallback_url = reverse("organizacoes:list")
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+            "label": _("Cancelar"),
+            "aria_label": _("Cancelar edição"),
+            "variant": "button",
+        }
+        return context
 
     def get_queryset(self):
         return super().get_queryset().filter(inativa=False)

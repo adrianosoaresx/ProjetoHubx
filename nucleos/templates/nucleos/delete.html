@@ -15,10 +15,8 @@
       {% blocktrans %}Deseja realmente remover o núcleo <strong>{{ object.nome }}</strong>?{% endblocktrans %}
     </p>
 
-    <form method="post" class="mt-6 flex justify-center gap-3">
+    <form method="post" class="mt-6 flex justify-center">
       {% csrf_token %}
-
-      {% include '_components/back_button.html' with href=back_href classes='btn btn-secondary text-sm' %}
 
       <button type="submit" class="btn btn-primary text-sm" aria-label="{% trans 'Remover' %}">
         {% trans "Remover" %}
