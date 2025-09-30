@@ -18,7 +18,7 @@
 
     <form method="post" hx-post="{% url 'feed:post_delete' post.pk %}" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'feed:post_detail' post.pk %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
       <button type="submit" class="btn btn-danger" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
     </form>
     </div>

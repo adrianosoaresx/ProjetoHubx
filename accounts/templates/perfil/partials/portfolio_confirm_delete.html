@@ -2,12 +2,10 @@
 <section class="space-y-4">
   <h2 class="text-xl font-semibold text-error">{% trans "Remover Portfólio" %}</h2>
   <p class="text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item do portfólio?" %}</p>
+  {% url 'accounts:perfil_sections_portfolio' as portfolio_url %}
   <form method="post" class="flex justify-end gap-2">
     {% csrf_token %}
-    <a href="{% url 'accounts:perfil_sections_portfolio' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
-      {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
-      {% trans "Cancelar" %}
-    </a>
+    {% include '_components/cancel_button.html' with href=portfolio_url fallback_href=portfolio_url classes='btn-sm' icon='arrow-left' show_icon=True %}
     <button type="submit" class="btn-danger btn-sm inline-flex items-center gap-1">
       {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Remover" %}

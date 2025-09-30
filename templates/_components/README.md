@@ -113,6 +113,37 @@ Quando `back_component_config` não é informado, o template usa `back_href`,
 preenchido automaticamente pelo context processor
 `core.context_processors.back_navigation` (que utiliza `resolve_back_href`).
 
+## cancel_button.html
+
+Partial especializada para ações de cancelamento. É um _wrapper_ do
+`back_button.html`, com `label`, `aria_label` e `variant` padronizados para os
+valores de cancelamento. Dessa forma, os formulários exibem sempre
+`gettext('Cancelar')` (com ícone oculto por padrão) e mantêm a semântica de
+"voltar" apenas quando o usuário realmente está navegando.
+
+### Parâmetros
+
+Aceita os mesmos parâmetros de `back_button.html`. Apenas os padrões mudam:
+
+| Nome | Padrão | Observação |
+| --- | --- | --- |
+| `label` | `gettext('Cancelar')` | O texto visível sempre utiliza o fallback traduzido. |
+| `aria_label` | igual a `label` | Pode ser sobrescrito para casos específicos (ex.: `Cancelar edição`). |
+| `variant` | `'button'` | Mantém visual de botão secundário. |
+| `icon` | `'x'` | O ícone só aparece quando `show_icon=True`. |
+| `show_icon` | `False` | Evita ícone redundante em ações de cancelamento. |
+
+### Boas práticas
+
+- Inclua o componente ao lado do botão principal do formulário, utilizando os
+  `href`/`fallback_href` vindos da view.
+- Utilize `cancel_component_config` quando precisar reutilizar as mesmas
+  configurações em múltiplos pontos do template.
+- Só apresente "Cancelar" e "Voltar" simultaneamente quando forem ações com
+  propósitos distintos (por exemplo, cancelar o formulário vs. navegar para a
+  página anterior). Caso ambas levem para o mesmo destino, mantenha apenas o
+  botão de cancelamento ou o `back_button` no cabeçalho.
+
 ## Convenções de i18n
 
 - Todo texto visível deve estar dentro de `{% trans %}` ou `{% blocktrans %}`.

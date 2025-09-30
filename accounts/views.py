@@ -38,6 +38,8 @@ from django.views.generic import FormView, ListView, TemplateView
 from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
+
+from core.utils import resolve_back_href
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.serializers import UserSerializer
@@ -1328,6 +1330,21 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         kwargs = super().get_form_kwargs()
         kwargs["allowed_user_types"] = self.get_allowed_user_types()
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        fallback_url = str(self.success_url)
+        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        context["back_href"] = back_href
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
+        context["cancel_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback_url,
+        }
+        return context
 
     def form_valid(self, form):
         organizacao = getattr(self.request.user, "organizacao", None)

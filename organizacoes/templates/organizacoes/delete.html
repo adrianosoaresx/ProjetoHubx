@@ -18,7 +18,7 @@
 
       <form method="post" class="mt-6 flex justify-center gap-3">
         {% csrf_token %}
-        <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+        {% include '_components/cancel_button.html' with href=back_href fallback_href=back_component_config.fallback_href %}
         <button type="submit" class="btn btn-danger">{% trans 'Remover' %}</button>
       </form>
     </div>
