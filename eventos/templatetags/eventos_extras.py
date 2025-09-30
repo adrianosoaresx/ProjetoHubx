@@ -65,6 +65,10 @@ def evento_badges(evento):
             }
         )
 
+    if target_badge:
+        cover_badges.append(target_badge)
+        target_badge = None
+
     return {
         "cover_badges": cover_badges,
         "target_badge": target_badge,
