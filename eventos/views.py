@@ -285,6 +285,9 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx.setdefault("pagination_hx_get", self.request.path)
         ctx.setdefault("pagination_hx_indicator", "#eventos-loading")
         ctx.setdefault("pagination_hx_push_url", "true")
+        # Valores padrão para o estado do filtro utilizado pelos componentes HTMX
+        ctx.setdefault("filter_state_id", "eventos-filter-state")
+        ctx.setdefault("filter_state_classes", "hidden")
         return ctx
 
     def render_to_response(self, context, **response_kwargs):
