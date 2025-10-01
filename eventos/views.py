@@ -125,7 +125,8 @@ class PainelRenderMixin:
 
 
 class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
-    template_name = "eventos/partials/eventos/evento_list.html"
+    template_name = "eventos/evento_list.html"
+    partial_template_name = "eventos/partials/eventos/evento_list.html"
     painel_action_template = "eventos/partials/eventos/hero_evento_list_action.html"
     context_object_name = "eventos"
     paginate_by = 12
@@ -236,6 +237,13 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
+
+    def render_to_response(self, context, **response_kwargs):
+        is_htmx_request = self.request.headers.get("HX-Request") == "true"
+        context = self.get_painel_context(context)
+        context["is_htmx"] = is_htmx_request
+        template_name = self.partial_template_name if is_htmx_request else self.template_name
+        return TemplateResponse(self.request, template_name, context, **response_kwargs)
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()

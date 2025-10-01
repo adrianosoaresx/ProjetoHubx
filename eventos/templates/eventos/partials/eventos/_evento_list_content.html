@@ -1,0 +1,30 @@
+{% load i18n %}
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="text-xl font-semibold">{% trans "Eventos" %}</h2>
+  </div>
+  <div class="card-body">
+    <div
+      id="eventos-lista"
+      role="list"
+      aria-label="{% trans 'Lista de eventos' %}"
+      class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 items-stretch"
+    >
+      {% for evento in eventos %}
+        {% include '_components/card_evento.html' %}
+      {% empty %}
+        <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
+      {% endfor %}
+    </div>
+    {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_target='#eventos-conteudo' hx_get=request.path hx_push_url='true' hx_indicator='#eventos-loading' %}
+  </div>
+</div>
+
+<div
+  id="eventos-filter-state"
+  hx-swap-oob="true"
+  class="hidden"
+  data-current-filter="{{ current_filter|default:'todos' }}"
+  aria-hidden="true"
+></div>
