@@ -1,12 +1,16 @@
 {% load i18n %}
-{% url 'nucleos:detail_uuid' nucleo.public_id as detail_url %}
-{% trans 'Ver detalhes do núcleo' as sr_label %}
-{% with classificacao=nucleo.classificacao %}
-  {% if classificacao == 'planejamento' %}
-    {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=nucleo.get_classificacao_display badge_style='--primary:#f97316; --primary-soft:rgba(249, 115, 22, 0.15); --primary-soft-border:rgba(249, 115, 22, 0.3);' %}
-  {% elif classificacao == 'constituido' %}
-    {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=nucleo.get_classificacao_display badge_style='--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);' %}
-  {% else %}
-    {% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=_('Formação') badge_style='--primary:#2563eb; --primary-soft:rgba(37, 99, 235, 0.15); --primary-soft-border:rgba(37, 99, 235, 0.3);' %}
+{% with resolved_nucleo=item|default:nucleo %}
+  {% if resolved_nucleo %}
+    {% url 'nucleos:detail_uuid' resolved_nucleo.public_id as detail_url %}
+    {% trans 'Ver detalhes do núcleo' as sr_label %}
+    {% with classificacao=resolved_nucleo.classificacao %}
+      {% if classificacao == 'planejamento' %}
+        {% include '_partials/cards/base_card.html' with url=detail_url cover=resolved_nucleo.cover avatar=resolved_nucleo.avatar title=resolved_nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=resolved_nucleo.get_classificacao_display badge_style='--primary:#f97316; --primary-soft:rgba(249, 115, 22, 0.15); --primary-soft-border:rgba(249, 115, 22, 0.3);' %}
+      {% elif classificacao == 'constituido' %}
+        {% include '_partials/cards/base_card.html' with url=detail_url cover=resolved_nucleo.cover avatar=resolved_nucleo.avatar title=resolved_nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=resolved_nucleo.get_classificacao_display badge_style='--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);' %}
+      {% else %}
+        {% include '_partials/cards/base_card.html' with url=detail_url cover=resolved_nucleo.cover avatar=resolved_nucleo.avatar title=resolved_nucleo.nome details='_components/card_details_nucleo.html' sr_label=sr_label badge=_('Formação') badge_style='--primary:#2563eb; --primary-soft:rgba(37, 99, 235, 0.15); --primary-soft-border:rgba(37, 99, 235, 0.3);' %}
+      {% endif %}
+    {% endwith %}
   {% endif %}
 {% endwith %}
