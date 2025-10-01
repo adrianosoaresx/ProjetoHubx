@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Check-in do evento" %}{% endblock %}
+{% block title %}{{ painel_title|default:_('Check-in do evento') }}{% endblock %}
 
 {% block hero %}
   <div id="inscricao-checkin-hero">
-    {% include '_components/hero_eventos_detail.html' with evento=evento %}
+    {% with hero_template=painel_hero_template|default_if_none:'_components/hero_evento.html' %}
+      {% include hero_template with evento=evento title=painel_title|default:_('Check-in do evento') subtitle=painel_subtitle action_template=painel_action_template breadcrumb_template=painel_breadcrumb_template neural_background=painel_neural_background style=painel_hero_style %}
+    {% endwith %}
   </div>
 {% endblock %}
 
@@ -13,7 +15,7 @@
   <section class="max-w-5xl mx-auto py-8 px-4">
     <article class="card">
       <div class="card-header">
-        <h2 class="text-xl font-semibold">{% trans "Check-in do evento" %}</h2>
+        <h2 class="text-xl font-semibold">{{ painel_title|default:_('Check-in do evento') }}</h2>
       </div>
       <div class="card-body space-y-6">
         <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
