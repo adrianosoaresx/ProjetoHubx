@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Eventos" %}{% endblock %}
+
+{% block hero %}
+  {% with painel_title_default=_('Eventos') %}
+    {% with hero_template=painel_hero_template|default:'_components/hero_evento.html' %}
+      {% include hero_template with title=painel_title|default:painel_title_default subtitle=painel_subtitle action_template=painel_action_template breadcrumb_template=painel_breadcrumb_template neural_background=painel_neural_background style=painel_hero_style %}
+    {% endwith %}
+  {% endwith %}
+{% endblock %}
+
+{% block content %}
+  <section class="mx-auto max-w-6xl px-4 lg:px-6 py-6">
+    <div id="eventos-conteudo">
+      {% include 'eventos/partials/eventos/_evento_list_content.html' %}
+    </div>
+    <div
+      id="eventos-loading"
+      class="htmx-indicator mt-6 text-center text-sm text-[var(--text-secondary)]"
+      role="status"
+      aria-live="polite"
+    >
+      {% trans 'Carregando eventos...' %}
+    </div>
+  </section>
+{% endblock %}
