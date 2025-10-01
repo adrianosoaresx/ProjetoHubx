@@ -280,6 +280,10 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx.setdefault("list_total_eventos_ativos", ctx.get("total_eventos_ativos"))
         ctx.setdefault("list_total_eventos_concluidos", ctx.get("total_eventos_concluidos"))
         ctx.setdefault("list_total_eventos_cancelados", ctx.get("total_eventos_cancelados"))
+        # Valores padrão para a paginação HTMX quando não forem definidos
+        ctx.setdefault("pagination_hx_target", "#eventos-conteudo")
+        ctx.setdefault("pagination_hx_get", self.request.path)
+        ctx.setdefault("pagination_hx_indicator", "#eventos-loading")
         return ctx
 
     def render_to_response(self, context, **response_kwargs):
