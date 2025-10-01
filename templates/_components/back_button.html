@@ -1,112 +1,12 @@
-{% load i18n lucide_icons string_filters %}
-{% with cfg=config|default:back_component_config %}
-{% with
-  href_fallback=cfg|get_item:'href'
-  fallback_href_fallback=cfg|get_item:'fallback_href'
-  variant_fallback=cfg|get_item:'variant'
-  classes_fallback=cfg|get_item:'classes'
-  label_fallback=cfg|get_item:'label'
-  aria_label_fallback=cfg|get_item:'aria_label'
-  icon_fallback=cfg|get_item:'icon'
-  show_icon_fallback=cfg|get_item:'show_icon'
-  prevent_history_fallback=cfg|get_item:'prevent_history'
-  hx_get_fallback=cfg|get_item:'hx_get'
-  hx_post_fallback=cfg|get_item:'hx_post'
-  hx_put_fallback=cfg|get_item:'hx_put'
-  hx_delete_fallback=cfg|get_item:'hx_delete'
-  hx_patch_fallback=cfg|get_item:'hx_patch'
-  hx_target_fallback=cfg|get_item:'hx_target'
-  hx_swap_fallback=cfg|get_item:'hx_swap'
-  hx_trigger_fallback=cfg|get_item:'hx_trigger'
-  hx_push_url_fallback=cfg|get_item:'hx_push_url'
-  hx_include_fallback=cfg|get_item:'hx_include'
-  hx_indicator_fallback=cfg|get_item:'hx_indicator'
-  hx_confirm_fallback=cfg|get_item:'hx_confirm'
-  hx_params_fallback=cfg|get_item:'hx_params'
-  hx_ext_fallback=cfg|get_item:'hx_ext'
-  hx_on_fallback=cfg|get_item:'hx_on'
-  hx_vals_fallback=cfg|get_item:'hx_vals'
-  hx_select_fallback=cfg|get_item:'hx_select'
-  hx_select_oob_fallback=cfg|get_item:'hx_select_oob'
-  hx_replace_url_fallback=cfg|get_item:'hx_replace_url'
-  hx_headers_fallback=cfg|get_item:'hx_headers'
-  hx_prompt_fallback=cfg|get_item:'hx_prompt'
-  hx_validate_fallback=cfg|get_item:'hx_validate'
-  hx_sync_fallback=cfg|get_item:'hx_sync'
-  hx_boost_fallback=cfg|get_item:'hx_boost'
-  hx_disable_fallback=cfg|get_item:'hx_disable'
-  hx_history_fallback=cfg|get_item:'hx_history'
-%}
-{% with
-  href=href|coalesce:href_fallback
-  fallback_href=fallback_href|coalesce:fallback_href_fallback
-  variant=variant|coalesce:variant_fallback
-  classes=classes|coalesce:classes_fallback
-  label=label|coalesce:label_fallback
-  aria_label=aria_label|coalesce:aria_label_fallback
-  icon=icon|coalesce:icon_fallback
-  show_icon=show_icon|default_if_none:show_icon_fallback
-  prevent_history=prevent_history|default_if_none:prevent_history_fallback
-  hx_get=hx_get|coalesce:hx_get_fallback
-  hx_post=hx_post|coalesce:hx_post_fallback
-  hx_put=hx_put|coalesce:hx_put_fallback
-  hx_delete=hx_delete|coalesce:hx_delete_fallback
-  hx_patch=hx_patch|coalesce:hx_patch_fallback
-  hx_target=hx_target|coalesce:hx_target_fallback
-  hx_swap=hx_swap|coalesce:hx_swap_fallback
-  hx_trigger=hx_trigger|coalesce:hx_trigger_fallback
-  hx_push_url=hx_push_url|coalesce:hx_push_url_fallback
-  hx_include=hx_include|coalesce:hx_include_fallback
-  hx_indicator=hx_indicator|coalesce:hx_indicator_fallback
-  hx_confirm=hx_confirm|coalesce:hx_confirm_fallback
-  hx_params=hx_params|coalesce:hx_params_fallback
-  hx_ext=hx_ext|coalesce:hx_ext_fallback
-  hx_on=hx_on|coalesce:hx_on_fallback
-  hx_vals=hx_vals|coalesce:hx_vals_fallback
-  hx_select=hx_select|coalesce:hx_select_fallback
-  hx_select_oob=hx_select_oob|coalesce:hx_select_oob_fallback
-  hx_replace_url=hx_replace_url|coalesce:hx_replace_url_fallback
-  hx_headers=hx_headers|coalesce:hx_headers_fallback
-  hx_prompt=hx_prompt|coalesce:hx_prompt_fallback
-  hx_validate=hx_validate|coalesce:hx_validate_fallback
-  hx_sync=hx_sync|coalesce:hx_sync_fallback
-  hx_boost=hx_boost|coalesce:hx_boost_fallback
-  hx_disable=hx_disable|coalesce:hx_disable_fallback
-  hx_history=hx_history|coalesce:hx_history_fallback
-%}
-{% with button_label=label|default:_('Voltar') %}
-{% with resolved_variant=variant|default:'button' icon_name=icon|default:'arrow-left' %}
-<a href="{{ href|default:fallback_href|default:'#' }}"
-   class="{% if resolved_variant == 'link' %}inline-flex items-center gap-1 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500{% elif resolved_variant == 'compact' %}inline-flex items-center gap-1 text-xs font-medium text-primary-600 transition-colors hover:text-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500{% else %}btn btn-secondary inline-flex items-center gap-2{% endif %}{% if classes %} {{ classes }}{% endif %}"
-   aria-label="{{ aria_label|default:button_label }}"
-   {% if fallback_href %}data-fallback-href="{{ fallback_href }}"{% endif %}
-   {% if prevent_history is not None and prevent_history != '' %}data-prevent-history="{{ prevent_history|yesno:'true,false' }}"{% endif %}
-   {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
-   {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-   {% if hx_put %}hx-put="{{ hx_put }}"{% endif %}
-   {% if hx_delete %}hx-delete="{{ hx_delete }}"{% endif %}
-   {% if hx_patch %}hx-patch="{{ hx_patch }}"{% endif %}
-   {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
-   {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
-   {% if hx_trigger %}hx-trigger="{{ hx_trigger }}"{% endif %}
-   {% if hx_push_url is not None %}hx-push-url="{{ hx_push_url|stringformat:'s'|lower }}"{% endif %}
-   {% if hx_include %}hx-include="{{ hx_include }}"{% endif %}
-   {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
-   {% if hx_confirm %}hx-confirm="{{ hx_confirm }}"{% endif %}
-   {% if hx_params %}hx-params="{{ hx_params }}"{% endif %}
-   {% if hx_ext %}hx-ext="{{ hx_ext }}"{% endif %}
-   {% if hx_on %}hx-on="{{ hx_on }}"{% endif %}
-   {% if hx_vals %}hx-vals='{{ hx_vals }}'{% endif %}
-   {% if hx_select %}hx-select="{{ hx_select }}"{% endif %}
-   {% if hx_select_oob %}hx-select-oob="{{ hx_select_oob }}"{% endif %}
-   {% if hx_replace_url is not None %}hx-replace-url="{{ hx_replace_url|stringformat:'s'|lower }}"{% endif %}
-   {% if hx_headers %}hx-headers='{{ hx_headers }}'{% endif %}
-   {% if hx_prompt %}hx-prompt="{{ hx_prompt }}"{% endif %}
-   {% if hx_validate %}hx-validate="{{ hx_validate }}"{% endif %}
-   {% if hx_sync %}hx-sync="{{ hx_sync }}"{% endif %}
-   {% if hx_boost is not None %}hx-boost="{{ hx_boost|stringformat:'s'|lower }}"{% endif %}
-   {% if hx_disable %}hx-disable="{{ hx_disable }}"{% endif %}
-   {% if hx_history is not None %}hx-history="{{ hx_history|stringformat:'s'|lower }}"{% endif %}
+{% load i18n lucide_icons string_filters back_button %}
+{% prepare_back_button as btn %}
+<a href="{{ btn.href|default:'#' }}"
+   class="{{ btn.class_attr }}"
+   aria-label="{{ btn.aria_label }}"
+   {% if btn.fallback_href %}data-fallback-href="{{ btn.fallback_href }}"{% endif %}
+   {% if btn.prevent_history %}data-prevent-history="{{ btn.prevent_history }}"{% endif %}
+   {% for name, value in btn.htmx_attrs %}{{ name }}="{{ value }}"
+   {% endfor %}
    onclick="return (function(el) {
      if (el.dataset.preventHistory === 'true') {
        return true;
@@ -144,16 +44,12 @@
      }
      return true;
    })(this);">
-  {% if show_icon is not False %}
-    {% if resolved_variant == 'compact' %}
-      {% lucide icon_name class='w-3.5 h-3.5' aria_hidden='true' %}
+  {% if btn.show_icon %}
+    {% if btn.icon_size == 'w-3.5 h-3.5' %}
+      {% lucide btn.icon_name class='w-3.5 h-3.5' aria_hidden='true' %}
     {% else %}
-      {% lucide icon_name class='w-4 h-4' aria_hidden='true' %}
+      {% lucide btn.icon_name class='w-4 h-4' aria_hidden='true' %}
     {% endif %}
   {% endif %}
-  <span class="{% if resolved_variant == 'compact' %}text-xs{% elif resolved_variant == 'link' %}text-sm{% else %}text-sm font-medium{% endif %}">{{ button_label }}</span>
+  <span class="{{ btn.label_class }}">{{ btn.label }}</span>
 </a>
-{% endwith %}
-{% endwith %}
-{% endwith %}
-{% endwith %}
