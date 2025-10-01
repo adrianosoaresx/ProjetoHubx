@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load i18n l10n static %}
+
+{% block title %}{{ object.titulo|default:_('Eventos') }}{% endblock %}
+
+{% block hero %}
+  <div id="evento-hero">
+    {% include '_components/hero_eventos_detail.html' with evento=object %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <section class="max-w-5xl mx-auto py-8 px-4">
+    <div class="flex flex-col gap-6">
+      <article class="card">
+        <div class="card-header">
+          <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+        </div>
+        <div class="card-body">
+          <dl class="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Início" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</dd>
+            </div>
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Fim" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</dd>
+            </div>
+            {% if object.local %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Local" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.local }}</dd>
+              </div>
+            {% endif %}
+            {% if object.cidade or object.estado %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Cidade / Estado" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">
+                  {{ object.cidade }}{% if object.cidade and object.estado %} - {% endif %}{{ object.estado }}
+                </dd>
+              </div>
+            {% endif %}
+            {% if object.cep %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.cep }}</dd>
+              </div>
+            {% endif %}
+            {% if object.contato_nome or object.contato_email or object.contato_whatsapp %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)] space-y-1">
+                  {% if object.contato_nome %}<span>{{ object.contato_nome }}</span>{% endif %}
+                  {% if object.contato_email %}<span>{{ object.contato_email }}</span>{% endif %}
+                  {% if object.contato_whatsapp %}<span>{{ object.contato_whatsapp }}</span>{% endif %}
+                </dd>
+              </div>
+            {% endif %}
+            {% if object.participantes_maximo %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Participantes máximo" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.participantes_maximo }}</dd>
+              </div>
+            {% endif %}
+            {% if object.orcamento_estimado %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Orçamento estimado" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.orcamento_estimado }}</dd>
+              </div>
+            {% endif %}
+            {% if object.valor_gasto %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Valor gasto" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
+              </div>
+            {% endif %}
+            {% if object.briefing %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">
+                  <a href="{{ object.briefing }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+                    {% trans "Abrir briefing" %}
+                  </a>
+                </dd>
+              </div>
+            {% endif %}
+            {% if object.parcerias %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">
+                  <a href="{{ object.parcerias }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+                    {% trans "Abrir parcerias" %}
+                  </a>
+                </dd>
+              </div>
+            {% endif %}
+          </dl>
+        </div>
+        {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
+          <div class="mt-6 flex justify-end gap-6">
+            {% if perms.eventos.change_evento %}
+              <a href="{% url 'eventos:evento_editar' object.pk %}"
+                 class="text-primary font-medium hover:underline"
+                 aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
+            {% endif %}
+            {% if perms.eventos.delete_evento %}
+              <a href="{% url 'eventos:evento_excluir' object.pk %}"
+                 class="font-medium text-[var(--danger-text)] hover:underline"
+                 aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </article>
+
+      {% if user.is_authenticated and user.user_type != 'admin' %}
+        <article class="card">
+          <div class="card-header">
+            {% if inscricao and avaliacao_permitida %}
+              <h2 class="text-xl font-semibold">{% trans "Avaliação" %}</h2>
+            {% else %}
+              <h2 class="text-xl font-semibold">{% trans "Inscrição" %}</h2>
+            {% endif %}
+          </div>
+          <div class="card-body space-y-4">
+            {% if inscricao %}
+              {% if avaliacao_permitida %}
+                <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-4">
+                  {% csrf_token %}
+                  <div class="relative">
+                    <select id="nota" name="nota" class="floating peer w-full" required>
+                      {% for n in '12345' %}
+                        <option value="{{ n }}">{{ n }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="nota" class="label-float">{% trans "Nota" %}</label>
+                  </div>
+                  <div class="relative">
+                    <textarea id="comentario" name="comentario" rows="4" placeholder=" " class="floating peer w-full"></textarea>
+                    <label for="comentario" class="label-float">{% trans "Comentário" %}</label>
+                  </div>
+                  <div class="text-right">
+                    <button type="submit" class="btn btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+                  </div>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
+                </form>
+              {% endif %}
+            {% else %}
+              <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endif %}
+
+      <article class="card">
+        <div class="card-header">
+          <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
+        </div>
+        <div class="card-body">
+          {% if object.inscricoes.all %}
+            <div class="flex flex-col gap-4">
+              {% for ins in object.inscricoes.all %}
+                {% with inscrito=ins.user %}
+                  <article class="card">
+                    <div class="card-body flex items-center gap-4">
+                      {% if inscrito.avatar %}
+                        <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                      {% else %}
+                        <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
+                          {{ inscrito.username|make_list|first|upper }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
+                        <p class="text-xs">@{{ inscrito.username }}</p>
+                      </div>
+                    </div>
+                  </article>
+                {% endwith %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
+          {% endif %}
+        </div>
+      </article>
+    </div>
+
+    <div class="flex justify-end mt-6">
+      {% url 'eventos:calendario' as calendario_url %}
+      {% include '_components/back_button.html' with href=back_href fallback_href=calendario_url %}
+    </div>
+  </section>
+{% endblock %}
