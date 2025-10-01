@@ -90,27 +90,48 @@ class PainelRenderMixin:
         hero_template = self.get_painel_hero_template()
         if hero_template:
             context.setdefault("painel_hero_template", hero_template)
+        # Ajustar aliases compatíveis com listas
+        context.setdefault("list_title", context.get("painel_title"))
+        if context.get("painel_hero_template"):
+            context.setdefault("list_hero_template", context["painel_hero_template"])
+        if context.get("painel_action_template"):
+            context.setdefault("list_hero_action_template", context["painel_action_template"])
         # Se houver um evento no contexto, forçar o hero de detalhes do evento
         if context.get("evento") is not None:
             context["painel_hero_template"] = "_components/hero_eventos_detail.html"
             # Se não houver título definido, usar o título do evento
             if not context.get("painel_title") and getattr(context["evento"], "titulo", None):
                 context["painel_title"] = context["evento"].titulo
+                context["list_title"] = context["evento"].titulo
         action_template = self.get_painel_action_template()
         if action_template:
             context.setdefault("painel_action_template", action_template)
         subtitle = self.get_painel_subtitle()
         if subtitle:
             context.setdefault("painel_subtitle", subtitle)
+            context.setdefault("list_subtitle", subtitle)
         breadcrumb = self.get_painel_breadcrumb_template()
         if breadcrumb:
             context.setdefault("painel_breadcrumb_template", breadcrumb)
+            context.setdefault("list_hero_breadcrumb_template", breadcrumb)
         neural_background = self.get_painel_neural_background()
         if neural_background:
             context.setdefault("painel_neural_background", neural_background)
+            context.setdefault("list_hero_neural_background", neural_background)
         hero_style = self.get_painel_hero_style()
         if hero_style:
             context.setdefault("painel_hero_style", hero_style)
+            context.setdefault("list_hero_style", hero_style)
+        totals_aliases = {
+            "list_total_eventos": "total_eventos",
+            "list_total_eventos_planejamento": "total_eventos_planejamento",
+            "list_total_eventos_ativos": "total_eventos_ativos",
+            "list_total_eventos_concluidos": "total_eventos_concluidos",
+            "list_total_eventos_cancelados": "total_eventos_cancelados",
+        }
+        for alias, original in totals_aliases.items():
+            if alias not in context and original in context:
+                context[alias] = context[original]
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -236,6 +257,21 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
+        ctx.setdefault("list_title", _("Eventos"))
+        ctx.setdefault("list_hero_template", ctx.get("painel_hero_template", "_components/hero_evento.html"))
+        ctx.setdefault(
+            "list_hero_action_template",
+            ctx.get("painel_action_template", self.painel_action_template),
+        )
+        ctx.setdefault("list_subtitle", ctx.get("painel_subtitle"))
+        ctx.setdefault("list_hero_breadcrumb_template", ctx.get("painel_breadcrumb_template"))
+        ctx.setdefault("list_hero_neural_background", ctx.get("painel_neural_background"))
+        ctx.setdefault("list_hero_style", ctx.get("painel_hero_style"))
+        ctx.setdefault("list_total_eventos", ctx.get("total_eventos"))
+        ctx.setdefault("list_total_eventos_planejamento", ctx.get("total_eventos_planejamento"))
+        ctx.setdefault("list_total_eventos_ativos", ctx.get("total_eventos_ativos"))
+        ctx.setdefault("list_total_eventos_concluidos", ctx.get("total_eventos_concluidos"))
+        ctx.setdefault("list_total_eventos_cancelados", ctx.get("total_eventos_cancelados"))
         return ctx
 
     def render_to_response(self, context, **response_kwargs):
