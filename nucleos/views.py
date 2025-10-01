@@ -127,6 +127,8 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx.setdefault("empty_message", _("Nenhum núcleo encontrado."))
         ctx.setdefault("list_hero_template", "_components/hero_nucleo.html")
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
+        ctx.setdefault("list_card_template", "_components/card_nucleo.html")
+        ctx.setdefault("item_context_name", "nucleo")
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
         # Totais: número de núcleos e membros ativos na organização do usuário
         qs = self.get_queryset()

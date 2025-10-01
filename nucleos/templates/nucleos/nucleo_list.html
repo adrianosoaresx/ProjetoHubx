@@ -26,7 +26,7 @@
         aria-label="{{ list_aria_label|default_if_none:_('Lista de núcleos')|default:_('Lista de núcleos') }}"
         class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 items-stretch">
         {% for nucleo in object_list %}
-          {% include '_components/card_nucleo.html' with nucleo=nucleo %}
+          {% include list_card_template|default:'_components/card_nucleo.html' with item=nucleo nucleo=nucleo item_context_name=item_context_name %}
         {% empty %}
           <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message|default_if_none:_('Nenhum núcleo encontrado.')|default:_('Nenhum núcleo encontrado.') }}</p>
         {% endfor %}
