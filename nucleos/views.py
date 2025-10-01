@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html
@@ -42,6 +43,23 @@ from .tasks import (
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+class NucleoPainelRenderMixin:
+    painel_template_name = "nucleos/detail.html"
+    partial_template_name: str | None = None
+
+    def get_partial_template_name(self) -> str:
+        return self.partial_template_name or self.template_name
+
+    def render_to_response(self, context, **response_kwargs):  # type: ignore[override]
+        is_htmx_request = self.request.headers.get("HX-Request") == "true"
+        context["is_htmx"] = is_htmx_request
+        if is_htmx_request:
+            return super().render_to_response(context, **response_kwargs)
+
+        context["partial_template"] = self.get_partial_template_name()
+        return TemplateResponse(self.request, self.painel_template_name, context)
 
 
 class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
@@ -402,9 +420,10 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return resolve_back_href(request, fallback=fallback)
 
 
-class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
-    template_name = "nucleos/detail.html"
+    template_name = "nucleos/partials/membros_list.html"
+    partial_template_name = "nucleos/partials/membros_list.html"
 
     def get_membros_paginate_by(self) -> int:
         return getattr(settings, "NUCLEOS_MEMBROS_PAGINATE_BY", 12)

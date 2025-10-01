@@ -1,4 +1,26 @@
 {% load i18n %}
+
+{% if is_htmx %}
+  <div id="nucleo-hero" hx-swap-oob="true">
+    {% include '_components/hero_nucleo_detail.html' with nucleo=object %}
+  </div>
+  <div id="nucleo-info-actions" hx-swap-oob="true" class="mt-6 flex justify-end gap-6">
+    {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+      <a
+        href="{% url 'nucleos:update' object.pk %}"
+        class="font-medium text-primary hover:underline"
+      >{% trans "Editar" %}</a>
+    {% endif %}
+    {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+      <a
+        href="{% url 'nucleos:delete' object.pk %}"
+        class="font-medium text-[var(--danger-text)] hover:underline"
+        hx-confirm="{% trans 'Deseja realmente excluir?' %}"
+      >{% trans "Excluir" %}</a>
+    {% endif %}
+  </div>
+{% endif %}
+
 <div class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
   {% if page_obj.object_list %}
     {% for part in page_obj.object_list %}
@@ -9,4 +31,4 @@
   {% endif %}
 </div>
 {% url 'nucleos:membros_list' object.pk as membros_list_url %}
-{% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_get=membros_list_url hx_target='#membros-list' hx_push_url='false' %}
+{% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_get=membros_list_url hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='false' %}
