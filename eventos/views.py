@@ -284,6 +284,7 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx.setdefault("pagination_hx_target", "#eventos-conteudo")
         ctx.setdefault("pagination_hx_get", self.request.path)
         ctx.setdefault("pagination_hx_indicator", "#eventos-loading")
+        ctx.setdefault("pagination_hx_push_url", "true")
         return ctx
 
     def render_to_response(self, context, **response_kwargs):
