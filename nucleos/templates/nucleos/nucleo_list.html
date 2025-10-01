@@ -20,6 +20,7 @@
   <div class="card">
     <div class="card-header">
       <h2 class="text-xl font-semibold">{{ list_title|default_if_none:_("Núcleos")|default:_("Núcleos") }}</h2>
+      {% block list_actions %}{% endblock %}
     </div>
     <div class="card-body">
       <div role="list"
@@ -32,6 +33,7 @@
         {% endfor %}
       </div>
       {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
+      {% block list_footer %}{% endblock %}
     </div>
   </div>
 {% endblock %}
