@@ -23,20 +23,19 @@
       {% block list_actions %}{% endblock %}
     </div>
     <div class="card-body">
-      {% with
-        card_template=list_card_template|default_if_none:'_components/card_nucleo.html'|default:'_components/card_nucleo.html'
-        card_item_name=item_context_name|default_if_none:'nucleo'|default:'nucleo'
-      %}
         <div role="list"
           aria-label="{{ list_aria_label|default_if_none:_('Lista de núcleos')|default:_('Lista de núcleos') }}"
           class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 items-stretch">
           {% for nucleo in object_list %}
-            {% include card_template with item=nucleo nucleo=nucleo item_context_name=card_item_name %}
+            {% include list_card_template|default_if_none:'_components/card_nucleo.html'|default:'_components/card_nucleo.html' with
+              item=nucleo
+              nucleo=nucleo
+              item_context_name=item_context_name|default_if_none:'nucleo'|default:'nucleo'
+            %}
           {% empty %}
             <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message|default_if_none:_('Nenhum núcleo encontrado.')|default:_('Nenhum núcleo encontrado.') }}</p>
           {% endfor %}
         </div>
-      {% endwith %}
       {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
       {% block list_footer %}{% endblock %}
     </div>
