@@ -1,14 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Eventos" %}{% endblock %}
+{% block title %}{{ list_title|default_if_none:painel_title|default_if_none:_("Eventos")|default:_("Eventos") }}{% endblock %}
 
 {% block hero %}
-  {% with painel_title_default=_('Eventos') %}
-    {% with hero_template=painel_hero_template|default:'_components/hero_evento.html' %}
-      {% include hero_template with title=painel_title|default:painel_title_default subtitle=painel_subtitle action_template=painel_action_template breadcrumb_template=painel_breadcrumb_template neural_background=painel_neural_background style=painel_hero_style %}
-    {% endwith %}
-  {% endwith %}
+  {% include list_hero_template|default_if_none:painel_hero_template|default_if_none:'_components/hero_evento.html'|default:'_components/hero_evento.html' with title=list_title|default_if_none:painel_title|default_if_none:_('Eventos')|default:_('Eventos') subtitle=list_subtitle|default_if_none:painel_subtitle action_template=list_hero_action_template|default_if_none:painel_action_template breadcrumb_template=list_hero_breadcrumb_template|default_if_none:painel_breadcrumb_template neural_background=list_hero_neural_background|default_if_none:painel_neural_background style=list_hero_style|default_if_none:painel_hero_style total_eventos=list_total_eventos total_eventos_planejamento=list_total_eventos_planejamento total_eventos_ativos=list_total_eventos_ativos total_eventos_concluidos=list_total_eventos_concluidos total_eventos_cancelados=list_total_eventos_cancelados %}
 {% endblock %}
 
 {% block content %}
