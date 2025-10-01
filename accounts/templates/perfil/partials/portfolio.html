@@ -2,8 +2,3 @@
 <section id="portfolio" class="perfil-section active">
   {% include "perfil/partials/portfolio_list.html" with medias=medias is_owner=is_owner form=form show_form=show_form q=q %}
 </section>
-
-{% url 'accounts:perfil' as default_back_url %}
-<div class="mt-8 text-center">
-  <a href="{{ back_url|default:default_back_url }}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
-</div>
