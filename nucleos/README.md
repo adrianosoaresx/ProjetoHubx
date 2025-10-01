@@ -21,6 +21,10 @@ Permissões:
 - Coordenadores podem gerenciar membros e inativar núcleos.
 - Todas as views exigem autenticação.
 
+## Templates
+
+- `nucleos/nucleo_list.html` expõe os blocos vazios `list_actions` (na região do cabeçalho da listagem) e `list_footer` (logo após a paginação). Os módulos que reutilizarem esse template podem sobrescrever os blocos para adicionar filtros, botões ou totais extras quando necessário.
+
 Modelos:
 
 - `Nucleo`, `ParticipacaoNucleo` e `CoordenadorSuplente` utilizam o mixin `TimeStampedModel`.
