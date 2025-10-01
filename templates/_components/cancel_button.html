@@ -1,79 +1,8 @@
 {% load i18n string_filters %}
 {% with cfg=config|default:cancel_component_config %}
-{% with
-  href=href|coalesce:cfg|get_item:'href'
-  fallback_href=fallback_href|coalesce:cfg|get_item:'fallback_href'
-  variant=variant|coalesce:cfg|get_item:'variant'|default:'button'
-  classes=classes|coalesce:cfg|get_item:'classes'
-  label=label|coalesce:cfg|get_item:'label'|default:_('Cancelar')
-  aria_label=aria_label|coalesce:cfg|get_item:'aria_label'|default:label
-  icon=icon|coalesce:cfg|get_item:'icon'|default:'x'
-  show_icon=show_icon|default_if_none:cfg|get_item:'show_icon'|default:False
-  prevent_history=prevent_history|default_if_none:cfg|get_item:'prevent_history'
-  hx_get=hx_get|coalesce:cfg|get_item:'hx_get'
-  hx_post=hx_post|coalesce:cfg|get_item:'hx_post'
-  hx_put=hx_put|coalesce:cfg|get_item:'hx_put'
-  hx_delete=hx_delete|coalesce:cfg|get_item:'hx_delete'
-  hx_patch=hx_patch|coalesce:cfg|get_item:'hx_patch'
-  hx_target=hx_target|coalesce:cfg|get_item:'hx_target'
-  hx_swap=hx_swap|coalesce:cfg|get_item:'hx_swap'
-  hx_trigger=hx_trigger|coalesce:cfg|get_item:'hx_trigger'
-  hx_push_url=hx_push_url|coalesce:cfg|get_item:'hx_push_url'
-  hx_include=hx_include|coalesce:cfg|get_item:'hx_include'
-  hx_indicator=hx_indicator|coalesce:cfg|get_item:'hx_indicator'
-  hx_confirm=hx_confirm|coalesce:cfg|get_item:'hx_confirm'
-  hx_params=hx_params|coalesce:cfg|get_item:'hx_params'
-  hx_ext=hx_ext|coalesce:cfg|get_item:'hx_ext'
-  hx_on=hx_on|coalesce:cfg|get_item:'hx_on'
-  hx_vals=hx_vals|coalesce:cfg|get_item:'hx_vals'
-  hx_select=hx_select|coalesce:cfg|get_item:'hx_select'
-  hx_select_oob=hx_select_oob|coalesce:cfg|get_item:'hx_select_oob'
-  hx_replace_url=hx_replace_url|coalesce:cfg|get_item:'hx_replace_url'
-  hx_headers=hx_headers|coalesce:cfg|get_item:'hx_headers'
-  hx_prompt=hx_prompt|coalesce:cfg|get_item:'hx_prompt'
-  hx_validate=hx_validate|coalesce:cfg|get_item:'hx_validate'
-  hx_sync=hx_sync|coalesce:cfg|get_item:'hx_sync'
-  hx_boost=hx_boost|coalesce:cfg|get_item:'hx_boost'
-  hx_disable=hx_disable|coalesce:cfg|get_item:'hx_disable'
-  hx_history=hx_history|coalesce:cfg|get_item:'hx_history'
-%}
-{% include '_components/back_button.html' with
-  config=cfg
-  href=href
-  fallback_href=fallback_href
-  variant=variant
-  classes=classes
-  label=label
-  aria_label=aria_label
-  icon=icon
-  show_icon=show_icon
-  prevent_history=prevent_history
-  hx_get=hx_get
-  hx_post=hx_post
-  hx_put=hx_put
-  hx_delete=hx_delete
-  hx_patch=hx_patch
-  hx_target=hx_target
-  hx_swap=hx_swap
-  hx_trigger=hx_trigger
-  hx_push_url=hx_push_url
-  hx_include=hx_include
-  hx_indicator=hx_indicator
-  hx_confirm=hx_confirm
-  hx_params=hx_params
-  hx_ext=hx_ext
-  hx_on=hx_on
-  hx_vals=hx_vals
-  hx_select=hx_select
-  hx_select_oob=hx_select_oob
-  hx_replace_url=hx_replace_url
-  hx_headers=hx_headers
-  hx_prompt=hx_prompt
-  hx_validate=hx_validate
-  hx_sync=hx_sync
-  hx_boost=hx_boost
-  hx_disable=hx_disable
-  hx_history=hx_history
-%}
-{% endwith %}
+  {% with href=href|coalesce:cfg|get_item:'href' fallback_href=fallback_href|coalesce:cfg|get_item:'fallback_href' variant=variant|coalesce:cfg|get_item:'variant'|default:'button' classes=classes|coalesce:cfg|get_item:'classes' label=label|coalesce:cfg|get_item:'label'|default:_('Cancelar') aria_label=aria_label|coalesce:cfg|get_item:'aria_label'|default:label icon=icon|coalesce:cfg|get_item:'icon'|default:'x' show_icon=show_icon|default_if_none:cfg|get_item:'show_icon'|default:False prevent_history=prevent_history|default_if_none:cfg|get_item:'prevent_history' hx_get=hx_get|coalesce:cfg|get_item:'hx_get' hx_post=hx_post|coalesce:cfg|get_item:'hx_post' hx_put=hx_put|coalesce:cfg|get_item:'hx_put' hx_delete=hx_delete|coalesce:cfg|get_item:'hx_delete' hx_patch=hx_patch|coalesce:cfg|get_item:'hx_patch' hx_target=hx_target|coalesce:cfg|get_item:'hx_target' hx_swap=hx_swap|coalesce:cfg|get_item:'hx_swap' hx_trigger=hx_trigger|coalesce:cfg|get_item:'hx_trigger' hx_push_url=hx_push_url|coalesce:cfg|get_item:'hx_push_url' hx_include=hx_include|coalesce:cfg|get_item:'hx_include' hx_indicator=hx_indicator|coalesce:cfg|get_item:'hx_indicator' hx_confirm=hx_confirm|coalesce:cfg|get_item:'hx_confirm' hx_params=hx_params|coalesce:cfg|get_item:'hx_params' hx_ext=hx_ext|coalesce:cfg|get_item:'hx_ext' hx_on=hx_on|coalesce:cfg|get_item:'hx_on' hx_vals=hx_vals|coalesce:cfg|get_item:'hx_vals' hx_select=hx_select|coalesce:cfg|get_item:'hx_select' hx_select_oob=hx_select_oob|coalesce:cfg|get_item:'hx_select_oob' hx_replace_url=hx_replace_url|coalesce:cfg|get_item:'hx_replace_url' hx_headers=hx_headers|coalesce:cfg|get_item:'hx_headers' hx_prompt=hx_prompt|coalesce:cfg|get_item:'hx_prompt' hx_validate=hx_validate|coalesce:cfg|get_item:'hx_validate' hx_sync=hx_sync|coalesce:cfg|get_item:'hx_sync' hx_boost=hx_boost|coalesce:cfg|get_item:'hx_boost' hx_disable=hx_disable|coalesce:cfg|get_item:'hx_disable' hx_history=hx_history|coalesce:cfg|get_item:'hx_history' %}
+
+    {% include '_components/back_button.html' with config=cfg href=href fallback_href=fallback_href variant=variant classes=classes label=label aria_label=aria_label icon=icon show_icon=show_icon prevent_history=prevent_history hx_get=hx_get hx_post=hx_post hx_put=hx_put hx_delete=hx_delete hx_patch=hx_patch hx_target=hx_target hx_swap=hx_swap hx_trigger=hx_trigger hx_push_url=hx_push_url hx_include=hx_include hx_indicator=hx_indicator hx_confirm=hx_confirm hx_params=hx_params hx_ext=hx_ext hx_on=hx_on hx_vals=hx_vals hx_select=hx_select hx_select_oob=hx_select_oob hx_replace_url=hx_replace_url hx_headers=hx_headers hx_prompt=hx_prompt hx_validate=hx_validate hx_sync=hx_sync hx_boost=hx_boost hx_disable=hx_disable hx_history=hx_history %}
+
+  {% endwith %}
 {% endwith %}
