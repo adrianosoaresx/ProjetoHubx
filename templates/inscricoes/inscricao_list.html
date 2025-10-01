@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ painel_title|default:_('Inscrições') }}{% endblock %}
+
+{% block hero %}
+  <div id="inscricoes-hero">
+    {% if evento %}
+      {% include '_components/hero_eventos_detail.html' with evento=evento %}
+    {% else %}
+      {% include '_components/hero_evento.html' with title=painel_title|default:_('Inscrições') %}
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <section class="max-w-5xl mx-auto py-8 px-4">
+    <article class="card">
+      <div class="card-header flex items-center justify-between gap-4">
+        <h2 class="text-xl font-semibold">{{ painel_title|default:_('Inscrições') }}</h2>
+        {% if evento %}
+          <a href="{% url 'eventos:evento_detalhe' evento.pk %}" class="btn btn-secondary">{% trans 'Voltar para o evento' %}</a>
+        {% endif %}
+      </div>
+      <div class="card-body space-y-6">
+        <form method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <label for="q" class="sr-only">{% trans 'Buscar inscrições' %}</label>
+          <input type="search" name="q" id="q" value="{{ request.GET.q }}" class="form-input w-full sm:max-w-xs" placeholder="{% trans 'Buscar por usuário ou evento' %}">
+          <button type="submit" class="btn btn-primary sm:w-auto">{% trans 'Buscar' %}</button>
+        </form>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto text-sm">
+            <thead class="bg-[var(--bg-secondary)]">
+              <tr>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Usuário" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Evento" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Status" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Presente" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Valor Pago" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Método de Pagamento" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Comprovante" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Observação" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Ações" %}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border)]">
+              {% for inscricao in inscricoes %}
+                <tr>
+                  <td class="px-4 py-2">{{ inscricao.user }}</td>
+                  <td class="px-4 py-2">{{ inscricao.evento }}</td>
+                  <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
+                  <td class="px-4 py-2">{{ inscricao.presente|yesno:_('Sim,Não') }}</td>
+                  <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
+                  <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
+                  <td class="px-4 py-2">
+                    {% if inscricao.comprovante_pagamento %}
+                      <a href="{{ inscricao.comprovante_pagamento.url }}" class="text-primary hover:underline" target="_blank">{% trans "Ver" %}</a>
+                    {% else %}
+                      &mdash;
+                    {% endif %}
+                  </td>
+                  <td class="px-4 py-2">{{ inscricao.observacao|default:"-" }}</td>
+                  <td class="px-4 py-2">
+                    <a href="{% url 'eventos:evento_detalhe' inscricao.evento.pk %}" class="text-primary hover:underline">{% trans "Ver" %}</a>
+                    <span class="text-[var(--text-muted)]">|</span>
+                    <a href="{% url 'eventos:inscricao_checkin_form' inscricao.pk %}" class="text-primary hover:underline">{% trans "Check-in" %}</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="9" class="px-4 py-4 text-center text-[var(--text-muted)]">{% trans "Nenhuma inscrição encontrada." %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
+      </div>
+    </article>
+  </section>
+{% endblock %}
