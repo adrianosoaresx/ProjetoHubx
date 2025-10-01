@@ -47,7 +47,7 @@
               {% include '_partials/cards/total_card.html' with label=_('Cancelados') valor=hero_total_eventos_cancelados icon_svg=icon_total_cancelados card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 shadow-lg' is_active=is_cancelados_filter_active hx_get=cancelados_filter_url hx_target='#eventos-conteudo' hx_push_url='true' hx_indicator='#eventos-loading' extra_attributes='data-eventos-filter-card="cancelados"' %}
             {% endif %}
           </div>
-          <div id="eventos-filter-state" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>
+          {% include '_partials/htmx_filter_state.html' with hx_swap_oob='' state_value=current_filter|default:'todos' state_classes='hidden' %}
         </div>
       {% endif %}
     </div>
