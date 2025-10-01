@@ -59,10 +59,14 @@
       {% block content %}{% endblock %}
     </main>
     {% block back_button %}
-      {% if back_component_config %}
-          {% include '_components/back_button.html' with config=back_component_config href=back_href %}
-      {% elif back_href %}
-        {% include '_components/back_button.html' with href=back_href %}
+      {% if back_component_config or back_href %}
+        <div class="container mx-auto px-6 pb-6">
+          {% if back_component_config %}
+            {% include '_components/back_button.html' with config=back_component_config href=back_href %}
+          {% else %}
+            {% include '_components/back_button.html' with href=back_href %}
+          {% endif %}
+        </div>
       {% endif %}
     {% endblock %}
     {% include '_partials/toasts.html' %}
