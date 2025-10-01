@@ -122,6 +122,11 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx.setdefault("list_title", _("Núcleos"))
+        ctx.setdefault("list_aria_label", _("Lista de núcleos"))
+        ctx.setdefault("empty_message", _("Nenhum núcleo encontrado."))
+        ctx.setdefault("list_hero_template", "_components/hero_nucleo.html")
+        ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
         # Totais: número de núcleos e membros ativos na organização do usuário
         qs = self.get_queryset()
