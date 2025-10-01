@@ -1,26 +1,34 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Núcleos" %}{% endblock %}
+{% block title %}{{ list_title|default_if_none:_("Núcleos")|default:_("Núcleos") }}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_nucleo.html' with title=_('Núcleos') action_template='nucleos/hero_actions_nucleo.html' total_nucleos=total_nucleos total_membros=total_membros_org total_eventos=total_eventos_org total_eventos_ativos=total_eventos_ativos_org total_eventos_concluidos=total_eventos_concluidos_org %}
+  {% include list_hero_template|default:'_components/hero_nucleo.html' with
+    title=list_title|default_if_none:_('Núcleos')|default:_('Núcleos')
+    action_template=list_hero_action_template|default:'nucleos/hero_actions_nucleo.html'
+    total_nucleos=total_nucleos
+    total_membros=total_membros_org
+    total_eventos=total_eventos_org
+    total_eventos_ativos=total_eventos_ativos_org
+    total_eventos_concluidos=total_eventos_concluidos_org
+  %}
 {% endblock %}
 
 {% block content %}
-  
+
   <div class="card">
     <div class="card-header">
-      <h2 class="text-xl font-semibold">{% trans "Núcleos" %}</h2>
+      <h2 class="text-xl font-semibold">{{ list_title|default_if_none:_("Núcleos")|default:_("Núcleos") }}</h2>
     </div>
     <div class="card-body">
       <div role="list"
-        aria-label="{% trans 'Lista de núcleos' %}"
+        aria-label="{{ list_aria_label|default_if_none:_('Lista de núcleos')|default:_('Lista de núcleos') }}"
         class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 items-stretch">
         {% for nucleo in object_list %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
-          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum núcleo encontrado." %}</p>
+          <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message|default_if_none:_('Nenhum núcleo encontrado.')|default:_('Nenhum núcleo encontrado.') }}</p>
         {% endfor %}
       </div>
       {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
