@@ -1,64 +1,12 @@
 {% load i18n %}
-<h2 class="text-xl font-semibold text-[var(--text-primary)] mb-4">{% trans 'Núcleos' %} ({{ nucleos|length }})</h2>
-{% if nucleos %}
-  <section class="card-grid" role="list">
-    {% for nucleo in nucleos %}
-      {% url 'nucleos:detail_uuid' nucleo.public_id as detail_url %}
-      <article class="card" role="listitem" style="aspect-ratio: 1 / 1;">
-        <div class="flex h-full w-full flex-col items-center text-center gap-4">
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="flex w-16 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-tertiary)]"
-              style="aspect-ratio: 1 / 1;"
-            >
-              {% if nucleo.avatar %}
-                <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="h-full w-full object-cover" loading="lazy" />
-              {% else %}
-                <span class="text-xl font-semibold text-[var(--text-muted)]">{{ nucleo.nome|default_if_none:''|first|upper|default:'?' }}</span>
-              {% endif %}
-            </div>
-            <div class="space-y-2">
-              <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ nucleo.nome }}</h3>
-              <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{{ nucleo.get_classificacao_display }}</p>
-              {% if not nucleo.ativo %}
-                <span class="badge badge-warning">{% trans 'Inativo' %}</span>
-              {% endif %}
-            </div>
-          </div>
-          <div class="flex flex-1 flex-col items-center gap-2 text-xs text-[var(--text-secondary)]">
-            {% if nucleo.descricao %}
-              <p>{{ nucleo.descricao|truncatechars:100 }}</p>
-            {% endif %}
-            {% if nucleo.consultor %}
-              <p>
-                <span class="block text-[var(--text-muted)] uppercase tracking-wide">{% trans 'Consultor(a)' %}</span>
-                <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.consultor.display_name }}</span>
-              </p>
-            {% endif %}
-          </div>
-          <div class="mt-auto w-full">
-            <a
-              href="{{ detail_url }}"
-              class="btn btn-secondary w-full justify-center"
-              aria-label="{% blocktrans with nome=nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}"
-            >{% trans 'Ver detalhes' %}</a>
-          </div>
-        </div>
-      </article>
-    {% endfor %}
-  </section>
-{% else %}
-  <article class="card text-center">
-    <div class="card-body p-10">
-      <p class="text-[var(--text-muted)]">{% trans 'Nenhum núcleo associado.' %}</p>
-    </div>
-  </article>
-{% endif %}
+<h2 class="text-xl font-semibold text-[var(--text-primary)] mb-2">{% trans 'Núcleos' %} ({{ nucleos|length }})</h2>
+<ul class="list-disc pl-6 text-[var(--text-secondary)]">
+  {% for nucleo in nucleos %}
+    <li>{{ nucleo.nome }}</li>
+  {% empty %}
+    <li class="list-none text-[var(--text-muted)]">{% trans 'Nenhum núcleo associado.' %}</li>
+  {% endfor %}
+</ul>
 {% if request.user.user_type == 'root' %}
-  <a
-    href="#"
-    class="mt-4 inline-block text-sm text-primary-600 hover:underline"
-    hx-get="{% url 'organizacoes:nucleos_modal' object.id %}"
-    hx-target="#modal"
-  >{% trans 'Adicionar/Remover' %}</a>
+<a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="{% url 'organizacoes:nucleos_modal' object.id %}" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
 {% endif %}
