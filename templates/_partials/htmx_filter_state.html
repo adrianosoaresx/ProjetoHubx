@@ -1,0 +1,13 @@
+{% with state_id=state_id|default:'eventos-filter-state' %}
+{% with state_classes=state_classes|default:'hidden' %}
+{% with state_data_attribute=state_data_attribute|default:'data-current-filter' %}
+<div
+  id="{{ state_id }}"
+  {% if hx_swap_oob|default_if_none:'true' %}hx-swap-oob="{{ hx_swap_oob|default:'true' }}"{% endif %}
+  class="{{ state_classes }}"
+  {{ state_data_attribute }}="{{ state_value|default:current_filter|default:'todos' }}"
+  aria-hidden="true"
+></div>
+{% endwith %}
+{% endwith %}
+{% endwith %}

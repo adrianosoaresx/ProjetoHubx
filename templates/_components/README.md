@@ -144,6 +144,49 @@ Aceita os mesmos parâmetros de `back_button.html`. Apenas os padrões mudam:
   página anterior). Caso ambas levem para o mesmo destino, mantenha apenas o
   botão de cancelamento ou o `back_button` no cabeçalho.
 
+## htmx_filter_state.html
+
+Componente utilitário que mantém o estado atual dos filtros aplicados via HTMX
+em listas. O elemento é oculto, mas pode ser trocado via `hx-swap-oob` para
+sincronizar botões ou indicadores após cada requisição.
+
+```django
+{% include "_partials/htmx_filter_state.html" with state_id="eventos-filter-state" state_value=current_filter %}
+```
+
+### Parâmetros
+
+| Nome | Tipo / Valores | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `state_id` | string | `'eventos-filter-state'` | `id` utilizado pelo script que sincroniza botões. |
+| `state_value` | string | `'todos'` | Valor armazenado no atributo configurado em `state_data_attribute`. |
+| `state_classes` | string | `'hidden'` | Classes adicionais do elemento. |
+| `state_data_attribute` | string | `'data-current-filter'` | Nome do atributo que receberá `state_value`. |
+| `hx_swap_oob` | string/boolean | `'true'` | Define o comportamento de *Out-of-band Swap*; envie string vazia para omitir o atributo. |
+
+### Listas com paginação HTMX
+
+Ao reutilizar o layout padrão de listas (`evento_list.html` e parciais
+equivalentes), forneça as variáveis de contexto abaixo para habilitar as
+requisições assíncronas de paginação mantendo o padrão dos núcleos:
+
+```python
+context.update(
+    {
+        "list_pagination_hx_target": "#eventos-conteudo",
+        "list_pagination_hx_get": request.path,
+        "list_pagination_hx_indicator": "#eventos-loading",
+        "list_pagination_hx_push_url": "true",
+        "list_filter_state_id": "eventos-filter-state",
+    }
+)
+```
+
+Todos os parâmetros são opcionais. Quando omitidos, os templates continuam
+funcionando com links tradicionais, sem atributos HTMX. Ajuste
+`list_pagination_hx_push_url` para `'false'` caso não deseje atualizar a URL
+durante as trocas HTMX.
+
 ## Convenções de i18n
 
 - Todo texto visível deve estar dentro de `{% trans %}` ou `{% blocktrans %}`.
