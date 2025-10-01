@@ -439,7 +439,7 @@ class EventoCreateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/partials/eventos/create.html"
+    template_name = "eventos/partials/eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Adicionar evento")
     painel_subtitle = _("Cadastre novos eventos para a sua organização.")
@@ -498,7 +498,7 @@ class EventoUpdateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/partials/eventos/update.html"
+    template_name = "eventos/partials/eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Editar Evento")
     painel_hero_template = "_components/hero_eventos_detail.html"

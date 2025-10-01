@@ -1,0 +1,125 @@
+{% load widget_tweaks %}
+<div class="space-y-6">
+  <div>
+    {% include '_forms/field.html' with field=form.titulo %}
+  </div>
+
+  <div>
+    {% include '_forms/field.html' with field=form.descricao %}
+  </div>
+
+  <div>
+    {% include '_forms/field.html' with field=form.cronograma %}
+  </div>
+
+  <div>
+    {% include '_forms/field.html' with field=form.local %}
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <div>
+      {% include '_forms/field.html' with field=form.data_inicio %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.data_fim %}
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-3">
+    <div>
+      {% include '_forms/field.html' with field=form.cidade %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.estado %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.cep %}
+    </div>
+  </div>
+
+  {% if coordinator_in_status_group %}
+    <div class="grid gap-6 md:grid-cols-3">
+      <div>
+        {% include '_forms/field.html' with field=form.status %}
+      </div>
+      <div>
+        {% include '_forms/field.html' with field=form.publico_alvo %}
+      </div>
+      <div class="space-y-6">
+        <div>
+          {% include '_forms/field.html' with field=form.coordenador %}
+        </div>
+        <div id="nucleo-field-container">
+          {% include '_forms/field.html' with field=form.nucleo %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="grid gap-6 md:grid-cols-3">
+      <div>
+        {% include '_forms/field.html' with field=form.status %}
+      </div>
+      <div>
+        {% include '_forms/field.html' with field=form.publico_alvo %}
+      </div>
+      <div id="nucleo-field-container">
+        {% include '_forms/field.html' with field=form.nucleo %}
+      </div>
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.coordenador %}
+    </div>
+  {% endif %}
+
+  <div class="grid gap-6 md:grid-cols-3">
+    <div>
+      {% include '_forms/field.html' with field=form.numero_convidados %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.participantes_maximo %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.valor_ingresso %}
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <div>
+      {% include '_forms/field.html' with field=form.briefing %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.parcerias %}
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-3">
+    <div>
+      {% include '_forms/field.html' with field=form.contato_nome %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.contato_email %}
+    </div>
+    <div>
+      {% include '_forms/field.html' with field=form.contato_whatsapp %}
+    </div>
+  </div>
+
+  <div>
+    {% include '_forms/field.html' with field=form.informacoes_adicionais %}
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <div>
+      {% if avatar_preview %}
+        <img src="{{ avatar_preview.url }}" alt="{{ form.avatar.label }}" class="w-32 h-32 object-cover mb-2" loading="lazy">
+      {% endif %}
+      {% include '_forms/field.html' with field=form.avatar|attr:'accept:image/*' %}
+    </div>
+    <div>
+      {% if cover_preview %}
+        <img src="{{ cover_preview.url }}" alt="{{ form.cover.label }}" class="w-48 h-32 object-cover mb-2 rounded" loading="lazy">
+      {% endif %}
+      {% include '_forms/field.html' with field=form.cover|attr:'accept:image/*' %}
+    </div>
+  </div>
+</div>
