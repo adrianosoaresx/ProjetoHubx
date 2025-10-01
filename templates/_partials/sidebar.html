@@ -23,7 +23,7 @@
               {% endif %}
               <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}
                  {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
-                   hx-get="{{ eventos_lista_partial_url }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
+                   hx-get="{{ eventos_lista_partial_url }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true" hx-indicator="#eventos-loading"
                  {% endif %}>
                 {% if item.id == 'perfil' and user.avatar %}
                   <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
@@ -44,7 +44,7 @@
                 <li>
                   <a href="{{ child.path }}" class="sidebar-subitem{% if child.is_active %} sidebar-item-active{% endif %}" {% if child.is_current %}aria-current="page"{% endif %}
                      {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
-                       hx-get="{{ child.path }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
+                       hx-get="{{ child.path }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true" hx-indicator="#eventos-loading"
                      {% endif %}>
                     {{ child.icon|safe }}
                     <span class="sidebar-label">{{ child.label }}</span>
