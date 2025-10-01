@@ -4,14 +4,10 @@
 {% block title %}{{ painel_title|default:_('Evento') }}{% endblock %}
 
 {% block hero %}
-  <div id="evento-form-hero">
-    {% with hero_event=evento|default:object %}
-      {% if hero_event %}
-        {% include '_components/hero_eventos_detail.html' with evento=hero_event %}
-      {% else %}
-        {% include '_components/hero_evento.html' with title=painel_title|default:_('Eventos') %}
-      {% endif %}
-    {% endwith %}
+  <div id="eventos-hero">
+    {% include list_hero_template|default_if_none:painel_hero_template|default_if_none:'_components/hero_evento.html' with
+       title=list_title|default_if_none:painel_title|default:_('Eventos')
+       subtitle=list_subtitle|default_if_none:painel_subtitle %}
   </div>
 {% endblock %}
 

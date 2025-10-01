@@ -86,7 +86,6 @@ INSTALLED_APPS = [
     "nucleos",
     # App de eventos
     "eventos.apps.EventosConfig",
-    "inscricoes.apps.InscricoesConfig",
     "feed",
     "configuracoes",
     "notificacoes.apps.NotificacoesConfig",

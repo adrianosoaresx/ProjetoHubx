@@ -437,7 +437,8 @@ class EventoCreateView(
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Adicionar evento")
     painel_subtitle = _("Cadastre novos eventos para a sua organização.")
-    painel_hero_template = "_components/hero_evento.html"
+    # Usa o hero padrão de eventos, aproveitando painel_title e painel_subtitle
+    painel_hero_template = "_components/hero_eventos.html"
 
     permission_required = "eventos.add_evento"
 
@@ -453,6 +454,10 @@ class EventoCreateView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Em criação, garantir que 'object' exista (CreateView pode não definir dependendo de mixins)
+        if "object" not in context:
+            form = context.get("form")
+            context["object"] = getattr(form, "instance", None)
         fallback_url = str(self.success_url)
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context.update(

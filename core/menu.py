@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 from typing import List
 
 from django.urls import reverse
+from django.utils import timezone
 
 
 @dataclass
@@ -273,9 +274,13 @@ def _get_menu_items() -> List[MenuItem]:
     perfil_url = reverse("accounts:perfil")
     configuracoes_url = reverse("configuracoes:configuracoes")
     nucleos_url = reverse("nucleos:list")
+    # URLs de eventos
+    hoje = timezone.localdate()
+    calendario_mes_url = reverse("eventos:calendario_mes", args=[hoje.year, hoje.month])
+    # Link principal deve abrir a lista de eventos
     eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
-
+    eventos_url = reverse("eventos:lista")  # Link principal (menu raiz) abre a lista de eventos
     perfil_children = [
         MenuItem(
             id="perfil_info",
@@ -353,16 +358,9 @@ def _get_menu_items() -> List[MenuItem]:
 
     eventos_children = [
         MenuItem(
-            id="eventos_novo",
-            path=reverse("eventos:evento_novo"),
-            label="Adicionar evento",
-            icon=ICON_PLUS,
-            permissions=["admin"],
-        ),
-        MenuItem(
-            id="eventos_calendario",
-            path=reverse("eventos:calendario"),
-            label="Calendário",
+            id="eventos_calendario_mes",
+            path=calendario_mes_url,
+            label="Calendário mensal",
             icon=ICON_EVENTOS,
             permissions=[
                 "admin",
@@ -371,6 +369,26 @@ def _get_menu_items() -> List[MenuItem]:
                 "associado",
                 "convidado",
             ],
+        ),
+        MenuItem(
+            id="eventos_calendario_30",
+            path=reverse("eventos:calendario"),
+            label="Últimos 30 dias",
+            icon=ICON_CLOCK,
+            permissions=[
+                "admin",
+                "coordenador",
+                "nucleado",
+                "associado",
+                "convidado",
+            ],
+        ),
+        MenuItem(
+            id="eventos_novo",
+            path=reverse("eventos:evento_novo"),
+            label="Adicionar evento",
+            icon=ICON_PLUS,
+            permissions=["admin", "coordenador"],
         ),
     ]
 
