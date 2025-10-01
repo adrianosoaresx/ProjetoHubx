@@ -1,20 +1,11 @@
 {% load lucide_icons %}
-{% with element=as_button|yesno:'button,article,article' %}
-<{{ element }}
+{% if href %}
+<a
+  href="{{ href }}"
   class="card{% if card_class %} {{ card_class }}{% endif %}{% if is_active and active_class %} {{ active_class }}{% endif %}"
-  {% if as_button %}type="{{ button_type|default:'button' }}" aria-pressed="{{ is_active|yesno:'true,false,false' }}"{% endif %}
   {% if element_id %}id="{{ element_id }}"{% endif %}
-  {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
-  {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
-  {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
-  {% if hx_push_url %}hx-push-url="{{ hx_push_url }}"{% endif %}
-  {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
-  {% if hx_trigger %}hx-trigger="{{ hx_trigger }}"{% endif %}
-  {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
-  {% if hx_select %}hx-select="{{ hx_select }}"{% endif %}
-  {% if hx_include %}hx-include="{{ hx_include }}"{% endif %}
   {% if extra_attributes %} {{ extra_attributes|safe }}{% endif %}
-  {% if as_button and active_class %} data-active-class="{{ active_class }}"{% endif %}
+  {% if is_active %}aria-current="page"{% endif %}
 >
   <div class="card-body{% if body_class %} {{ body_class }}{% endif %}">
     <div class="total-card-row">
@@ -37,5 +28,73 @@
       <span class="total-card-value">{{ valor }}</span>
     </div>
   </div>
-</{{ element }}>
-{% endwith %}
+</a>
+{% elif as_button %}
+<button
+  type="{{ button_type|default:'button' }}"
+  class="card{% if card_class %} {{ card_class }}{% endif %}{% if is_active and active_class %} {{ active_class }}{% endif %}"
+  {% if element_id %}id="{{ element_id }}"{% endif %}
+  {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
+  {% if hx_post %}hx-post="{{ hx_post }}"{% endif %}
+  {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+  {% if hx_push_url %}hx-push-url="{{ hx_push_url }}"{% endif %}
+  {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
+  {% if hx_trigger %}hx-trigger="{{ hx_trigger }}"{% endif %}
+  {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+  {% if hx_select %}hx-select="{{ hx_select }}"{% endif %}
+  {% if hx_include %}hx-include="{{ hx_include }}"{% endif %}
+  {% if extra_attributes %} {{ extra_attributes|safe }}{% endif %}
+  aria-pressed="{{ is_active|yesno:'true,false,false' }}"
+  {% if active_class %}data-active-class="{{ active_class }}"{% endif %}
+>
+  <div class="card-body{% if body_class %} {{ body_class }}{% endif %}">
+    <div class="total-card-row">
+      <div class="total-card-label">
+        {% if icon_name %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {% lucide icon_name class="h-5 w-5" %}
+          </span>
+        {% elif icon_svg %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {{ icon_svg|safe }}
+          </span>
+        {% elif icon_class %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            <i class="{{ icon_class }}"></i>
+          </span>
+        {% endif %}
+        <span class="total-card-label-text">{{ label }}</span>
+      </div>
+      <span class="total-card-value">{{ valor }}</span>
+    </div>
+  </div>
+</button>
+{% else %}
+<article
+  class="card{% if card_class %} {{ card_class }}{% endif %}{% if is_active and active_class %} {{ active_class }}{% endif %}"
+  {% if element_id %}id="{{ element_id }}"{% endif %}
+  {% if extra_attributes %} {{ extra_attributes|safe }}{% endif %}
+>
+  <div class="card-body{% if body_class %} {{ body_class }}{% endif %}">
+    <div class="total-card-row">
+      <div class="total-card-label">
+        {% if icon_name %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {% lucide icon_name class="h-5 w-5" %}
+          </span>
+        {% elif icon_svg %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {{ icon_svg|safe }}
+          </span>
+        {% elif icon_class %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            <i class="{{ icon_class }}"></i>
+          </span>
+        {% endif %}
+        <span class="total-card-label-text">{{ label }}</span>
+      </div>
+      <span class="total-card-value">{{ valor }}</span>
+    </div>
+  </div>
+</article>
+{% endif %}

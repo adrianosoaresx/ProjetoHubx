@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ data_atual|date:'YEAR_MONTH_FORMAT' }}{% endblock %}
+
+{% block hero %}
+  <div id="eventos-calendario-mes-hero">
+    {% include '_components/hero_evento.html' with title=painel_title|default:_('Calendário mensal') subtitle=painel_subtitle %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <section class="max-w-5xl mx-auto py-8 px-4 space-y-6">
+    <article class="card">
+      <div class="card-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center justify-between gap-4 text-2xl font-semibold">
+          <a href="{% url 'eventos:calendario_mes' prev_ano prev_mes %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Mês anterior' %}">&laquo;</a>
+          <span>{{ data_atual|date:'YEAR_MONTH_FORMAT' }}</span>
+          <a href="{% url 'eventos:calendario_mes' next_ano next_mes %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Próximo mês' %}">&raquo;</a>
+        </div>
+        {% if perms.eventos.add_evento %}
+          <a href="{% url 'eventos:evento_novo' %}" class="btn btn-primary inline-flex items-center gap-2" aria-label="{% trans 'Novo Evento' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            {% trans "Novo Evento" %}
+          </a>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[var(--bg-tertiary)] text-sm leading-tight">
+          {% for dia in dias_mes %}
+            <div class="relative h-28 bg-[var(--bg-primary)] p-4 {% if not dia.mes_atual %}text-[var(--text-secondary)]{% else %}text-[var(--text-primary)]{% endif %}">
+              <div class="mb-2 flex items-center justify-between">
+                <span class="inline-flex h-6 w-6 items-center justify-center text-center {% if dia.hoje %}rounded-full ring-2 ring-primary-600{% endif %}">
+                  {{ dia.data.day }}
+                </span>
+                {% if dia.eventos|length > 3 %}
+                  <span class="text-xs text-[var(--text-muted)]">+{{ dia.eventos|length|add:'-3' }}</span>
+                {% endif %}
+              </div>
+              <ul class="space-y-1">
+                {% for ev in dia.eventos|slice:':3' %}
+                  <li>
+                    <a href="{% url 'eventos:evento_detalhe' ev.id %}" class="block truncate rounded border border-[var(--success)] bg-[var(--success-light)] px-1.5 py-0.5 text-xs text-[var(--success)] hover:bg-[var(--color-success-100)]">
+                      {{ ev.titulo }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-header">
+        <h2 class="text-lg font-semibold">{% trans "Eventos do dia" %}</h2>
+      </div>
+      <div class="card-body" id="eventos-dia">
+        {% include 'eventos/partials/calendario/_lista_eventos_dia.html' %}
+      </div>
+    </article>
+  </section>
+{% endblock %}

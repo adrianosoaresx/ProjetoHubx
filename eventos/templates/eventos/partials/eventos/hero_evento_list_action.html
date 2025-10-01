@@ -1,11 +1,6 @@
 {% load i18n %}
 {% if is_admin_org %}
-<a href="{% url 'eventos:evento_novo' %}"
-  hx-get="{% url 'eventos:evento_novo' %}"
-  hx-target="#eventos-conteudo"
-  hx-swap="innerHTML"
-  hx-push-url="true"
-  class="btn btn-primary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]">
+<a href="{% url 'eventos:evento_novo' %}" class="btn btn-primary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]">
   {% trans 'Novo evento' %}
 </a>
 {% endif %}

@@ -50,7 +50,6 @@ User = get_user_model()
 
 
 class PainelRenderMixin:
-    painel_template_name = "eventos/painel.html"
     painel_title = _("Eventos")
     painel_hero_template = "_components/hero_evento.html"
     painel_action_template = None
@@ -58,9 +57,6 @@ class PainelRenderMixin:
     painel_breadcrumb_template = None
     painel_neural_background = None
     painel_hero_style = None
-
-    def get_partial_template_name(self) -> str:
-        return self.template_name
 
     def get_painel_title(self) -> str:
         return getattr(self, "painel_title", _("Eventos"))
@@ -135,19 +131,12 @@ class PainelRenderMixin:
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        is_htmx_request = self.request.headers.get("HX-Request") == "true"
         context = self.get_painel_context(context)
-        context["is_htmx"] = is_htmx_request
-        # Responder apenas com o parcial quando for requisição HTMX
-        if is_htmx_request:
-            return super().render_to_response(context, **response_kwargs)
-        context["partial_template"] = self.get_partial_template_name()
-        return TemplateResponse(self.request, self.painel_template_name, context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
     template_name = "eventos/evento_list.html"
-    partial_template_name = "eventos/partials/eventos/evento_list.html"
     painel_action_template = "eventos/partials/eventos/hero_evento_list_action.html"
     context_object_name = "eventos"
     paginate_by = 12
@@ -280,22 +269,11 @@ class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, L
         ctx.setdefault("list_total_eventos_ativos", ctx.get("total_eventos_ativos"))
         ctx.setdefault("list_total_eventos_concluidos", ctx.get("total_eventos_concluidos"))
         ctx.setdefault("list_total_eventos_cancelados", ctx.get("total_eventos_cancelados"))
-        # Valores padrão para a paginação HTMX quando não forem definidos
-        ctx.setdefault("pagination_hx_target", "#eventos-conteudo")
-        ctx.setdefault("pagination_hx_get", self.request.path)
-        ctx.setdefault("pagination_hx_indicator", "#eventos-loading")
-        ctx.setdefault("pagination_hx_push_url", "true")
-        # Valores padrão para o estado do filtro utilizado pelos componentes HTMX
-        ctx.setdefault("filter_state_id", "eventos-filter-state")
-        ctx.setdefault("filter_state_classes", "hidden")
         return ctx
 
     def render_to_response(self, context, **response_kwargs):
-        is_htmx_request = self.request.headers.get("HX-Request") == "true"
         context = self.get_painel_context(context)
-        context["is_htmx"] = is_htmx_request
-        template_name = self.partial_template_name if is_htmx_request else self.template_name
-        return TemplateResponse(self.request, template_name, context, **response_kwargs)
+        return super().render_to_response(context, **response_kwargs)
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
@@ -312,7 +290,72 @@ def _queryset_por_organizacao(request):
 
 
 def calendario(request, ano: int | None = None, mes: int | None = None):
-    return redirect("eventos:painel")
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
+
+    hoje = timezone.localdate()
+    if ano is None or mes is None:
+        ano = hoje.year
+        mes = hoje.month
+
+    try:
+        primeiro_dia = date(ano, mes, 1)
+    except ValueError as exc:  # pragma: no cover - validação simples
+        raise Http404("Mês inválido") from exc
+
+    calendario_util = calendar.Calendar(firstweekday=0)
+    dias_iterados = list(calendario_util.itermonthdates(ano, mes))
+    inicio_periodo = dias_iterados[0]
+    fim_periodo = dias_iterados[-1]
+
+    eventos_qs = (
+        _queryset_por_organizacao(request)
+        .filter(data_inicio__date__range=(inicio_periodo, fim_periodo))
+        .select_related("organizacao")
+        .prefetch_related("inscricoes")
+        .order_by("data_inicio")
+    )
+
+    eventos_por_dia: dict[date, list[Evento]] = {}
+    for evento in eventos_qs:
+        dia_evento = timezone.localtime(evento.data_inicio).date()
+        eventos_por_dia.setdefault(dia_evento, []).append(evento)
+
+    dias_mes = [
+        {
+            "data": dia,
+            "mes_atual": dia.month == mes,
+            "hoje": dia == hoje,
+            "eventos": eventos_por_dia.get(dia, []),
+        }
+        for dia in dias_iterados
+    ]
+
+    if mes == 1:
+        prev_ano, prev_mes = ano - 1, 12
+    else:
+        prev_ano, prev_mes = ano, mes - 1
+
+    if mes == 12:
+        next_ano, next_mes = ano + 1, 1
+    else:
+        next_ano, next_mes = ano, mes + 1
+
+    dia_selecionado = hoje if hoje.year == ano and hoje.month == mes else primeiro_dia
+
+    context = {
+        "dias_mes": dias_mes,
+        "data_atual": primeiro_dia,
+        "prev_ano": prev_ano,
+        "prev_mes": prev_mes,
+        "next_ano": next_ano,
+        "next_mes": next_mes,
+        "dia": dia_selecionado,
+        "eventos": eventos_por_dia.get(dia_selecionado, []),
+        "painel_title": _("Calendário mensal"),
+    }
+
+    return TemplateResponse(request, "eventos/calendario_mes.html", context)
 
 
 def calendario_cards_ultimos_30(request):
@@ -343,22 +386,9 @@ def calendario_cards_ultimos_30(request):
     context = {
         "dias_com_eventos": dias_com_eventos,
         "data_atual": hoje,
-    }
-    hero_context = {
         "painel_title": _("Eventos"),
-        "painel_hero_template": "_components/hero_evento.html",
     }
-    is_htmx = request.headers.get("HX-Request") == "true"
-    context.update(hero_context)
-    context["is_htmx"] = is_htmx
-    if is_htmx:
-        return TemplateResponse(request, "eventos/partials/calendario/calendario.html", context)
-    # Não HTMX: renderiza o painel com o parcial calendário já incluído
-    context["partial_template"] = "eventos/partials/calendario/calendario.html"
-    context.setdefault("painel_action_template", "eventos/partials/eventos/hero_evento_list_action.html")
-    # Garantir que o hero tenha um título explícito ao renderizar o painel
-    context.setdefault("painel_title", _("Eventos"))
-    return TemplateResponse(request, "eventos/painel.html", context)
+    return TemplateResponse(request, "eventos/calendario.html", context)
 
 
 def lista_eventos(request, dia_iso: str):
@@ -383,50 +413,14 @@ def lista_eventos(request, dia_iso: str):
         "painel_title": _("Eventos"),
         "painel_hero_template": "_components/hero_evento.html",
     }
-    is_htmx = request.headers.get("HX-Request") == "true"
     context.update(hero_context)
-    context["is_htmx"] = is_htmx
-
-    if is_htmx:
-        return TemplateResponse(
-            request,
-            "eventos/partials/calendario/_lista_eventos_dia.html",
-            context,
-        )
-
-    context["partial_template"] = "eventos/partials/calendario/_lista_eventos_dia.html"
-    return TemplateResponse(request, "eventos/painel.html", context)
-def painel_eventos(request):
-    if getattr(request.user, "user_type", None) == UserType.ROOT:
-        return HttpResponseForbidden()
-
-    hoje = timezone.localdate()
-    inicio = hoje - timedelta(days=30)
-    qs = (
-        _queryset_por_organizacao(request)
-        .filter(data_inicio__date__range=(inicio, hoje))
-        .select_related("organizacao")
-        .prefetch_related("inscricoes")
-        .order_by("data_inicio")
+    return TemplateResponse(
+        request,
+        "eventos/partials/calendario/_lista_eventos_dia.html",
+        context,
     )
-    agrupado: dict[date, list[Evento]] = {}
-    for ev in qs:
-        d = timezone.localtime(ev.data_inicio).date()
-        agrupado.setdefault(d, []).append(ev)
-    dias_com_eventos = [
-        {"data": d, "eventos": evs}
-        for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
-    ]
-
-    context = {
-        "dias_com_eventos": dias_com_eventos,
-        "data_atual": hoje,
-        "partial_template": "eventos/partials/calendario/calendario.html",
-        "painel_action_template": "eventos/partials/eventos/hero_evento_list_action.html",
-        # Garantir título do hero neste painel funcional
-        "painel_title": _("Eventos"),
-    }
-    return TemplateResponse(request, "eventos/painel.html", context)
+def painel_eventos(request):
+    return calendario_cards_ultimos_30(request)
 
 
 class EventoCreateView(
@@ -439,7 +433,7 @@ class EventoCreateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/partials/eventos/evento_form.html"
+    template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Adicionar evento")
     painel_subtitle = _("Cadastre novos eventos para a sua organização.")
@@ -498,7 +492,7 @@ class EventoUpdateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/partials/eventos/evento_form.html"
+    template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Editar Evento")
     painel_hero_template = "_components/hero_eventos_detail.html"
@@ -584,7 +578,7 @@ class EventoDeleteView(
     DeleteView,
 ):
     model = Evento
-    template_name = "eventos/partials/eventos/delete.html"
+    template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Remover Evento")
     painel_hero_template = "_components/hero_eventos_detail.html"
@@ -614,7 +608,7 @@ class EventoDeleteView(
 
 class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
-    template_name = "eventos/partials/eventos/detail.html"
+    template_name = "eventos/detail.html"
     painel_hero_template = "_components/hero_eventos_detail.html"
 
     def get_queryset(self):
@@ -759,15 +753,8 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
             "painel_title": _("Avaliar evento"),
             "painel_hero_template": "_components/hero_eventos_detail.html",
         }
-        is_htmx = request.headers.get("HX-Request") == "true"
         context.update(hero_context)
-        context["is_htmx"] = is_htmx
-        if is_htmx:
-            return TemplateResponse(
-                request, "eventos/partials/eventos/avaliacao_form.html", context
-            )
-        context["partial_template"] = "eventos/partials/eventos/avaliacao_form.html"
-        return TemplateResponse(request, "eventos/painel.html", context)
+        return TemplateResponse(request, "eventos/avaliacao_form.html", context)
 
     def post(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
@@ -865,15 +852,8 @@ def checkin_form(request, pk: int):
         "painel_title": _("Check-in do evento"),
         "painel_hero_template": "_components/hero_eventos_detail.html",
     }
-    is_htmx = request.headers.get("HX-Request") == "true"
     context.update(hero_context)
-    context["is_htmx"] = is_htmx
-    if is_htmx:
-        return TemplateResponse(
-            request, "eventos/partials/inscricao/checkin_form.html", context
-        )
-    context["partial_template"] = "eventos/partials/inscricao/checkin_form.html"
-    return TemplateResponse(request, "eventos/painel.html", context)
+    return TemplateResponse(request, "inscricoes/checkin_form.html", context)
 
 
 def checkin_inscricao(request, pk: int):
@@ -893,7 +873,7 @@ def checkin_inscricao(request, pk: int):
 
 class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
-    template_name = "eventos/partials/inscricao/inscricao_list.html"
+    template_name = "inscricoes/inscricao_list.html"
     context_object_name = "inscricoes"
     painel_title = _("Lista de Inscrições")
     painel_hero_template = "_components/hero.html"
@@ -929,7 +909,7 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
 class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
-    template_name = "eventos/partials/inscricao/inscricao_form.html"
+    template_name = "inscricoes/inscricao_form.html"
     painel_title = _("Inscrição")
     painel_hero_template = "_components/hero_eventos_detail.html"
 
