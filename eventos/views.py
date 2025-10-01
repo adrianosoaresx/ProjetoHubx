@@ -853,7 +853,8 @@ def checkin_form(request, pk: int):
         "painel_hero_template": "_components/hero_eventos_detail.html",
     }
     context.update(hero_context)
-    return TemplateResponse(request, "inscricoes/checkin_form.html", context)
+    context = PainelRenderMixin().get_painel_context(context)
+    return TemplateResponse(request, "eventos/inscricoes/checkin_form.html", context)
 
 
 def checkin_inscricao(request, pk: int):
@@ -873,7 +874,7 @@ def checkin_inscricao(request, pk: int):
 
 class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
-    template_name = "inscricoes/inscricao_list.html"
+    template_name = "eventos/inscricoes/inscricao_list.html"
     context_object_name = "inscricoes"
     painel_title = _("Lista de Inscrições")
     painel_hero_template = "_components/hero.html"
@@ -901,6 +902,8 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
                 context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
                 context["painel_hero_template"] = "_components/hero_eventos_detail.html"
                 context["painel_title"] = context["evento"].titulo
+                fallback = reverse("eventos:evento_detalhe", kwargs={"pk": context["evento"].pk})
+                context["back_href"] = resolve_back_href(self.request, fallback=fallback)
             except Evento.DoesNotExist:
                 context["evento"] = None
         return context
@@ -909,7 +912,7 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
 class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
-    template_name = "inscricoes/inscricao_form.html"
+    template_name = "eventos/inscricoes/inscricao_form.html"
     painel_title = _("Inscrição")
     painel_hero_template = "_components/hero_eventos_detail.html"
 
@@ -924,6 +927,8 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
         context = super().get_context_data(**kwargs)
         context["evento"] = self.evento
         context["painel_title"] = self.evento.titulo
+        fallback = reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
+        context["back_href"] = resolve_back_href(self.request, fallback=fallback)
         return context
 
     def form_valid(self, form):

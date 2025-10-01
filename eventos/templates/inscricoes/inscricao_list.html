@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{{ painel_title|default:_('Inscrições') }}{% endblock %}
+{% block title %}{{ list_title|default_if_none:painel_title|default_if_none:_('Inscrições')|default:_('Inscrições') }}{% endblock %}
 
 {% block hero %}
   <div id="inscricoes-hero">
-    {% if evento %}
-      {% include '_components/hero_eventos_detail.html' with evento=evento %}
-    {% else %}
-      {% include '_components/hero_evento.html' with title=painel_title|default:_('Inscrições') %}
-    {% endif %}
+    {% with hero_template=list_hero_template|default_if_none:painel_hero_template|default_if_none:'_components/hero_evento.html' %}
+      {% include hero_template with evento=evento title=list_title|default_if_none:painel_title|default:_('Inscrições') subtitle=list_subtitle|default_if_none:painel_subtitle action_template=list_hero_action_template|default_if_none:painel_action_template breadcrumb_template=list_hero_breadcrumb_template|default_if_none:painel_breadcrumb_template neural_background=list_hero_neural_background|default_if_none:painel_neural_background style=list_hero_style|default_if_none:painel_hero_style %}
+    {% endwith %}
   </div>
 {% endblock %}
 
@@ -17,15 +15,16 @@
   <section class="max-w-5xl mx-auto py-8 px-4">
     <article class="card">
       <div class="card-header flex items-center justify-between gap-4">
-        <h2 class="text-xl font-semibold">{{ painel_title|default:_('Inscrições') }}</h2>
+        <h2 class="text-xl font-semibold">{{ list_title|default_if_none:painel_title|default:_('Inscrições') }}</h2>
         {% if evento %}
-          <a href="{% url 'eventos:evento_detalhe' evento.pk %}" class="btn btn-secondary">{% trans 'Voltar para o evento' %}</a>
+          {% url 'eventos:evento_detalhe' evento.pk as event_detail_url %}
+          {% include '_components/back_button.html' with href=back_href fallback_href=event_detail_url label=_('Voltar para o evento') %}
         {% endif %}
       </div>
       <div class="card-body space-y-6">
         <form method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <label for="q" class="sr-only">{% trans 'Buscar inscrições' %}</label>
-          <input type="search" name="q" id="q" value="{{ request.GET.q }}" class="form-input w-full sm:max-w-xs" placeholder="{% trans 'Buscar por usuário ou evento' %}">
+          <input type="search" name="q" id="q" value="{{ request.GET.q|default_if_none:'' }}" class="form-input w-full sm:max-w-xs" placeholder="{% trans 'Buscar por usuário ou evento' %}">
           <button type="submit" class="btn btn-primary sm:w-auto">{% trans 'Buscar' %}</button>
         </form>
         <div class="overflow-x-auto">
