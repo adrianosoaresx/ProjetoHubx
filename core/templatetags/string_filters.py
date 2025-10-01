@@ -52,6 +52,13 @@ def get_item(mapping, key):
     return getattr(mapping, key, None)
 
 
+@register.simple_tag(name="empty_dict")
+def empty_dict():
+    """Return an empty dictionary for use in template expressions."""
+
+    return {}
+
+
 @register.filter(name="coalesce")
 def coalesce(value, fallback):
     """Return ``value`` unless it is empty, otherwise ``fallback``.
