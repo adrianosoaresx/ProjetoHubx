@@ -97,7 +97,7 @@ function bindFeedEvents(root = document) {
     if (exists) return;
     const chip = document.createElement('span');
     chip.className =
-      'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs normal-case';
+      'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs normal-case ring-1 ring-inset ring-[var(--border-secondary)]';
     chip.setAttribute('data-tag', value);
 
     const label = document.createElement('span');
@@ -106,10 +106,17 @@ function bindFeedEvents(root = document) {
 
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
-    removeButton.setAttribute('aria-label', 'Remover');
+    const removeLabelBase = window.gettext ? gettext('Remover') : 'Remover';
+    removeButton.setAttribute('aria-label', `${removeLabelBase} ${value}`);
+    removeButton.title = removeButton.getAttribute('aria-label');
     removeButton.className =
-      'ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--error)] text-[var(--text-inverse)] text-xs transition-colors hover:bg-[var(--color-error-700)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--error-light)]';
-    removeButton.innerHTML = '&times;';
+      'ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--error)] text-[var(--text-inverse)] transition-colors hover:bg-[var(--color-error-700)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--error-light)] focus-visible:ring-offset-[var(--bg-primary)]';
+    removeButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5" aria-hidden="true">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
+      </svg>
+    `;
     removeButton.addEventListener('click', () => {
       chip.remove();
       updateHiddenTags();
