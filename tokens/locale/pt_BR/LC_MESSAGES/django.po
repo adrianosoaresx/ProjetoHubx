@@ -82,7 +82,6 @@ msgstr ""
 #: templates/tokens/gerar_codigo_autenticacao.html:43
 #: templates/tokens/gerar_token.html:52
 #: templates/tokens/validar_codigo_autenticacao.html:33
-#: templates/tokens/validar_token.html:33
 msgid "Voltar ao painel de segurança"
 msgstr ""
 
@@ -109,18 +108,6 @@ msgstr ""
 
 #: templates/tokens/validar_codigo_autenticacao.html:26
 msgid "Validar Código"
-msgstr ""
-
-#: templates/tokens/validar_token.html:4 templates/tokens/validar_token.html:9
-msgid "Validar Token de Convite"
-msgstr ""
-
-#: templates/tokens/validar_token.html:10
-msgid "Informe o token recebido para concluir o convite."
-msgstr ""
-
-#: templates/tokens/validar_token.html:26
-msgid "Validar Token"
 msgstr ""
 
 #: templates/tokens/api_tokens.html:27 templates/tokens/token_list.html:25
