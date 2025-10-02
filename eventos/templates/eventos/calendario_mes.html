@@ -6,7 +6,7 @@
 {% block hero %}{% include '_components/hero_evento.html' with title=title|default:_('Calendário mensal') subtitle=subtitle %}{% endblock %}
 
 {% block content %}
-  <section class="max-w-5xl mx-auto py-8 px-4 space-y-6">
+  
     <article class="card">
       <div class="card-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center justify-between gap-4 text-2xl font-semibold">
@@ -57,5 +57,5 @@
         {% include 'eventos/partials/calendario/_lista_eventos_dia.html' %}
       </div>
     </article>
-  </section>
+  
 {% endblock %}
