@@ -1,21 +1,23 @@
 {% load i18n %}
-{# Necessary for translation tags when rendering via HTMX #}
-<div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
-  <table class="min-w-full divide-y divide-[var(--border)] text-sm">
-    <caption class="sr-only">{% trans 'Logs de notificações' %}</caption>
-    <thead class="bg-[var(--bg-tertiary)]">
-      <tr>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Data' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Template' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Status' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Erro' %}</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-[var(--border)]">
-      {% include 'notificacoes/logs_rows.html' %}
-    </tbody>
-  </table>
+{# Parcial injetado via HTMX para atualizar apenas a tabela de logs dentro do cartão principal #}
+<div class="space-y-4">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-[var(--border)] text-sm">
+      <caption class="sr-only">{% trans 'Logs de notificações' %}</caption>
+      <thead class="bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Data' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Template' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Status' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Erro' %}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[var(--border)]">
+        {% include 'notificacoes/logs_rows.html' %}
+      </tbody>
+    </table>
+  </div>
+  {% include '_partials/pagination.html' with page_obj=logs querystring=request.GET.urlencode %}
 </div>
-{% include '_partials/pagination.html' with page_obj=logs querystring=request.GET.urlencode %}
