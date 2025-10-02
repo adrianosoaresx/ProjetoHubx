@@ -1,47 +1,14 @@
+{% extends "base.html" %}
 {% load i18n %}
 
+{% block title %}{% trans "Tokens" %} | HubX{% endblock %}
 
-<article class="card max-w-6xl mx-auto">
-  <header class="card-header">
-    <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
-  </header>
+{% block hero %}
+  {% include '_components/hero_tokens.html' with title=_('Tokens') action_template='tokens/hero_action.html' %}
+{% endblock %}
 
-  <div class="card-body space-y-6">
-    {% if convites %}
-      <div class="overflow-x-auto border border-[var(--border)] rounded-2xl">
-        <table class="min-w-full divide-y divide-[var(--border)]">
-          <thead class="bg-[var(--bg-secondary)]">
-            <tr>
-              <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Tipo" %}</th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Token" %}</th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Estado" %}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--border)]">
-            {% for token in convites %}
-              <tr>
-                <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_tipo_destino_display }}</td>
-                <td class="px-4 py-2 text-sm text-[var(--text-primary)]">
-                  {% if token.preview_display %}
-                    <code class="font-mono text-xs break-all">{{ token.preview_display }}</code>
-                  {% else %}
-                    <span class="text-[var(--text-secondary)]">{% trans "Indisponível" %}</span>
-                  {% endif %}
-                </td>
-                <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_estado_display }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</div>
-    {% endif %}
-
-    <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-      {% url 'accounts:perfil' as perfil_url %}
-      
-    </div>
+{% block content %}
+  <div class="px-4 py-10 md:py-12">
+    {% include 'tokens/_token_list_content.html' %}
   </div>
-</article>
-
+{% endblock %}

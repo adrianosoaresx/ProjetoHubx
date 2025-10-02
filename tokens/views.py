@@ -92,13 +92,8 @@ def listar_convites(request):
 
     context = {"convites": convites, "totais": totais, **navigation_context}
     if request.headers.get("Hx-Request") == "true":
-        return render(request, "tokens/token_list.html", context)
-    full_context = {
-        **context,
-        "partial_template": "tokens/token_list.html",
-        "hero_title": _("Tokens"),
-    }
-    return render(request, "tokens/tokens.html", full_context)
+        return render(request, "tokens/_token_list_content.html", context)
+    return render(request, "tokens/token_list.html", context)
 
 
 
@@ -136,16 +131,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return redirect("accounts:perfil")
         context = {"form": form, **self._navigation_context(request)}
         if request.headers.get("Hx-Request") == "true":
-            return render(request, "tokens/gerar_token.html", context)
-        return render(
-            request,
-            "tokens/tokens.html",
-            {
-                "partial_template": "tokens/gerar_token.html",
-                **context,
-                "hero_title": _("Gerar Token"),
-            },
-        )
+            return render(request, "tokens/_gerar_token_content.html", context)
+        return render(request, "tokens/gerar_token.html", context)
 
     def post(self, request, *args, **kwargs):
         ip = get_client_ip(request)
@@ -171,11 +158,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 form = GerarTokenConviteForm(user=request.user)
                 resp = render(
                     request,
-                    "tokens/tokens.html",
+                    "tokens/gerar_token.html",
                     {
-                        "partial_template": "tokens/gerar_token.html",
                         "form": form,
-                        "hero_title": _("Gerar Token"),
                         **self._navigation_context(request),
                     },
                     status=429,
@@ -197,12 +182,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             messages.error(request, message)
             return render(
                 request,
-                "tokens/tokens.html",
+                "tokens/gerar_token.html",
                 {
-                    "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "error": message,
-                    "hero_title": _("Gerar Token"),
                     **self._navigation_context(request),
                 },
                 status=400,
@@ -221,12 +204,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             messages.error(request, message)
             return render(
                 request,
-                "tokens/tokens.html",
+                "tokens/gerar_token.html",
                 {
-                    "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "error": message,
-                    "hero_title": _("Gerar Token"),
                     **self._navigation_context(request),
                 },
                 status=400,
@@ -244,12 +225,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             messages.error(request, message)
             return render(
                 request,
-                "tokens/tokens.html",
+                "tokens/gerar_token.html",
                 {
-                    "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "error": message,
-                    "hero_title": _("Gerar Token"),
                     **self._navigation_context(request),
                 },
                 status=403,
@@ -277,12 +256,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 messages.error(request, _("Limite diário atingido."))
                 return render(
                     request,
-                    "tokens/tokens.html",
+                    "tokens/gerar_token.html",
                     {
-                        "partial_template": "tokens/gerar_token.html",
                         "form": form,
                         "error": _("Limite diário atingido."),
-                        "hero_title": _("Gerar Token"),
                         **self._navigation_context(request),
                     },
                     status=429,
@@ -315,12 +292,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             form = GerarTokenConviteForm(user=request.user)
             return render(
                 request,
-                "tokens/tokens.html",
+                "tokens/gerar_token.html",
                 {
-                    "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "token": codigo,
-                    "hero_title": _("Gerar Token"),
                     **self._navigation_context(request),
                 },
             )
@@ -334,12 +309,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         messages.error(request, _("Dados inválidos"))
         return render(
             request,
-            "tokens/tokens.html",
+            "tokens/gerar_token.html",
             {
-                "partial_template": "tokens/gerar_token.html",
                 "form": form,
                 "error": _("Dados inválidos"),
-                "hero_title": _("Gerar Token"),
                 **self._navigation_context(request),
             },
             status=400,
