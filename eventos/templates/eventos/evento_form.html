@@ -6,45 +6,27 @@
 {% block hero %}{% include "_components/hero_evento.html" with title=title|default:_("Eventos") subtitle=subtitle|default_if_none:"" neural_background="eventos" %}{% endblock %}
 
 {% block content %}
-  
-    {% if object %}
-      <article class="card">
-        <div class="card-header">
-          <h2 class="text-xl font-semibold">{{ title|default:_('Evento') }}</h2>
-        </div>
-        <div class="card-body">
+
+    <article class="card">
+      <div class="card-header">
+        <h2 class="text-xl font-semibold">{{ title|default:_('Evento') }}</h2>
+      </div>
+      <div class="card-body space-y-6">
+        {% with coordinator_flag=coordinator_in_status_group|default:object avatar_preview_value=avatar_preview|default:object.avatar cover_preview_value=cover_preview|default:object.cover %}
           <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
             {{ form.non_field_errors }}
-            {% include 'eventos/partials/eventos/_form_fields.html' with form=form coordinator_in_status_group=coordinator_in_status_group|default:True avatar_preview=avatar_preview|default:object.avatar cover_preview=cover_preview|default:object.cover %}
+            {% include 'eventos/partials/eventos/_form_fields.html' with form=form coordinator_in_status_group=coordinator_flag avatar_preview=avatar_preview_value cover_preview=cover_preview_value %}
             <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
               {% url 'eventos:calendario' as calendario_url %}
               {% include '_components/back_button.html' with href=back_href fallback_href=calendario_url %}
               <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
             </div>
           </form>
-        </div>
-      </article>
-    {% else %}
-      <article class="card">
-        <div class="card-header">
-          <h2 class="text-xl font-semibold">{{ title|default:_('Evento') }}</h2>
-        </div>
-        <div class="card-body">
-          <form method="post" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            {% include 'eventos/partials/eventos/_form_fields.html' with form=form coordinator_in_status_group=coordinator_in_status_group|default:False avatar_preview=avatar_preview|default:None cover_preview=cover_preview|default:None %}
-            <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-              {% url 'eventos:calendario' as calendario_url %}
-              {% include '_components/back_button.html' with href=back_href fallback_href=calendario_url %}
-              <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
-            </div>
-          </form>
-        </div>
-      </article>
-    {% endif %}
-  
+        {% endwith %}
+      </div>
+    </article>
+
 {% endblock %}
 
 {% block scripts %}

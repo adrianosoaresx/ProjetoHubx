@@ -39,7 +39,7 @@ from core.permissions import (
 )
 from core.utils import resolve_back_href
 
-from .forms import EventoForm, InscricaoEventoForm
+from .forms import EventoForm, FeedbackForm, InscricaoEventoForm
 from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 
 User = get_user_model()
@@ -422,6 +422,8 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
         context["inscricao"] = minha_inscricao
         context["back_href"] = self._resolve_back_href()
+        if context["avaliacao_permitida"]:
+            context["feedback_form"] = FeedbackForm()
         inscricoes = list(evento.inscricoes.all())
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
@@ -528,7 +530,14 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
             return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
         if timezone.now() < evento.data_fim:
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
-        context = {"evento": evento, "title": _("Avaliar evento"), "subtitle": evento.descricao}
+        fallback = reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk})
+        context = {
+            "evento": evento,
+            "title": _("Avaliar evento"),
+            "subtitle": evento.descricao,
+            "form": FeedbackForm(),
+            "back_href": resolve_back_href(request, fallback=fallback),
+        }
         return TemplateResponse(request, "eventos/avaliacao_form.html", context)
 
     def post(self, request, pk):

@@ -8,9 +8,13 @@
 {% block content %}
   
     <article class="card">
-      <div class="card-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 class="text-xl font-semibold">{{ title|default:_('Eventos') }}</h2>
-        {% block list_actions %}{% endblock %}
+      <div class="card-header">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 class="text-xl font-semibold">{{ title|default:_('Eventos') }}</h2>
+          <div class="flex flex-wrap items-center gap-3">
+            {% block list_actions %}{% endblock %}
+          </div>
+        </div>
       </div>
       <div class="card-body space-y-6">
         {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' %}
