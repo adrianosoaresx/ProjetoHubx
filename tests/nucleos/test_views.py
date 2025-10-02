@@ -1,16 +1,12 @@
-from datetime import timedelta
-
 import pytest
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseBadRequest
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import UserType
-from nucleos.forms import SuplenteForm
 from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
-from nucleos.views import NucleoDetailView, SuplenteCreateView
+from nucleos.views import NucleoDetailView
 from organizacoes.models import Organizacao
 from eventos.factories import EventoFactory
 
@@ -54,7 +50,6 @@ def patch_tasks(monkeypatch):
 
     monkeypatch.setattr("nucleos.views.notify_participacao_aprovada", Dummy())
     monkeypatch.setattr("nucleos.views.notify_participacao_recusada", Dummy())
-    monkeypatch.setattr("nucleos.views.notify_suplente_designado", Dummy())
 
 
 def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
@@ -64,6 +59,7 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
         data={
             "nome": "N1",
             "descricao": "d",
+            "classificacao": Nucleo.Classificacao.PLANEJAMENTO,
             "ativo": True,
             "mensalidade": "30.00",
         },
@@ -136,101 +132,6 @@ def test_toggle_active_admin_other_org(client, organizacao, admin_user):
     assert nucleo.deleted is False
 
 
-def test_suplente_create_non_member(admin_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
-    User = get_user_model()
-    nao_membro = User.objects.create_user(
-        username="x",
-        email="x@example.com",
-        password="pass",
-        user_type=UserType.NUCLEADO,
-        organizacao=organizacao,
-    )
-
-    request = RequestFactory().post(
-        "/",
-        {
-            "usuario": nao_membro.id,
-            "periodo_inicio": timezone.now().strftime("%Y-%m-%d"),
-            "periodo_fim": (timezone.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
-        },
-    )
-    request.user = admin_user
-
-    view = SuplenteCreateView()
-    view.request = request
-    view.kwargs = {"pk": nucleo.pk}
-
-    def _form_invalid(self, form):
-        return HttpResponseBadRequest()
-
-    monkeypatch.setattr(SuplenteCreateView, "form_invalid", _form_invalid)
-
-    form = SuplenteForm(data=request.POST, nucleo=nucleo)
-    form.fields["usuario"].queryset = User.objects.all()
-    assert form.is_valid()
-    response = view.form_valid(form)
-    assert response.status_code == 400
-    assert "Usuário não é membro do núcleo." in form.errors["usuario"]
-    assert CoordenadorSuplente.objects.count() == 0
-
-
-def test_suplente_create_overlap(admin_user, membro_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(nucleo=nucleo, user=membro_user, status="ativo")
-    now = timezone.now()
-    CoordenadorSuplente.objects.create(
-        nucleo=nucleo,
-        usuario=membro_user,
-        periodo_inicio=now,
-        periodo_fim=now + timedelta(days=5),
-    )
-
-    request = RequestFactory().post(
-        "/",
-        {
-            "usuario": membro_user.id,
-            "periodo_inicio": (now + timedelta(days=1)).strftime("%Y-%m-%d"),
-            "periodo_fim": (now + timedelta(days=2)).strftime("%Y-%m-%d"),
-        },
-    )
-    request.user = admin_user
-
-    view = SuplenteCreateView()
-    view.request = request
-    view.kwargs = {"pk": nucleo.pk}
-
-    def _form_invalid(self, form):
-        return HttpResponseBadRequest()
-
-    monkeypatch.setattr(SuplenteCreateView, "form_invalid", _form_invalid)
-
-    form = SuplenteForm(data=request.POST, nucleo=nucleo)
-    assert form.is_valid()
-    response = view.form_valid(form)
-    assert response.status_code == 400
-    assert "Usuário já é suplente no período informado." in form.non_field_errors()
-    assert CoordenadorSuplente.objects.count() == 1
-
-
-def test_suplente_create_success(client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(nucleo=nucleo, user=membro_user, status="ativo")
-    client.force_login(admin_user)
-    inicio = timezone.now()
-    fim = inicio + timedelta(days=2)
-    resp = client.post(
-        reverse("nucleos:suplente_adicionar", args=[nucleo.pk]),
-        data={
-            "usuario": membro_user.id,
-            "periodo_inicio": inicio.strftime("%Y-%m-%d"),
-            "periodo_fim": fim.strftime("%Y-%m-%d"),
-        },
-    )
-    assert resp.status_code == 302
-    assert CoordenadorSuplente.objects.filter(nucleo=nucleo, usuario=membro_user).exists()
-
-
 def test_meus_nucleos_view(client, membro_user, organizacao):
     nucleo1 = Nucleo.objects.create(nome="N1", organizacao=organizacao)
     nucleo2 = Nucleo.objects.create(nome="N2", organizacao=organizacao)
@@ -267,6 +168,9 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
             user=u,
             status="ativo",
             papel="coordenador" if i == 0 else "membro",
+            papel_coordenador=(
+                ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL if i == 0 else None
+            ),
         )
         members.append(u)
     pend = User.objects.create_user(
@@ -289,7 +193,7 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
     view = NucleoDetailView()
     view.request = request
     view.kwargs = {"pk": nucleo.pk}
-    with django_assert_num_queries(15):
+    with django_assert_num_queries(16):
         qs = view.get_queryset()
         obj = qs.get()
         view.object = obj
