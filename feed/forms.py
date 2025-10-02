@@ -3,6 +3,7 @@ from __future__ import annotations
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import UserType
 
@@ -61,6 +62,15 @@ class PostForm(forms.ModelForm):
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        allowed_choices = [
+            ("global", _("Feed Público")),
+            ("usuario", _("Mural")),
+        ]
+        current_value = self.data.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
+        choice_map = dict(Post.TIPO_FEED_CHOICES)
+        if current_value and current_value not in {value for value, _ in allowed_choices}:
+            allowed_choices.append((current_value, choice_map.get(current_value, current_value)))
+        self.fields["tipo_feed"].choices = allowed_choices
         if user:
             self.user = user
             self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)

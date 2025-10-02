@@ -43,10 +43,40 @@
           {% endif %}
 
           <div class="space-y-4">
-            {% include '_forms/field.html' with field=form.tipo_feed %}
-            {% include '_forms/field.html' with field=form.organizacao %}
-            {% include '_forms/field.html' with field=form.nucleo %}
-            {% include '_forms/field.html' with field=form.evento %}
+            <div class="space-y-2">
+              <span class="block text-sm font-medium text-[var(--text-primary)]">
+                {% trans "Tipo de feed" %} *
+              </span>
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label for="tipo_feed_global" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                  <input type="checkbox"
+                         id="tipo_feed_global"
+                         name="tipo_feed"
+                         value="global"
+                         class="form-checkbox"
+                         data-exclusive="tipo-feed"
+                         {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
+                  <span>{% trans "Feed Público" %}</span>
+                </label>
+                <label for="tipo_feed_usuario" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                  <input type="checkbox"
+                         id="tipo_feed_usuario"
+                         name="tipo_feed"
+                         value="usuario"
+                         class="form-checkbox"
+                         data-exclusive="tipo-feed"
+                         {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
+                  <span>{% trans "Mural" %}</span>
+                </label>
+              </div>
+              {% if form.tipo_feed.errors %}
+                <ul class="errorlist">
+                  {% for error in form.tipo_feed.errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
           </div>
 
           {% with placeholder_value=_('O que você gostaria de compartilhar?') %}
@@ -65,9 +95,20 @@
             <input type="hidden" name="organizacao" value="{{ request.user.organizacao.id }}">
           {% endif %}
 
-          <div class="space-y-4">
-            {% include '_forms/field.html' with field=form.tags|attr:'id:tags-select' %}
-            {% include '_forms/field.html' with id='id_tags_text' name='tags_text' label=_('Novas tags') placeholder=_('Digite novas tags separadas por vírgula') value=request.POST.tags_text|default:'' help_text=_('Use vírgula para separar as tags adicionais.') %}
+          <div class="space-y-2">
+            <label for="tags-input" class="block text-sm font-medium text-[var(--text-primary)]">
+              {% trans "Tags" %}
+            </label>
+            <div id="tags-chips" class="flex flex-wrap gap-2"></div>
+            <input id="tags-input"
+                   type="text"
+                   class="form-input w-full"
+                   placeholder="{% trans 'Digite e pressione Enter para adicionar' %}">
+            <input type="hidden"
+                   id="id_tags_text"
+                   name="tags_text"
+                   value="{{ request.POST.tags_text|default:'' }}">
+            <p class="text-xs text-[var(--text-secondary)]">{% trans "Use Enter ou vírgula para separar as tags." %}</p>
           </div>
 
           <div class="space-y-4">
@@ -78,8 +119,7 @@
 
           <p class="text-xs text-[var(--text-secondary)]">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</p>
 
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
+          <div class="flex justify-end pt-4 border-t border-[var(--border)]">
             <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
               {% trans "Salvar" %}
             </button>
