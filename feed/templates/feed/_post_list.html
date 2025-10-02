@@ -27,23 +27,29 @@
       </div>
 
       {% if post.pdf %}
-        <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl max-w-full object-cover" loading="lazy">
-          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
-            {% lucide 'eye' class='w-4 h-4' %}
-          </a>
-          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
-            {% lucide 'download' class='w-4 h-4' %}
+        <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+          <a href="{{ post.pdf.url }}" target="_blank" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]" rel="noopener">
+            <span class="flex items-center gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+                {% lucide 'file-text' class='h-6 w-6' %}
+              </span>
+              <span class="truncate">{% trans "Documento em PDF" %}</span>
+            </span>
+            {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-muted)]' %}
           </a>
         </div>
       {% elif post.image %}
-        <div class="feed-media">
-          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl max-w-full object-cover" loading="lazy">
-        </div>
+        <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="h-full max-h-72 w-full object-cover" loading="lazy">
+        </figure>
       {% elif post.video %}
-        <div class="feed-media">
-          <video src="{{ post.video.url }}" controls class="rounded-xl max-w-full"></video>
-        </div>
+        <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black shadow-sm">
+          {% if post.video_preview %}
+            <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
+          {% else %}
+            <video src="{{ post.video.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
+          {% endif %}
+        </figure>
       {% endif %}
 
       {% if post.tags.all %}
