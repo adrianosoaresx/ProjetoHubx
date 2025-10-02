@@ -80,49 +80,6 @@ function bindFeedEvents(root = document) {
     });
   }
 
-  const tagsSelect = root.querySelector("#tags-select");
-  const tagsHidden = root.querySelector("#tags");
-
-  if (tagsSelect && tagsHidden) {
-    tagsSelect.addEventListener("change", () => {
-      const values = Array.from(tagsSelect.selectedOptions)
-        .map((o) => o.value)
-        .join(",");
-      tagsHidden.value = values;
-    });
-  }
-
-  // Visibilidade/Destino: sincroniza seleção de núcleo com tipo_feed
-  const tipoGlobal = root.querySelector('input[name="tipo_feed"][value="global"]');
-  const tipoUsuario = root.querySelector('input[name="tipo_feed"][value="usuario"]');
-  const tipoNucleoHidden = root.querySelector('#tipo_feed_nucleo_hidden');
-  const nucleoRadios = root.querySelectorAll('input[name="nucleo"]');
-  if (nucleoRadios && tipoNucleoHidden) {
-    nucleoRadios.forEach(r => {
-      r.addEventListener('change', () => {
-        if (r.checked) {
-          // Marcar tipo_feed como "nucleo" quando escolher um núcleo
-          tipoNucleoHidden.checked = true;
-        }
-      });
-    });
-  }
-  const clearNucleos = () => {
-    nucleoRadios.forEach(r => {
-      r.checked = false;
-    });
-  };
-  if (tipoGlobal) {
-    tipoGlobal.addEventListener('change', () => {
-      if (tipoGlobal.checked) clearNucleos();
-    });
-  }
-  if (tipoUsuario) {
-    tipoUsuario.addEventListener('change', () => {
-      if (tipoUsuario.checked) clearNucleos();
-    });
-  }
-
   // Tags: chips input
   const tagsInput = root.querySelector('#tags-input');
   const chipsContainer = root.querySelector('#tags-chips');
@@ -187,6 +144,41 @@ function bindFeedEvents(root = document) {
           updateHiddenTags();
         }
       }
+    });
+  }
+
+  // Checkboxes exclusivos (comportamento semelhante a rádio)
+  const exclusiveCheckboxes = Array.from(root.querySelectorAll('input[type="checkbox"][data-exclusive]'));
+  if (exclusiveCheckboxes.length) {
+    const groups = exclusiveCheckboxes.reduce((acc, checkbox) => {
+      const groupName = checkbox.getAttribute('data-exclusive');
+      if (!groupName) {
+        return acc;
+      }
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(checkbox);
+      return acc;
+    }, {});
+
+    Object.values(groups).forEach((group) => {
+      group.forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            group.forEach((other) => {
+              if (other !== checkbox) {
+                other.checked = false;
+              }
+            });
+          } else {
+            const anyChecked = group.some((item) => item.checked);
+            if (!anyChecked) {
+              checkbox.checked = true;
+            }
+          }
+        });
+      });
     });
   }
 }
