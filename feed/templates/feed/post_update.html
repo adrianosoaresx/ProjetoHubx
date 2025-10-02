@@ -49,10 +49,14 @@
       </div>
 
       {% with placeholder_value=_('O que você gostaria de compartilhar?') %}
-      <div class="space-y-2">
-        {% include '_forms/field.html' with field=form.conteudo|attr:'rows:6'|attr:('placeholder:'|add:placeholder_value) %}
-        <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
-      </div>
+        {% with placeholder_attr='placeholder:'|add:placeholder_value %}
+          {% with conteudo_field=form.conteudo|attr:'rows:6'|attr:placeholder_attr %}
+            <div class="space-y-2">
+              {% include '_forms/field.html' with field=conteudo_field %}
+              <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
+            </div>
+          {% endwith %}
+        {% endwith %}
       {% endwith %}
 
       <div class="space-y-4">
