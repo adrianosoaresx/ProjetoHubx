@@ -1,7 +1,4 @@
 // Feed JavaScript - Funcionalidades essenciais
-const POST_ACTION_BUTTON_SELECTOR = '.post-actions-toggle';
-const POST_ACTION_MENU_SELECTOR = '.post-actions-menu';
-
 const getCookie = (name) => {
   if (typeof document === 'undefined') {
     return null;
@@ -14,68 +11,6 @@ const getCookie = (name) => {
     }
   }
   return null;
-};
-
-const hidePostMenu = (menu, button) => {
-  if (!menu) return;
-  menu.hidden = true;
-  menu.dataset.state = 'closed';
-  menu.setAttribute('aria-hidden', 'true');
-  menu.classList.add('pointer-events-none', 'opacity-0', 'invisible');
-  menu.classList.remove('pointer-events-auto', 'opacity-100');
-  if (button) {
-    button.setAttribute('aria-expanded', 'false');
-  }
-};
-
-const showPostMenu = (menu, button) => {
-  if (!menu) return;
-  menu.hidden = false;
-  menu.dataset.state = 'open';
-  menu.setAttribute('aria-hidden', 'false');
-  menu.classList.remove('pointer-events-none', 'invisible', 'opacity-0');
-  menu.classList.add('pointer-events-auto', 'opacity-100');
-  if (button) {
-    button.setAttribute('aria-expanded', 'true');
-  }
-};
-
-const closeAllPostMenus = (exceptionId = null) => {
-  const menus = document.querySelectorAll(POST_ACTION_MENU_SELECTOR);
-  menus.forEach((menu) => {
-    if (exceptionId && menu.id === exceptionId) {
-      return;
-    }
-    const button = document.querySelector(`${POST_ACTION_BUTTON_SELECTOR}[data-menu-id="${menu.id}"]`);
-    hidePostMenu(menu, button);
-  });
-};
-
-let postMenuGlobalsRegistered = false;
-
-const registerPostMenuGlobals = () => {
-  if (postMenuGlobalsRegistered) {
-    return;
-  }
-
-  document.addEventListener('click', (event) => {
-    if (event.defaultPrevented) return;
-    const rawTarget = event.target;
-    const target = rawTarget instanceof Element ? rawTarget : rawTarget && rawTarget.parentElement;
-    if (!target) return;
-    if (target.closest(POST_ACTION_BUTTON_SELECTOR) || target.closest(POST_ACTION_MENU_SELECTOR)) {
-      return;
-    }
-    closeAllPostMenus();
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeAllPostMenus();
-    }
-  });
-
-  postMenuGlobalsRegistered = true;
 };
 
 function bindFeedEvents(root = document) {
@@ -319,45 +254,6 @@ function bindFeedEvents(root = document) {
     });
   }
 
-  const postActionButtons = Array.from(root.querySelectorAll(POST_ACTION_BUTTON_SELECTOR));
-  if (postActionButtons.length) {
-    registerPostMenuGlobals();
-    postActionButtons.forEach((button) => {
-      if (button.dataset.postMenuBound === 'true') {
-        return;
-      }
-      const menuId = button.getAttribute('data-menu-id');
-      if (!menuId) {
-        return;
-      }
-      const menu = document.getElementById(menuId);
-      if (!menu) {
-        return;
-      }
-
-      button.dataset.postMenuBound = 'true';
-      hidePostMenu(menu, button);
-
-      button.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const isExpanded = button.getAttribute('aria-expanded') === 'true';
-        if (isExpanded) {
-          hidePostMenu(menu, button);
-        } else {
-          closeAllPostMenus(menuId);
-          showPostMenu(menu, button);
-        }
-      });
-
-      const menuLinks = menu.querySelectorAll('[data-menu-link]');
-      menuLinks.forEach((link) => {
-        link.addEventListener('click', () => {
-          hidePostMenu(menu, button);
-        });
-      });
-    });
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
