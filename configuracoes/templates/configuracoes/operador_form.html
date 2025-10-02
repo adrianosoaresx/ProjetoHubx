@@ -8,63 +8,40 @@
 {% endblock %}
 
 {% block content %}
-  <section class="max-w-3xl mx-auto space-y-6">
-    <div class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
-      <div class="card-body p-6">
-        <header class="mb-6 space-y-2">
-          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Dados do operador' %}</h2>
-          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Informe os dados básicos para criar um novo usuário operador.' %}</p>
-        </header>
+  <section class="max-w-3xl mx-auto py-6">
+    <article class="card">
+      <div class="card-header space-y-1">
+        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Dados do operador' %}</h2>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans 'Informe os dados básicos para criar um novo usuário operador.' %}</p>
+      </div>
+      <div class="card-body space-y-6">
         <form method="post" class="space-y-6">
           {% csrf_token %}
           {% if form.non_field_errors %}
             <div class="alert alert-error" role="alert">
-              {{ form.non_field_errors }}
+              <ul class="space-y-1">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
             </div>
           {% endif %}
+          {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field }}
+          {% endfor %}
           <div class="grid gap-6 md:grid-cols-2">
-            <div class="space-y-1">
-              <label for="id_username" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Nome de usuário' %}</label>
-              {{ form.username }}
-              {% if form.username.errors %}
-                <p class="text-sm text-[var(--error)]">{{ form.username.errors|join:', ' }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-1">
-              <label for="id_email" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'E-mail' %}</label>
-              {{ form.email }}
-              {% if form.email.errors %}
-                <p class="text-sm text-[var(--error)]">{{ form.email.errors|join:', ' }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-1">
-              <label for="id_contato" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Nome completo' %}</label>
-              {{ form.contato }}
-              {% if form.contato.errors %}
-                <p class="text-sm text-[var(--error)]">{{ form.contato.errors|join:', ' }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-1">
-              <label for="id_password1" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Senha' %}</label>
-              {{ form.password1 }}
-              {% if form.password1.errors %}
-                <p class="text-sm text-[var(--error)]">{{ form.password1.errors|join:', ' }}</p>
-              {% endif %}
-            </div>
-            <div class="space-y-1">
-              <label for="id_password2" class="block text-sm font-medium text-[var(--text-primary)]">{% trans 'Confirmar senha' %}</label>
-              {{ form.password2 }}
-              {% if form.password2.errors %}
-                <p class="text-sm text-[var(--error)]">{{ form.password2.errors|join:', ' }}</p>
-              {% endif %}
-            </div>
+            {% include '_forms/field.html' with field=form.username %}
+            {% include '_forms/field.html' with field=form.email %}
+            {% include '_forms/field.html' with field=form.contato %}
+            {% include '_forms/field.html' with field=form.password1 %}
+            {% include '_forms/field.html' with field=form.password2 %}
           </div>
-          <div class="flex items-center justify-end gap-3">
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
             {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
             <button type="submit" class="btn btn-primary">{% trans 'Salvar operador' %}</button>
           </div>
         </form>
       </div>
-    </div>
+    </article>
   </section>
 {% endblock %}
