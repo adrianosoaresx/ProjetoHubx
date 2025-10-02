@@ -1,4 +1,83 @@
 // Feed JavaScript - Funcionalidades essenciais
+const POST_ACTION_BUTTON_SELECTOR = '.post-actions-toggle';
+const POST_ACTION_MENU_SELECTOR = '.post-actions-menu';
+
+const getCookie = (name) => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (let i = 0; i < cookies.length; i += 1) {
+    const [key, ...rest] = cookies[i].split('=');
+    if (key === name) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+  return null;
+};
+
+const hidePostMenu = (menu, button) => {
+  if (!menu) return;
+  menu.hidden = true;
+  menu.dataset.state = 'closed';
+  menu.setAttribute('aria-hidden', 'true');
+  menu.classList.add('pointer-events-none', 'opacity-0', 'invisible');
+  menu.classList.remove('pointer-events-auto', 'opacity-100');
+  if (button) {
+    button.setAttribute('aria-expanded', 'false');
+  }
+};
+
+const showPostMenu = (menu, button) => {
+  if (!menu) return;
+  menu.hidden = false;
+  menu.dataset.state = 'open';
+  menu.setAttribute('aria-hidden', 'false');
+  menu.classList.remove('pointer-events-none', 'invisible', 'opacity-0');
+  menu.classList.add('pointer-events-auto', 'opacity-100');
+  if (button) {
+    button.setAttribute('aria-expanded', 'true');
+  }
+};
+
+const closeAllPostMenus = (exceptionId = null) => {
+  const menus = document.querySelectorAll(POST_ACTION_MENU_SELECTOR);
+  menus.forEach((menu) => {
+    if (exceptionId && menu.id === exceptionId) {
+      return;
+    }
+    const button = document.querySelector(`${POST_ACTION_BUTTON_SELECTOR}[data-menu-id="${menu.id}"]`);
+    hidePostMenu(menu, button);
+  });
+};
+
+let postMenuGlobalsRegistered = false;
+
+const registerPostMenuGlobals = () => {
+  if (postMenuGlobalsRegistered) {
+    return;
+  }
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented) return;
+    const rawTarget = event.target;
+    const target = rawTarget instanceof Element ? rawTarget : rawTarget && rawTarget.parentElement;
+    if (!target) return;
+    if (target.closest(POST_ACTION_BUTTON_SELECTOR) || target.closest(POST_ACTION_MENU_SELECTOR)) {
+      return;
+    }
+    closeAllPostMenus();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeAllPostMenus();
+    }
+  });
+
+  postMenuGlobalsRegistered = true;
+};
+
 function bindFeedEvents(root = document) {
   const textarea = root.querySelector('textarea[name="conteudo"]');
   const charCounter = root.querySelector("#char-count");
@@ -197,6 +276,84 @@ function bindFeedEvents(root = document) {
               checkbox.checked = true;
             }
           }
+        });
+      });
+    });
+  }
+
+  const csrfToken = getCookie('csrftoken');
+  const bookmarkButtons = Array.from(root.querySelectorAll('.bookmark-btn'));
+  if (bookmarkButtons.length) {
+    bookmarkButtons.forEach((btn) => {
+      if (btn.dataset.bookmarkBound === 'true') {
+        return;
+      }
+      btn.dataset.bookmarkBound = 'true';
+      btn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const postId = btn.dataset.postId;
+        if (!postId) {
+          return;
+        }
+        try {
+          const response = await fetch(`/api/feed/posts/${postId}/bookmark/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken || '',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          if (!response.ok) {
+            throw new Error('bookmark failed');
+          }
+          const data = await response.json();
+          const isBookmarked = Boolean(data.bookmarked);
+          btn.classList.toggle('text-[var(--warning)]', isBookmarked);
+          btn.setAttribute('aria-pressed', isBookmarked ? 'true' : 'false');
+        } catch (error) {
+          const message = window.gettext ? gettext('Erro ao salvar') : 'Erro ao salvar';
+          window.alert(message);
+        }
+      });
+    });
+  }
+
+  const postActionButtons = Array.from(root.querySelectorAll(POST_ACTION_BUTTON_SELECTOR));
+  if (postActionButtons.length) {
+    registerPostMenuGlobals();
+    postActionButtons.forEach((button) => {
+      if (button.dataset.postMenuBound === 'true') {
+        return;
+      }
+      const menuId = button.getAttribute('data-menu-id');
+      if (!menuId) {
+        return;
+      }
+      const menu = document.getElementById(menuId);
+      if (!menu) {
+        return;
+      }
+
+      button.dataset.postMenuBound = 'true';
+      hidePostMenu(menu, button);
+
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        if (isExpanded) {
+          hidePostMenu(menu, button);
+        } else {
+          closeAllPostMenus(menuId);
+          showPostMenu(menu, button);
+        }
+      });
+
+      const menuLinks = menu.querySelectorAll('[data-menu-link]');
+      menuLinks.forEach((link) => {
+        link.addEventListener('click', () => {
+          hidePostMenu(menu, button);
         });
       });
     });

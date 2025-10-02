@@ -58,7 +58,7 @@
             </div>
           </div>
           {% if request.user == post.autor or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
-          <div class="relative z-30 flex-shrink-0">
+          <div class="post-actions-area relative z-30 mr-2 flex-shrink-0 pt-1">
             <button type="button"
                     class="post-actions-toggle relative inline-flex items-center justify-center rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                     data-menu-id="post-menu-{{ post.id }}"
@@ -69,7 +69,10 @@
               {% lucide 'ellipsis' class='h-5 w-5' %}
             </button>
             <div id="post-menu-{{ post.id }}"
-                 class="post-actions-menu pointer-events-none invisible absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-primary)] p-1 text-sm shadow-xl transition duration-200 ease-out opacity-0">
+                 class="post-actions-menu pointer-events-none invisible absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-primary)] p-1 text-sm shadow-xl transition duration-200 ease-out opacity-0"
+                 hidden
+                 aria-hidden="true"
+                 data-state="closed">
               <a href="{% url 'feed:post_update' post.id %}"
                  class="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text-primary)] transition hover:bg-[var(--bg-secondary)] hover:text-[var(--accent)]"
                  data-menu-link>
@@ -171,84 +174,3 @@
 </section>
 
 {% endif %}
-
-<script>
-  // Usa a mesma paleta de cores das variáveis CSS do tema
-  const csrfToken = '{{ csrf_token }}';
-  document.querySelectorAll('.bookmark-btn').forEach(btn => {
-    btn.addEventListener('click', async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      const postId = btn.dataset.postId;
-      try {
-        const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {
-          method: 'POST',
-          headers: {'X-CSRFToken': csrfToken},
-        });
-        if (!res.ok) {
-          throw new Error('bookmark failed');
-        }
-        const data = await res.json();
-        btn.classList.toggle('text-[var(--warning)]', data.bookmarked);
-        btn.setAttribute('aria-pressed', data.bookmarked ? 'true' : 'false');
-      } catch (error) {
-        alert('{% trans "Erro ao salvar" %}');
-      }
-    });
-  });
-
-  const closeAllPostMenus = () => {
-    document.querySelectorAll('.post-actions-toggle').forEach(button => {
-      const menuId = button.dataset.menuId;
-      const menu = document.getElementById(menuId);
-      if (!menu) return;
-      menu.classList.add('invisible', 'opacity-0', 'pointer-events-none');
-      menu.classList.remove('opacity-100', 'pointer-events-auto');
-      button.setAttribute('aria-expanded', 'false');
-    });
-  };
-
-  document.querySelectorAll('.post-actions-toggle').forEach(button => {
-    const menuId = button.dataset.menuId;
-    const menu = document.getElementById(menuId);
-    if (!menu) {
-      return;
-    }
-
-    const openMenu = () => {
-      menu.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-      menu.classList.add('opacity-100', 'pointer-events-auto');
-      button.setAttribute('aria-expanded', 'true');
-    };
-
-    const closeMenu = () => {
-      menu.classList.add('invisible', 'opacity-0', 'pointer-events-none');
-      menu.classList.remove('opacity-100', 'pointer-events-auto');
-      button.setAttribute('aria-expanded', 'false');
-    };
-
-    button.addEventListener('click', event => {
-      event.preventDefault();
-      event.stopPropagation();
-      const isExpanded = button.getAttribute('aria-expanded') === 'true';
-      closeAllPostMenus();
-      if (!isExpanded) {
-        openMenu();
-      }
-    });
-
-    menu.querySelectorAll('[data-menu-link]').forEach(link => {
-      link.addEventListener('click', () => {
-        closeMenu();
-      });
-    });
-  });
-
-  document.addEventListener('click', closeAllPostMenus);
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      closeAllPostMenus();
-    }
-  });
-</script>
-
