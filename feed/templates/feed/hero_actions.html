@@ -1,7 +1,6 @@
 {% load i18n lucide_icons %}
 <div class="flex flex-wrap gap-3">
-  <a href="{% url 'feed:meu_mural' %}" class="btn btn-secondary" aria-label="{% trans 'Mural' %}">{% trans 'Mural' %}</a>
-  <a href="{% url 'feed:bookmarks' %}" class="btn btn-secondary" aria-label="{% trans 'Favoritos' %}">{% trans 'Favoritos' %}</a>
+  
   {% if request.user.user_type != 'root' %}
   {# Exceção: abertura em nova aba mantém o formulário de postagem ativo #}
   <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">

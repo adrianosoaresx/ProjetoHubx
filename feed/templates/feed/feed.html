@@ -14,11 +14,9 @@
 
   {% url 'feed:listar' as feed_list_url %}
   <article class="card">
-    <div class="card-header">
-      {% include '_components/search_form.html' with q=q %}
-    </div>
+
     <div class="card-body space-y-6">
-      <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
+      
       {% include "feed/_grid.html" %}
     </div>
   </article>

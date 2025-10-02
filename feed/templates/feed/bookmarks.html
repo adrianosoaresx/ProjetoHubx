@@ -12,9 +12,7 @@
 {% else %}
 
   <article class="card">
-    <div class="card-header">
-      <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Postagens salvas" %}</h2>
-    </div>
+  
     <div class="card-body space-y-6">
       {% include "feed/_grid.html" with posts=posts %}
     </div>
