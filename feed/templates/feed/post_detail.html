@@ -10,11 +10,6 @@
 {% if request.user.user_type == 'root' %}
   <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
-<section class="max-w-3xl mx-auto px-4 py-10 space-y-6">
-  <div>
-    <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
-  </div>
-
   <article class="card">
     <div class="card-body space-y-4">
     <div class="flex items-center gap-4">
@@ -109,7 +104,7 @@
     {% endif %}
     </div>
   </article>
-</section>
+
 <script>
   const csrfToken = '{{ csrf_token }}';
   fetch('/api/feed/posts/{{ post.id }}/views/open/', {
