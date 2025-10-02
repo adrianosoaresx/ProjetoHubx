@@ -32,13 +32,9 @@ from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperad
 from core.utils import resolve_back_href
 from eventos.models import Evento
 
-from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
+from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
-from .tasks import (
-    notify_participacao_aprovada,
-    notify_participacao_recusada,
-    notify_suplente_designado,
-)
+from .tasks import notify_participacao_aprovada, notify_participacao_recusada
 
 logger = logging.getLogger(__name__)
 
@@ -585,37 +581,6 @@ class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         return ctx
 
 
-class SolicitarParticipacaoModalView(NoSuperadminMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        return render(request, "nucleos/solicitar_modal.html", {"nucleo": nucleo})
-
-
-class PostarFeedModalView(NoSuperadminMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        return render(request, "nucleos/postar_modal.html", {"nucleo": nucleo})
-
-
-class ConvitesModalView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        convites = nucleo.convitenucleo_set.filter(usado_em__isnull=True)
-        limite = getattr(settings, "CONVITE_NUCLEO_DIARIO_LIMITE", 5)
-        cache_key = f"convites_nucleo:{request.user.id}:{timezone.now().date()}"
-        count = cache.get(cache_key, 0)
-        restantes = max(limite - count, 0)
-        return render(
-            request,
-            "nucleos/convites_modal.html",
-            {
-                "nucleo": nucleo,
-                "convites": convites,
-                "convites_restantes": restantes,
-            },
-        )
-
-
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
@@ -701,63 +666,6 @@ class MembroPromoverView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredM
         else:
             messages.success(request, _("Cargo alterado para membro."))
         return redirect("nucleos:detail", pk=pk)
-
-
-class SuplenteCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
-    model = CoordenadorSuplente
-    form_class = SuplenteForm
-    template_name = "nucleos/suplente_form.html"
-
-    def get_nucleo(self) -> Nucleo:
-        return get_object_or_404(Nucleo, pk=self.kwargs["pk"], deleted=False)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["nucleo"] = self.get_nucleo()
-        return kwargs
-
-    def form_valid(self, form):
-        nucleo = self.get_nucleo()
-        form.instance.nucleo = nucleo
-        user = form.cleaned_data["usuario"]
-        inicio = form.cleaned_data["periodo_inicio"]
-        fim = form.cleaned_data["periodo_fim"]
-        if not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=user, status="ativo").exists():
-            form.add_error("usuario", _("Usuário não é membro do núcleo."))
-            return self.form_invalid(form)
-        overlap = CoordenadorSuplente.objects.filter(
-            nucleo=nucleo,
-            usuario=user,
-            deleted=False,
-            periodo_inicio__lt=fim,
-            periodo_fim__gt=inicio,
-        ).exists()
-        if overlap:
-            form.add_error(None, _("Usuário já é suplente no período informado."))
-            return self.form_invalid(form)
-        response = super().form_valid(form)
-        notify_suplente_designado.delay(nucleo.id, form.instance.usuario.email)
-        messages.success(self.request, _("Suplente adicionado."))
-        return response
-
-    def get_success_url(self):
-        return reverse_lazy("nucleos:detail", kwargs={"pk": self.kwargs["pk"]})
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["pk"] = self.kwargs["pk"]
-        fallback_url = reverse("nucleos:detail", kwargs={"pk": self.kwargs["pk"]})
-        back_href = resolve_back_href(self.request, fallback=fallback_url)
-        ctx["back_href"] = back_href
-        ctx["back_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
-        }
-        ctx["cancel_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
-        }
-        return ctx
 
 
 class SuplenteDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):

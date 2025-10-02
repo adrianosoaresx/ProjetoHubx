@@ -17,54 +17,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-#: templates/nucleos/convites_modal.html:3
-msgid "Convites do núcleo"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:4 templates/nucleos/detail.html:99
-msgid "Convites restantes hoje:"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:7
-msgid "email@example.com"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:9
-msgid "Membro"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:10 templates/nucleos/detail.html:23
-msgid "Coordenador"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:13
-msgid "Fechar"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:14
-msgid "Enviar convite"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:21
-msgid "Revogar"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:24
-msgid "Nenhum convite pendente."
-msgstr ""
-
 #: templates/nucleos/nucleo_form.html:4
 msgid "Novo Núcleo"
 msgstr ""
 
+#: templates/nucleos/partials/membro.html:15 templates/nucleos/partials/membro_card.html:33
+msgid "Coordenador"
+msgstr "Coordenador"
+
+#: templates/nucleos/partials/membro_card.html:33
+msgid "Membro"
+msgstr "Membro"
+
 #: templates/nucleos/nucleo_form.html:12 templates/nucleos/delete.html:16
-#: templates/nucleos/delete.html:17 templates/nucleos/postar_modal.html:14
-#: templates/nucleos/solicitar_modal.html:9
-#: templates/nucleos/suplente_form.html:12 templates/nucleos/nucleo_form.html:12
+#: templates/nucleos/delete.html:17
 msgid "Cancelar"
 msgstr ""
 
-#: templates/nucleos/nucleo_form.html:13 templates/nucleos/suplente_form.html:13
 #: templates/nucleos/nucleo_form.html:13
 msgid "Salvar"
 msgstr ""
@@ -155,10 +124,6 @@ msgstr ""
 msgid "Inativo"
 msgstr ""
 
-#: templates/nucleos/detail.html:90 templates/nucleos/suplente_form.html:4
-msgid "Adicionar Suplente"
-msgstr ""
-
 #: templates/nucleos/detail.html:97
 msgid "Gerenciar convites"
 msgstr ""
@@ -219,34 +184,8 @@ msgstr ""
 msgid "Próxima"
 msgstr ""
 
-#: templates/nucleos/postar_modal.html:3
-msgid "Postar no feed do núcleo"
-msgstr ""
-
-#: templates/nucleos/postar_modal.html:9
-msgid "Escreva algo..."
-msgstr ""
-
-#: templates/nucleos/postar_modal.html:15
-msgid "Postar"
-msgstr ""
-
 #: templates/_components/card_nucleo.html:17
 msgid "Formação"
 msgstr "Formação"
 
-#: templates/nucleos/solicitar_modal.html:3
-msgid "Confirmar solicitação de participação?"
-msgstr ""
-
-#: templates/nucleos/solicitar_modal.html:6
-msgid "Solicitação enviada"
-msgstr ""
-
-#: templates/nucleos/solicitar_modal.html:10
-msgid "Confirmar"
-msgstr ""
-
-#: templates/nucleos/convites_modal.html:23
-msgid "Confirmar revogação?"
-msgstr "Confirmar revogação?"
+ 
