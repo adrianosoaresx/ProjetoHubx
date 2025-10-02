@@ -67,33 +67,27 @@
       {% endif %}
 
       {% if post.pdf %}
-      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm transition duration-300 group-hover:border-[var(--accent)]">
-        <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="h-56 w-full object-cover" loading="lazy">
-        <figcaption class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent px-4 pb-4 pt-10 text-xs font-medium text-[var(--text-primary)] backdrop-blur-sm">
-          <span class="flex items-center gap-2">
-            {% lucide 'file-text' class='h-4 w-4' %}
-            {% trans "Documento em PDF" %}
+      <div class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm transition duration-300 group-hover:border-[var(--accent)]">
+        <a href="{{ post.pdf.url }}" target="_blank" rel="noopener" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition-colors hover:text-[var(--accent)]">
+          <span class="flex items-center gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+              {% lucide 'file-text' class='h-6 w-6' %}
+            </span>
+            <span class="truncate">{% trans "Documento em PDF" %}</span>
           </span>
-          <div class="flex items-center gap-2">
-            <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Visualizar PDF' %}">
-              {% lucide 'eye' class='w-4 h-4' %}
-            </a>
-            <a href="{{ post.pdf.url }}" download class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Baixar PDF' %}">
-              {% lucide 'download' class='w-4 h-4' %}
-            </a>
-          </div>
-        </figcaption>
-      </figure>
+          {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-muted)]' %}
+        </a>
+      </div>
       {% elif post.image %}
       <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
-        <img src="{{ post.image.url }}" class="h-56 w-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]" alt="{% trans 'mídia do post' %}" loading="lazy">
+        <img src="{{ post.image.url }}" class="h-full max-h-72 w-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]" alt="{% trans 'mídia do post' %}" loading="lazy">
       </figure>
       {% elif post.video %}
       <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-black shadow-sm">
         {% if post.video_preview %}
-        <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
+        <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
         {% else %}
-        <video src="{{ post.video.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
+        <video src="{{ post.video.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
         {% endif %}
       </figure>
       {% endif %}
