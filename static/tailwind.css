@@ -758,23 +758,11 @@ select {
   caret-color: #f1f5f9;
 }
 
-.dark .form-checkbox,
-  .dark .form-radio {
-  background-color: #0f172a;
-  border-color: #475569;
-  color: var(--primary);
-}
-
 .dark input:focus,
   .dark textarea:focus,
   .dark select:focus {
   border-color: #64748b;
   background-color: #0f172a;
-}
-
-.dark .form-checkbox:focus,
-  .dark .form-radio:focus {
-  --tw-ring-offset-color: #0f172a;
 }
 
 .dark input::-moz-placeholder, .dark textarea::-moz-placeholder {
@@ -2038,10 +2026,6 @@ a:focus {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
-}
-
-.pointer-events-none {
-  pointer-events: none;
 }
 
 .visible {
