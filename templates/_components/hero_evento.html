@@ -1,45 +1,38 @@
-{% load i18n lucide_icons string_filters %}
+{% load i18n lucide_icons %}
 {% trans 'Eventos' as hero_default_title %}
-{% with hero_title=title|coalesce:list_title|coalesce:hero_default_title hero_subtitle=subtitle|coalesce:list_subtitle hero_breadcrumb_template=breadcrumb_template|coalesce:list_hero_breadcrumb_template hero_neural_background=list_hero_neural_background|coalesce:neural_background hero_style=list_hero_style|coalesce:style hero_total_eventos=list_total_eventos|coalesce:total_eventos hero_total_eventos_planejamento=list_total_eventos_planejamento|coalesce:total_eventos_planejamento hero_total_eventos_ativos=list_total_eventos_ativos|coalesce:total_eventos_ativos hero_total_eventos_concluidos=list_total_eventos_concluidos|coalesce:total_eventos_concluidos hero_total_eventos_cancelados=list_total_eventos_cancelados|coalesce:total_eventos_cancelados %}
-<section class="hero-with-neural bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-white"
-         {% if hero_style %}style="{{ hero_style }}"{% endif %}>
+{% with hero_title=title|default:hero_default_title hero_subtitle=subtitle hero_breadcrumb_template=breadcrumb_template hero_neural_background=neural_background|default:'eventos' hero_style=style %}
+<section class="hero-with-neural bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-white" {% if hero_style %}style="{{ hero_style }}"{% endif %}>
   <div class="neural-bg-base" aria-hidden="true">
-    {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background|default:'eventos' only %}
+    {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
   </div>
   <div class="hero-overlay" aria-hidden="true"></div>
   <div class="hero-content w-full">
     <div class="max-w-7xl mx-auto w-full px-4 py-12 text-center md:text-left md:py-16">
-      {% if hero_breadcrumb_template %}
-        <div class="mb-4">{% include hero_breadcrumb_template %}</div>
-      {% endif %}
+      {% if hero_breadcrumb_template %}<div class="mb-4">{% include hero_breadcrumb_template %}</div>{% endif %}
       <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div class="space-y-3 md:max-w-3xl">
           <h1 class="text-4xl md:text-5xl font-bold text-white">{{ hero_title }}</h1>
-          {% if hero_subtitle %}
-            <p class="text-lg text-white/90">{{ hero_subtitle }}</p>
-          {% endif %}
+          {% if hero_subtitle %}<p class="text-lg text-white/90">{{ hero_subtitle }}</p>{% endif %}
         </div>
-
       </div>
-
-      {% if hero_total_eventos is not None or hero_total_eventos_ativos is not None or hero_total_eventos_concluidos is not None or hero_total_eventos_planejamento is not None or hero_total_eventos_cancelados is not None %}
+      {% if total_eventos_planejamento or total_eventos_ativos or total_eventos_concluidos or total_eventos_cancelados %}
         {% lucide 'calendar-clock' class='h-5 w-5' as icon_total_planejamento %}
         {% lucide 'activity' class='h-5 w-5' as icon_total_ativos %}
         {% lucide 'check' class='h-5 w-5' as icon_total_concluidos %}
         {% lucide 'ban' class='h-5 w-5' as icon_total_cancelados %}
         <div class="mt-10 space-y-4 text-left">
           <div class="card-grid" data-eventos-filter-buttons>
-            {% if hero_total_eventos_planejamento is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Em planejamento') valor=hero_total_eventos_planejamento icon_svg=icon_total_planejamento card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=planejamento_filter_url is_active=is_planejamento_filter_active active_class='border border-white/80 shadow-lg' %}
+            {% if total_eventos_planejamento is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Em planejamento') valor=total_eventos_planejamento icon_svg=icon_total_planejamento card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=planejamento_filter_url is_active=is_planejamento_filter_active active_class='border border-white/80 shadow-lg' %}
             {% endif %}
-            {% if hero_total_eventos_ativos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Ativos') valor=hero_total_eventos_ativos icon_svg=icon_total_ativos card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=ativos_filter_url is_active=is_ativos_filter_active active_class='border border-white/80 shadow-lg' %}
+            {% if total_eventos_ativos is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Ativos') valor=total_eventos_ativos icon_svg=icon_total_ativos card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=ativos_filter_url is_active=is_ativos_filter_active active_class='border border-white/80 shadow-lg' %}
             {% endif %}
-            {% if hero_total_eventos_concluidos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Realizados') valor=hero_total_eventos_concluidos icon_svg=icon_total_concluidos card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=realizados_filter_url is_active=is_realizados_filter_active active_class='border border-white/80 shadow-lg' %}
+            {% if total_eventos_concluidos is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_total_concluidos card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=realizados_filter_url is_active=is_realizados_filter_active active_class='border border-white/80 shadow-lg' %}
             {% endif %}
-            {% if hero_total_eventos_cancelados is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Cancelados') valor=hero_total_eventos_cancelados icon_svg=icon_total_cancelados card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=cancelados_filter_url is_active=is_cancelados_filter_active active_class='border border-white/80 shadow-lg' %}
+            {% if total_eventos_cancelados is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Cancelados') valor=total_eventos_cancelados icon_svg=icon_total_cancelados card_class='card-compact cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' href=cancelados_filter_url is_active=is_cancelados_filter_active active_class='border border-white/80 shadow-lg' %}
             {% endif %}
           </div>
         </div>

@@ -1,20 +1,17 @@
 import calendar
 from collections import Counter
-from datetime import date, timedelta, datetime, time
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
+
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import (
-    LoginRequiredMixin,
-    PermissionRequiredMixin,
-)
-from django import forms
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import UploadedFile
-from django.db import IntegrityError
-from django.db.models import F, Q, Count, Model
+from django.db.models import Q, Count, Model
 from django.db.models.fields.files import FieldFile
 from django.http import (
     Http404,
@@ -23,11 +20,10 @@ from django.http import (
     HttpResponseForbidden,
     JsonResponse,
 )
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 from django.utils.functional import Promise
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
@@ -48,241 +44,10 @@ from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 
 User = get_user_model()
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-class PainelRenderMixin:
-    painel_title = _("Eventos")
-    painel_hero_template = "_components/hero_evento.html"
-    painel_action_template = None
-    painel_subtitle = None
-    painel_breadcrumb_template = None
-    painel_neural_background = None
-    painel_hero_style = None
-
-    def get_painel_title(self) -> str:
-        return getattr(self, "painel_title", _("Eventos"))
-
-    def get_painel_hero_template(self) -> str | None:
-        return getattr(self, "painel_hero_template", "_components/hero_evento.html")
-
-    def get_painel_action_template(self) -> str | None:
-        return getattr(self, "painel_action_template", None)
-
-    def get_painel_subtitle(self) -> str | None:
-        return getattr(self, "painel_subtitle", None)
-
-    def get_painel_breadcrumb_template(self) -> str | None:
-        return getattr(self, "painel_breadcrumb_template", None)
-
-    def get_painel_neural_background(self) -> str | None:
-        return getattr(self, "painel_neural_background", None)
-
-    def get_painel_hero_style(self) -> str | None:
-        return getattr(self, "painel_hero_style", None)
-
-    def get_painel_context(self, context: dict) -> dict:
-        context.setdefault("painel_title", self.get_painel_title())
-        # Variáveis padrão para navegação e heros que podem ser opcionais
-        context.setdefault("evento", None)
-        hero_template = self.get_painel_hero_template()
-        if hero_template:
-            context.setdefault("painel_hero_template", hero_template)
-
-        evento = context.get("evento")
-        # Ajustar aliases compatíveis com listas
-        context.setdefault("list_title", context.get("painel_title"))
-        if evento is not None and not context.get("painel_title") and getattr(evento, "titulo", None):
-            context["painel_title"] = evento.titulo
-            context["list_title"] = evento.titulo
-
-        if context.get("painel_hero_template"):
-            context.setdefault("list_hero_template", context["painel_hero_template"])
-
-        action_template = self.get_painel_action_template()
-        if action_template:
-            context.setdefault("painel_action_template", action_template)
-
-        if context.get("painel_action_template"):
-            context.setdefault("list_hero_action_template", context["painel_action_template"])
-
-        subtitle = self.get_painel_subtitle()
-        if subtitle:
-            context.setdefault("painel_subtitle", subtitle)
-
-        if not context.get("painel_subtitle") and evento is not None:
-            descricao = getattr(evento, "descricao", None)
-            if descricao:
-                context["painel_subtitle"] = descricao
-
-        if context.get("painel_subtitle"):
-            context.setdefault("list_subtitle", context["painel_subtitle"])
-        breadcrumb = self.get_painel_breadcrumb_template()
-        if breadcrumb:
-            context.setdefault("painel_breadcrumb_template", breadcrumb)
-            context.setdefault("list_hero_breadcrumb_template", breadcrumb)
-        neural_background = self.get_painel_neural_background()
-        if neural_background:
-            context.setdefault("painel_neural_background", neural_background)
-            context.setdefault("list_hero_neural_background", neural_background)
-        hero_style = self.get_painel_hero_style()
-        if hero_style:
-            context.setdefault("painel_hero_style", hero_style)
-            context.setdefault("list_hero_style", hero_style)
-        totals_aliases = {
-            "list_total_eventos": "total_eventos",
-            "list_total_eventos_planejamento": "total_eventos_planejamento",
-            "list_total_eventos_ativos": "total_eventos_ativos",
-            "list_total_eventos_concluidos": "total_eventos_concluidos",
-            "list_total_eventos_cancelados": "total_eventos_cancelados",
-        }
-        for alias, original in totals_aliases.items():
-            if alias not in context and original in context:
-                context[alias] = context[original]
-        return context
-
-    def render_to_response(self, context, **response_kwargs):
-        context = self.get_painel_context(context)
-        return super().render_to_response(context, **response_kwargs)
-
-
-class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
-    template_name = "eventos/evento_list.html"
-    painel_action_template = "eventos/partials/eventos/hero_evento_list_action.html"
-    context_object_name = "eventos"
-    paginate_by = 12
-
-    def get_base_queryset(self):
-        if hasattr(self, "_base_queryset_cache"):
-            return self._base_queryset_cache
-
-        user = self.request.user
-
-        qs = (
-            Evento.objects.filter(organizacao=user.organizacao)
-            .select_related("nucleo", "coordenador", "organizacao")
-            .prefetch_related("inscricoes")
-        )
-
-        # Visibilidade:
-        # - ADMIN: vê todos os eventos da organização
-        # - COORDENADOR/NUCLEADO (não ROOT): vê eventos públicos da organização ou do(s) seu(s) núcleo(s)
-        if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            qs = qs.filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
-
-        q = self.request.GET.get("q", "").strip()
-        if q:
-            qs = qs.filter(
-                Q(titulo__icontains=q)
-                | Q(descricao__icontains=q)
-                | Q(nucleo__nome__icontains=q)
-            )
-
-        self._base_queryset_cache = qs
-        return qs
-
-    def get_queryset(self):
-        from django.db.models import Count
-
-        qs = self.get_base_queryset()
-
-        status_filter = self.request.GET.get("status")
-
-        now = timezone.now()
-        status_map = {"ativos": 0, "realizados": 1}
-
-        if status_filter == "planejamento":
-            qs = qs.filter(status=0, data_inicio__gt=now)
-        elif status_filter == "cancelados":
-            qs = qs.filter(status=2)
-        elif status_filter in status_map:
-            qs = qs.filter(status=status_map[status_filter])
-
-        # anotar número de inscritos por evento
-        qs = qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
-        return qs.order_by("-data_inicio")
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        user = self.request.user
-        ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
-        current_filter = self.request.GET.get("status") or ""
-
-        if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
-
-            current_filter = "todos"
-        params = self.request.GET.copy()
-        try:
-            params.pop("page")
-        except KeyError:
-            pass
-
-        def build_url(filter_value: str | None) -> str:
-            query_params = params.copy()
-
-            if filter_value in {"ativos", "realizados", "planejamento", "cancelados"}:
-
-                query_params["status"] = filter_value
-            else:
-                query_params.pop("status", None)
-            query_string = query_params.urlencode()
-            return f"{self.request.path}?{query_string}" if query_string else self.request.path
-
-        ctx["current_filter"] = current_filter
-        ctx["planejamento_filter_url"] = build_url("planejamento")
-        ctx["ativos_filter_url"] = build_url("ativos")
-        ctx["realizados_filter_url"] = build_url("realizados")
-        ctx["planejamento_filter_url"] = build_url("planejamento")
-        ctx["cancelados_filter_url"] = build_url("cancelados")
-        ctx["todos_filter_url"] = build_url(None)
-        ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
-        ctx["is_ativos_filter_active"] = current_filter == "ativos"
-        ctx["is_realizados_filter_active"] = current_filter == "realizados"
-        ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
-        ctx["is_cancelados_filter_active"] = current_filter == "cancelados"
-
-        # Totais baseados no queryset filtrado (sem paginação)
-        base_qs = self.get_base_queryset()
-        qs = self.get_queryset()
-
-        now = timezone.now()
-
-        ctx["total_eventos"] = base_qs.count()
-        ctx["total_eventos_planejamento"] = base_qs.filter(status=0, data_inicio__gt=now).count()
-        ctx["total_eventos_ativos"] = base_qs.filter(status=0).count()
-        ctx["total_eventos_concluidos"] = base_qs.filter(status=1).count()
-        ctx["total_eventos_cancelados"] = base_qs.filter(status=2).count()
-
-        ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
-        ctx["q"] = self.request.GET.get("q", "").strip()
-        ctx["querystring"] = urlencode(params, doseq=True)
-        ctx.setdefault("painel_subtitle", None)
-        ctx.setdefault("painel_breadcrumb_template", None)
-        ctx.setdefault("painel_neural_background", None)
-        ctx.setdefault("painel_hero_style", None)
-        ctx.setdefault("object_list", ctx.get(self.context_object_name, []))
-        ctx.setdefault("list_card_template", "_components/card_evento.html")
-        ctx.setdefault("item_context_name", "evento")
-        ctx.setdefault("empty_message", _("Nenhum evento encontrado."))
-        ctx.setdefault("list_title", _("Eventos"))
-        ctx.setdefault("list_hero_template", ctx.get("painel_hero_template", "_components/hero_evento.html"))
-        ctx.setdefault(
-            "list_hero_action_template",
-            ctx.get("painel_action_template", self.painel_action_template),
-        )
-        ctx.setdefault("list_subtitle", ctx.get("painel_subtitle"))
-        ctx.setdefault("list_hero_breadcrumb_template", ctx.get("painel_breadcrumb_template"))
-        ctx.setdefault("list_hero_neural_background", ctx.get("painel_neural_background"))
-        ctx.setdefault("list_hero_style", ctx.get("painel_hero_style"))
-        ctx.setdefault("list_total_eventos", ctx.get("total_eventos"))
-        ctx.setdefault("list_total_eventos_planejamento", ctx.get("total_eventos_planejamento"))
-        ctx.setdefault("list_total_eventos_ativos", ctx.get("total_eventos_ativos"))
-        ctx.setdefault("list_total_eventos_concluidos", ctx.get("total_eventos_concluidos"))
-        ctx.setdefault("list_total_eventos_cancelados", ctx.get("total_eventos_cancelados"))
-        return ctx
-
-    def render_to_response(self, context, **response_kwargs):
-        context = self.get_painel_context(context)
-        return super().render_to_response(context, **response_kwargs)
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
@@ -298,25 +63,121 @@ def _queryset_por_organizacao(request):
     return qs.filter(filtro)
 
 
+# ---------------------------------------------------------------------------
+# List / Calendário
+# ---------------------------------------------------------------------------
+
+
+class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
+    template_name = "eventos/evento_list.html"
+    context_object_name = "eventos"
+    paginate_by = 12
+
+    # ----- Querysets -----
+    def get_base_queryset(self):
+        if hasattr(self, "_base_queryset_cache"):
+            return self._base_queryset_cache
+        user = self.request.user
+        qs = (
+            Evento.objects.filter(organizacao=user.organizacao)
+            .select_related("nucleo", "coordenador", "organizacao")
+            .prefetch_related("inscricoes")
+        )
+        if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            qs = qs.filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(
+                Q(titulo__icontains=q)
+                | Q(descricao__icontains=q)
+                | Q(nucleo__nome__icontains=q)
+            )
+        self._base_queryset_cache = qs
+        return qs
+
+    def get_queryset(self):
+        qs = self.get_base_queryset()
+        status_filter = self.request.GET.get("status")
+        now = timezone.now()
+        status_map = {"ativos": 0, "realizados": 1}
+        if status_filter == "planejamento":
+            qs = qs.filter(status=0, data_inicio__gt=now)
+        elif status_filter == "cancelados":
+            qs = qs.filter(status=2)
+        elif status_filter in status_map:
+            qs = qs.filter(status=status_map[status_filter])
+        return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
+
+    # ----- Contexto -----
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        ctx["title"] = _("Eventos")
+        ctx["subtitle"] = None
+        ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
+        current_filter = self.request.GET.get("status") or ""
+        if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
+            current_filter = "todos"
+        params = self.request.GET.copy()
+        params.pop("page", None)
+
+        def build_url(filter_value: str | None) -> str:
+            query_params = params.copy()
+            if filter_value in {"ativos", "realizados", "planejamento", "cancelados"}:
+                query_params["status"] = filter_value
+            else:
+                query_params.pop("status", None)
+            qstr = query_params.urlencode()
+            return f"{self.request.path}?{qstr}" if qstr else self.request.path
+
+        ctx["current_filter"] = current_filter
+        ctx["planejamento_filter_url"] = build_url("planejamento")
+        ctx["ativos_filter_url"] = build_url("ativos")
+        ctx["realizados_filter_url"] = build_url("realizados")
+        ctx["cancelados_filter_url"] = build_url("cancelados")
+        ctx["todos_filter_url"] = build_url(None)
+        ctx["is_planejamento_filter_active"] = current_filter == "planejamento"
+        ctx["is_ativos_filter_active"] = current_filter == "ativos"
+        ctx["is_realizados_filter_active"] = current_filter == "realizados"
+        ctx["is_cancelados_filter_active"] = current_filter == "cancelados"
+
+        base_qs = self.get_base_queryset()
+        qs = self.get_queryset()
+        now = timezone.now()
+        ctx["total_eventos"] = base_qs.count()
+        ctx["total_eventos_planejamento"] = base_qs.filter(status=0, data_inicio__gt=now).count()
+        ctx["total_eventos_ativos"] = base_qs.filter(status=0).count()
+        ctx["total_eventos_concluidos"] = base_qs.filter(status=1).count()
+        ctx["total_eventos_cancelados"] = base_qs.filter(status=2).count()
+        ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
+        ctx["q"] = self.request.GET.get("q", "").strip()
+        ctx["querystring"] = urlencode(params, doseq=True)
+        ctx.setdefault("object_list", ctx.get(self.context_object_name, []))
+        ctx.setdefault("card_template", "_components/card_evento.html")
+        ctx.setdefault("item_context_name", "evento")
+        ctx.setdefault("empty_message", _("Nenhum evento encontrado."))
+        return ctx
+
+
+# ---------------------------------------------------------------------------
+# Calendário e listagens auxiliares
+# ---------------------------------------------------------------------------
+
+
 def calendario(request, ano: int | None = None, mes: int | None = None):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
-
     hoje = timezone.localdate()
     if ano is None or mes is None:
-        ano = hoje.year
-        mes = hoje.month
-
+        ano, mes = hoje.year, hoje.month
     try:
         primeiro_dia = date(ano, mes, 1)
-    except ValueError as exc:  # pragma: no cover - validação simples
+    except ValueError as exc:
         raise Http404("Mês inválido") from exc
-
-    calendario_util = calendar.Calendar(firstweekday=0)
-    dias_iterados = list(calendario_util.itermonthdates(ano, mes))
-    inicio_periodo = dias_iterados[0]
-    fim_periodo = dias_iterados[-1]
-
+    cal = calendar.Calendar(firstweekday=0)
+    dias_iterados = list(cal.itermonthdates(ano, mes))
+    inicio_periodo, fim_periodo = dias_iterados[0], dias_iterados[-1]
     eventos_qs = (
         _queryset_por_organizacao(request)
         .filter(data_inicio__date__range=(inicio_periodo, fim_periodo))
@@ -324,34 +185,17 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )
-
     eventos_por_dia: dict[date, list[Evento]] = {}
-    for evento in eventos_qs:
-        dia_evento = timezone.localtime(evento.data_inicio).date()
-        eventos_por_dia.setdefault(dia_evento, []).append(evento)
-
+    for ev in eventos_qs:
+        d = timezone.localtime(ev.data_inicio).date()
+        eventos_por_dia.setdefault(d, []).append(ev)
     dias_mes = [
-        {
-            "data": dia,
-            "mes_atual": dia.month == mes,
-            "hoje": dia == hoje,
-            "eventos": eventos_por_dia.get(dia, []),
-        }
-        for dia in dias_iterados
+        {"data": d, "mes_atual": d.month == mes, "hoje": d == hoje, "eventos": eventos_por_dia.get(d, [])}
+        for d in dias_iterados
     ]
-
-    if mes == 1:
-        prev_ano, prev_mes = ano - 1, 12
-    else:
-        prev_ano, prev_mes = ano, mes - 1
-
-    if mes == 12:
-        next_ano, next_mes = ano + 1, 1
-    else:
-        next_ano, next_mes = ano, mes + 1
-
-    dia_selecionado = hoje if hoje.year == ano and hoje.month == mes else primeiro_dia
-
+    prev_ano, prev_mes = (ano - 1, 12) if mes == 1 else (ano, mes - 1)
+    next_ano, next_mes = (ano + 1, 1) if mes == 12 else (ano, mes + 1)
+    dia_sel = hoje if (hoje.year, hoje.month) == (ano, mes) else primeiro_dia
     context = {
         "dias_mes": dias_mes,
         "data_atual": primeiro_dia,
@@ -359,21 +203,19 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         "prev_mes": prev_mes,
         "next_ano": next_ano,
         "next_mes": next_mes,
-        "dia": dia_selecionado,
-        "eventos": eventos_por_dia.get(dia_selecionado, []),
-        "painel_title": _("Calendário mensal"),
+        "dia": dia_sel,
+        "eventos": eventos_por_dia.get(dia_sel, []),
+        "title": _("Calendário mensal"),
+        "subtitle": None,
     }
-
     return TemplateResponse(request, "eventos/calendario_mes.html", context)
 
 
 def calendario_cards_ultimos_30(request):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
-
     hoje = timezone.localdate()
     inicio = hoje - timedelta(days=30)
-
     qs = (
         _queryset_por_organizacao(request)
         .filter(data_inicio__date__range=(inicio, hoje))
@@ -381,22 +223,14 @@ def calendario_cards_ultimos_30(request):
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )
-
     agrupado: dict[date, list[Evento]] = {}
     for ev in qs:
         d = timezone.localtime(ev.data_inicio).date()
         agrupado.setdefault(d, []).append(ev)
-
     dias_com_eventos = [
-        {"data": d, "eventos": evs}
-        for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
+        {"data": d, "eventos": evs} for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
     ]
-
-    context = {
-        "dias_com_eventos": dias_com_eventos,
-        "data_atual": hoje,
-        "painel_title": _("Eventos"),
-    }
+    context = {"dias_com_eventos": dias_com_eventos, "data_atual": hoje, "title": _("Eventos"), "subtitle": None}
     return TemplateResponse(request, "eventos/calendario.html", context)
 
 
@@ -405,10 +239,8 @@ def lista_eventos(request, dia_iso: str):
         dia = date.fromisoformat(dia_iso)
     except ValueError:
         return HttpResponseBadRequest("Parâmetro 'dia' inválido.")
-
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
-
     eventos = (
         _queryset_por_organizacao(request)
         .filter(data_inicio__date=dia)
@@ -416,39 +248,28 @@ def lista_eventos(request, dia_iso: str):
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )
-
-    context = {"dia": dia, "eventos": list(eventos)}
-    hero_context = {
-        "painel_title": _("Eventos"),
-        "painel_hero_template": "_components/hero_evento.html",
-    }
-    context.update(hero_context)
+    context = {"dia": dia, "eventos": list(eventos), "title": _("Eventos"), "subtitle": None}
     return TemplateResponse(
         request,
         "eventos/partials/calendario/_lista_eventos_dia.html",
         context,
     )
+
+
 def painel_eventos(request):
     return calendario_cards_ultimos_30(request)
 
 
-class EventoCreateView(
-    PainelRenderMixin,
-    LoginRequiredMixin,
-    NoSuperadminMixin,
-    AdminRequiredMixin,
-    PermissionRequiredMixin,
-    CreateView,
-):
+# ---------------------------------------------------------------------------
+# CRUD Evento
+# ---------------------------------------------------------------------------
+
+
+class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
-    painel_title = _("Adicionar evento")
-    painel_subtitle = _("Cadastre novos eventos para a sua organização.")
-    # Usa o hero padrão de eventos, aproveitando painel_title e painel_subtitle
-    painel_hero_template = "_components/hero_evento.html"
-
     permission_required = "eventos.add_evento"
 
     def get_form_kwargs(self):
@@ -463,7 +284,6 @@ class EventoCreateView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Em criação, garantir que 'object' exista (CreateView pode não definir dependendo de mixins)
         if "object" not in context:
             form = context.get("form")
             context["object"] = getattr(form, "instance", None)
@@ -472,45 +292,25 @@ class EventoCreateView(
         context.update(
             {
                 "back_href": back_href,
-                "back_component_config": {
-                    "href": back_href,
-                    "fallback_href": fallback_url,
-                },
-                "cancel_component_config": {
-                    "href": back_href,
-                    "fallback_href": fallback_url,
-                },
+                "title": _("Adicionar evento"),
+                "subtitle": _("Cadastre novos eventos para a sua organização."),
             }
         )
         return context
 
     def form_valid(self, form):
-        form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
+        form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, _("Evento criado com sucesso."))
         response = super().form_valid(form)
-        EventoLog.objects.create(
-            evento=self.object,
-            usuario=self.request.user,
-            acao="evento_criado",
-        )
+        EventoLog.objects.create(evento=self.object, usuario=self.request.user, acao="evento_criado")
         return response
 
 
-class EventoUpdateView(
-    PainelRenderMixin,
-    LoginRequiredMixin,
-    NoSuperadminMixin,
-    AdminRequiredMixin,
-    PermissionRequiredMixin,
-    UpdateView,
-):
+class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
-    painel_title = _("Editar Evento")
-    painel_hero_template = "_components/hero_evento.html"
-
     permission_required = "eventos.change_evento"
 
     def get_form_kwargs(self):  # pragma: no cover
@@ -529,22 +329,13 @@ class EventoUpdateView(
         context.update(
             {
                 "back_href": back_href,
-                "back_component_config": {
-                    "href": back_href,
-                    "fallback_href": fallback_url,
-                },
-                "cancel_component_config": {
-                    "href": back_href,
-                    "fallback_href": fallback_url,
-                    "aria_label": _("Cancelar edição"),
-                },
+                "title": _("Editar Evento"),
+                "subtitle": getattr(self.object, "descricao", None),
             }
         )
         return context
 
     def form_valid(self, form):  # pragma: no cover
-        """Registra log comparando campos alterados."""
-
         old_obj = self.get_object()
         detalhes: dict[str, dict[str, Any]] = {}
 
@@ -567,10 +358,7 @@ class EventoUpdateView(
             before = getattr(old_obj, field)
             after = form.cleaned_data.get(field)
             if before != after:
-                detalhes[field] = {
-                    "antes": _serialize_value(before),
-                    "depois": _serialize_value(after),
-                }
+                detalhes[field] = {"antes": _serialize_value(before), "depois": _serialize_value(after)}
 
         messages.success(self.request, _("Evento atualizado com sucesso."))  # pragma: no cover
         response = super().form_valid(form)  # pragma: no cover
@@ -583,20 +371,10 @@ class EventoUpdateView(
         return response
 
 
-class EventoDeleteView(
-    PainelRenderMixin,
-    LoginRequiredMixin,
-    NoSuperadminMixin,
-    AdminRequiredMixin,
-    PermissionRequiredMixin,
-    DeleteView,
-):
+class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
-    painel_title = _("Remover Evento")
-    painel_hero_template = "_components/hero_evento.html"
-
     permission_required = "eventos.delete_evento"
 
     def get_queryset(self):  # pragma: no cover
@@ -604,8 +382,9 @@ class EventoDeleteView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # disponibiliza o objeto como `evento` para o hero de detalhes
         context["evento"] = self.object
+        context["title"] = _("Remover Evento")
+        context["subtitle"] = getattr(self.object, "descricao", None)
         return context
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
@@ -620,23 +399,20 @@ class EventoDeleteView(
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, DetailView):
+class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
 
     def get_queryset(self):
         user = self.request.user
         base = Evento.objects.select_related("organizacao").prefetch_related("inscricoes", "feedbacks")
-        # ROOT já é bloqueado por NoSuperadminMixin
         if user.user_type == UserType.ADMIN:
             return base.filter(organizacao=user.organizacao)
-        # Associados / Coordenadores / Nucleados: leitura de eventos públicos da org ou do(s) seu(s) núcleo(s)
         nucleo_ids = list(user.nucleos.values_list("id", flat=True))
         return base.filter(organizacao=user.organizacao).filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         user = self.request.user
         evento: Evento = self.object
         context["evento"] = evento
@@ -646,8 +422,6 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
         context["inscricao"] = minha_inscricao
         context["back_href"] = self._resolve_back_href()
-
-        evento = context["object"]
         inscricoes = list(evento.inscricoes.all())
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
@@ -656,12 +430,11 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         vagas_disponiveis = None
         if evento.participantes_maximo is not None:
             vagas_disponiveis = max(evento.participantes_maximo - total_confirmadas, 0)
-
         feedbacks = list(evento.feedbacks.all())
         total_feedbacks = len(feedbacks)
         media_feedback = None
         if total_feedbacks:
-            media_feedback = sum(feedback.nota for feedback in feedbacks) / total_feedbacks
+            media_feedback = sum(f.nota for f in feedbacks) / total_feedbacks
         context.update(
             {
                 "local": evento.local,
@@ -685,9 +458,8 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
                 "total_feedbacks": total_feedbacks,
             }
         )
-        context["painel_title"] = evento.titulo
-        context["painel_hero_template"] = self.get_painel_hero_template()
-
+        context["title"] = evento.titulo
+        context["subtitle"] = getattr(evento, "descricao", None)
         return context
 
     def _resolve_back_href(self) -> str:
@@ -696,15 +468,17 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         return resolve_back_href(request, fallback=fallback)
 
 
-class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
-    """Inscreve ou cancela a inscrição do usuário no evento."""
+# ---------------------------------------------------------------------------
+# Ações / Inscrições
+# ---------------------------------------------------------------------------
 
+
+class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if request.user.user_type == UserType.ADMIN:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return redirect("eventos:evento_detalhe", pk=pk)
-
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
         if inscricao.status == "confirmada":
             try:
@@ -725,8 +499,6 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
 
 
 class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
-    """Remove um inscrito do evento."""
-
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if (
@@ -749,41 +521,27 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
 
 
 class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
-    """Registra feedback pós-evento."""
-
     def get(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         usuario = request.user
-
         if not InscricaoEvento.objects.filter(user=usuario, evento=evento, status="confirmada").exists():
             return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
-
         if timezone.now() < evento.data_fim:
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
-
-        context = {"evento": evento}
-        hero_context = {
-            "painel_title": _("Avaliar evento"),
-            "painel_hero_template": "_components/hero_evento.html",
-        }
-        context.update(hero_context)
+        context = {"evento": evento, "title": _("Avaliar evento"), "subtitle": evento.descricao}
         return TemplateResponse(request, "eventos/avaliacao_form.html", context)
 
     def post(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         usuario = request.user
-
         if not InscricaoEvento.objects.filter(user=usuario, evento=evento, status="confirmada").exists():
             return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
-
         if timezone.now() < evento.data_fim:
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
-
         try:
             nota = int(request.POST.get("nota"))
         except (TypeError, ValueError):
             return HttpResponseForbidden("Nota inválida.")
-
         if nota not in range(1, 6):
             return HttpResponseForbidden("Nota fora do intervalo permitido (1–5).")
         if FeedbackNota.objects.filter(evento=evento, usuario=usuario).exists():
@@ -804,93 +562,15 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
         return redirect("eventos:evento_detalhe", pk=pk)
 
 
-def eventos_por_dia(request):
-    """Compatível com reverse('eventos:eventos_por_dia') via ?dia=YYYY-MM-DD"""
-    dia_iso = request.GET.get("dia")
-    if not dia_iso:
-        raise Http404("Parâmetro 'dia' ausente.")
-    if getattr(request.user, "user_type", None) == UserType.ROOT:
-        return HttpResponseForbidden()
-    return lista_eventos(request, dia_iso)
+# ---------------------------------------------------------------------------
+# Listagem / criação de inscrições
+# ---------------------------------------------------------------------------
 
 
-@login_required
-@no_superadmin_required
-def evento_orcamento(request, pk: int):
-    evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
-    if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
-        return HttpResponseForbidden()
-    if request.method == "POST":
-
-        class _Form(forms.Form):
-            orcamento_estimado = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
-            valor_gasto = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
-
-        form = _Form(request.POST)
-        if not form.is_valid():
-            return JsonResponse({"errors": form.errors}, status=400)
-
-        orcamento_estimado = form.cleaned_data.get("orcamento_estimado") or Decimal("0")
-        valor_gasto = form.cleaned_data.get("valor_gasto") or Decimal("0")
-
-        old_orcamento = evento.orcamento_estimado
-        old_valor = evento.valor_gasto
-
-        evento.orcamento_estimado = orcamento_estimado
-        evento.valor_gasto = valor_gasto
-        evento.save(update_fields=["orcamento_estimado", "valor_gasto", "updated_at"])
-
-        detalhes: dict[str, dict[str, Decimal]] = {}
-        if old_orcamento != orcamento_estimado:
-            detalhes["orcamento_estimado"] = {"antes": old_orcamento, "depois": orcamento_estimado}
-        if old_valor != valor_gasto:
-            detalhes["valor_gasto"] = {"antes": old_valor, "depois": valor_gasto}
-        if detalhes:
-            EventoLog.objects.create(
-                evento=evento,
-                usuario=request.user,
-                acao="orcamento_atualizado",
-                detalhes=detalhes,
-            )
-
-    data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
-    return JsonResponse(data)
-
-@login_required
-@no_superadmin_required
-def checkin_form(request, pk: int):
-    inscricao = get_object_or_404(InscricaoEvento, pk=pk)
-    context = {"inscricao": inscricao, "evento": inscricao.evento}
-    hero_context = {
-        "painel_title": _("Check-in do evento"),
-        "painel_hero_template": "_components/hero_evento.html",
-    }
-    context.update(hero_context)
-    context = PainelRenderMixin().get_painel_context(context)
-    return TemplateResponse(request, "eventos/inscricoes/checkin_form.html", context)
-
-
-def checkin_inscricao(request, pk: int):
-    """Valida o QRCode enviado e registra o check-in."""
-    if getattr(request.user, "user_type", None) == UserType.ROOT:
-        return HttpResponseForbidden()
-    if request.method != "POST":
-        return HttpResponse(status=405)
-    inscricao = get_object_or_404(InscricaoEvento, pk=pk)
-    codigo = request.POST.get("codigo")
-    expected = f"inscricao:{inscricao.pk}:{int(inscricao.created_at.timestamp())}"
-    if codigo != expected or inscricao.check_in_realizado_em:
-        return HttpResponseForbidden("QR inválido ou já usado")
-    inscricao.realizar_check_in()
-    return JsonResponse({"check_in": inscricao.check_in_realizado_em})
-
-
-class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
+class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
     template_name = "eventos/inscricoes/inscricao_list.html"
     context_object_name = "inscricoes"
-    painel_title = _("Lista de Inscrições")
-    painel_hero_template = "_components/hero_evento.html"
 
     def get_queryset(self):
         qs = InscricaoEvento.objects.select_related("user", "evento")
@@ -908,13 +588,12 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.setdefault("title", _("Inscrições"))
         ev_id = self.request.GET.get("evento")
         if ev_id:
             try:
-                # Restringe por organização
                 context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_evento.html"
-                context["painel_title"] = context["evento"].titulo
+                context["title"] = context["evento"].titulo
                 fallback = reverse("eventos:evento_detalhe", kwargs={"pk": context["evento"].pk})
                 context["back_href"] = resolve_back_href(self.request, fallback=fallback)
             except Evento.DoesNotExist:
@@ -922,12 +601,10 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
         return context
 
 
-class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
+class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
     template_name = "eventos/inscricoes/inscricao_form.html"
-    painel_title = _("Inscrição")
-    painel_hero_template = "_components/hero_evento.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
@@ -939,7 +616,7 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["evento"] = self.evento
-        context["painel_title"] = self.evento.titulo
+        context["title"] = self.evento.titulo
         fallback = reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
         context["back_href"] = resolve_back_href(self.request, fallback=fallback)
         return context
@@ -954,4 +631,149 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
 
     def get_success_url(self):
         return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
+
+
+# ---------------------------------------------------------------------------
+# Check-in de inscrições (reintroduzido após refatoração)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@no_superadmin_required
+def checkin_form(request, pk: int):
+    """Exibe a página de check-in para uma inscrição específica.
+
+    A URL usa o PK da inscrição. Validamos que o usuário pertence à mesma
+    organização do evento. Permitimos acesso ao próprio inscrito ou a usuários
+    de staff (ADMIN / COORDENADOR / GERENTE) da mesma organização. Outros
+    recebem 403.
+    """
+    inscricao = get_object_or_404(InscricaoEvento.objects.select_related("evento", "user"), pk=pk)
+    evento = inscricao.evento
+    user = request.user
+    # Verificação de organização
+    if evento.organizacao != getattr(user, "organizacao", None):
+        return HttpResponseForbidden()
+    # Regras simples de permissão: o próprio usuário inscrito ou staff
+    staff_tipos = {UserType.ADMIN, UserType.COORDENADOR, UserType.GERENTE} if hasattr(UserType, 'GERENTE') else {UserType.ADMIN, UserType.COORDENADOR}
+    if user != inscricao.user and getattr(user, "user_type", None) not in staff_tipos:
+        return HttpResponseForbidden()
+    context = {
+        "evento": evento,
+        "inscricao": inscricao,
+        "title": _("Check-in do evento"),
+        "subtitle": evento.descricao,
+    }
+    return TemplateResponse(request, "eventos/inscricoes/checkin_form.html", context)
+
+
+@login_required
+@no_superadmin_required
+def checkin_inscricao(request, pk: int):
+    """Endpoint API (POST) para realizar o check-in.
+
+    Espera um campo 'codigo' que contenha o identificador do QRCode no formato
+    gerado em InscricaoEvento. Faz validações mínimas e marca presença.
+    Retorna JSON com status.
+    """
+    if request.method != "POST":  # pragma: no cover - apenas POST suportado
+        return HttpResponseBadRequest("Método não suportado.")
+    inscricao = get_object_or_404(InscricaoEvento.objects.select_related("evento", "user"), pk=pk)
+    evento = inscricao.evento
+    user = request.user
+    if evento.organizacao != getattr(user, "organizacao", None):
+        return HttpResponseForbidden()
+    codigo = request.POST.get("codigo", "").strip()
+    # Código esperado começa com 'inscricao:' e conter o pk da inscrição
+    if not codigo or "inscricao:" not in codigo or f"inscricao:{inscricao.pk}:" not in codigo:
+        return HttpResponseBadRequest("Código inválido.")
+    if inscricao.status != "confirmada":
+        return HttpResponseBadRequest("Inscrição não está confirmada.")
+    if inscricao.check_in_realizado_em:
+        return JsonResponse({"status": "ok", "message": "Check-in já realizado."})
+    inscricao.realizar_check_in()
+    return JsonResponse({"status": "ok"})
+
+
+# ---------------------------------------------------------------------------
+# API Orçamento do Evento (reintroduzido para compatibilidade com testes/rotas)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@no_superadmin_required
+def evento_orcamento(request, pk):
+    """Atualiza campos de orçamento do evento via POST.
+
+    Espera `orcamento_estimado` e/ou `valor_gasto` (Decimal). Registra log de
+    alterações e retorna JSON. Em caso de validação inválida retorna 400 com
+    detalhes.
+    """
+    if request.method != "POST":  # pragma: no cover
+        return HttpResponseBadRequest("Método não suportado.")
+    evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+    user = request.user
+    if user.user_type != UserType.ADMIN:
+        return HttpResponseForbidden()
+    dados = {}
+    errors = {}
+    for field in ["orcamento_estimado", "valor_gasto"]:
+        if field in request.POST and request.POST.get(field) != "":
+            raw = request.POST.get(field)
+            try:
+                dados[field] = Decimal(str(raw))
+            except Exception:  # pragma: no cover - conversão genérica
+                errors[field] = "valor inválido"
+    if errors:
+        return JsonResponse({"errors": errors}, status=400)
+    alteracoes = {}
+    for field, novo_valor in dados.items():
+        antigo_valor = getattr(evento, field)
+        if antigo_valor != novo_valor:
+            alteracoes[field] = {"antes": f"{antigo_valor:.2f}" if antigo_valor is not None else None, "depois": f"{novo_valor:.2f}"}
+            setattr(evento, field, novo_valor)
+    if alteracoes:
+        evento.save(update_fields=list(dados.keys()) + ["updated_at"])
+        EventoLog.objects.create(
+            evento=evento,
+            usuario=user,
+            acao="orcamento_atualizado",
+            detalhes=alteracoes,
+        )
+    return JsonResponse({"status": "ok", "alteracoes": alteracoes})
+
+
+# ---------------------------------------------------------------------------
+# API auxiliar: eventos por dia (para calendário / testes)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@no_superadmin_required
+def eventos_por_dia(request):
+    """Retorna (HTML parcial ou completo) a lista de eventos para um dia ISO.
+
+    Query param: ?dia=YYYY-MM-DD
+    Se HTMX (HX-Request), retorna apenas o fragmento de lista.
+    Caso contrário, retorna página simples reutilizando template parcial.
+    """
+    dia_iso = request.GET.get("dia")
+    if not dia_iso:
+        return HttpResponseBadRequest("Parâmetro 'dia' obrigatório.")
+    try:
+        dia = date.fromisoformat(dia_iso)
+    except ValueError:
+        return HttpResponseBadRequest("Data inválida.")
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
+    eventos = (
+        _queryset_por_organizacao(request)
+        .filter(data_inicio__date=dia)
+        .select_related("organizacao", "coordenador", "nucleo")
+        .prefetch_related("inscricoes")
+        .order_by("data_inicio")
+    )
+    context = {"dia": dia, "eventos": list(eventos), "title": _("Eventos"), "subtitle": None}
+    template = "eventos/partials/calendario/_lista_eventos_dia.html"
+    return TemplateResponse(request, template, context)
 
