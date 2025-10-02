@@ -1,19 +1,22 @@
 {% load i18n %}
-<div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
-  <table class="min-w-full divide-y divide-[var(--border)] text-sm">
-    <caption class="sr-only">{% trans 'Histórico de notificações enviadas' %}</caption>
-    <thead class="bg-[var(--bg-tertiary)]">
-      <tr>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Enviado em' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Referência' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Frequência' %}</th>
-        <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Conteúdo' %}</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-[var(--border)]">
-      {% include 'notificacoes/historico_rows.html' %}
-    </tbody>
-  </table>
+{# Parcial injetado via HTMX para atualizar a tabela do histórico dentro do cartão principal #}
+<div class="space-y-4">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-[var(--border)] text-sm">
+      <caption class="sr-only">{% trans 'Histórico de notificações enviadas' %}</caption>
+      <thead class="bg-[var(--bg-tertiary)]">
+        <tr>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Enviado em' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Referência' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Frequência' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Conteúdo' %}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[var(--border)]">
+        {% include 'notificacoes/historico_rows.html' %}
+      </tbody>
+    </table>
+  </div>
+  {% include '_partials/pagination.html' with page_obj=historicos querystring=request.GET.urlencode %}
 </div>
-{% include '_partials/pagination.html' with page_obj=historicos querystring=request.GET.urlencode %}

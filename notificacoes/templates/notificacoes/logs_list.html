@@ -8,18 +8,27 @@
 
 {% block content %}
   <div class="max-w-6xl mx-auto card-grid">
-    <div class="card">
-      <div class="card-body">
-        <form method="get" class="grid gap-4 sm:flex sm:items-end">
-          {% for field in form %}
-            {% include '_forms/field.html' with field=field %}
-          {% endfor %}
-          <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
+    <article class="card">
+      <header class="card-header space-y-1">
+        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Logs de Notificação' %}</h2>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans 'Acompanhe os envios e resultados das notificações.' %}</p>
+      </header>
+      <div class="card-body space-y-6">
+        <form method="get" class="space-y-4">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for field in form %}
+              {% include '_forms/field.html' with field=field %}
+            {% endfor %}
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+            <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
+          </div>
         </form>
+        {# HTMX alvo que atualiza apenas a tabela mantendo o layout do cartão #}
+        <div id="logs-container">
+          {% include 'notificacoes/logs_table.html' %}
+        </div>
       </div>
-    </div>
-    <div id="logs-container">
-      {% include 'notificacoes/logs_table.html' %}
-    </div>
+    </article>
   </div>
 {% endblock %}
