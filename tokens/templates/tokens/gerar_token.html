@@ -1,35 +1,14 @@
-{% load widget_tweaks i18n %}
+{% extends "base.html" %}
+{% load i18n %}
 
-<article class="card">
-  <header class="card-header text-center">
-    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Gerar Token de Acesso" %}</h1>
-    <p class="text-sm text-[var(--text-secondary)]">{% trans "Use este token para convidar novos membros ou recuperar o acesso." %}</p>
-  </header>
+{% block title %}{% trans "Gerar Token" %} | HubX{% endblock %}
 
-  <div class="card-body space-y-6">
-    <form method="post" action="{% url 'tokens:gerar_convite' %}"
-          hx-post="{% url 'tokens:gerar_convite' %}"
-          hx-target="#resultado" hx-swap="innerHTML"
-          class="space-y-6">
-      {% csrf_token %}
+{% block hero %}
+  {% include '_components/hero_tokens.html' with title=_('Gerar Token') subtitle=_('Emita tokens para convidar novos membros à sua organização.') %}
+{% endblock %}
 
-      {% include '_forms/field.html' with field=form.tipo_destino %}
-
-      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        <button type="submit" class="btn btn-primary">
-          {% trans "Gerar Token" %}
-        </button>
-      </div>
-    </form>
-
-    <div id="resultado" class="text-center" aria-live="polite">
-      {% include "tokens/_resultado.html" %}
-    </div>
-
-    <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-      {% url 'tokens:listar_convites' as convites_url %}
-      {% include '_components/back_button.html' with href=back_href fallback_href=convites_url %}
-    </div>
+{% block content %}
+  <div class="px-4 py-10 md:py-12">
+    {% include 'tokens/_gerar_token_content.html' %}
   </div>
-</article>
-
+{% endblock %}
