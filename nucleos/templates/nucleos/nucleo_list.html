@@ -15,7 +15,7 @@
       <h2 class="text-xl font-semibold">{{ list_title|default_if_none:_("Núcleos")|default:_("Núcleos") }}</h2>
       {% block list_actions %}{% endblock %}
     </div>
-    <div class="card-body">
+    <div class="card-body space-y-6">
 
       {% with card_template=list_card_template|default_if_none:'_components/card_nucleo.html'|default:'_components/card_nucleo.html' %}
         {% with card_item_name=item_context_name|default_if_none:'nucleo'|default:'nucleo' %}

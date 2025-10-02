@@ -33,6 +33,11 @@ class NucleoForm(forms.ModelForm):
 class NucleoSearchForm(forms.Form):
     q = forms.CharField(label="", required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["q"].widget.attrs.setdefault("placeholder", _("Buscar..."))
+        self.fields["q"].widget.attrs.setdefault("aria-label", _("Buscar núcleos"))
+
 
 class ParticipacaoForm(forms.ModelForm):
     class Meta:

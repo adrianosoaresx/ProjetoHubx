@@ -11,35 +11,48 @@
 
 {% block content %}
 <section class="max-w-5xl mx-auto py-12 px-4">
-  <form method="get" class="mb-4 flex gap-2">
-    <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border border-[var(--border)] bg-[var(--bg-secondary)] rounded px-2 py-1 flex-1" />
-    <button class="btn btn-primary" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
-  </form>
-  <div class="card-grid">
-    {% for nucleo in object_list %}
-      <article class="card">
-        <div class="card-body flex flex-col items-center text-center">
-          {% if nucleo.avatar %}
-            <img
-              src="{{ nucleo.avatar.url }}"
-              alt="{{ nucleo.nome }}"
-              class="w-24 h-24 rounded-full object-cover mb-2"
-              loading="lazy"
-            />
-          {% else %}
-            <div
-              class="w-24 h-24 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-2xl font-semibold text-primary mb-2"
-            >
-              {{ nucleo.nome|first|upper }}
-            </div>
-          {% endif %}
-          <h2 class="font-medium"><a href="{% url 'nucleos:detail_uuid' nucleo.public_id %}">{{ nucleo.nome }}</a></h2>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Meus Núcleos" %}</h2>
+    </div>
+    <div class="card-body space-y-6">
+      <form method="get" class="space-y-4">
+        {% include '_forms/field.html' with field=form.q %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <button type="submit" class="btn btn-primary" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
         </div>
-      </article>
-    {% empty %}
-      <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
-    {% endfor %}
+      </form>
+      <div class="card-grid">
+        {% for nucleo in object_list %}
+          <article class="card">
+            <div class="card-body space-y-4 text-center">
+              <div class="flex justify-center">
+                {% if nucleo.avatar %}
+                  <img
+                    src="{{ nucleo.avatar.url }}"
+                    alt="{{ nucleo.nome }}"
+                    class="h-24 w-24 rounded-full object-cover"
+                    loading="lazy"
+                  />
+                {% else %}
+                  <div
+                    class="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-2xl font-semibold text-primary"
+                  >
+                    {{ nucleo.nome|first|upper }}
+                  </div>
+                {% endif %}
+              </div>
+              <h2 class="font-medium text-[var(--text-primary)]">
+                <a href="{% url 'nucleos:detail_uuid' nucleo.public_id %}" class="hover:underline">{{ nucleo.nome }}</a>
+              </h2>
+            </div>
+          </article>
+        {% empty %}
+          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum núcleo encontrado." %}</p>
+        {% endfor %}
+      </div>
+      {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
+    </div>
   </div>
-  {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
 {% endblock %}
