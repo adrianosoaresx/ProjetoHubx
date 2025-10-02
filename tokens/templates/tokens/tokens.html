@@ -6,14 +6,14 @@
 {% endblock %}
 
 {% block content %}
-<section class="mx-auto max-w-6xl px-4 lg:px-6 py-6">
-  <div id="tokens-conteudo" class="space-y-6">
-    {% if partial_template %}
-      {# Partial templates are swapped via HTMX and must include the full card layout themselves. #}
-      {% include partial_template %}
-    {% else %}
-      {% include 'tokens/token_list.html' %}
-    {% endif %}
-  </div>
-</section>
+
+<div id="tokens-conteudo" class="space-y-6">
+  {% if partial_template %}
+    {# Partial templates are swapped via HTMX and must include the full card layout themselves. #}
+    {% include partial_template %}
+  {% else %}
+    {% include 'tokens/token_list.html' %}
+  {% endif %}
+</div>
+
 {% endblock %}
