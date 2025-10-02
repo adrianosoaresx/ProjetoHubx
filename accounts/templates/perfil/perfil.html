@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  {% if perfil_default_section not in ('info', 'portfolio') %}
+  {% if perfil_default_section != 'info' and perfil_default_section != 'portfolio' %}
     <div class="card">
       <div class="card-body">
         <section
