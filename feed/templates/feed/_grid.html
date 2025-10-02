@@ -58,34 +58,17 @@
             </div>
           </div>
           {% if request.user == post.autor or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
-          <div class="post-actions-area relative z-30 mr-2 flex-shrink-0 pt-1">
-            <button type="button"
-                    class="post-actions-toggle relative inline-flex items-center justify-center rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
-                    data-menu-id="post-menu-{{ post.id }}"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="post-menu-{{ post.id }}">
-              <span class="sr-only">{% trans "Ações da postagem" %}</span>
-              {% lucide 'ellipsis' class='h-5 w-5' %}
-            </button>
-            <div id="post-menu-{{ post.id }}"
-                 class="post-actions-menu pointer-events-none invisible absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-primary)] p-1 text-sm shadow-xl transition duration-200 ease-out opacity-0"
-                 hidden
-                 aria-hidden="true"
-                 data-state="closed">
-              <a href="{% url 'feed:post_update' post.id %}"
-                 class="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text-primary)] transition hover:bg-[var(--bg-secondary)] hover:text-[var(--accent)]"
-                 data-menu-link>
-                {% lucide 'pencil' class='h-4 w-4' %}
-                {% trans "Editar" %}
-              </a>
-              <a href="{% url 'feed:post_delete' post.id %}"
-                 class="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--error)] transition hover:bg-[var(--bg-secondary)] hover:text-[var(--error)]"
-                 data-menu-link>
-                {% lucide 'trash-2' class='h-4 w-4' %}
-                {% trans "Excluir" %}
-              </a>
-            </div>
+          <div class="post-actions-area relative z-30 mr-2 flex items-center gap-2 pt-1">
+            <a href="{% url 'feed:post_update' post.id %}"
+               class="relative inline-flex items-center justify-center rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
+               aria-label="{% trans 'Editar postagem' %}">
+              {% lucide 'pencil' class='h-5 w-5' %}
+            </a>
+            <a href="{% url 'feed:post_delete' post.id %}"
+               class="relative inline-flex items-center justify-center rounded-full p-2 text-[var(--error)] transition hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--error)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
+               aria-label="{% trans 'Excluir postagem' %}">
+              {% lucide 'trash-2' class='h-5 w-5' %}
+            </a>
           </div>
           {% endif %}
         </div>
