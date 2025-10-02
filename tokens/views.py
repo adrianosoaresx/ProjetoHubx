@@ -91,8 +91,6 @@ def listar_convites(request):
     }
 
     context = {"convites": convites, "totais": totais, **navigation_context}
-    if request.headers.get("Hx-Request") == "true":
-        return render(request, "tokens/_token_list_content.html", context)
     return render(request, "tokens/token_list.html", context)
 
 
@@ -130,8 +128,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             )
             return redirect("accounts:perfil")
         context = {"form": form, **self._navigation_context(request)}
-        if request.headers.get("Hx-Request") == "true":
-            return render(request, "tokens/_gerar_token_content.html", context)
         return render(request, "tokens/gerar_token.html", context)
 
     def post(self, request, *args, **kwargs):
