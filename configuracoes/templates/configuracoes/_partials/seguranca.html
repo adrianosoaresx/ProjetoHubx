@@ -1,58 +1,59 @@
 {% load widget_tweaks i18n %}
 
+<!-- HTMX fragment: formulário de segurança recarregado dinamicamente -->
 <form
   method="post"
   hx-post="{{ request.path }}"
   hx-target="#settings-content"
-  class="space-y-4"
+  class="space-y-6"
 >
   {% csrf_token %}
   {% if seguranca_form.non_field_errors %}
-    <ul class="errorlist bg-[var(--bg-secondary)] text-[var(--danger-text)] border border-[var(--danger-border)] rounded-2xl p-4">
-      {% for err in seguranca_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
-    </ul>
+    <div class="alert alert-error" role="alert">
+      <ul class="space-y-1">
+        {% for err in seguranca_form.non_field_errors %}
+          <li>{{ err }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
   <input type="hidden" name="section" value="seguranca" />
-  <fieldset class="space-y-4">
+  <fieldset class="space-y-6">
     <legend class="sr-only">{% trans 'Segurança da conta' %}</legend>
     {% for field in seguranca_form %}
       {% include '_forms/field.html' with field=field %}
     {% endfor %}
   </fieldset>
-  <div class="text-right pt-2">
-    <button
-      type="submit"
-      aria-label="{% trans 'Salvar Alterações' %}"
-      class="btn btn-primary"
-    >
+  <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+    <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="btn btn-primary">
       {% trans 'Salvar Alterações' %}
     </button>
   </div>
 </form>
 
-<div class="mt-6 border-t border-[var(--border)] pt-4">
-  <h2 class="text-lg font-semibold mb-2">
-    {% trans 'Autenticação em duas etapas' %}
-  </h2>
-  {% if two_factor_enabled %}
-    <p class="text-sm mb-4">
-      {% trans '2FA está habilitado para sua conta.' %}
-    </p>
-    <a
-      href="{% url 'tokens:desativar_2fa' %}"
-      class="btn btn-secondary text-[var(--error)]"
-    >
-      {% trans 'Desativar 2FA' %}
-    </a>
-  {% else %}
-    <p class="text-sm mb-4">
-      {% trans '2FA não está habilitado.' %}
-    </p>
-    <a
-      href="{% url 'tokens:ativar_2fa' %}"
-      class="btn btn-primary"
-    >
-      {% trans 'Ativar 2FA' %}
-    </a>
-  {% endif %}
-</div>
+<article class="card">
+  <div class="card-body space-y-4">
+    <h2 class="text-lg font-semibold text-[var(--text-primary)]">
+      {% trans 'Autenticação em duas etapas' %}
+    </h2>
+    {% if two_factor_enabled %}
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans '2FA está habilitado para sua conta.' %}
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'tokens:desativar_2fa' %}" class="btn btn-danger">
+          {% trans 'Desativar 2FA' %}
+        </a>
+      </div>
+    {% else %}
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans '2FA não está habilitado.' %}
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'tokens:ativar_2fa' %}" class="btn btn-primary">
+          {% trans 'Ativar 2FA' %}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</article>
