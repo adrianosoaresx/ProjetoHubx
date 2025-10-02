@@ -79,16 +79,20 @@
         </a>
       </div>
       {% elif post.image %}
-      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
-        <img src="{{ post.image.url }}" class="h-full max-h-72 w-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]" alt="{% trans 'mídia do post' %}" loading="lazy">
+      <figure class="relative z-20 mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+        <div class="relative flex max-h-[280px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)] sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]">
+          <img src="{{ post.image.url }}" class="h-auto w-full max-h-[280px] object-contain transition duration-500 ease-out group-hover:scale-[1.02] sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]" alt="{% trans 'mídia do post' %}" loading="lazy">
+        </div>
       </figure>
       {% elif post.video %}
-      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-black shadow-sm">
-        {% if post.video_preview %}
-        <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
-        {% else %}
-        <video src="{{ post.video.url }}" controls class="w-full max-h-72 rounded-none object-cover"></video>
-        {% endif %}
+      <figure class="relative z-20 mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--border)] bg-black shadow-sm">
+        <div class="relative flex max-h-[280px] w-full items-center justify-center overflow-hidden bg-black sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]">
+          {% if post.video_preview %}
+          <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="h-auto w-full max-h-[280px] object-contain sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]"></video>
+          {% else %}
+          <video src="{{ post.video.url }}" controls class="h-auto w-full max-h-[280px] object-contain sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]"></video>
+          {% endif %}
+        </div>
       </figure>
       {% endif %}
 
