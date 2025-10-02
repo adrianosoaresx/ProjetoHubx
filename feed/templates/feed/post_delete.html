@@ -11,18 +11,21 @@
   <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
 
-  <div class="card border-red-200 text-center">
-    <div class="card-body p-6">
-    <h2 class="text-xl font-semibold text-red-700 mb-4">{% trans "Remover Postagem" %}</h2>
-    <p class="text-sm text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover esta postagem?" %}</p>
-
-    <form method="post" hx-post="{% url 'feed:post_delete' post.pk %}" class="mt-6 flex justify-center gap-3">
-      {% csrf_token %}
-      {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
-      <button type="submit" class="btn btn-danger" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
-    </form>
+  <article class="card">
+    <div class="card-header">
+      <h1 class="text-xl font-semibold text-[var(--error)]">{% trans "Remover Postagem" %}</h1>
     </div>
-  </div>
+    <div class="card-body space-y-4">
+      <p class="text-sm text-[var(--text-secondary)] text-center">{% trans "Tem certeza que deseja remover esta postagem?" %}</p>
+      <form method="post" hx-post="{% url 'feed:post_delete' post.pk %}" class="space-y-4">
+        {% csrf_token %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
+          <button type="submit" class="btn btn-danger" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
+        </div>
+      </form>
+    </div>
+  </article>
 
 {% endif %}
 {% endblock %}

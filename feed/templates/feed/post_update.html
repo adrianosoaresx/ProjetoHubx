@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n lucide_icons %}
+{% load static i18n lucide_icons widget_tweaks %}
 {% block title %}{% trans "Editar Postagem" %} - Hubx{% endblock %}
 
 {% block hero %}
@@ -10,84 +10,96 @@
 {% if request.user.user_type == 'root' %}
   <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
-<section class="max-w-2xl mx-auto px-4 py-10">
-  <div class="mb-6 flex items-center gap-4">
-    {% include '_components/back_button.html' with href=back_href fallback_href=back_component_config.fallback_href %}
-    <div>
-      <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Editar Postagem" %}</h1>
-      <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize sua postagem" %}</p>
+
+<article class="card">
+  <div class="card-header">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        {% include '_components/back_button.html' with href=back_href fallback_href=back_component_config.fallback_href %}
+        <div>
+          <h1 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Editar Postagem" %}</h1>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize sua postagem" %}</p>
+        </div>
+      </div>
     </div>
   </div>
+  <div class="card-body space-y-6">
+    <form method="post"
+          enctype="multipart/form-data"
+          hx-post="{% url 'feed:post_update' post.pk %}"
+          hx-encoding="multipart/form-data"
+          class="post-form space-y-6">
+      {% csrf_token %}
 
-  <form method="post" enctype="multipart/form-data" hx-post="{% url 'feed:post_update' post.pk %}" hx-encoding="multipart/form-data" class="post-form card">
-    <div class="card-body space-y-6">
-    {% csrf_token %}
-    <div>
-      <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">
-        {{ form.conteudo.label }}
-      </label>
-        <textarea id="{{ form.conteudo.id_for_label }}" name="{{ form.conteudo.name }}" class="mt-1 block w-full rounded-xl border border-[var(--border-secondary)] card-sm focus:ring-primary-500 focus:border-primary-500 text-sm" rows="6">{{ form.conteudo.value|default_if_none:"" }}</textarea>
-      <span id="char-count"></span>
-      {% if form.conteudo.errors %}
-        <p class="text-error-500 text-xs mt-1">{{ form.conteudo.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="id_tipo_feed" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Tipo de Feed" %}</label>
-      {{ form.tipo_feed|as_widget }}
-    </div>
-
-    <div>
-      <label for="id_organizacao" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Organização" %}</label>
-      {{ form.organizacao|as_widget }}
-    </div>
-
-    <div>
-      <label for="id_nucleo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Núcleo" %}</label>
-      {{ form.nucleo|as_widget }}
-    </div>
-
-    <div>
-      <label for="id_evento" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Evento" %}</label>
-      {{ form.evento|as_widget }}
-    </div>
-
-    <div>
-      <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Tags" %}</label>
-      {{ form.tags|as_widget }}
-    </div>
-
-    <div>
-
-      <label for="id_file" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
-      <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf" class="mt-2 block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]">
-      <span class="file-text">{% trans "Nenhum arquivo selecionado" %}</span>
-      {% if form.image.errors or form.pdf.errors %}
-        <p class="text-error-500 text-xs mt-1">{{ form.image.errors }} {{ form.pdf.errors }}</p>
-      {% endif %}
-      {% if post.pdf %}
-        <div class="relative mt-2">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
-          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
-            {% lucide 'eye' class='w-4 h-4' %}
-          </a>
-          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
-            {% lucide 'download' class='w-4 h-4' %}
-          </a>
+      {% if form.non_field_errors %}
+        <div class="rounded-xl border border-[var(--error)] bg-[var(--error-light)] p-3 text-sm text-[var(--error)]">
+          <ul class="list-disc list-inside space-y-1">
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
         </div>
-      {% elif post.image %}
-        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl mt-2 object-cover" loading="lazy">
       {% endif %}
-    </div>
 
-    <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-      {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
-      <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
-    </div>
-    </div>
-  </form>
-</section>
+      <div class="space-y-4">
+        {% include '_forms/field.html' with field=form.tipo_feed %}
+        {% include '_forms/field.html' with field=form.organizacao %}
+        {% include '_forms/field.html' with field=form.nucleo %}
+        {% include '_forms/field.html' with field=form.evento %}
+      </div>
+
+      {% with placeholder_value=_('O que você gostaria de compartilhar?') %}
+      <div class="space-y-2">
+        {% include '_forms/field.html' with field=form.conteudo|attr:'rows:6'|attr:('placeholder:'|add:placeholder_value) %}
+        <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
+      </div>
+      {% endwith %}
+
+      <div class="space-y-4">
+        {% include '_forms/field.html' with field=form.tags|attr:'id:tags-select' %}
+        {% include '_forms/field.html' with id='id_tags_text' name='tags_text' label=_('Novas tags') placeholder=_('Digite novas tags separadas por vírgula') value=request.POST.tags_text|default:'' help_text=_('Use vírgula para separar as tags adicionais.') %}
+      </div>
+
+      <div class="space-y-4">
+        <div class="space-y-4">
+          {% include '_forms/field.html' with field=form.image %}
+          {% include '_forms/field.html' with field=form.pdf %}
+          {% include '_forms/field.html' with field=form.video %}
+        </div>
+        {% if post.pdf %}
+          <div class="space-y-2">
+            <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
+            <div class="flex gap-3">
+              <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary" aria-label="{% trans 'Visualizar PDF' %}">
+                {% lucide 'eye' class='w-4 h-4' %}
+              </a>
+              <a href="{{ post.pdf.url }}" download class="btn btn-secondary" aria-label="{% trans 'Baixar PDF' %}">
+                {% lucide 'download' class='w-4 h-4' %}
+              </a>
+            </div>
+          </div>
+        {% elif post.image %}
+          <div class="space-y-2">
+            <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
+          </div>
+        {% elif post.video %}
+          <div class="space-y-2">
+            {% if post.video_preview %}
+              <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="max-w-full rounded-xl"></video>
+            {% else %}
+              <video src="{{ post.video.url }}" controls class="max-w-full rounded-xl"></video>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+        {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
+        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
+      </div>
+    </form>
+  </div>
+</article>
 <script src="{% static 'feed/js/feed.js' %}"></script>
 {% endif %}
 {% endblock %}

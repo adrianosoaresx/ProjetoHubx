@@ -1,4 +1,5 @@
 {% load static i18n lucide_icons %}
+{# Exceção HTMX: parcial renderizado isoladamente durante atualizações dinâmicas #}
 {% if request.user.user_type != 'root' %}
 
 <section id="feed-grid" class="card-grid auto-rows-[1fr] gap-6 sm:grid-cols-2">
@@ -8,7 +9,7 @@
     <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
       <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
     </a>
-    <div class="card-body flex h-full flex-col gap-6">
+    <div class="card-body flex h-full flex-col space-y-6">
       <!-- Cabeçalho com tipo de postagem acima do avatar -->
       <header class="flex flex-col gap-2">
         {% with badge_classes="relative z-20 inline-flex max-w-full items-center gap-2 self-start rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap" icon_classes="h-3.5 w-3.5 shrink-0" %}

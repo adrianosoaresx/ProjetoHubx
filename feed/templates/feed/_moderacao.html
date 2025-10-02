@@ -4,17 +4,21 @@
   <p class="text-xs text-warning-700 mb-2">{{ post.moderacao.get_status_display }}</p>
 {% endif %}
 {% if perms.feed.change_moderacaopost %}
-  <div class="flex flex-col gap-2">
-    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML">
+  <div class="space-y-4">
+    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML" class="space-y-4">
       {% csrf_token %}
       <input type="hidden" name="acao" value="aprovar">
-      <button type="submit" class="btn btn-primary">{% trans "Aprovar" %}</button>
+      <div class="flex justify-end gap-3">
+        <button type="submit" class="btn btn-primary">{% trans "Aprovar" %}</button>
+      </div>
     </form>
-    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML" class="flex gap-2 items-start">
+    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML" class="space-y-4">
       {% csrf_token %}
       <input type="hidden" name="acao" value="rejeitar">
-      <input type="text" name="motivo" placeholder="{% trans 'Motivo' %}" class="flex-1 px-2 py-1 border border-[var(--border-secondary)] rounded text-sm">
-      <button type="submit" class="btn btn-danger">{% trans "Rejeitar" %}</button>
+      {% include '_forms/field.html' with id='motivo-'|add:post.id name='motivo' label=_('Motivo') placeholder=_('Explique o motivo da rejeição') %}
+      <div class="flex justify-end gap-3">
+        <button type="submit" class="btn btn-danger">{% trans "Rejeitar" %}</button>
+      </div>
     </form>
   </div>
 {% endif %}
