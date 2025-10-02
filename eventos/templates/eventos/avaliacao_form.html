@@ -4,9 +4,14 @@
 {% block title %}{% trans "Avaliar evento" %}{% endblock %}
 
 {% block hero %}
-  <div id="evento-avaliacao-hero">
-    {% include '_components/hero_eventos_detail.html' with evento=evento %}
-  </div>
+  {% include list_hero_template|default_if_none:painel_hero_template|default_if_none:'_components/hero_evento.html'|default:'_components/hero_evento.html' with
+    title=list_title|default_if_none:painel_title|default:_('Avaliar evento')
+    subtitle=list_subtitle|default_if_none:painel_subtitle|default:evento.descricao
+    action_template=list_hero_action_template|default_if_none:painel_action_template
+    breadcrumb_template=list_hero_breadcrumb_template|default_if_none:painel_breadcrumb_template
+    neural_background=list_hero_neural_background|default_if_none:painel_neural_background
+    style=list_hero_style|default_if_none:painel_hero_style
+  %}
 {% endblock %}
 
 {% block content %}

@@ -86,26 +86,35 @@ class PainelRenderMixin:
         hero_template = self.get_painel_hero_template()
         if hero_template:
             context.setdefault("painel_hero_template", hero_template)
+
+        evento = context.get("evento")
         # Ajustar aliases compatíveis com listas
         context.setdefault("list_title", context.get("painel_title"))
+        if evento is not None and not context.get("painel_title") and getattr(evento, "titulo", None):
+            context["painel_title"] = evento.titulo
+            context["list_title"] = evento.titulo
+
         if context.get("painel_hero_template"):
             context.setdefault("list_hero_template", context["painel_hero_template"])
-        if context.get("painel_action_template"):
-            context.setdefault("list_hero_action_template", context["painel_action_template"])
-        # Se houver um evento no contexto, forçar o hero de detalhes do evento
-        if context.get("evento") is not None:
-            context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-            # Se não houver título definido, usar o título do evento
-            if not context.get("painel_title") and getattr(context["evento"], "titulo", None):
-                context["painel_title"] = context["evento"].titulo
-                context["list_title"] = context["evento"].titulo
+
         action_template = self.get_painel_action_template()
         if action_template:
             context.setdefault("painel_action_template", action_template)
+
+        if context.get("painel_action_template"):
+            context.setdefault("list_hero_action_template", context["painel_action_template"])
+
         subtitle = self.get_painel_subtitle()
         if subtitle:
             context.setdefault("painel_subtitle", subtitle)
-            context.setdefault("list_subtitle", subtitle)
+
+        if not context.get("painel_subtitle") and evento is not None:
+            descricao = getattr(evento, "descricao", None)
+            if descricao:
+                context["painel_subtitle"] = descricao
+
+        if context.get("painel_subtitle"):
+            context.setdefault("list_subtitle", context["painel_subtitle"])
         breadcrumb = self.get_painel_breadcrumb_template()
         if breadcrumb:
             context.setdefault("painel_breadcrumb_template", breadcrumb)
@@ -438,7 +447,7 @@ class EventoCreateView(
     painel_title = _("Adicionar evento")
     painel_subtitle = _("Cadastre novos eventos para a sua organização.")
     # Usa o hero padrão de eventos, aproveitando painel_title e painel_subtitle
-    painel_hero_template = "_components/hero_eventos.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     permission_required = "eventos.add_evento"
 
@@ -500,7 +509,7 @@ class EventoUpdateView(
     template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Editar Evento")
-    painel_hero_template = "_components/hero_eventos_detail.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     permission_required = "eventos.change_evento"
 
@@ -586,7 +595,7 @@ class EventoDeleteView(
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Remover Evento")
-    painel_hero_template = "_components/hero_eventos_detail.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     permission_required = "eventos.delete_evento"
 
@@ -614,7 +623,6 @@ class EventoDeleteView(
 class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
-    painel_hero_template = "_components/hero_eventos_detail.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -756,7 +764,7 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
         context = {"evento": evento}
         hero_context = {
             "painel_title": _("Avaliar evento"),
-            "painel_hero_template": "_components/hero_eventos_detail.html",
+            "painel_hero_template": "_components/hero_evento.html",
         }
         context.update(hero_context)
         return TemplateResponse(request, "eventos/avaliacao_form.html", context)
@@ -855,7 +863,7 @@ def checkin_form(request, pk: int):
     context = {"inscricao": inscricao, "evento": inscricao.evento}
     hero_context = {
         "painel_title": _("Check-in do evento"),
-        "painel_hero_template": "_components/hero_eventos_detail.html",
+        "painel_hero_template": "_components/hero_evento.html",
     }
     context.update(hero_context)
     context = PainelRenderMixin().get_painel_context(context)
@@ -882,7 +890,7 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
     template_name = "eventos/inscricoes/inscricao_list.html"
     context_object_name = "inscricoes"
     painel_title = _("Lista de Inscrições")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     def get_queryset(self):
         qs = InscricaoEvento.objects.select_related("user", "evento")
@@ -905,7 +913,7 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
             try:
                 # Restringe por organização
                 context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                context["painel_hero_template"] = "_components/hero_evento.html"
                 context["painel_title"] = context["evento"].titulo
                 fallback = reverse("eventos:evento_detalhe", kwargs={"pk": context["evento"].pk})
                 context["back_href"] = resolve_back_href(self.request, fallback=fallback)
@@ -919,7 +927,7 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
     form_class = InscricaoEventoForm
     template_name = "eventos/inscricoes/inscricao_form.html"
     painel_title = _("Inscrição")
-    painel_hero_template = "_components/hero_eventos_detail.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
