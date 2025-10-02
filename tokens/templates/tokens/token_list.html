@@ -45,14 +45,7 @@
         <div class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</div>
       {% endif %}
 
-      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        {% if back_component_config %}
-          {% include '_components/back_button.html' with href=back_component_config.href fallback_href=back_component_config.fallback_href %}
-        {% else %}
-          {% url 'accounts:perfil' as perfil_url %}
-          {% include '_components/back_button.html' with href=perfil_url fallback_href=perfil_url %}
-        {% endif %}
-      </div>
+      
     </div>
   </article>
 {% endblock %}
