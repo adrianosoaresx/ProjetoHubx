@@ -1,13 +1,14 @@
+{# Exceção: conteúdo HTMX flat injetado dinamicamente, sem wrapper de card. #}
 {% load i18n %}
-<header>
-  <h2 class="text-xl font-semibold mb-4">
+<header class="space-y-2">
+  <h2 class="text-xl font-semibold">
     {% blocktrans trimmed with date=dia|date:"SHORT_DATE_FORMAT" %}Eventos de {{ date }}{% endblocktrans %}
   </h2>
-  <p class="text-sm text-[var(--text-muted)] mb-2">{{ eventos|length }} {% trans 'itens' %}</p>
+  <p class="text-sm text-[var(--text-muted)]">{{ eventos|length }} {% trans 'itens' %}</p>
   <p class="sr-only">{% trans 'Lista de eventos do dia' %}</p>
 </header>
 
-<div class="card-grid">
+<div class="card-grid items-stretch gap-4">
   {% for ev in eventos %}
     {% include '_components/card_evento.html' with evento=ev %}
   {% empty %}

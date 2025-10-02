@@ -152,7 +152,17 @@ class InscricaoEventoForm(forms.ModelForm):
 
 
 class FeedbackForm(forms.ModelForm):
+    nota = forms.TypedChoiceField(
+        choices=[(i, i) for i in range(1, 6)],
+        coerce=int,
+        empty_value=None,
+        label=_("Nota"),
+    )
+
     class Meta:
         model = FeedbackNota
         fields = ["nota", "comentario"]
+        widgets = {
+            "comentario": forms.Textarea(attrs={"rows": 4}),
+        }
 

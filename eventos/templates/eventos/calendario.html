@@ -16,26 +16,28 @@
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             {% for bloco in dias_com_eventos %}
               <article class="card overflow-hidden">
-                <header class="card-header flex items-center justify-between gap-4 sm:gap-6">
-                  <div class="flex items-baseline gap-3 sm:gap-4">
-                    <span class="text-3xl font-bold leading-none text-[var(--text-primary)]">
-                      {{ bloco.data|date:"d" }}
-                    </span>
-                    <div class="leading-tight">
-                      <div class="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-                        {% lucide 'calendar-days' class='w-4 h-4 text-[var(--text-secondary)]' aria_hidden='true' %}
-                        {{ bloco.data|date:"l" }}
-                      </div>
-                      <div class="text-xs text-[var(--text-muted)]">
-                        {{ bloco.data|date:"d \\d\\e F, Y" }}
+                <div class="card-header">
+                  <div class="flex items-center justify-between gap-4 sm:gap-6">
+                    <div class="flex items-baseline gap-3 sm:gap-4">
+                      <span class="text-3xl font-bold leading-none text-[var(--text-primary)]">
+                        {{ bloco.data|date:"d" }}
+                      </span>
+                      <div class="leading-tight">
+                        <div class="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+                          {% lucide 'calendar-days' class='w-4 h-4 text-[var(--text-secondary)]' aria_hidden='true' %}
+                          {{ bloco.data|date:"l" }}
+                        </div>
+                        <div class="text-xs text-[var(--text-muted)]">
+                          {{ bloco.data|date:"d \\d\\e F, Y" }}
+                        </div>
                       </div>
                     </div>
+                    <span class="text-xs rounded-full bg-[var(--surface-tertiary)] px-2 py-1 text-[var(--text-secondary)]">
+                      {{ bloco.eventos|length }} {% trans "evento(s)" %}
+                    </span>
                   </div>
-                  <span class="text-xs rounded-full bg-[var(--surface-tertiary)] px-2 py-1 text-[var(--text-secondary)]">
-                    {{ bloco.eventos|length }} {% trans "evento(s)" %}
-                  </span>
-                </header>
-                <div class="card-body p-0">
+                </div>
+                <div class="card-body space-y-0">
                   <ul class="divide-y divide-[var(--border)]">
                     {% for ev in bloco.eventos %}
                       <li class="px-4 py-3 sm:px-6 sm:py-4">
@@ -61,9 +63,7 @@
                             </a>
                           </div>
                           <div class="shrink-0">
-                            <a href="{% url 'eventos:evento_detalhe' ev.id %}" class="text-sm text-[var(--text-secondary)] underline hover:text-[var(--text-primary)]">
-                              {% trans "Detalhes" %}
-                            </a>
+                            <a href="{% url 'eventos:evento_detalhe' ev.id %}" class="btn btn-link px-0 text-sm" aria-label="{% trans 'Ver detalhes do evento' %}">{% trans "Detalhes" %}</a>
                           </div>
                         </div>
                       </li>

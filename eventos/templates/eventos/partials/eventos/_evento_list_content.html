@@ -1,3 +1,4 @@
+{# Exceção: conteúdo HTMX flat injetado dinamicamente, sem wrapper de card. #}
 {% load i18n %}
 
 {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' %}
@@ -6,7 +7,7 @@
     id="eventos-lista"
     role="list"
     aria-label="{{ list_aria_label|default_if_none:_('Lista de eventos')|default:_('Lista de eventos') }}"
-    class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 items-stretch"
+    class="card-grid items-stretch gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
   >
     {% for evento in object_list %}
       {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
