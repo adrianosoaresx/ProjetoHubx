@@ -1,6 +1,6 @@
 {% load i18n %}
 <article id="membro-{{ part.id }}" class="card">
-  <div class="card-body flex flex-col gap-2">
+  <div class="card-body space-y-4">
     <div class="flex items-center gap-4">
       {% if part.user.avatar %}
       <img src="{{ part.user.avatar.url }}" alt="{{ part.user.display_name|default:part.user.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
@@ -20,7 +20,7 @@
       </div>
     </div>
     {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-    <div class="mt-2 space-x-2">
+    <div class="flex flex-wrap gap-3 pt-4 border-t border-[var(--border)]">
       <button class="btn btn-secondary btn-sm"
               hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
               hx-target="#membro-{{ part.id }}"
@@ -39,13 +39,13 @@
       {% if part.status_suspensao %}
         <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}"
               hx-on="htmx:afterRequest: location.reload()"
-              class="inline">{% csrf_token %}
+              class="inline-flex">{% csrf_token %}
           <button class="btn btn-secondary btn-sm">{% trans 'Reativar' %}</button>
         </form>
       {% else %}
         <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}"
               hx-on="htmx:afterRequest: location.reload()"
-              class="inline">{% csrf_token %}
+              class="inline-flex">{% csrf_token %}
           <button class="btn btn-danger btn-sm">{% trans 'Suspender' %}</button>
         </form>
       {% endif %}
