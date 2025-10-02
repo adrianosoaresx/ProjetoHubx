@@ -1,11 +1,12 @@
 {% comment %}Lista de postagens reutilizável com Tailwind{% endcomment %}
 {% load static i18n lucide_icons %}
+{# Exceção HTMX: parcial utilizado em atualizações inline sem cabeçalho completo #}
 
 {% if request.user.user_type != 'root' %}
 <div class="space-y-6">
   {% for post in posts %}
     <article class="card">
-      <div class="card-body space-y-4">
+      <div class="card-body space-y-6">
 
       <div class="flex items-center gap-4">
         <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.display_name|default:post.autor.username }}">
@@ -56,7 +57,7 @@
     </article>
   {% empty %}
     <div class="card text-center text-[var(--text-secondary)]">
-      <div class="card-body p-10">
+      <div class="card-body space-y-4 p-10">
         <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
         <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
         <p class="text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>

@@ -23,27 +23,7 @@ function bindFeedEvents(root = document) {
     textarea.addEventListener("input", updateCharCounter);
   }
 
-  const fileInput = root.querySelector('input[type="file"]');
-  const fileText = root.querySelector(".file-text");
-
-  if (fileInput && fileText) {
-    const originalText = fileText.textContent;
-
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-
-      if (file) {
-        const selectedText = window.gettext
-          ? gettext("Selecionado:")
-          : "Selecionado:";
-        fileText.textContent = `${selectedText} ${file.name}`;
-        fileText.style.color = "var(--success-color)";
-      } else {
-        fileText.textContent = originalText;
-        fileText.style.color = "var(--text-secondary)";
-      }
-    });
-  }
+  const fileInputs = Array.from(root.querySelectorAll('input[type="file"]'));
 
   const postForm = root.querySelector(".post-form");
 
@@ -75,7 +55,7 @@ function bindFeedEvents(root = document) {
     postForm.addEventListener('submit', (e) => {
       clearMsg();
       const content = textarea ? textarea.value.trim() : '';
-      const hasFile = fileInput && fileInput.files.length > 0;
+      const hasFile = fileInputs.some((input) => input.files && input.files.length > 0);
       if (content.length === 0 && !hasFile) {
         e.preventDefault();
         const msg = window.gettext ? gettext('Por favor, escreva algo ou selecione um arquivo antes de publicar.') : 'Por favor, escreva algo ou selecione um arquivo antes de publicar.';
