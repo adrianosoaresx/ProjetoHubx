@@ -400,6 +400,11 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
                     "fallback_href": fallback_url,
                     "variant": "compact",
                 },
+                "cancel_component_config": {
+                    "href": back_href,
+                    "fallback_href": fallback_url,
+                    "aria_label": _("Cancelar remoção"),
+                },
             },
         )
 
