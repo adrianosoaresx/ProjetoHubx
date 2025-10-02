@@ -97,13 +97,26 @@ function bindFeedEvents(root = document) {
     if (exists) return;
     const chip = document.createElement('span');
     chip.className =
-      'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs';
+      'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs normal-case';
     chip.setAttribute('data-tag', value);
-    chip.innerHTML = `${value} <button type="button" class="ml-1 btn btn-danger btn-sm" aria-label="Remover">&times;</button>`;
-    chip.querySelector('button').addEventListener('click', () => {
+
+    const label = document.createElement('span');
+    label.textContent = value;
+    label.className = 'leading-none';
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.setAttribute('aria-label', 'Remover');
+    removeButton.className =
+      'ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--error)] text-[var(--text-inverse)] text-xs transition-colors hover:bg-[var(--color-error-700)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--error-light)]';
+    removeButton.innerHTML = '&times;';
+    removeButton.addEventListener('click', () => {
       chip.remove();
       updateHiddenTags();
     });
+
+    chip.appendChild(label);
+    chip.appendChild(removeButton);
     chipsContainer.appendChild(chip);
     updateHiddenTags();
   };
