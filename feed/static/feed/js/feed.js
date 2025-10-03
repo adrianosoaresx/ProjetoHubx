@@ -217,6 +217,84 @@ function bindFeedEvents(root = document) {
   }
 
   const csrfToken = getCookie('csrftoken');
+
+  const reactionButtons = Array.from(root.querySelectorAll('.reaction-btn'));
+  if (reactionButtons.length) {
+    reactionButtons.forEach((btn) => {
+      if (btn.dataset.reactionBound === 'true') {
+        return;
+      }
+      btn.dataset.reactionBound = 'true';
+      btn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const postId = btn.dataset.postId;
+        const vote = btn.dataset.reactionType;
+        if (!postId || !vote || btn.dataset.reactionLoading === 'true') {
+          return;
+        }
+
+        const countEl = btn.querySelector('[data-reaction-count]');
+        const iconWrapper = btn.querySelector('[data-reaction-icon]');
+        const activeClass = btn.dataset.activeClass || 'text-emerald-600';
+        const previousCount = parseInt(countEl?.textContent || '0', 10) || 0;
+
+        try {
+          btn.dataset.reactionLoading = 'true';
+          const response = await fetch(`/api/feed/posts/${postId}/reacoes/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken || '',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ vote }),
+          });
+
+          if (response.status === 201) {
+            btn.setAttribute('aria-pressed', 'true');
+            if (iconWrapper) {
+              iconWrapper.classList.add(activeClass);
+            } else {
+              btn.classList.add(activeClass);
+            }
+            if (countEl) {
+              const updated = btn.dataset.reactionState === 'active' ? previousCount : previousCount + 1;
+              countEl.textContent = String(updated);
+            }
+            btn.dataset.reactionState = 'active';
+          } else if (response.status === 204) {
+            btn.setAttribute('aria-pressed', 'false');
+            if (iconWrapper) {
+              iconWrapper.classList.remove(activeClass);
+            } else {
+              btn.classList.remove(activeClass);
+            }
+            if (countEl) {
+              const updated = btn.dataset.reactionState === 'inactive' ? previousCount : Math.max(previousCount - 1, 0);
+              countEl.textContent = String(updated);
+            }
+            btn.dataset.reactionState = 'inactive';
+          } else {
+            let errorDetail = '';
+            try {
+              const data = await response.json();
+              errorDetail = data?.detail || '';
+            } catch (err) {
+              // ignore JSON parsing errors
+            }
+            throw new Error(errorDetail || 'reaction failed');
+          }
+        } catch (error) {
+          const message = window.gettext ? gettext('Erro ao registrar reação') : 'Erro ao registrar reação';
+          window.alert(message);
+        } finally {
+          delete btn.dataset.reactionLoading;
+        }
+      });
+    });
+  }
+
   const bookmarkButtons = Array.from(root.querySelectorAll('.bookmark-btn'));
   if (bookmarkButtons.length) {
     bookmarkButtons.forEach((btn) => {
