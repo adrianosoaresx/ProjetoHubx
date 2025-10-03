@@ -8,9 +8,18 @@ const config: Config = {
         "*.{js,ts,jsx,tsx,mdx}",
         "./templates/**/*.html",
         "./accounts/templates/**/*.html",
+        "./associados/templates/**/*.html",
+        "./configuracoes/templates/**/*.html",
+        "./conexoes/templates/**/*.html",
         "./static/src/**/*.{js,ts}",
         "./**/*.py",
-        "./feed/templates/**/*.html"
+        "./core/templates/**/*.html",
+        "./eventos/templates/**/*.html",
+        "./feed/templates/**/*.html",
+        "./notificacoes/templates/**/*.html",
+        "./nucleos/templates/**/*.html",
+        "./organizacoes/templates/**/*.html",
+        "./tokens/templates/**/*.html"
     ],
   theme: {
   	extend: {
