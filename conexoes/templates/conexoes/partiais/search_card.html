@@ -34,15 +34,18 @@
 
     {% if tem_organizacao %}
       {% if associados %}
-        <div role="list" class="space-y-3">
+        <div
+          role="list"
+          class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+        >
           {% for associado in associados %}
             <article
               role="listitem"
               id="connection-{{ associado.id }}"
               data-connection-card
-              class="card"
+              class="card h-full transition-shadow duration-200 hover:shadow-lg focus-within:shadow-lg"
             >
-              <div class="card-body space-y-4">
+              <div class="card-body flex h-full flex-col gap-4">
                 <div class="flex items-center gap-3">
                   {% if associado.avatar %}
                     <img src="{{ associado.avatar.url }}" alt="{{ associado.display_name|default:associado.username }}" class="h-12 w-12 rounded-full object-cover" loading="lazy" />
@@ -52,20 +55,17 @@
                     </div>
                   {% endif %}
                   <div class="min-w-0 space-y-1">
-                    <p class="truncate font-semibold text-[var(--text-primary)]">{{ associado.display_name }}</p>
-                    <p class="text-sm text-[var(--text-secondary)]">@{{ associado.username }}</p>
-                    {% if associado.razao_social %}
-                      <p class="text-xs text-[var(--text-secondary)]">{{ associado.razao_social }}</p>
-                    {% endif %}
-                    {% if associado.cnpj %}
-                      <p class="text-xs text-[var(--text-tertiary)]">CNPJ: {{ associado.cnpj }}</p>
+                    <p class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ associado.display_name }}</p>
+                    <p class="text-xs text-[var(--text-secondary)]">@{{ associado.username }}</p>
+                    {% if associado.nome_fantasia %}
+                      <p class="truncate text-xs text-[var(--text-secondary)]">{{ associado.nome_fantasia }}</p>
                     {% endif %}
                   </div>
                 </div>
-                <div class="flex flex-wrap justify-end gap-3 pt-4 border-t border-[var(--border)]">
+                <div class="mt-auto grid gap-2 border-t border-[var(--border)] pt-3">
                   <a
                     href="{% url 'accounts:perfil_publico_uuid' associado.public_id %}"
-                    class="btn btn-secondary btn-sm"
+                    class="btn btn-secondary btn-sm w-full justify-center"
                     data-connection-link="connection-{{ associado.id }}"
                   >
                     {% trans "Ver perfil" %}
@@ -80,24 +80,24 @@
                         hx-target="#{{ search_form_hx_target }}"
                         hx-swap="innerHTML"
                       {% endif %}
-                      class="space-y-4"
+                      class="w-full"
                     >
                       {% csrf_token %}
                       {% if form.q.value %}
                         <input type="hidden" name="q" value="{{ form.q.value }}" />
                       {% endif %}
-                      <button type="submit" class="btn btn-danger btn-sm">
+                      <button type="submit" class="btn btn-danger btn-sm w-full justify-center">
                         {% trans "Desconectar" %}
                       </button>
                     </form>
                   {% elif associado.id in solicitacoes_enviadas_ids %}
-                    <button type="button" class="btn btn-secondary btn-sm cursor-default opacity-70" disabled>
+                    <button type="button" class="btn btn-secondary btn-sm w-full cursor-default justify-center opacity-70" disabled>
                       {% trans "Solicitação enviada" %}
                     </button>
                   {% elif associado.id in solicitacoes_recebidas_ids %}
                     <a
                       href="{{ solicitacoes_url }}"
-                      class="btn btn-secondary btn-sm"
+                      class="btn btn-secondary btn-sm w-full justify-center"
                       {% if solicitacoes_hx_get %}hx-get="{{ solicitacoes_hx_get }}"{% endif %}
                       {% if solicitacoes_hx_target %}hx-target="#{{ solicitacoes_hx_target }}"{% endif %}
                       {% if solicitacoes_hx_push_url %}hx-push-url="{{ solicitacoes_hx_push_url }}"{% endif %}
@@ -113,13 +113,13 @@
                         hx-target="#{{ search_form_hx_target }}"
                         hx-swap="innerHTML"
                       {% endif %}
-                      class="space-y-4"
+                      class="w-full"
                     >
                       {% csrf_token %}
                       {% if form.q.value %}
                         <input type="hidden" name="q" value="{{ form.q.value }}" />
                       {% endif %}
-                      <button type="submit" class="btn btn-primary btn-sm">
+                      <button type="submit" class="btn btn-primary btn-sm w-full justify-center">
                         {% trans "Conectar" %}
                       </button>
                     </form>
