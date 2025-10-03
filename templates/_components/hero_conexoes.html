@@ -36,13 +36,13 @@
         <div class="mt-10">
           <div class="card-grid md:grid-cols-3 gap-4">
             {% if total_conexoes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Conexões ativas') valor=total_conexoes icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Conexões ativas') valor=total_conexoes icon_name='users' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
             {% if total_solicitacoes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Solicitações pendentes') valor=total_solicitacoes icon_name='user-check' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Solicitações pendentes') valor=total_solicitacoes icon_name='user-check' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
             {% if total_solicitacoes_enviadas is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Solicitações enviadas') valor=total_solicitacoes_enviadas icon_name='user-plus' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Solicitações enviadas') valor=total_solicitacoes_enviadas icon_name='user-plus' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
           </div>
         </div>

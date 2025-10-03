@@ -632,6 +632,21 @@
   .card-grid-single { @apply grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 2xl:grid-cols-1; }
 
   .card        { @apply bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl shadow-card-md p-6 border border-[var(--border)]; }
+  .total-card-glass {
+    @apply border border-black/10 bg-white/80 text-[var(--text-primary)] shadow-md backdrop-blur-md;
+  }
+
+  .dark .total-card-glass {
+    @apply border-white/30 bg-white/10 text-white/90 shadow-lg;
+  }
+
+  .total-card-glass-active {
+    @apply border border-black/30 bg-white/90 text-[var(--text-primary)] shadow-lg;
+  }
+
+  .dark .total-card-glass-active {
+    @apply border-white/70 bg-white/20 text-white shadow-xl;
+  }
   .card-header { @apply mb-3 font-semibold; }
   .card-body   { @apply text-sm leading-6; }
   .card-footer { @apply mt-4 pt-4 border-t border-[var(--border)]; }

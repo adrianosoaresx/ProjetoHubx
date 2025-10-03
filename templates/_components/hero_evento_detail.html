@@ -33,13 +33,13 @@
         <div class="mt-6 space-y-4 text-left">
           <div class="card-grid">
             {% if total_inscricoes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
             {% if vagas_disponiveis is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
             {% if media_feedback is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
           </div>
         </div>

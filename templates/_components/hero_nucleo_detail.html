@@ -34,7 +34,7 @@
         <div class="mt-6 space-y-4 text-left">
           <div class="card-grid">
             {% if total_membros is not None %}
-              {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact total-card-glass' body_class='card-body-compact' %}
             {% endif %}
            </div>
         </div>
