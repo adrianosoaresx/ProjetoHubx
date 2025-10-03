@@ -334,7 +334,7 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = Post
     form_class = PostForm
-    template_name = "feed/nova_postagem.html"
+    template_name = "feed/post_form.html"
     success_url = reverse_lazy("feed:meu_mural")
 
     def dispatch(self, request, *args, **kwargs):
@@ -353,6 +353,12 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+        data = kwargs.get("data")
+        user_org_id = getattr(self.request.user, "organizacao_id", None)
+        if data is not None and user_org_id and not data.get("organizacao"):
+            mutable_data = data.copy()
+            mutable_data.setdefault("organizacao", str(user_org_id))
+            kwargs["data"] = mutable_data
         file = self.request.FILES.get("arquivo")
         if file:
             files = self.request.FILES.copy()
@@ -384,6 +390,17 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             "href": back_href,
             "fallback_href": fallback_url,
         }
+        form_action = reverse("feed:nova_postagem")
+        context.update(
+            {
+                "is_update": False,
+                "form_action": form_action,
+                "hx_post_url": form_action,
+                "hx_target": "#nova-postagem-form",
+                "hx_swap": "outerHTML",
+                "form_wrapper_id": "nova-postagem-form",
+            }
+        )
         return context
 
     def form_valid(self, form):
@@ -516,7 +533,10 @@ def post_update(request, pk):
                 files["video"] = file
             else:
                 files["image"] = file
-        form = PostForm(request.POST, files, instance=post, user=request.user)
+        data = request.POST.copy()
+        if not data.get("organizacao") and post.organizacao_id:
+            data.setdefault("organizacao", str(post.organizacao_id))
+        form = PostForm(data, files, instance=post, user=request.user)
         if form.is_valid():
             for field in ["image", "pdf", "video"]:
                 value = form.cleaned_data.get(field)
@@ -534,6 +554,7 @@ def post_update(request, pk):
 
     fallback_url = reverse("feed:post_detail", args=[post.pk])
     back_href = resolve_back_href(request, fallback=fallback_url)
+    form_action = reverse("feed:post_update", args=[post.pk])
     context = {
         "form": form,
         "post": post,
@@ -547,8 +568,15 @@ def post_update(request, pk):
             "fallback_href": fallback_url,
             "aria_label": _("Cancelar edição"),
         },
+        "is_update": True,
+        "form_action": form_action,
+        "hx_post_url": form_action,
+        "form_wrapper_id": None,
+        "hx_target": None,
+        "hx_swap": None,
+        "selected_tipo_feed": request.POST.get("tipo_feed") or form.initial.get("tipo_feed") or form.instance.tipo_feed,
     }
-    return render(request, "feed/post_update.html", context)
+    return render(request, "feed/post_form.html", context)
 
 
 @login_required

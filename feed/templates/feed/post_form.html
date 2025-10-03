@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static i18n lucide_icons widget_tweaks %}
+
+{% block title %}
+  {% if is_update %}
+    {% trans "Editar Postagem" %}
+  {% else %}
+    {% trans "Nova Postagem" %}
+  {% endif %} - Hubx
+{% endblock %}
+
+{% block hero %}
+  {% if is_update %}
+    {% include '_components/hero_feed.html' with title=_('Editar Postagem') %}
+  {% else %}
+    {% include '_components/hero_feed.html' with title=_('Nova Postagem') %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+  {% if request.user.user_type == 'root' %}
+    <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
+  {% else %}
+
+  <article class="card">
+    <div class="card-header">
+      <div class="flex flex-col gap-1 text-center">
+        <h1 class="text-xl font-semibold text-[var(--text-primary)]">
+          {% if is_update %}
+            {% trans "Editar Postagem" %}
+          {% else %}
+            {% trans "Nova Postagem" %}
+          {% endif %}
+        </h1>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% if is_update %}
+            {% trans "Atualize sua postagem" %}
+          {% else %}
+            {% trans "Compartilhe algo com sua comunidade" %}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="card-body space-y-6">
+      <div{% if form_wrapper_id %} id="{{ form_wrapper_id }}"{% endif %}>
+        <form method="post"
+              action="{{ form_action|default:request.path }}"
+              {% if hx_post_url %}hx-post="{{ hx_post_url }}"{% endif %}
+              {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+              {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+              hx-encoding="multipart/form-data"
+              enctype="multipart/form-data"
+              class="post-form space-y-6">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="rounded-xl border border-[var(--error)] bg-[var(--error-light)] p-3 text-sm text-[var(--error)]">
+              <ul class="list-disc list-inside space-y-1">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if is_update %}
+            <div class="space-y-4">
+              {% include '_forms/field.html' with field=form.tipo_feed %}
+              {% include '_forms/field.html' with field=form.organizacao %}
+              {% include '_forms/field.html' with field=form.nucleo %}
+              {% include '_forms/field.html' with field=form.evento %}
+            </div>
+          {% else %}
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <span class="block text-sm font-medium text-[var(--text-primary)]">
+                  {% trans "Tipo de feed" %} *
+                </span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <label for="tipo_feed_global" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                    <input type="checkbox"
+                           id="tipo_feed_global"
+                           name="tipo_feed"
+                           value="global"
+                           class="form-checkbox"
+                           data-exclusive="tipo-feed"
+                           {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
+                    <span>{% trans "Feed Público" %}</span>
+                  </label>
+                  <label for="tipo_feed_usuario" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                    <input type="checkbox"
+                           id="tipo_feed_usuario"
+                           name="tipo_feed"
+                           value="usuario"
+                           class="form-checkbox"
+                           data-exclusive="tipo-feed"
+                           {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
+                    <span>{% trans "Mural" %}</span>
+                  </label>
+                </div>
+                {% if form.tipo_feed.errors %}
+                  <ul class="errorlist">
+                    {% for error in form.tipo_feed.errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          {% with placeholder_value=_('O que você gostaria de compartilhar?') %}
+            {% with placeholder_attr='placeholder:'|add:placeholder_value %}
+              {% with conteudo_field=form.conteudo|attr:'rows:6'|attr:placeholder_attr %}
+                <div class="space-y-2">
+                  {% include '_forms/field.html' with field=conteudo_field %}
+                  <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
+                  {% if not is_update %}
+                    <p class="text-xs text-[var(--text-secondary)]">{% trans "Compartilhe ideias, atualizações ou conteúdos com sua rede." %}</p>
+                  {% endif %}
+                </div>
+              {% endwith %}
+            {% endwith %}
+          {% endwith %}
+
+          {% if not is_update and request.user.organizacao %}
+            <input type="hidden" name="organizacao" value="{{ request.user.organizacao.id }}">
+          {% endif %}
+
+          {% if is_update %}
+            <div class="space-y-4">
+              {% include '_forms/field.html' with field=form.tags|attr:'id:tags-select' %}
+              {% include '_forms/field.html' with id='id_tags_text' name='tags_text' label=_('Novas tags') placeholder=_('Digite novas tags separadas por vírgula') value=request.POST.tags_text|default:'' help_text=_('Use vírgula para separar as tags adicionais.') %}
+            </div>
+          {% else %}
+            <div class="space-y-2">
+              <label for="tags-input" class="block text-sm font-medium text-[var(--text-primary)]">
+                {% trans "Tags" %}
+              </label>
+              <div id="tags-chips" class="flex flex-wrap gap-2"></div>
+              <input id="tags-input"
+                     type="text"
+                     class="form-input w-full"
+                     placeholder="{% trans 'Digite e pressione Enter para adicionar' %}">
+              <input type="hidden"
+                     id="id_tags_text"
+                     name="tags_text"
+                     value="{{ request.POST.tags_text|default:'' }}">
+              <p class="text-xs text-[var(--text-secondary)]">{% trans "Use Enter ou vírgula para separar as tags." %}</p>
+            </div>
+          {% endif %}
+
+          <div class="space-y-4">
+            {% include '_forms/field.html' with field=form.image %}
+            {% include '_forms/field.html' with field=form.pdf %}
+            {% include '_forms/field.html' with field=form.video %}
+          </div>
+
+          {% if is_update and post %}
+            <div class="space-y-4">
+              {% if post.pdf %}
+                <div class="space-y-2">
+                  <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
+                  <div class="flex gap-3">
+                    <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary" aria-label="{% trans 'Visualizar PDF' %}">
+                      {% lucide 'eye' class='w-4 h-4' %}
+                    </a>
+                    <a href="{{ post.pdf.url }}" download class="btn btn-secondary" aria-label="{% trans 'Baixar PDF' %}">
+                      {% lucide 'download' class='w-4 h-4' %}
+                    </a>
+                  </div>
+                </div>
+              {% elif post.image %}
+                <div class="space-y-2">
+                  <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
+                </div>
+              {% elif post.video %}
+                <div class="space-y-2">
+                  {% if post.video_preview %}
+                    <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="max-w-full rounded-xl"></video>
+                  {% else %}
+                    <video src="{{ post.video.url }}" controls class="max-w-full rounded-xl"></video>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</p>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+            {% if cancel_component_config %}
+              {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
+            {% endif %}
+            <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
+              {% trans "Salvar" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </article>
+
+  <script src="{% static 'feed/js/feed.js' %}"></script>
+  {% endif %}
+
+{% endblock %}
