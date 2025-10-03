@@ -1,70 +1,126 @@
 {% load i18n lucide_icons %}
-<div class="section-header mb-6">
-  <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
-  <p class="text-sm text-[var(--text-primary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
-</div>
 
-{% if show_form %}
-  <form id="formPortfolio" class="space-y-6" method="post" action="{% url 'accounts:perfil_sections_portfolio' %}" enctype="multipart/form-data">
-    {% csrf_token %}
-    {% for field in form %}
-      {% include '_forms/field.html' with field=field %}
-    {% endfor %}
+<article class="card">
+  <div class="card-header">
     <div>
-      <button type="submit" class="btn btn-primary">
-        {% trans "Enviar" %}
-      </button>
+      <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
     </div>
-  </form>
-{% else %}
-  {% if is_owner %}
-    <a href="{% url 'accounts:perfil_sections_portfolio' %}?adicionar=1" class="btn btn-primary">
-      {% trans "Adicionar" %}
-    </a>
-  {% endif %}
-
-  <form method="get" class="mt-6">
-    <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Buscar por descrição ou tags...' %}"
-           class="form-input w-full rounded-lg px-4 py-2 text-sm" aria-label="{% trans 'Buscar' %}" aria-invalid="false">
-  </form>
-
-  <div class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
-    {% for media in medias %}
-      <article class="card relative p-3">
-        {% if is_owner %}
-        <div class="absolute top-2 right-2 flex gap-2">
-          <a href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
-            {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
-          </a>
-          <a href="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}" class="btn-danger btn-sm" aria-label="{% trans 'Excluir' %}">
-            {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
-          </a>
-        </div>
-        {% endif %}
-        <a href="{% url 'accounts:perfil_sections_portfolio_detail' media.pk %}">
-          {% if media.media_type == 'image' %}
-            <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded" loading="lazy">
-          {% elif media.media_type == 'video' %}
-            <video src="{{ media.file.url }}" class="w-full h-40 object-cover rounded" controls></video>
-          {% elif media.media_type == 'pdf' %}
-            <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
-          {% else %}
-            <span class="text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
-          {% endif %}
-        </a>
-        <div class="card-body mt-2">
-          <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
-          <p class="text-xs text-[var(--text-primary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-          <div class="flex flex-wrap gap-1 mt-1">
-            {% for tag in media.tags.all %}
-              <span class="bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
-            {% endfor %}
-          </div>
-        </div>
-      </article>
-    {% empty %}
-      <p class="text-sm text-[var(--text-primary)]">{% trans "Nenhum arquivo enviado." %}</p>
-    {% endfor %}
   </div>
-{% endif %}
+  <div class="card-body space-y-6">
+    {% if show_form %}
+      <form
+        id="formPortfolio"
+        class="space-y-6"
+        method="post"
+        action="{% url 'accounts:perfil_sections_portfolio' %}"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        {% if messages %}
+          {% for message in messages %}
+            {% if 'success' in message.tags %}
+              {% with alert_class='alert alert-success' alert_role='status' %}
+                <div class="{{ alert_class }}" role="{{ alert_role }}">{{ message }}</div>
+              {% endwith %}
+            {% elif 'error' in message.tags or 'danger' in message.tags %}
+              {% with alert_class='alert alert-error' alert_role='alert' %}
+                <div class="{{ alert_class }}" role="{{ alert_role }}">{{ message }}</div>
+              {% endwith %}
+            {% elif 'warning' in message.tags %}
+              {% with alert_class='alert alert-warning' alert_role='alert' %}
+                <div class="{{ alert_class }}" role="{{ alert_role }}">{{ message }}</div>
+              {% endwith %}
+            {% else %}
+              {% with alert_class='alert alert-info' alert_role='status' %}
+                <div class="{{ alert_class }}" role="{{ alert_role }}">{{ message }}</div>
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-error" role="alert">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+        {% for field in form %}
+          {% include '_forms/field.html' with field=field %}
+        {% endfor %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <button type="submit" class="btn btn-primary">
+            {% trans "Enviar" %}
+          </button>
+        </div>
+      </form>
+    {% else %}
+      {% if is_owner %}
+        <div class="flex justify-end gap-3">
+          <a href="{% url 'accounts:perfil_sections_portfolio' %}?adicionar=1" class="btn btn-primary">
+            {% trans "Adicionar" %}
+          </a>
+        </div>
+      {% endif %}
 
+      {% if filter_form %}
+        <form method="get" class="space-y-4">
+          {% include '_forms/field.html' with field=filter_form.q %}
+        </form>
+      {% endif %}
+
+      <div class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
+        {% for media in medias %}
+          <article class="card">
+            <div class="card-body space-y-4 relative">
+              {% if is_owner %}
+                <div class="absolute right-0 top-0 flex gap-3">
+                  <a
+                    href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
+                    class="btn btn-secondary btn-sm"
+                    aria-label="{% trans 'Editar' %}"
+                  >
+                    {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+                  </a>
+                  <a
+                    href="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
+                    class="btn btn-danger btn-sm"
+                    aria-label="{% trans 'Excluir' %}"
+                  >
+                    {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+                  </a>
+                </div>
+              {% endif %}
+
+              <a href="{% url 'accounts:perfil_sections_portfolio_detail' media.pk %}" class="block">
+                <div class="aspect-video overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
+                  {% if media.media_type == 'image' %}
+                    <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-full w-full object-cover" loading="lazy">
+                  {% elif media.media_type == 'video' %}
+                    <video src="{{ media.file.url }}" class="h-full w-full object-cover" controls></video>
+                  {% elif media.media_type == 'pdf' %}
+                    <object data="{{ media.file.url }}" type="application/pdf" class="h-full w-full" aria-label="{{ media.descricao }}"></object>
+                  {% else %}
+                    <span class="flex h-full items-center justify-center text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
+                  {% endif %}
+                </div>
+              </a>
+
+              <div class="space-y-2">
+                <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+                <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+                {% if media.tags.all %}
+                  <div class="flex flex-wrap gap-2">
+                    {% for tag in media.tags.all %}
+                      <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% empty %}
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum arquivo enviado." %}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</article>
