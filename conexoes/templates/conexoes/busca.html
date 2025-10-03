@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Buscar pessoas" %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_conexoes.html' with title=_('Buscar novas conexões') subtitle=_('Encontre associados da sua organização para se conectar') action_url=dashboard_url action_label=_('Voltar para minhas conexões') action_icon='arrow-left' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas %}
+{% endblock %}
+
+{% block content %}
+  {% include 'conexoes/includes/search_card.html' with search_form_action=search_form_action search_form_hx_get=None search_form_hx_target=None search_form_hx_push_url=None search_container_id='connections-search-card' back_to_dashboard_url=dashboard_url back_to_dashboard_hx_get=None back_to_dashboard_hx_target=None back_to_dashboard_hx_push_url=None solicitacoes_url=solicitacoes_url solicitacoes_hx_get=None solicitacoes_hx_target=None solicitacoes_hx_push_url=None %}
+{% endblock %}

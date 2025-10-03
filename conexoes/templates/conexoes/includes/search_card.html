@@ -1,29 +1,28 @@
 {% load i18n lucide_icons %}
-<article class="card">
+<article class="card" {% if search_container_id %}id="{{ search_container_id }}"{% endif %}>
   <div class="card-header flex items-center justify-between gap-3">
     <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
-    {% url 'conexoes:perfil_sections_conexoes' as conexoes_partial_url %}
-    {% url 'accounts:perfil' as perfil_url %}
-    {% with partial_query='?view=buscar' full_query='?section=conexoes&view=buscar' %}
-      {% if q %}
-        {% with encoded_q=q|urlencode %}
-          {% with partial_query=partial_query|add:'&q='|add:encoded_q full_query=full_query|add:'&q='|add:encoded_q %}    
-
-          {% endwith %}
-        {% endwith %}
-      
-        
-      {% endif %}
-    {% endwith %}
+    {% if back_to_dashboard_url %}
+      <a
+        href="{{ back_to_dashboard_url }}"
+        class="btn btn-secondary btn-sm"
+        {% if back_to_dashboard_hx_get %}hx-get="{{ back_to_dashboard_hx_get }}"{% endif %}
+        {% if back_to_dashboard_hx_target %}hx-target="#{{ back_to_dashboard_hx_target }}"{% endif %}
+        {% if back_to_dashboard_hx_push_url %}hx-push-url="{{ back_to_dashboard_hx_push_url }}"{% endif %}
+      >
+        {% trans "Minhas conexões" %}
+      </a>
+    {% endif %}
   </div>
 
   <div class="card-body space-y-6">
     <form
       method="get"
+      {% if search_form_action %}action="{{ search_form_action }}"{% endif %}
       class="space-y-4 sm:flex sm:items-end sm:gap-3"
-      hx-get="{% url 'conexoes:perfil_conexoes_buscar' %}"
-      hx-target="#perfil-content"
-      hx-push-url="?section=conexoes&view=buscar"
+      {% if search_form_hx_get %}hx-get="{{ search_form_hx_get }}"{% endif %}
+      {% if search_form_hx_target %}hx-target="#{{ search_form_hx_target }}"{% endif %}
+      {% if search_form_hx_push_url %}hx-push-url="{{ search_form_hx_push_url }}"{% endif %}
     >
       <div class="sm:flex-1">
         {% include '_forms/field.html' with field=form.q %}
@@ -73,14 +72,20 @@
                   </a>
 
                   {% if associado.id in conexoes_ids %}
-                  <form
-                      hx-post="{% url 'conexoes:remover_conexao' associado.id %}"
-                      hx-target="#perfil-content"
-                      hx-swap="innerHTML"
+                    <form
+                      method="post"
+                      action="{% url 'conexoes:remover_conexao' associado.id %}"
+                      {% if search_form_hx_target %}
+                        hx-post="{% url 'conexoes:remover_conexao' associado.id %}"
+                        hx-target="#{{ search_form_hx_target }}"
+                        hx-swap="innerHTML"
+                      {% endif %}
                       class="space-y-4"
                     >
                       {% csrf_token %}
-                      <input type="hidden" name="q" value="{{ q }}" />
+                      {% if form.q.value %}
+                        <input type="hidden" name="q" value="{{ form.q.value }}" />
+                      {% endif %}
                       <button type="submit" class="btn btn-danger btn-sm">
                         {% trans "Desconectar" %}
                       </button>
@@ -91,20 +96,29 @@
                     </button>
                   {% elif associado.id in solicitacoes_recebidas_ids %}
                     <a
-                      href="{% url 'conexoes:perfil_sections_conexoes' %}?tab=solicitacoes"
+                      href="{{ solicitacoes_url }}"
                       class="btn btn-secondary btn-sm"
+                      {% if solicitacoes_hx_get %}hx-get="{{ solicitacoes_hx_get }}"{% endif %}
+                      {% if solicitacoes_hx_target %}hx-target="#{{ solicitacoes_hx_target }}"{% endif %}
+                      {% if solicitacoes_hx_push_url %}hx-push-url="{{ solicitacoes_hx_push_url }}"{% endif %}
                     >
                       {% trans "Responder solicitação" %}
                     </a>
                   {% else %}
                     <form
-                      hx-post="{% url 'conexoes:solicitar_conexao' associado.id %}"
-                      hx-target="#perfil-content"
-                      hx-swap="innerHTML"
+                      method="post"
+                      action="{% url 'conexoes:solicitar_conexao' associado.id %}"
+                      {% if search_form_hx_target %}
+                        hx-post="{% url 'conexoes:solicitar_conexao' associado.id %}"
+                        hx-target="#{{ search_form_hx_target }}"
+                        hx-swap="innerHTML"
+                      {% endif %}
                       class="space-y-4"
                     >
                       {% csrf_token %}
-                      <input type="hidden" name="q" value="{{ q }}" />
+                      {% if form.q.value %}
+                        <input type="hidden" name="q" value="{{ form.q.value }}" />
+                      {% endif %}
                       <button type="submit" class="btn btn-primary btn-sm">
                         {% trans "Conectar" %}
                       </button>
