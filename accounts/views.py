@@ -62,6 +62,7 @@ from .forms import (
     InformacoesPessoaisForm,
     MediaForm,
     OrganizacaoUserCreateForm,
+    PortfolioFilterForm,
 )
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
@@ -381,7 +382,11 @@ def perfil_section(request, section):
     context["can_manage"] = can_manage
 
     if section == "portfolio":
-        q = request.GET.get("q", "").strip()
+        filter_form = PortfolioFilterForm(request.GET or None)
+        if filter_form.is_valid():
+            q = filter_form.cleaned_data.get("q", "") or ""
+        else:
+            q = ""
         medias_qs = (
             Midia.objects.visible_to(viewer, profile)
             .select_related("user")
@@ -404,6 +409,7 @@ def perfil_section(request, section):
                 "medias": medias_qs,
                 "form": form,
                 "show_form": show_form,
+                "filter_form": filter_form,
                 "q": q,
                 "back_url": _resolve_back_url(request),
             }
@@ -738,7 +744,11 @@ def perfil_portfolio(request):
         return _redirect_to_profile_section(request, "portfolio")
 
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
-    q = request.GET.get("q", "").strip()
+    filter_form = PortfolioFilterForm(request.GET or None)
+    if filter_form.is_valid():
+        q = filter_form.cleaned_data.get("q", "") or ""
+    else:
+        q = ""
 
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES)
@@ -770,6 +780,7 @@ def perfil_portfolio(request):
             "form": form,
             "medias": medias,
             "show_form": show_form,
+            "filter_form": filter_form,
             "q": q,
             "is_owner": True,
             "back_url": _resolve_back_url(request),

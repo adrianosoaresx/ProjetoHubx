@@ -339,6 +339,16 @@ class InformacoesPessoaisForm(forms.ModelForm):
         return user
 
 
+class PortfolioFilterForm(forms.Form):
+    q = forms.CharField(
+        label=_("Buscar"),
+        required=False,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("Buscar por descrição ou tags...")}
+        ),
+    )
+
+
 class MediaForm(forms.ModelForm):
     tags_field = forms.CharField(
         required=False,
