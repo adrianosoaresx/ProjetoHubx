@@ -436,7 +436,16 @@ def perfil_section(request, section):
         if not is_owner:
             return HttpResponseForbidden(_("Esta seção está disponível apenas para o proprietário do perfil."))
 
-        q = request.GET.get("q", "").strip()
+        search_form = ConnectionsSearchForm(
+            request.GET or None,
+            placeholder=_("Buscar conexões..."),
+            label=_("Buscar conexões"),
+            aria_label=_("Buscar conexões"),
+        )
+        if search_form.is_valid():
+            q = search_form.cleaned_data.get("q", "") or ""
+        else:
+            q = ""
         connections = (
             profile.connections.select_related("organizacao", "nucleo")
             if hasattr(profile, "connections")
@@ -457,6 +466,7 @@ def perfil_section(request, section):
                 "connections": connections,
                 "connection_requests": connection_requests,
                 "q": q,
+                "form": search_form,
             }
         )
         template = "perfil/partials/conexoes_dashboard.html"
