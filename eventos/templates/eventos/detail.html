@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:object.titulo|default:_('Eventos') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento_detail.html' with evento=object %}{% endblock %}
+{% block hero %}{% include '_components/hero_evento_detail.html' with evento=evento %}{% endblock %}
 
 {% block content %}
   
