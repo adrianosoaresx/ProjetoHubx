@@ -422,7 +422,7 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             if tag_names:
                 tags_objs = []
                 for name in tag_names:
-                    tag, _ = Tag.objects.get_or_create(nome=name, deleted=False)
+                    tag, _created = Tag.objects.get_or_create(nome=name, deleted=False)
                     tags_objs.append(tag)
                 self.object.tags.set(tags_objs)
         from feed.tasks import POSTS_CREATED, notify_new_post
@@ -552,7 +552,7 @@ def post_update(request, pk):
                 if tag_names:
                     tags_objs = []
                     for name in tag_names:
-                        tag, _ = Tag.objects.get_or_create(nome=name, deleted=False)
+                        tag, _created = Tag.objects.get_or_create(nome=name, deleted=False)
                         tags_objs.append(tag)
                     form.instance.tags.set(tags_objs)
                 else:
