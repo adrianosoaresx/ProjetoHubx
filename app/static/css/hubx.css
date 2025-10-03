@@ -629,6 +629,7 @@
 
   /* Grid/Card */
   .card-grid { @apply grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4; }
+  .card-grid-single { @apply grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1 2xl:grid-cols-1; }
 
   .card        { @apply bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl shadow-card-md p-6 border border-[var(--border)]; }
   .card-header { @apply mb-3 font-semibold; }
