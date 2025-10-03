@@ -1,8 +1,10 @@
+{% with background=bg_type|default:"home" %}
+  {% if background == "home" %}
 <!-- Neural Network Background Templates for Django -->
 <!-- Each background represents a different module with unique neural patterns -->
 
 <!-- Home/Página Principal Background -->
-<div class="neural-bg-home absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-home">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="home-gradient" cx="50%" cy="50%" r="50%">
@@ -158,8 +160,9 @@
   </svg>
 </div>
 
+  {% elif background == "nucleos" %}
 <!-- Núcleos Background -->
-<div class="neural-bg-nucleos absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-nucleos">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="nucleos-gradient" cx="50%" cy="50%" r="50%">
@@ -296,8 +299,9 @@
   </svg>
 </div>
 
+  {% elif background == "conexoes" %}
 <!-- Conexões Background -->
-<div class="neural-bg-conexoes absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-conexoes">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="conexoes-node-gradient" cx="50%" cy="50%" r="50%">
@@ -497,8 +501,9 @@
   </svg>
 </div>
 
+  {% elif background == "associados" %}
 <!-- Associados Background -->
-<div class="neural-bg-associados absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-associados">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="associados-gradient" cx="50%" cy="50%" r="50%">
@@ -619,8 +624,9 @@
   </svg>
 </div>
 
+  {% elif background == "eventos" %}
 <!-- Eventos Background -->
-<div class="neural-bg-eventos absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-eventos">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="eventos-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -739,8 +745,9 @@
   </svg>
 </div>
 
+  {% elif background == "feed" %}
 <!-- Feed Background -->
-<div class="neural-bg-feed absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-feed">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="feed-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -818,8 +825,9 @@
   </svg>
 </div>
 
+  {% elif background == "dashboard" %}
 <!-- Dashboard Background -->
-<div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-dashboard">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Grid pattern -->
     <defs>
@@ -888,8 +896,9 @@
   </svg>
 </div>
 
+  {% elif background == "financeiro" %}
 <!-- Financeiro Background -->
-<div class="neural-bg-financeiro absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-financeiro">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="financeiro-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -964,8 +973,9 @@
   </svg>
 </div>
 
+  {% elif background == "tokens" %}
 <!-- Tokens Background -->
-<div class="neural-bg-tokens absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-tokens">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="tokens-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1031,8 +1041,9 @@
   </svg>
 </div>
 
+  {% elif background == "configuracao" %}
 <!-- Configuração Background -->
-<div class="neural-bg-configuracao absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-configuracao">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="config-gradient" cx="50%" cy="50%" r="50%">
@@ -1107,3 +1118,6 @@
       repeatCount="indefinite"/>
   </svg>
 </div>
+
+  {% endif %}
+{% endwith %}
