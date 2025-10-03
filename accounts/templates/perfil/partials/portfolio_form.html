@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 <section class="space-y-6">
   <article class="card">
@@ -39,6 +39,58 @@
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
+
+        {% if form.instance.pk and form.instance.file %}
+          <div class="space-y-4">
+            {% if form.instance.media_type == 'pdf' %}
+              <div class="space-y-3">
+                <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+                  <a href="{{ form.instance.file.url }}"
+                     target="_blank"
+                     class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]"
+                     rel="noopener">
+                    <span class="flex items-center gap-3">
+                      <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+                        {% lucide 'file-text' class='h-6 w-6' %}
+                      </span>
+                      <span class="truncate">{% trans "Documento em PDF" %}</span>
+                    </span>
+                    {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-muted)]' %}
+                  </a>
+                </div>
+                <div class="flex gap-3">
+                  <a href="{{ form.instance.file.url }}"
+                     target="_blank"
+                     class="btn btn-secondary"
+                     aria-label="{% trans 'Visualizar PDF' %}"
+                     rel="noopener">
+                    {% lucide 'eye' class='w-4 h-4' %}
+                  </a>
+                  <a href="{{ form.instance.file.url }}" download class="btn btn-secondary" aria-label="{% trans 'Baixar PDF' %}">
+                    {% lucide 'download' class='w-4 h-4' %}
+                  </a>
+                </div>
+              </div>
+            {% elif form.instance.media_type == 'image' %}
+              <figure class="relative z-20 mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+                <div class="relative flex max-h-[280px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)] sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]">
+                  <img src="{{ form.instance.file.url }}"
+                       alt="{% trans 'mídia do portfólio' %}"
+                       class="h-auto w-full max-h-[280px] object-contain sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]"
+                       loading="lazy">
+                </div>
+              </figure>
+            {% elif form.instance.media_type == 'video' %}
+              <figure class="relative z-20 mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-[var(--border)] bg-black shadow-sm">
+                <div class="feed-video-wrapper">
+                  <div class="feed-video-frame">
+                    <video src="{{ form.instance.file.url }}" controls class="feed-video-player"></video>
+                  </div>
+                </div>
+              </figure>
+            {% endif %}
+          </div>
+        {% endif %}
         {% url 'accounts:perfil_sections_portfolio' as portfolio_url %}
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
           {% include '_components/cancel_button.html' with href=portfolio_url fallback_href=portfolio_url classes='btn btn-secondary' %}
