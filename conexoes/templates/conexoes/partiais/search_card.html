@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 <article class="card" {% if search_container_id %}id="{{ search_container_id }}"{% endif %}>
   <div class="card-header flex items-center justify-between gap-3">
-    <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
+    <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Adicionar conexão" %}</h2>
     {% if back_to_dashboard_url %}
       <a
         href="{{ back_to_dashboard_url }}"
@@ -10,7 +10,7 @@
         {% if back_to_dashboard_hx_target %}hx-target="#{{ back_to_dashboard_hx_target }}"{% endif %}
         {% if back_to_dashboard_hx_push_url %}hx-push-url="{{ back_to_dashboard_hx_push_url }}"{% endif %}
       >
-        {% trans "Minhas conexões" %}
+        {% trans "Voltar para conexões" %}
       </a>
     {% endif %}
   </div>

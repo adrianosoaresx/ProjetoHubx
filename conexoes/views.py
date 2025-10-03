@@ -242,7 +242,7 @@ def perfil_conexoes_buscar(request):
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar por nome, razão social ou CNPJ..."),
-        label=_("Buscar pessoas"),
+        label=_("Adicionar conexão"),
         aria_label=_("Buscar por nome, razão social ou CNPJ"),
     )
     if search_form.is_valid():
@@ -264,7 +264,7 @@ def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | Non
         form = ConnectionsSearchForm(
             data={"q": query},
             placeholder=_("Buscar por nome, razão social ou CNPJ..."),
-            label=_("Buscar pessoas"),
+            label=_("Adicionar conexão"),
             aria_label=_("Buscar por nome, razão social ou CNPJ"),
         )
         if form.is_valid():

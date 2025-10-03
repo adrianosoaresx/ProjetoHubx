@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Buscar pessoas" %}{% endblock %}
+{% block title %}{% trans "Adicionar conexão" %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_conexoes.html' with title=_('Buscar novas conexões') subtitle=_('Encontre associados da sua organização para se conectar') action_url=dashboard_url action_label=_('Voltar para minhas conexões') action_icon='arrow-left' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas %}
+  {% include '_components/hero_conexoes.html' with title=_('Adicione novas conexões') subtitle=_('Adicione associados da sua organização para se conectar') action_url=dashboard_url action_label=_('Voltar para conexões') action_icon='arrow-left' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas %}
 {% endblock %}
 
 {% block content %}
