@@ -9,6 +9,8 @@
   height: 100%;
   overflow: hidden;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .dark .neural-bg-base {
@@ -208,6 +210,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  isolation: isolate;
 }
 
 .hero-content {
@@ -225,6 +228,7 @@
   bottom: 0;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
   z-index: 5;
+  pointer-events: none;
 }
 
 /* Dark mode adjustments */
