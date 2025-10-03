@@ -1,45 +1,50 @@
 {% load i18n %}
-<div class="space-y-4">
+{# Este parcial é incorporado em cards maiores; mantemos estrutura flat para funcionar via HTMX. #}
+<div class="space-y-3" role="list">
   {% for solicitante in connection_requests %}
-  <article class="card request-card">
-    <div class="card-body flex items-start justify-between">
-    <div class="flex items-center gap-3">
-      {% if solicitante.avatar %}
-        <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.display_name|default:solicitante.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
-      {% else %}
-        <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ solicitante.display_name|default:solicitante.username }}">
-          {{ solicitante.username|first|upper }}
+    <article class="card request-card" role="listitem">
+      <div class="card-body space-y-4">
+        <div class="flex items-center gap-3">
+          {% if solicitante.avatar %}
+            <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.display_name|default:solicitante.username }}" class="h-10 w-10 rounded-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ solicitante.display_name|default:solicitante.username }}">
+              {{ solicitante.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <p class="font-medium text-[var(--text-primary)]">{{ solicitante.display_name }}</p>
+            <p class="text-sm text-[var(--text-secondary)]">@{{ solicitante.username }}</p>
+          </div>
         </div>
-      {% endif %}
-      <div>
-        <p class="font-medium">{{ solicitante.display_name }}</p>
-        <p class="text-sm text-[var(--text-secondary)]">@{{ solicitante.username }}</p>
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <form
+            hx-post="{% url 'accounts:aceitar_conexao' solicitante.id %}"
+            hx-target="closest .request-card"
+            hx-swap="outerHTML"
+            class="space-y-4"
+          >
+            {% csrf_token %}
+            <button class="btn btn-primary btn-sm">{% trans "Aceitar" %}</button>
+          </form>
+          <form
+            hx-post="{% url 'accounts:recusar_conexao' solicitante.id %}"
+            hx-target="closest .request-card"
+            hx-swap="outerHTML"
+            class="space-y-4"
+          >
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm">{% trans "Recusar" %}</button>
+          </form>
+        </div>
       </div>
-    </div>
-    <div class="flex flex-col gap-1">
-      <form
-        hx-post="{% url 'accounts:aceitar_conexao' solicitante.id %}"
-        hx-target="closest .request-card"
-        hx-swap="outerHTML"
-      >
-        {% csrf_token %}
-        <button class="btn btn-primary btn-sm">{% trans "Aceitar" %}</button>
-      </form>
-      <form
-        hx-post="{% url 'accounts:recusar_conexao' solicitante.id %}"
-        hx-target="closest .request-card"
-        hx-swap="outerHTML"
-      >
-        {% csrf_token %}
-        <button class="btn btn-danger btn-sm">{% trans "Recusar" %}</button>
-      </form>
-    </div>
-    </div>
-  </article>
+    </article>
   {% empty %}
-  <div class="text-center text-sm text-[var(--text-secondary)]">
-    <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
-  </div>
+    <article class="card">
+      <div class="card-body space-y-4 text-sm text-[var(--text-secondary)]">
+        <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
+      </div>
+    </article>
   {% endfor %}
 </div>
 

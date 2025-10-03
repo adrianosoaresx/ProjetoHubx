@@ -58,6 +58,7 @@ from nucleos.models import ConviteNucleo, Nucleo, ParticipacaoNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from .forms import (
+    ConnectionsSearchForm,
     EmailLoginForm,
     InformacoesPessoaisForm,
     MediaForm,
@@ -541,8 +542,17 @@ def perfil_conexoes(request):
     if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
         return _redirect_to_profile_section(request, "conexoes")
 
-    q = request.GET.get("q", "").strip()
     tab = request.GET.get("tab", "minhas").lower()
+    search_form = ConnectionsSearchForm(
+        request.GET or None,
+        placeholder=_("Buscar conexões..."),
+        label=_("Buscar conexões"),
+        aria_label=_("Buscar conexões"),
+    )
+    if search_form.is_valid():
+        q = search_form.cleaned_data.get("q", "")
+    else:
+        q = ""
     connections = (
         request.user.connections.select_related("organizacao", "nucleo")
         if hasattr(request.user, "connections")
@@ -569,6 +579,7 @@ def perfil_conexoes(request):
         "connections": connections,
         "connection_requests": connection_requests,
         "q": q,
+        "form": search_form,
     }
     return render(request, template_name, context)
 
@@ -578,12 +589,37 @@ def perfil_conexoes_buscar(request):
     if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
         return _redirect_to_profile_section(request, "conexoes")
 
-    q = request.GET.get("q", "").strip()
-    context = _build_conexoes_busca_context(request.user, q)
+    search_form = ConnectionsSearchForm(
+        request.GET or None,
+        placeholder=_("Buscar por nome, razão social ou CNPJ..."),
+        label=_("Buscar pessoas"),
+        aria_label=_("Buscar por nome, razão social ou CNPJ"),
+    )
+    if search_form.is_valid():
+        q = search_form.cleaned_data.get("q", "")
+    else:
+        q = ""
+    context = _build_conexoes_busca_context(request.user, q, form=search_form)
     return render(request, "perfil/partials/conexoes_busca.html", context)
 
 
-def _build_conexoes_busca_context(user, query):
+def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | None = None):
+    if form is None:
+        form = ConnectionsSearchForm(
+            data={"q": query},
+            placeholder=_("Buscar por nome, razão social ou CNPJ..."),
+            label=_("Buscar pessoas"),
+            aria_label=_("Buscar por nome, razão social ou CNPJ"),
+        )
+        if form.is_valid():
+            query = form.cleaned_data.get("q", "")
+        else:
+            query = ""
+    else:
+        if form.is_valid():
+            query = form.cleaned_data.get("q", "")
+        else:
+            query = ""
     organizacao = getattr(user, "organizacao", None)
 
     associados = User.objects.none()
@@ -643,6 +679,7 @@ def _build_conexoes_busca_context(user, query):
         "conexoes_ids": conexoes_ids,
         "solicitacoes_enviadas_ids": solicitacoes_enviadas_ids,
         "solicitacoes_recebidas_ids": solicitacoes_recebidas_ids,
+        "form": form,
     }
 
 
