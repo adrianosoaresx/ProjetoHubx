@@ -5,7 +5,7 @@
       <h2 id="connections-list-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
     </div>
     <div class="card-body space-y-6">
-      {% include 'conexoes/includes/connections_list.html' with search_form_action=search_form_action search_form_hx_get=search_form_hx_get search_form_hx_target=search_form_hx_target search_form_hx_push_url=search_form_hx_push_url search_page_url=search_page_url search_page_hx_get=search_page_hx_get search_page_hx_target=search_page_hx_target search_page_hx_push_url=search_page_hx_push_url %}
+      {% include 'conexoes/partiais/connections_list.html' with search_form_action=search_form_action search_form_hx_get=search_form_hx_get search_form_hx_target=search_form_hx_target search_form_hx_push_url=search_form_hx_push_url search_page_url=search_page_url search_page_hx_get=search_page_hx_get search_page_hx_target=search_page_hx_target search_page_hx_push_url=search_page_hx_push_url %}
     </div>
   </article>
 
@@ -14,7 +14,7 @@
       <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
     </div>
     <div class="card-body space-y-6">
-      {% include 'conexoes/includes/request_list.html' %}
+      {% include 'conexoes/partiais/request_list.html' %}
     </div>
   </article>
 </div>
