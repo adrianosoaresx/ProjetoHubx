@@ -1,10 +1,15 @@
-<div role="list" class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-  {% for user in associados %}
-    <div role="listitem">
-      {% include '_components/card_usuario.html' with user=user %}
-    </div>
-  {% endfor %}
-</div>
+{# Parcial HTMX renderizada dentro de cartões existentes; mantém apenas o conteúdo dinâmico da listagem. #}
+<div class="space-y-4">
+  <div role="list" class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    {% for user in associados %}
+      <div role="listitem">
+        {% include '_components/card_usuario.html' with user=user %}
+      </div>
+    {% endfor %}
+  </div>
 
-{% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode hx_target='#associados-grid' hx_get=request.path hx_push_url='true' hx_indicator='#associados-loading' %}
+  <div class="pt-4 border-t border-[var(--border)]">
+    {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode hx_target='#associados-grid' hx_get=request.path hx_push_url='true' hx_indicator='#associados-loading' %}
+  </div>
+</div>
 <div id="associados-filter-state" hx-swap-oob="true" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>

@@ -8,35 +8,35 @@
 {% endblock %}
 
 {% block content %}
-<section class="max-w-2xl mx-auto py-8">
-  <div class="card">
-    <div class="card-header">
-    <h2 class="text-xl font-semibold">{% trans "Adicionar usuário" %}</h2>
-  </div>
-  <div class="card-body space-y-6">
-    
-    <form method="post" class="space-y-4">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="p-3 text-sm rounded-lg border border-[var(--error)] bg-[var(--error)]/10 text-[var(--error)]" role="alert">
-          <ul class="space-y-1">
-            {% for error in form.non_field_errors %}
-              <li>{{ error }}</li>
-            {% endfor %}
-          </ul>
+<section class="container py-10">
+  <article class="card max-w-2xl mx-auto">
+    <header class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Adicionar usuário" %}</h2>
+    </header>
+    <div class="card-body space-y-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-error" role="alert">
+            <ul class="space-y-1">
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+          {% include '_forms/field.html' with field=field %}
+        {% endfor %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
+          <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
-      {% endif %}
-      {% for hidden in form.hidden_fields %}
-        {{ hidden }}
-      {% endfor %}
-      {% for field in form.visible_fields %}
-        {% include '_forms/field.html' with field=field %}
-      {% endfor %}
-      <div class="flex justify-end gap-2 pt-2">
-        {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
-        <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
+  </article>
 </section>
 {% endblock %}

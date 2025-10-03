@@ -9,47 +9,38 @@
 {% endblock %}
 
 {% block content %}
-<section class="py-10">
-  <div class="card max-w-4xl mx-auto">
-    <div class="card-header">
+<section class="container py-10">
+  <article class="card max-w-4xl mx-auto">
+    <header class="card-header">
       <div>
         <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Promover associado' %}</h2>
         <p class="mt-1 text-sm text-[var(--text-secondary)]">{% blocktrans with name=associado.display_name|default:associado.username %}Defina como {{ name }} será promovido(a).{% endblocktrans %}</p>
       </div>
-    </div>
-    <div class="card-body space-y-8">
-      {% if form_errors %}
-        <div class="rounded-lg border border-[var(--error)] bg-[var(--error-light)] px-4 py-3 text-sm text-[var(--error)]" role="alert">
-
-          <ul class="list-disc list-inside space-y-1">
-            {% for error in form_errors %}
-              <li>{{ error }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-
-      {% endif %}
-
-      {% if success_message %}
-        <div class="rounded-lg border border-[var(--success)] bg-[var(--success-light)] px-4 py-3 text-sm text-[var(--success)]" role="status">
-          {{ success_message }}
-        </div>
-      {% endif %}
-
-      <form method="post" class="space-y-8" data-promover-form data-user-role-map="{{ user_role_map_json|default:'{}'|escapejs }}" data-restricted-roles="{{ restricted_roles|join:',' }}">
+    </header>
+    <div class="card-body space-y-6">
+      <form method="post" class="space-y-6" data-promover-form data-user-role-map="{{ user_role_map_json|default:'{}'|escapejs }}" data-restricted-roles="{{ restricted_roles|join:',' }}">
         {% csrf_token %}
-        <div>
-          <label class="block text-sm font-medium text-[var(--text-muted)]" for="associado-nome">{% trans 'Associado' %}</label>
-          <input
-            id="associado-nome"
-            type="text"
-            class="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)]"
-            value="{{ associado.display_name|default:associado.username }}"
-            readonly
-          >
+        {% if form_errors %}
+          <div class="alert alert-error" role="alert">
+            <ul class="list-disc list-inside space-y-1">
+              {% for error in form_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if success_message %}
+          <div class="alert alert-success" role="status">
+            {{ success_message }}
+          </div>
+        {% endif %}
+
+        <div class="space-y-4">
+          {% include '_forms/field.html' with id='associado-nome' name='associado_nome' type='text' label=_('Associado') value=associado.display_name|default:associado.username extra_classes='bg-[var(--bg-secondary)]' attrs='readonly' %}
           {% usuario_badges associado as usuario_badges_list %}
           {% if usuario_badges_list %}
-          <div class="mt-4 flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2">
             {% for badge in usuario_badges_list %}
               <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap" style="{{ badge.style }}">
                 <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -70,6 +61,7 @@
           </ul>
         </div>
 
+        {# Cards de promoção utilizam layout customizado pois combinam múltiplos checkboxes e descrições detalhadas. #}
         <fieldset class="space-y-5" data-nucleos-list>
           <legend class="text-sm font-medium text-[var(--text-muted)]">{% trans 'Promoções por núcleo' %}</legend>
           {% if nucleos %}
@@ -317,13 +309,13 @@
           {% endif %}
         </fieldset>
 
-        <div class="flex flex-wrap justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
           <a href="{% url 'accounts:associados_promover' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
           <button type="submit" class="btn btn-primary">{% trans 'Salvar promoção' %}</button>
         </div>
       </form>
     </div>
-  </div>
+  </article>
 </section>
 {% endblock %}
 
