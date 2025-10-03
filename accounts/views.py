@@ -136,6 +136,32 @@ def _resolve_back_url(request, default: str | None = None) -> str:
     return reverse("accounts:perfil")
 
 
+def _portfolio_navigation_config(request) -> dict[str, object]:
+    """Return default navigation config for portfolio partial views."""
+
+    fallback_url = reverse("accounts:perfil_sections_portfolio")
+    back_href = resolve_back_href(
+        request,
+        fallback=fallback_url,
+        disallow={request.path},
+    )
+    hx_push_url = "?section=portfolio"
+
+    component_config = {
+        "href": back_href,
+        "fallback_href": fallback_url,
+        "hx_get": fallback_url,
+        "hx_target": "#perfil-content",
+        "hx_push_url": hx_push_url,
+    }
+
+    return {
+        "back_href": back_href,
+        "back_component_config": component_config,
+        "cancel_component_config": component_config,
+    }
+
+
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
     allowed_sections = PERFIL_OWNER_SECTION_URLS if allow_owner_sections else PERFIL_SECTION_URLS
 
@@ -820,18 +846,21 @@ def perfil_portfolio(request):
 
     medias = medias_qs
 
+    context = {
+        "form": form,
+        "medias": medias,
+        "show_form": show_form,
+        "filter_form": filter_form,
+        "q": q,
+        "is_owner": True,
+        "back_url": _resolve_back_url(request),
+    }
+    context.update(_portfolio_navigation_config(request))
+
     return render(
         request,
         "perfil/partials/portfolio.html",
-        {
-            "form": form,
-            "medias": medias,
-            "show_form": show_form,
-            "filter_form": filter_form,
-            "q": q,
-            "is_owner": True,
-            "back_url": _resolve_back_url(request),
-        },
+        context,
     )
 
 
@@ -872,7 +901,10 @@ def perfil_portfolio_edit(request, pk):
     form.fields["file"].help_text = _("Selecione um arquivo")
     form.fields["descricao"].help_text = _("Breve descrição do portfólio")
 
-    return render(request, "perfil/partials/portfolio_form.html", {"form": form})
+    context = {"form": form, "media": media}
+    context.update(_portfolio_navigation_config(request))
+
+    return render(request, "perfil/partials/portfolio_form.html", context)
 
 
 @login_required
@@ -889,7 +921,10 @@ def perfil_portfolio_delete(request, pk):
         media.delete(soft=False)
         messages.success(request, "Item do portfólio removido.")
         return _redirect_to_profile_section(request, "portfolio")
-    return render(request, "perfil/partials/portfolio_confirm_delete.html", {"media": media})
+    context = {"media": media}
+    context.update(_portfolio_navigation_config(request))
+
+    return render(request, "perfil/partials/portfolio_confirm_delete.html", context)
 
 
 # ====================== AUTENTICAÇÃO ======================
