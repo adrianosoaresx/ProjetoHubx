@@ -3,7 +3,7 @@
   {% if evento.cover %}
     <div class="absolute inset-0">
       <img src="{{ evento.cover.url }}" alt="" class="h-full w-full object-cover" loading="lazy">
-      <div class="absolute inset-0 bg-black/60"></div>
+      <div class="absolute inset-0 bg-black/45"></div>
     </div>
   {% else %}
     <div class="absolute inset-0 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
@@ -33,13 +33,13 @@
         <div class="mt-6 space-y-4 text-left">
           <div class="card-grid">
             {% if total_inscricoes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact border border-white/40 bg-white/30 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md dark:border-white/25 dark:bg-slate-950/70 dark:text-white' body_class='card-body-compact' %}
             {% endif %}
             {% if vagas_disponiveis is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact border border-white/40 bg-white/30 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md dark:border-white/25 dark:bg-slate-950/70 dark:text-white' body_class='card-body-compact' %}
             {% endif %}
             {% if media_feedback is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact border border-white/40 bg-white/30 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md dark:border-white/25 dark:bg-slate-950/70 dark:text-white' body_class='card-body-compact' %}
             {% endif %}
           </div>
         </div>
