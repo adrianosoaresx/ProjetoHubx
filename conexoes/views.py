@@ -18,12 +18,21 @@ from .forms import ConnectionsSearchForm
 User = get_user_model()
 
 
-def _connection_lists_for_user(user, query: str):
+def _get_user_connections(user, query: str):
     connections = (
         user.connections.select_related("organizacao", "nucleo")
         if hasattr(user, "connections")
         else User.objects.none()
     )
+
+    if query:
+        filters = Q(username__icontains=query) | Q(contato__icontains=query)
+        connections = connections.filter(filters)
+
+    return connections
+
+
+def _get_user_connection_requests(user, query: str):
     connection_requests = (
         user.followers.select_related("organizacao", "nucleo")
         if hasattr(user, "followers")
@@ -32,10 +41,9 @@ def _connection_lists_for_user(user, query: str):
 
     if query:
         filters = Q(username__icontains=query) | Q(contato__icontains=query)
-        connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
 
-    return connections, connection_requests
+    return connection_requests
 
 
 def _connection_totals(user):
@@ -67,6 +75,19 @@ def _build_connections_page_context(request, form, connections, connection_reque
         "total_conexoes": total_conexoes,
         "total_solicitacoes": total_solicitacoes,
         "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
+    }
+
+
+def _build_connection_requests_context(request, query: str = ""):
+    connection_requests = _get_user_connection_requests(request.user, query)
+    total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
+
+    return {
+        "connection_requests": connection_requests,
+        "total_conexoes": total_conexoes,
+        "total_solicitacoes": total_solicitacoes,
+        "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
+        "search_page_url": reverse("conexoes:perfil_conexoes_buscar"),
     }
 
 
@@ -145,6 +166,12 @@ def perfil_conexoes(request):
             url = f"{url}?{query_string}"
         return redirect(url)
 
+    tab = (request.GET.get("tab") or "").strip().lower()
+    if tab == "solicitacoes":
+        query = (request.GET.get("q") or "").strip()
+        context = _build_connection_requests_context(request, query)
+        return render(request, "conexoes/solicitacoes.html", context)
+
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar conexões..."),
@@ -156,7 +183,8 @@ def perfil_conexoes(request):
     else:
         q = ""
 
-    connections, connection_requests = _connection_lists_for_user(request.user, q)
+    connections = _get_user_connections(request.user, q)
+    connection_requests = _get_user_connection_requests(request.user, q)
     context = _build_connections_page_context(request, search_form, connections, connection_requests, q)
 
     if is_htmx_or_ajax(request):
@@ -184,6 +212,12 @@ def perfil_conexoes_partial(request):
     if public_id and str(request.user.public_id) != public_id:
         return HttpResponseForbidden(_("Esta seção está disponível apenas para o proprietário do perfil."))
 
+    tab = (request.GET.get("tab") or "").strip().lower()
+    if tab == "solicitacoes":
+        query = (request.GET.get("q") or "").strip()
+        context = _build_connection_requests_context(request, query)
+        return render(request, "conexoes/partiais/request_list.html", context)
+
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar conexões..."),
@@ -195,7 +229,8 @@ def perfil_conexoes_partial(request):
     else:
         q = ""
 
-    connections, connection_requests = _connection_lists_for_user(request.user, q)
+    connections = _get_user_connections(request.user, q)
+    connection_requests = _get_user_connection_requests(request.user, q)
 
     context = _build_connections_page_context(request, search_form, connections, connection_requests, q)
     context.update(_profile_dashboard_hx_context())

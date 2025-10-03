@@ -37,6 +37,36 @@ def test_recusar_conexao(client):
 
 
 @pytest.mark.django_db
+def test_perfil_conexoes_solicitacoes_page(client):
+    user = User.objects.create_user(email="a@example.com", username="a", password="x")
+    follower = User.objects.create_user(email="b@example.com", username="b", password="x")
+    user.followers.add(follower)
+
+    client.force_login(user)
+    url = reverse("conexoes:perfil_sections_conexoes")
+    response = client.get(url, {"tab": "solicitacoes"})
+
+    assert response.status_code == 200
+    assert any(template.name == "conexoes/solicitacoes.html" for template in response.templates)
+    assert list(response.context["connection_requests"]) == [follower]
+
+
+@pytest.mark.django_db
+def test_perfil_conexoes_solicitacoes_partial_htmx(client):
+    user = User.objects.create_user(email="a@example.com", username="a", password="x")
+    follower = User.objects.create_user(email="b@example.com", username="b", password="x")
+    user.followers.add(follower)
+
+    client.force_login(user)
+    url = reverse("conexoes:perfil_conexoes_partial")
+    response = client.get(url, {"tab": "solicitacoes"}, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 200
+    assert any(template.name == "conexoes/partiais/request_list.html" for template in response.templates)
+    assert list(response.context["connection_requests"]) == [follower]
+
+
+@pytest.mark.django_db
 def test_buscar_pessoas_lista_associados_da_organizacao(client):
     organizacao = OrganizacaoFactory()
     outra_org = OrganizacaoFactory()
