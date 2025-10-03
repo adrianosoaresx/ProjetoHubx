@@ -9,6 +9,30 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 
+def _normalize_fallback(value: str | None) -> str | None:
+    if not value:
+        return None
+    if value.startswith(("/", "http://", "https://")):
+        return value
+    try:
+        return reverse(value)
+    except NoReverseMatch:
+        return value
+
+
+BACK_NAVIGATION_FALLBACKS: dict[str, str] = {
+    "feed:post_update": "feed:listar",
+}
+
+
+def get_back_navigation_fallback(request, *, fallback: str | None = None) -> str | None:
+    match = getattr(request, "resolver_match", None)
+    mapped = None
+    if match is not None:
+        mapped = BACK_NAVIGATION_FALLBACKS.get(match.view_name)
+    return _normalize_fallback(mapped or fallback)
+
+
 def resolve_back_href(
     request,
     *,
@@ -22,12 +46,7 @@ def resolve_back_href(
     valid for the current host. The current path is ignored to avoid loops.
     """
 
-    resolved_fallback = fallback
-    if fallback and not fallback.startswith(("/", "http://", "https://")):
-        try:
-            resolved_fallback = reverse(fallback)
-        except NoReverseMatch:
-            resolved_fallback = fallback
+    resolved_fallback = _normalize_fallback(fallback)
 
     allowed_hosts = {request.get_host()}
     current_path = request.get_full_path()
