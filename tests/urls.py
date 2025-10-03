@@ -12,6 +12,7 @@ tokens_api_router.register(r"tokens", TokenViewSet, basename="token")
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("core/", include(("core.urls", "core"), namespace="core")),
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
@@ -48,6 +49,10 @@ urlpatterns = [
     path(
         "api/accounts/",
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
+    ),
+    path(
+        "api/conexoes/",
+        include(("conexoes.api_urls", "conexoes_api"), namespace="conexoes_api"),
     ),
     path(
         "api/eventos/",

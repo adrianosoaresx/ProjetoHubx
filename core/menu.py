@@ -296,10 +296,27 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_BRIEFCASE,
             permissions=["authenticated"],
         ),
+    ]
+
+    conexoes_children = [
         MenuItem(
-            id="perfil_conexoes",
+            id="conexoes_minhas",
             path=f"{perfil_url}?section=conexoes",
-            label="Conexões",
+            label="Minhas conexões",
+            icon=ICON_USERS,
+            permissions=["authenticated"],
+        ),
+        MenuItem(
+            id="conexoes_solicitacoes",
+            path=f"{perfil_url}?section=conexoes&tab=solicitacoes",
+            label="Solicitações",
+            icon=ICON_PLUG,
+            permissions=["authenticated"],
+        ),
+        MenuItem(
+            id="conexoes_buscar",
+            path=f"{perfil_url}?section=conexoes&view=buscar",
+            label="Buscar pessoas",
             icon=ICON_LINK,
             permissions=["authenticated"],
         ),
@@ -443,6 +460,14 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["authenticated"],
             classes="flex items-center hover:text-primary transition",
             children=perfil_children,
+        ),
+        MenuItem(
+            id="conexoes",
+            path=f"{perfil_url}?section=conexoes",
+            label="Conexões",
+            icon=ICON_LINK,
+            permissions=["authenticated"],
+            children=conexoes_children,
         ),
         MenuItem(
             "associados",

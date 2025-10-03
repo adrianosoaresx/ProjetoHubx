@@ -1,0 +1,84 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PROJECT package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ProjetoHubx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 16:23+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/perfil/partials/conexoes_dashboard.html:5
+msgid "Minhas conexões"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_dashboard.html:12
+msgid "Solicitações de conexão"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:7
+msgid "Buscar conexões..."
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:10
+#: templates/perfil/partials/conexoes_busca.html:26
+msgid "Buscar"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:37
+msgid "Tem certeza que deseja remover esta conexão?"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:40
+msgid "Remover conexão"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:48
+msgid "Você ainda não tem conexões."
+msgstr ""
+
+#: templates/perfil/partials/conexoes_minhas.html:49
+msgid "Buscar Pessoas"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_solicitacoes.html:26
+msgid "Aceitar"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_solicitacoes.html:34
+msgid "Recusar"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_solicitacoes.html:41
+msgid "Você não tem solicitações de conexão pendentes."
+msgstr ""
+
+#: templates/perfil/partials/conexoes_busca.html:8
+msgid "Encontrar novas conexões"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_busca.html:17
+msgid "Resultados"
+msgstr ""
+
+#: templates/perfil/partials/conexoes_busca.html:98
+msgid "Sem resultados para esta busca."
+msgstr ""
+
+#: templates/perfil/partials/conexoes_busca.html:114
+msgid "Voltar"
+msgstr ""
+
+#: conexoes/views.py:83
+msgid "Esta seção está disponível apenas para o proprietário do perfil."
+msgstr ""

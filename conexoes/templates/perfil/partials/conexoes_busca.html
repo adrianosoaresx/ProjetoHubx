@@ -2,7 +2,7 @@
 <article class="card">
   <div class="card-header flex items-center justify-between gap-3">
     <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Buscar pessoas" %}</h2>
-    {% url 'accounts:perfil_sections_conexoes' as conexoes_partial_url %}
+    {% url 'conexoes:perfil_sections_conexoes' as conexoes_partial_url %}
     {% url 'accounts:perfil' as perfil_url %}
     {% with partial_query='?view=buscar' full_query='?section=conexoes&view=buscar' %}
       {% if q %}
@@ -21,7 +21,7 @@
     <form
       method="get"
       class="space-y-4 sm:flex sm:items-end sm:gap-3"
-      hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
+      hx-get="{% url 'conexoes:perfil_conexoes_buscar' %}"
       hx-target="#perfil-content"
       hx-push-url="?section=conexoes&view=buscar"
     >
@@ -73,8 +73,8 @@
                   </a>
 
                   {% if associado.id in conexoes_ids %}
-                    <form
-                      hx-post="{% url 'accounts:remover_conexao' associado.id %}"
+                  <form
+                      hx-post="{% url 'conexoes:remover_conexao' associado.id %}"
                       hx-target="#perfil-content"
                       hx-swap="innerHTML"
                       class="space-y-4"
@@ -91,14 +91,14 @@
                     </button>
                   {% elif associado.id in solicitacoes_recebidas_ids %}
                     <a
-                      href="{% url 'accounts:perfil_sections_conexoes' %}?tab=solicitacoes"
+                      href="{% url 'conexoes:perfil_sections_conexoes' %}?tab=solicitacoes"
                       class="btn btn-secondary btn-sm"
                     >
                       {% trans "Responder solicitação" %}
                     </a>
                   {% else %}
                     <form
-                      hx-post="{% url 'accounts:solicitar_conexao' associado.id %}"
+                      hx-post="{% url 'conexoes:solicitar_conexao' associado.id %}"
                       hx-target="#perfil-content"
                       hx-swap="innerHTML"
                       class="space-y-4"

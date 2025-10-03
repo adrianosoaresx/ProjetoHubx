@@ -228,6 +228,6 @@ def test_perfil_connections_search_uses_search_partial(client, django_user_model
     default_url = response.context["perfil_default_url"]
     parsed = urlsplit(default_url)
 
-    assert parsed.path == reverse("accounts:perfil_conexoes_buscar")
+    assert parsed.path == reverse("conexoes:perfil_conexoes_buscar")
     query_params = parse_qs(parsed.query)
     assert query_params.get("view") == ["buscar"]

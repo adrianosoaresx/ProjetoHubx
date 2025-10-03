@@ -15,7 +15,7 @@ def test_aceitar_conexao(client):
     user.followers.add(other)
 
     client.force_login(user)
-    url = reverse("accounts:aceitar_conexao", args=[other.id])
+    url = reverse("conexoes:aceitar_conexao", args=[other.id])
     resp = client.post(url)
     assert resp.status_code == 302
     assert user.connections.filter(id=other.id).exists()
@@ -29,7 +29,7 @@ def test_recusar_conexao(client):
     user.followers.add(other)
 
     client.force_login(user)
-    url = reverse("accounts:recusar_conexao", args=[other.id])
+    url = reverse("conexoes:recusar_conexao", args=[other.id])
     resp = client.post(url)
     assert resp.status_code == 302
     assert not user.connections.filter(id=other.id).exists()
@@ -64,7 +64,7 @@ def test_buscar_pessoas_lista_associados_da_organizacao(client):
     )
 
     client.force_login(user)
-    url = reverse("accounts:perfil_conexoes_buscar")
+    url = reverse("conexoes:perfil_conexoes_buscar")
     response = client.get(url, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 200
@@ -113,7 +113,7 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
     )
 
     client.force_login(user)
-    url = reverse("accounts:perfil_conexoes_buscar")
+    url = reverse("conexoes:perfil_conexoes_buscar")
 
     resp_nome = client.get(url, {"q": "Ana"}, HTTP_HX_REQUEST="true")
     assert list(resp_nome.context["associados"]) == [associado_nome]
@@ -144,7 +144,7 @@ def test_solicitar_conexao_cria_solicitacao(client):
     )
 
     client.force_login(user)
-    url = reverse("accounts:solicitar_conexao", args=[outro.id])
+    url = reverse("conexoes:solicitar_conexao", args=[outro.id])
     response = client.post(url, {"q": ""}, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 200
@@ -158,7 +158,7 @@ def test_remover_conexao_htmx_retorna_template(client):
     user.connections.add(other)
 
     client.force_login(user)
-    url = reverse("accounts:remover_conexao", args=[other.id])
+    url = reverse("conexoes:remover_conexao", args=[other.id])
     response = client.post(
         url,
         {"q": ""},

@@ -43,9 +43,9 @@
         class="{{ base_classes }}{% if default_section == 'conexoes' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="conexoes"
-        data-perfil-url="{% url 'accounts:perfil_conexoes_partial' %}"
+        data-perfil-url="{% url 'conexoes:perfil_conexoes_partial' %}"
         data-perfil-default="{% if default_section == 'conexoes' %}true{% else %}false{% endif %}"
-  hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
+  hx-get="{% url 'conexoes:perfil_conexoes_partial' %}"
   hx-target="#perfil-content"
   hx-push-url="?section=conexoes"
         {% if default_section == 'conexoes' %}aria-current="page"{% endif %}
