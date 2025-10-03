@@ -33,7 +33,7 @@ def test_promover_list_includes_nucleados(client):
 
     client.force_login(admin)
 
-    url = reverse("accounts:associados_promover")
+    url = reverse("associados:associados_promover")
     response = client.get(url)
 
     assert response.status_code == 200
@@ -91,7 +91,7 @@ def test_promover_list_filter_actions(client):
 
     client.force_login(admin)
 
-    url = reverse("accounts:associados_promover")
+    url = reverse("associados:associados_promover")
 
     resp = client.get(url)
     assert resp.status_code == 200
@@ -133,7 +133,7 @@ def test_promover_form_get(client):
     )
     client.force_login(admin)
 
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
 
     response = client.get(url)
 
@@ -167,7 +167,7 @@ def test_promover_form_promove_consultor(client):
 
     client.force_login(admin)
 
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -209,7 +209,7 @@ def test_promover_form_promove_coordenador(client):
 
     client.force_login(admin)
 
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     papel = ParticipacaoNucleo.PapelCoordenador.MARKETING
     response = client.post(
         url,
@@ -256,7 +256,7 @@ def test_promover_form_impede_selecao_simultanea(client):
 
     client.force_login(admin)
 
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     papel = ParticipacaoNucleo.PapelCoordenador.MARKETING
     response = client.post(
         url,
@@ -311,7 +311,7 @@ def test_promover_form_impede_papel_ja_ocupado(client):
     )
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -348,7 +348,7 @@ def test_promover_form_restringe_multiplos_nucleos_para_papeis_exclusivos(client
     nucleo2 = NucleoFactory(organizacao=organizacao)
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -390,7 +390,7 @@ def test_promover_form_remove_nucleado(client):
     )
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -430,7 +430,7 @@ def test_promover_form_remove_consultor(client):
     nucleo = NucleoFactory(organizacao=organizacao, consultor=associado)
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -476,7 +476,7 @@ def test_promover_form_remove_coordenador(client):
     )
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {
@@ -525,7 +525,7 @@ def test_promover_form_remove_nucleado_exige_remover_coordenacao(client):
     )
 
     client.force_login(admin)
-    url = reverse("accounts:associado_promover_form", args=[associado.pk])
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
     response = client.post(
         url,
         {

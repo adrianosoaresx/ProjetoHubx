@@ -342,14 +342,14 @@ def _get_menu_items() -> List[MenuItem]:
     associados_children = [
         MenuItem(
             id="associados_adicionar",
-            path=reverse("accounts:associados_adicionar"),
+            path=reverse("associados:associados_adicionar"),
             label="Adicionar associado",
             icon=ICON_PLUS,
             permissions=["admin", "operador"],
         ),
         MenuItem(
             id="associados_promover",
-            path=reverse("accounts:associados_promover"),
+            path=reverse("associados:associados_promover"),
             label="Promover associado",
             icon=ICON_STAR,
             permissions=["admin", "coordenador", "operador"],
@@ -446,7 +446,7 @@ def _get_menu_items() -> List[MenuItem]:
         ),
         MenuItem(
             "associados",
-            reverse("associados_lista"),
+            reverse("associados:associados_lista"),
             "Associados",
             ICON_USERS,
             ["admin", "coordenador", "operador"],

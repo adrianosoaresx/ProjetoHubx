@@ -4,7 +4,6 @@ from django.views.i18n import JavaScriptCatalog
 
 from rest_framework.routers import DefaultRouter
 
-from accounts import views as accounts_views
 from tokens.api import TokenViewSet
 
 tokens_api_router = DefaultRouter()
@@ -22,7 +21,10 @@ urlpatterns = [
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
-    path("associados/", accounts_views.AssociadoListView.as_view(), name="associados_lista"),
+    path(
+        "associados/",
+        include(("associados.urls", "associados"), namespace="associados"),
+    ),
     path(
         "configuracoes/",
         include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
@@ -38,6 +40,10 @@ urlpatterns = [
     path(
         "api/tokens/",
         include((tokens_api_router.urls, "tokens_api"), namespace="tokens_api"),
+    ),
+    path(
+        "api/audit/",
+        include(("audit.api_urls", "audit_api"), namespace="audit_api"),
     ),
     path(
         "api/accounts/",

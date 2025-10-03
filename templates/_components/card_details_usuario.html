@@ -5,4 +5,10 @@
     <dt class="text-[var(--text-muted)]">{% trans 'Status' %}</dt>
     <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
   </div>
+  {% if user.email %}
+    <div>
+      <dt class="text-[var(--text-muted)]">{% trans 'E-mail' %}</dt>
+      <dd class="font-medium break-all text-[var(--text-primary)]">{{ user.email }}</dd>
+    </div>
+  {% endif %}
 </dl>
