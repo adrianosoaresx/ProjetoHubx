@@ -45,25 +45,22 @@ def _connection_totals(user):
     return total_conexoes, total_solicitacoes, total_solicitacoes_enviadas
 
 
-def _build_dashboard_context(request, form, connections, connection_requests, query: str):
+def _build_connections_page_context(request, form, connections, connection_requests, query: str):
     total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
     search_params = {"q": query} if query else {}
     search_page_url = reverse("conexoes:perfil_conexoes_buscar")
     if search_params:
         search_page_url = f"{search_page_url}?{urlencode(search_params)}"
-    solicitacoes_url = f"{reverse('conexoes:perfil_sections_conexoes')}?tab=solicitacoes"
 
     return {
         "connections": connections,
         "connection_requests": connection_requests,
         "form": form,
-        "q": query,
-        "search_page_url": search_page_url,
-        "solicitacoes_url": solicitacoes_url,
         "search_form_action": request.get_full_path(),
         "search_form_hx_get": None,
         "search_form_hx_target": None,
         "search_form_hx_push_url": None,
+        "search_page_url": search_page_url,
         "search_page_hx_get": None,
         "search_page_hx_target": None,
         "search_page_hx_push_url": None,
@@ -160,11 +157,11 @@ def perfil_conexoes(request):
         q = ""
 
     connections, connection_requests = _connection_lists_for_user(request.user, q)
-    context = _build_dashboard_context(request, search_form, connections, connection_requests, q)
+    context = _build_connections_page_context(request, search_form, connections, connection_requests, q)
 
     if is_htmx_or_ajax(request):
         context.update(_profile_dashboard_hx_context())
-        return render(request, "conexoes/partiais/dashboard.html", context)
+        return render(request, "conexoes/partiais/connections_list_content.html", context)
 
     return render(request, "conexoes/connections_list.html", context)
 
@@ -200,9 +197,9 @@ def perfil_conexoes_partial(request):
 
     connections, connection_requests = _connection_lists_for_user(request.user, q)
 
-    context = _build_dashboard_context(request, search_form, connections, connection_requests, q)
+    context = _build_connections_page_context(request, search_form, connections, connection_requests, q)
     context.update(_profile_dashboard_hx_context())
-    return render(request, "conexoes/partiais/dashboard.html", context)
+    return render(request, "conexoes/partiais/connections_list_content.html", context)
 
 
 @login_required
