@@ -298,24 +298,25 @@ def _get_menu_items() -> List[MenuItem]:
         ),
     ]
 
+    conexoes_dashboard_url = reverse("conexoes:perfil_sections_conexoes")
     conexoes_children = [
         MenuItem(
             id="conexoes_minhas",
-            path=f"{perfil_url}?section=conexoes",
+            path=conexoes_dashboard_url,
             label="Minhas conexões",
             icon=ICON_USERS,
             permissions=["authenticated"],
         ),
         MenuItem(
             id="conexoes_solicitacoes",
-            path=f"{perfil_url}?section=conexoes&tab=solicitacoes",
+            path=f"{conexoes_dashboard_url}?tab=solicitacoes",
             label="Solicitações",
             icon=ICON_PLUG,
             permissions=["authenticated"],
         ),
         MenuItem(
             id="conexoes_buscar",
-            path=f"{perfil_url}?section=conexoes&view=buscar",
+            path=reverse("conexoes:perfil_conexoes_buscar"),
             label="Buscar pessoas",
             icon=ICON_LINK,
             permissions=["authenticated"],
@@ -463,7 +464,7 @@ def _get_menu_items() -> List[MenuItem]:
         ),
         MenuItem(
             id="conexoes",
-            path=f"{perfil_url}?section=conexoes",
+            path=conexoes_dashboard_url,
             label="Conexões",
             icon=ICON_LINK,
             permissions=["authenticated"],
