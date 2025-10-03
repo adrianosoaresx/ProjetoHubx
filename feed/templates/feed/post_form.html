@@ -190,9 +190,7 @@
           <p class="text-xs text-[var(--text-secondary)]">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</p>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            {% if cancel_component_config %}
-              {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_component_config.fallback_href %}
-            {% endif %}
+           
             <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
               {% trans "Salvar" %}
             </button>
