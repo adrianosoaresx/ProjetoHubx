@@ -22,7 +22,7 @@ from accounts.models import User, UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
-from core.utils import resolve_back_href
+from core.utils import get_back_navigation_fallback, resolve_back_href
 
 # Moderação desativada: não é necessário notificar moderação
 from nucleos.models import Nucleo
@@ -380,7 +380,7 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
         context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
-        fallback_url = reverse("feed:listar")
+        fallback_url = get_back_navigation_fallback(self.request, fallback=reverse("feed:listar"))
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context["back_href"] = back_href
         context["back_component_config"] = {
@@ -566,7 +566,7 @@ def post_update(request, pk):
     else:
         form = PostForm(instance=post, user=request.user)
 
-    fallback_url = reverse("feed:post_detail", args=[post.pk])
+    fallback_url = get_back_navigation_fallback(request, fallback=reverse("feed:post_detail", args=[post.pk]))
     back_href = resolve_back_href(request, fallback=fallback_url)
     form_action = reverse("feed:post_update", args=[post.pk])
     context = {

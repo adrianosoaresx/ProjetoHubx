@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from core.utils import resolve_back_href
+from core.utils import get_back_navigation_fallback, resolve_back_href
 
 
 def htmx_version(request):
@@ -18,4 +18,12 @@ def menu_items(request):
 
 
 def back_navigation(request):
-    return {"back_href": resolve_back_href(request)}
+    fallback = get_back_navigation_fallback(request)
+    back_href = resolve_back_href(request, fallback=fallback)
+    context = {"back_href": back_href}
+    if fallback:
+        context["back_component_config"] = {
+            "href": back_href,
+            "fallback_href": fallback,
+        }
+    return context
