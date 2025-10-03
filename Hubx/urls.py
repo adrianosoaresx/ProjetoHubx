@@ -8,8 +8,6 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from django.views.i18n import JavaScriptCatalog
 
-from accounts import views
-
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
@@ -29,11 +27,9 @@ urlpatterns = [
         "configuracoes/",
         include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
     ),
-    path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
     path(
-        "associados/promover/",
-        views.AssociadoPromoverListView.as_view(),
-        name="associados_promover",
+        "associados/",
+        include(("associados.urls", "associados"), namespace="associados"),
     ),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),

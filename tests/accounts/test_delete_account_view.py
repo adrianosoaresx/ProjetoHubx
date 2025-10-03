@@ -74,7 +74,7 @@ def test_admin_can_delete_other_user_account(client):
     )
 
     assert resp.status_code == 302
-    assert resp.url == reverse("accounts:associados_lista", urlconf="tests.urls")
+    assert resp.url == reverse("associados:associados_lista", urlconf="tests.urls")
     target.refresh_from_db()
     assert target.deleted is True and target.deleted_at is not None
     assert not target.is_active
@@ -112,7 +112,7 @@ def test_operator_can_delete_other_user_account(client):
     )
 
     assert resp.status_code == 302
-    assert resp.url == reverse("accounts:associados_lista", urlconf="tests.urls")
+    assert resp.url == reverse("associados:associados_lista", urlconf="tests.urls")
     target.refresh_from_db()
     assert target.deleted
     assert SecurityEvent.objects.filter(usuario=target, evento="conta_excluida").exists()
