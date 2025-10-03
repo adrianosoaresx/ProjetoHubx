@@ -3,7 +3,7 @@
 <form
   method="get"
   class="space-y-4 sm:flex sm:items-end sm:gap-3"
-  hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
+  hx-get="{% url 'conexoes:perfil_conexoes_partial' %}"
   hx-target="#perfil-content"
   hx-push-url="?section=conexoes"
 >
@@ -45,7 +45,7 @@
             {% trans "Ver perfil" %}
           </a>
           <form
-            hx-post="{% url 'accounts:remover_conexao' connection.id %}"
+            hx-post="{% url 'conexoes:remover_conexao' connection.id %}"
             hx-target="closest .connection-card"
             hx-swap="outerHTML"
             hx-confirm="{% trans 'Tem certeza que deseja remover esta conexão?' %}"
@@ -67,7 +67,7 @@
           <button
             type="button"
             class="btn btn-primary btn-sm"
-            hx-get="{% url 'accounts:perfil_conexoes_buscar' %}"
+            hx-get="{% url 'conexoes:perfil_conexoes_buscar' %}"
             hx-target="#perfil-content"
             hx-push-url="?section=conexoes&view=buscar"
           >

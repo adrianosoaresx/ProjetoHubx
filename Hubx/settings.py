@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "accounts.apps.AccountsConfig",
+    "conexoes.apps.ConexoesConfig",
     "associados.apps.AssociadosConfig",
     "organizacoes",
     "tokens.apps.TokensConfig",

@@ -33,7 +33,6 @@ urlpatterns = [
 
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
     path("perfil/sections/info/", views.perfil_info, name="perfil_sections_info"),
-    path("perfil/sections/conexoes/", views.perfil_conexoes, name="perfil_sections_conexoes"),
     path("perfil/sections/portfolio/", views.perfil_portfolio, name="perfil_sections_portfolio"),
     path(
         "perfil/sections/portfolio/<int:pk>/",
@@ -50,31 +49,6 @@ urlpatterns = [
         views.perfil_portfolio_delete,
         name="perfil_sections_portfolio_delete",
     ),
-    path(
-        "perfil/conexoes/<int:id>/remover/",
-        views.remover_conexao,
-        name="remover_conexao",
-    ),
-    path(
-        "perfil/conexoes/<int:id>/solicitar/",
-        views.solicitar_conexao,
-        name="solicitar_conexao",
-    ),
-    path(
-        "perfil/conexoes/<int:id>/aceitar/",
-        views.aceitar_conexao,
-        name="aceitar_conexao",
-    ),
-    path(
-        "perfil/conexoes/<int:id>/recusar/",
-        views.recusar_conexao,
-        name="recusar_conexao",
-    ),
-    path(
-        "perfil/conexoes/buscar/",
-        views.perfil_conexoes_buscar,
-        name="perfil_conexoes_buscar",
-    ),
 
     path(
         "perfil/partials/portfolio/",
@@ -87,12 +61,6 @@ urlpatterns = [
         views.perfil_section,
         {"section": "info"},
         name="perfil_info_partial",
-    ),
-    path(
-        "perfil/partials/conexoes/",
-        views.perfil_section,
-        {"section": "conexoes"},
-        name="perfil_conexoes_partial",
     ),
     # Portfólio
     path("perfil/portfolio/", views.perfil_portfolio, name="portfolio"),

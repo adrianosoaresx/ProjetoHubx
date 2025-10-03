@@ -19,7 +19,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
           <form
-            hx-post="{% url 'accounts:aceitar_conexao' solicitante.id %}"
+            hx-post="{% url 'conexoes:aceitar_conexao' solicitante.id %}"
             hx-target="closest .request-card"
             hx-swap="outerHTML"
             class="space-y-4"
@@ -28,7 +28,7 @@
             <button class="btn btn-primary btn-sm">{% trans "Aceitar" %}</button>
           </form>
           <form
-            hx-post="{% url 'accounts:recusar_conexao' solicitante.id %}"
+            hx-post="{% url 'conexoes:recusar_conexao' solicitante.id %}"
             hx-target="closest .request-card"
             hx-swap="outerHTML"
             class="space-y-4"

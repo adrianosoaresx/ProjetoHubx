@@ -15,6 +15,7 @@ urlpatterns = [
     path("", include(("core.urls", "core"), namespace="core")),
     # Apps de autenticação/usuário
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
     # CRUD de Empresas, Organizações e Núcleos (front‑end)
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
@@ -61,6 +62,10 @@ urlpatterns = [
     path(
         "api/accounts/",
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
+    ),
+    path(
+        "api/conexoes/",
+        include(("conexoes.api_urls", "conexoes_api"), namespace="conexoes_api"),
     ),
     path(
         "api/feed/",
