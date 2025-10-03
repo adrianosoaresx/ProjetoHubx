@@ -164,9 +164,9 @@ def perfil_conexoes(request):
 
     if is_htmx_or_ajax(request):
         context.update(_profile_dashboard_hx_context())
-        return render(request, "conexoes/includes/dashboard_content.html", context)
+        return render(request, "conexoes/partiais/dashboard.html", context)
 
-    return render(request, "conexoes/dashboard.html", context)
+    return render(request, "conexoes/connections_list.html", context)
 
 
 @login_required
@@ -202,7 +202,7 @@ def perfil_conexoes_partial(request):
 
     context = _build_dashboard_context(request, search_form, connections, connection_requests, q)
     context.update(_profile_dashboard_hx_context())
-    return render(request, "conexoes/includes/dashboard_content.html", context)
+    return render(request, "conexoes/partiais/dashboard.html", context)
 
 
 @login_required
@@ -222,7 +222,7 @@ def perfil_conexoes_buscar(request):
     if is_htmx_or_ajax(request):
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None
-        return render(request, "conexoes/includes/search_card.html", context)
+        return render(request, "conexoes/partiais/search_card.html", context)
 
     return render(request, "conexoes/busca.html", context)
 
@@ -330,7 +330,7 @@ def solicitar_conexao(request, id):
         context = _build_search_page_context(request, q, None)
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None
-        return render(request, "conexoes/includes/search_card.html", context)
+        return render(request, "conexoes/partiais/search_card.html", context)
 
     params = {"section": "conexoes", "view": "buscar"}
     if q:
@@ -355,7 +355,7 @@ def remover_conexao(request, id):
             context = _build_search_page_context(request, q, None)
             context.update(_profile_search_hx_context(q))
             context["search_container_id"] = None
-            return render(request, "conexoes/includes/search_card.html", context)
+            return render(request, "conexoes/partiais/search_card.html", context)
         return HttpResponse(status=204)
     return redirect("conexoes:perfil_sections_conexoes")
 
