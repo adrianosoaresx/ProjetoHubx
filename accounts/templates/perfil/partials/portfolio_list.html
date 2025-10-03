@@ -77,6 +77,9 @@
                     href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
                     class="btn btn-secondary btn-sm"
                     aria-label="{% trans 'Editar' %}"
+                    hx-get="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
+                    hx-target="#perfil-content"
+                    hx-push-url="?section=portfolio&amp;portfolio_view=edit&amp;media={{ media.pk }}"
                   >
                     {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
                   </a>
@@ -84,6 +87,9 @@
                     href="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
                     class="btn btn-danger btn-sm"
                     aria-label="{% trans 'Excluir' %}"
+                    hx-get="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
+                    hx-target="#perfil-content"
+                    hx-push-url="?section=portfolio&amp;portfolio_view=delete&amp;media={{ media.pk }}"
                   >
                     {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
                   </a>
