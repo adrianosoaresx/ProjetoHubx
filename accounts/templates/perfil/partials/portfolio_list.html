@@ -72,7 +72,7 @@
           <article class="card">
             <div class="card-body space-y-4 relative">
               {% if is_owner %}
-                <div class="absolute right-0 top-0 flex gap-3">
+                <div class="absolute right-0 top-0 z-10 flex gap-3">
                   <a
                     href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
                     class="btn btn-secondary btn-sm"
