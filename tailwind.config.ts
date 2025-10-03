@@ -9,7 +9,8 @@ const config: Config = {
         "./templates/**/*.html",
         "./accounts/templates/**/*.html",
         "./static/src/**/*.{js,ts}",
-        "./**/*.py"
+        "./**/*.py",
+        "./feed/templates/**/*.html"
     ],
   theme: {
   	extend: {
