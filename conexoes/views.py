@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from accounts.utils import is_htmx_or_ajax, redirect_to_profile_section
+from accounts.utils import is_htmx_or_ajax
 
 from .forms import ConnectionsSearchForm
 
@@ -38,12 +38,116 @@ def _connection_lists_for_user(user, query: str):
     return connections, connection_requests
 
 
+def _connection_totals(user):
+    total_conexoes = user.connections.count() if hasattr(user, "connections") else 0
+    total_solicitacoes = user.followers.count() if hasattr(user, "followers") else 0
+    total_solicitacoes_enviadas = user.following.count() if hasattr(user, "following") else 0
+    return total_conexoes, total_solicitacoes, total_solicitacoes_enviadas
+
+
+def _build_dashboard_context(request, form, connections, connection_requests, query: str):
+    total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
+    search_params = {"q": query} if query else {}
+    search_page_url = reverse("conexoes:perfil_conexoes_buscar")
+    if search_params:
+        search_page_url = f"{search_page_url}?{urlencode(search_params)}"
+    solicitacoes_url = f"{reverse('conexoes:perfil_sections_conexoes')}?tab=solicitacoes"
+
+    return {
+        "connections": connections,
+        "connection_requests": connection_requests,
+        "form": form,
+        "q": query,
+        "search_page_url": search_page_url,
+        "solicitacoes_url": solicitacoes_url,
+        "search_form_action": request.get_full_path(),
+        "search_form_hx_get": None,
+        "search_form_hx_target": None,
+        "search_form_hx_push_url": None,
+        "search_page_hx_get": None,
+        "search_page_hx_target": None,
+        "search_page_hx_push_url": None,
+        "total_conexoes": total_conexoes,
+        "total_solicitacoes": total_solicitacoes,
+        "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
+    }
+
+
+def _profile_dashboard_hx_context():
+    return {
+        "search_form_hx_get": reverse("conexoes:perfil_conexoes_partial"),
+        "search_form_hx_target": "perfil-content",
+        "search_form_hx_push_url": "?section=conexoes",
+        "search_page_hx_get": reverse("conexoes:perfil_conexoes_buscar"),
+        "search_page_hx_target": "perfil-content",
+        "search_page_hx_push_url": "?section=conexoes&view=buscar",
+    }
+
+
+def _profile_search_hx_context(query: str):
+    params = {"section": "conexoes", "view": "buscar"}
+    if query:
+        params["q"] = query
+    search_push_url = f"?{urlencode(params)}"
+    solicitacoes_push_url = "?section=conexoes&tab=solicitacoes"
+    solicitacoes_get_url = f"{reverse('conexoes:perfil_conexoes_partial')}?tab=solicitacoes"
+
+    return {
+        "search_form_hx_get": reverse("conexoes:perfil_conexoes_buscar"),
+        "search_form_hx_target": "perfil-content",
+        "search_form_hx_push_url": search_push_url,
+        "back_to_dashboard_hx_get": reverse("conexoes:perfil_conexoes_partial"),
+        "back_to_dashboard_hx_target": "perfil-content",
+        "back_to_dashboard_hx_push_url": "?section=conexoes",
+        "solicitacoes_hx_get": solicitacoes_get_url,
+        "solicitacoes_hx_target": "perfil-content",
+        "solicitacoes_hx_push_url": solicitacoes_push_url,
+    }
+
+
+def _build_search_page_context(request, query: str, form: ConnectionsSearchForm | None):
+    context = _build_conexoes_busca_context(request.user, query, form=form)
+    dashboard_url = reverse("conexoes:perfil_sections_conexoes")
+    total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
+
+    context.update(
+        {
+            "dashboard_url": dashboard_url,
+            "back_to_dashboard_url": dashboard_url,
+            "solicitacoes_url": f"{dashboard_url}?tab=solicitacoes",
+            "search_form_action": reverse("conexoes:perfil_conexoes_buscar"),
+            "search_container_id": "connections-search-card",
+            "search_form_hx_get": None,
+            "search_form_hx_target": None,
+            "search_form_hx_push_url": None,
+            "back_to_dashboard_hx_get": None,
+            "back_to_dashboard_hx_target": None,
+            "back_to_dashboard_hx_push_url": None,
+            "solicitacoes_hx_get": None,
+            "solicitacoes_hx_target": None,
+            "solicitacoes_hx_push_url": None,
+            "total_conexoes": total_conexoes,
+            "total_solicitacoes": total_solicitacoes,
+            "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
+        }
+    )
+
+    return context
+
+
 @login_required
 def perfil_conexoes(request):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(request, "conexoes")
+    view_mode = (request.GET.get("view") or "").strip().lower()
+    if not is_htmx_or_ajax(request) and view_mode == "buscar":
+        params = request.GET.copy()
+        params = params.copy()
+        params.pop("view", None)
+        url = reverse("conexoes:perfil_conexoes_buscar")
+        query_string = params.urlencode()
+        if query_string:
+            url = f"{url}?{query_string}"
+        return redirect(url)
 
-    tab = request.GET.get("tab", "minhas").lower()
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar conexões..."),
@@ -56,26 +160,25 @@ def perfil_conexoes(request):
         q = ""
 
     connections, connection_requests = _connection_lists_for_user(request.user, q)
+    context = _build_dashboard_context(request, search_form, connections, connection_requests, q)
 
-    template_map = {
-        "solicitacoes": "perfil/partials/conexoes_solicitacoes.html",
-        "minhas": "perfil/partials/conexoes_minhas.html",
-    }
-    template_name = template_map.get(tab, template_map["minhas"])
+    if is_htmx_or_ajax(request):
+        context.update(_profile_dashboard_hx_context())
+        return render(request, "conexoes/includes/dashboard_content.html", context)
 
-    context = {
-        "connections": connections,
-        "connection_requests": connection_requests,
-        "q": q,
-        "form": search_form,
-    }
-    return render(request, template_name, context)
+    return render(request, "conexoes/dashboard.html", context)
 
 
 @login_required
 def perfil_conexoes_partial(request):
     if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(request, "conexoes")
+        params = request.GET.copy()
+        params = params.copy()
+        url = reverse("conexoes:perfil_sections_conexoes")
+        query_string = params.urlencode()
+        if query_string:
+            url = f"{url}?{query_string}"
+        return redirect(url)
 
     username = request.GET.get("username")
     public_id = request.GET.get("public_id")
@@ -97,20 +200,13 @@ def perfil_conexoes_partial(request):
 
     connections, connection_requests = _connection_lists_for_user(request.user, q)
 
-    context = {
-        "connections": connections,
-        "connection_requests": connection_requests,
-        "q": q,
-        "form": search_form,
-    }
-    return render(request, "perfil/partials/conexoes_dashboard.html", context)
+    context = _build_dashboard_context(request, search_form, connections, connection_requests, q)
+    context.update(_profile_dashboard_hx_context())
+    return render(request, "conexoes/includes/dashboard_content.html", context)
 
 
 @login_required
 def perfil_conexoes_buscar(request):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(request, "conexoes")
-
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar por nome, razão social ou CNPJ..."),
@@ -121,8 +217,14 @@ def perfil_conexoes_buscar(request):
         q = search_form.cleaned_data.get("q", "")
     else:
         q = ""
-    context = _build_conexoes_busca_context(request.user, q, form=search_form)
-    return render(request, "perfil/partials/conexoes_busca.html", context)
+    context = _build_search_page_context(request, q, search_form)
+
+    if is_htmx_or_ajax(request):
+        context.update(_profile_search_hx_context(q))
+        context["search_container_id"] = None
+        return render(request, "conexoes/includes/search_card.html", context)
+
+    return render(request, "conexoes/busca.html", context)
 
 
 def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | None = None):
@@ -225,8 +327,10 @@ def solicitar_conexao(request, id):
     q = request.POST.get("q", "").strip()
 
     if is_htmx_or_ajax(request):
-        context = _build_conexoes_busca_context(request.user, q)
-        return render(request, "perfil/partials/conexoes_busca.html", context)
+        context = _build_search_page_context(request, q, None)
+        context.update(_profile_search_hx_context(q))
+        context["search_container_id"] = None
+        return render(request, "conexoes/includes/search_card.html", context)
 
     params = {"section": "conexoes", "view": "buscar"}
     if q:
@@ -248,8 +352,10 @@ def remover_conexao(request, id):
     if is_htmx_or_ajax(request):
         hx_target = request.headers.get("HX-Target", "")
         if hx_target == "perfil-content":
-            context = _build_conexoes_busca_context(request.user, q)
-            return render(request, "perfil/partials/conexoes_busca.html", context)
+            context = _build_search_page_context(request, q, None)
+            context.update(_profile_search_hx_context(q))
+            context["search_container_id"] = None
+            return render(request, "conexoes/includes/search_card.html", context)
         return HttpResponse(status=204)
     return redirect("conexoes:perfil_sections_conexoes")
 

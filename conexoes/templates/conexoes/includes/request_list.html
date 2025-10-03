@@ -1,5 +1,4 @@
 {% load i18n %}
-{# Este parcial é incorporado em cards maiores; mantemos estrutura flat para funcionar via HTMX. #}
 <div class="space-y-3" role="list">
   {% for solicitante in connection_requests %}
     <article class="card request-card" role="listitem">
@@ -19,6 +18,8 @@
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
           <form
+            method="post"
+            action="{% url 'conexoes:aceitar_conexao' solicitante.id %}"
             hx-post="{% url 'conexoes:aceitar_conexao' solicitante.id %}"
             hx-target="closest .request-card"
             hx-swap="outerHTML"
@@ -28,6 +29,8 @@
             <button class="btn btn-primary btn-sm">{% trans "Aceitar" %}</button>
           </form>
           <form
+            method="post"
+            action="{% url 'conexoes:recusar_conexao' solicitante.id %}"
             hx-post="{% url 'conexoes:recusar_conexao' solicitante.id %}"
             hx-target="closest .request-card"
             hx-swap="outerHTML"
@@ -47,4 +50,3 @@
     </article>
   {% endfor %}
 </div>
-
