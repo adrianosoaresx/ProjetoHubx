@@ -379,6 +379,7 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         selected_tipo = (self.request.POST.get("tipo_feed") or self.request.GET.get("tipo_feed") or "global").strip()
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
+        context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
         fallback_url = reverse("feed:listar")
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context["back_href"] = back_href
@@ -545,6 +546,19 @@ def post_update(request, pk):
             if getattr(form, "_video_preview_key", None):
                 form.instance.video_preview = form._video_preview_key
             form.save()
+            tags_text_raw = (data.get("tags_text", "") or "").strip()
+            if tags_text_raw:
+                tag_names = [t.strip() for t in tags_text_raw.split(",") if t.strip()]
+                if tag_names:
+                    tags_objs = []
+                    for name in tag_names:
+                        tag, _ = Tag.objects.get_or_create(nome=name, deleted=False)
+                        tags_objs.append(tag)
+                    form.instance.tags.set(tags_objs)
+                else:
+                    form.instance.tags.clear()
+            else:
+                form.instance.tags.clear()
             if request.headers.get("HX-Request"):
                 return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:post_detail", args=[post.pk])})
             messages.success(request, "Postagem atualizada com sucesso.")
@@ -575,6 +589,10 @@ def post_update(request, pk):
         "hx_target": None,
         "hx_swap": None,
         "selected_tipo_feed": request.POST.get("tipo_feed") or form.initial.get("tipo_feed") or form.instance.tipo_feed,
+        "tags_text_value": request.POST.get("tags_text")
+        or ", ".join(post.tags.order_by("nome").values_list("nome", flat=True)),
+        "tags_disponiveis": Tag.objects.all(),
+        "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
     }
     return render(request, "feed/post_form.html", context)
 
