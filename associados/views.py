@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from urllib.parse import urlparse
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -12,6 +13,7 @@ from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
 
@@ -97,6 +99,33 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
             },
         )
         return super().form_valid(form)
+
+    def _get_post_redirect_target(self) -> str | None:
+        candidate = self.request.POST.get("next")
+        if not candidate:
+            return None
+
+        if not url_has_allowed_host_and_scheme(
+            candidate,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            return None
+
+        parsed = urlparse(candidate)
+        path = parsed.path or ""
+        if parsed.query:
+            path = f"{path}?{parsed.query}"
+        if parsed.fragment:
+            path = f"{path}#{parsed.fragment}"
+
+        return path or candidate
+
+    def get_success_url(self):
+        redirect_target = self._get_post_redirect_target()
+        if redirect_target and redirect_target != self.request.path:
+            return redirect_target
+        return super().get_success_url()
 
 
 class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView):
