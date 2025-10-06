@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -38,6 +38,10 @@ def redirect_to_profile_section(
     url = reverse("accounts:perfil")
     if query_string:
         url = f"{url}?{query_string}"
+    if request.headers.get("HX-Request"):
+        response = HttpResponse(status=204)
+        response["HX-Redirect"] = url
+        return response
     return redirect(url)
 
 
