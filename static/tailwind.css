@@ -758,6 +758,32 @@ select {
   caret-color: #f1f5f9;
 }
 
+/* Corrige contraste do checkbox no modo escuro: quando marcado, o
+     plugin de forms usa background-color: currentColor; portanto, a
+     propriedade "color" do input deve ser a cor primária e não branca. */
+
+.dark .form-checkbox,
+  .dark input[type="checkbox"] {
+  color: var(--primary);
+  /* garante fundo colorido ao marcar (currentColor) */
+}
+
+/* Aparência do estado desmarcado no modo escuro */
+
+.dark .form-checkbox:not(:checked) {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+/* Ring de foco coerente com o tema escuro */
+
+.dark .form-checkbox:focus,
+  .dark .form-radio:focus {
+  /* mantém o mesmo comportamento do plugin, mas com tokens do tema */
+  --tw-ring-offset-color: var(--bg-primary);
+  --tw-ring-color: var(--primary);
+}
+
 .dark input:focus,
   .dark textarea:focus,
   .dark select:focus {
