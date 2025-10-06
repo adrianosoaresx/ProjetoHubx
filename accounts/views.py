@@ -468,6 +468,16 @@ def perfil_info(request):
                     }
                 )
             return redirect_to_profile_section(request, "info", extra_params)
+        if not is_htmx_or_ajax(request):
+            extra_params = {"info_view": "edit"}
+            if not is_self:
+                extra_params.update(
+                    {
+                        "public_id": str(target_user.public_id),
+                        "username": target_user.username,
+                    }
+                )
+            return redirect_to_profile_section(request, "info", extra_params)
     else:
         form = InformacoesPessoaisForm(instance=target_user)
 

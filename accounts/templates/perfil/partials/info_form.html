@@ -16,6 +16,10 @@
     action="{% url 'accounts:perfil_sections_info' %}"
     enctype="multipart/form-data"
     class="space-y-6"
+    hx-post="{% url 'accounts:perfil_sections_info' %}"
+    hx-target="#perfil-content"
+    hx-swap="innerHTML"
+    hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
   >
     {% csrf_token %}
     {% if not is_self %}
