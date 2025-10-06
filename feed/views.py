@@ -74,6 +74,9 @@ def meu_mural(request):
     context = {
         "posts": posts,
         "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
+        "page_title": _("Meu Mural"),
+        "hero_title": _("Meu Mural"),
+        "hero_action_template": "feed/hero_actions_mural.html",
     }
     return render(request, "feed/mural.html", context)
 
@@ -156,7 +159,16 @@ def bookmark_list(request):
         .order_by("-bookmarks__created_at")
         .distinct()
     )
-    return render(request, "feed/bookmarks.html", {"posts": posts})
+    return render(
+        request,
+        "feed/bookmarks.html",
+        {
+            "posts": posts,
+            "page_title": _("Meus Favoritos") + " | Hubx",
+            "hero_title": _("Meus Favoritos"),
+            "hero_action_template": "feed/hero_actions_bookmarks.html",
+        },
+    )
 
 
 class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
@@ -322,6 +334,10 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             context["organizacoes_do_usuario"] = (
                 Organizacao.objects.filter(pk=org.pk) if org else Organizacao.objects.none()
             )
+
+        context.setdefault("page_title", _("Feed") + " | Hubx")
+        context.setdefault("hero_title", _("Feed"))
+        context.setdefault("hero_action_template", "feed/hero_actions.html")
 
         return context
 
