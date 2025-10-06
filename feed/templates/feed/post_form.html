@@ -78,7 +78,7 @@
                            id="tipo_feed_global"
                            name="tipo_feed"
                            value="global"
-                           class="form-checkbox"
+                           class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
                            data-exclusive="tipo-feed"
                            {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
                     <span>{% trans "Feed Público" %}</span>
@@ -91,7 +91,7 @@
                            id="tipo_feed_usuario"
                            name="tipo_feed"
                            value="usuario"
-                           class="form-checkbox"
+                           class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
                            data-exclusive="tipo-feed"
                            {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
                     <span>{% trans "Mural" %}</span>
