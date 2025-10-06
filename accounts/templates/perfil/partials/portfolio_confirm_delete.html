@@ -8,7 +8,7 @@
     <div class="card-body space-y-4">
       <p class="text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item do portfólio?" %}</p>
       {% url 'accounts:perfil_sections_portfolio' as portfolio_url %}
-      <form method="post" class="space-y-4">
+      <form method="post" action="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}" class="space-y-4">
         {% csrf_token %}
         {% if messages %}
           {% for message in messages %}
