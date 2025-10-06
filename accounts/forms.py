@@ -43,7 +43,9 @@ class CustomUserCreationForm(UserCreationForm):
             "nucleo",
         )
         labels = {"contato": "Contato"}
-        widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
+        widgets = {
+            "birth_date": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"})
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -115,7 +117,9 @@ class CustomUserChangeForm(UserChangeForm):
             "nucleo",
         )
         labels = {"contato": "Contato"}
-        widgets = {"birth_date": forms.DateInput(attrs={"type": "date"})}
+        widgets = {
+            "birth_date": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"})
+        }
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
@@ -146,7 +150,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
     birth_date = forms.DateField(
         required=False,
         label="Data de nascimento",
-        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
 
     class Meta:
