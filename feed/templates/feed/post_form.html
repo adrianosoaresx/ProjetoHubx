@@ -69,28 +69,34 @@
               <span class="block text-sm font-medium text-[var(--text-primary)]">
                 {% trans "Tipo de feed" %} *
               </span>
-              <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <label for="tipo_feed_global" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
-                  <input type="checkbox"
-                         id="tipo_feed_global"
-                         name="tipo_feed"
-                         value="global"
-                         class="form-checkbox"
-                         data-exclusive="tipo-feed"
-                         {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
-                  <span>{% trans "Feed Público" %}</span>
-                </label>
-                <label for="tipo_feed_usuario" class="flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
-                  <input type="checkbox"
-                         id="tipo_feed_usuario"
-                         name="tipo_feed"
-                         value="usuario"
-                         class="form-checkbox"
-                         data-exclusive="tipo-feed"
-                         {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
-                  <span>{% trans "Mural" %}</span>
-                </label>
-              </div>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <label for="tipo_feed_global"
+                         class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
+                         data-feed-type-option
+                         data-checked="{% if selected_tipo_feed|default:'global' == 'global' %}true{% else %}false{% endif %}">
+                    <input type="checkbox"
+                           id="tipo_feed_global"
+                           name="tipo_feed"
+                           value="global"
+                           class="form-checkbox"
+                           data-exclusive="tipo-feed"
+                           {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
+                    <span>{% trans "Feed Público" %}</span>
+                  </label>
+                  <label for="tipo_feed_usuario"
+                         class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
+                         data-feed-type-option
+                         data-checked="{% if selected_tipo_feed == 'usuario' %}true{% else %}false{% endif %}">
+                    <input type="checkbox"
+                           id="tipo_feed_usuario"
+                           name="tipo_feed"
+                           value="usuario"
+                           class="form-checkbox"
+                           data-exclusive="tipo-feed"
+                           {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
+                    <span>{% trans "Mural" %}</span>
+                  </label>
+                </div>
               {% if form.tipo_feed.errors %}
                 <ul class="errorlist">
                   {% for error in form.tipo_feed.errors %}

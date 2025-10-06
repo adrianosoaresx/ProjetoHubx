@@ -196,13 +196,24 @@ function bindFeedEvents(root = document) {
       return acc;
     }, {});
 
+    const syncExclusiveLabelState = (checkbox) => {
+      const label = checkbox.closest('[data-feed-type-option]');
+      if (!label) {
+        return;
+      }
+      label.dataset.checked = checkbox.checked ? 'true' : 'false';
+    };
+
     Object.values(groups).forEach((group) => {
       group.forEach((checkbox) => {
+        syncExclusiveLabelState(checkbox);
+
         checkbox.addEventListener('change', () => {
           if (checkbox.checked) {
             group.forEach((other) => {
-              if (other !== checkbox) {
+              if (other !== checkbox && other.checked) {
                 other.checked = false;
+                syncExclusiveLabelState(other);
               }
             });
           } else {
@@ -211,6 +222,8 @@ function bindFeedEvents(root = document) {
               checkbox.checked = true;
             }
           }
+
+          syncExclusiveLabelState(checkbox);
         });
       });
     });
