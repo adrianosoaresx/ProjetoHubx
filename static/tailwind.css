@@ -1029,7 +1029,7 @@ a:focus {
 
 .form-checkbox:checked,.form-radio:checked {
   border-color: transparent;
-  background-color: var(--primary);
+  background-color: currentColor;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -1049,13 +1049,13 @@ a:focus {
 
 .form-checkbox:checked:hover,.form-checkbox:checked:focus,.form-radio:checked:hover,.form-radio:checked:focus {
   border-color: transparent;
-  background-color: var(--primary);
+  background-color: currentColor;
 }
 
 .form-checkbox:indeterminate {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
   border-color: transparent;
-  background-color: var(--primary);
+  background-color: currentColor;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -1071,7 +1071,7 @@ a:focus {
 
 .form-checkbox:indeterminate:hover,.form-checkbox:indeterminate:focus {
   border-color: transparent;
-  background-color: var(--primary);
+  background-color: currentColor;
 }
 
 .prose {
