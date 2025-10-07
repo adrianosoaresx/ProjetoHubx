@@ -561,8 +561,8 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem("logout", reverse("accounts:logout"), "Sair", ICON_LOGOUT, ["authenticated"]),
         MenuItem("login", reverse("accounts:login"), "Entrar", ICON_LOGIN, ["anonymous"]),
         MenuItem(
-            "onboarding",
-            reverse("accounts:onboarding"),
+            "register",
+            reverse("tokens:token"),
             "Cadastrar",
             ICON_REGISTER,
             ["anonymous"],

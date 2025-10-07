@@ -8,7 +8,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 ## 🚀 Funcionalidades
 
 - Autenticação com formulários padrão Django
-- Onboarding automático em `/accounts/onboarding/`
+- Cadastro multietapas em `/tokens/`
 - Perfis personalizados
 - Campo `redes_sociais` em JSON para registrar links de redes sociais
 - Fórum integrado

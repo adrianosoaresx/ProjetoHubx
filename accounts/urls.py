@@ -16,7 +16,6 @@ urlpatterns = [
         views.password_reset_confirm,
         name="password_reset_confirm",
     ),
-    path("onboarding/", views.onboarding, name="onboarding"),
     path("nome/", views.nome, name="nome"),
     path("cpf/", views.cpf, name="cpf"),
     path("email/", views.email, name="email"),

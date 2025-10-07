@@ -18,5 +18,5 @@ associados ao usuário também são removidos do armazenamento.
 ## Fluxo de registro
 
 O cadastro de novos usuários ocorre exclusivamente pelo fluxo multietapas
-iniciado em `/accounts/onboarding/`. Detalhes de cada etapa estão descritos na
+iniciado em `/tokens/`. Detalhes de cada etapa estão descritos na
 [documentação de registro multietapas](../docs/accounts/registro_multietapas.md).

@@ -18,7 +18,7 @@
 
 ## Principais telas e onde encontrar
 - **Login**: `/accounts/login/`
-- **Cadastro multietapas**: `/accounts/onboarding/` e etapas subsequentes
+- **Cadastro multietapas**: `/tokens/` e etapas subsequentes
 - **Perfil**: `/accounts/perfil/` com abas de informações, redes sociais, segurança e mídias
 - **Recuperação de senha**: `/accounts/password_reset/`
 
