@@ -11,11 +11,24 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from accounts.models import UserType
 from accounts.utils import is_htmx_or_ajax
 
 from .forms import ConnectionsSearchForm
 
 User = get_user_model()
+
+ROOT_CONNECTIONS_FORBIDDEN_MESSAGE = _("Recursos de conexão não estão disponíveis para usuários root.")
+
+
+def _deny_root_connections_access(request):
+    user_type = getattr(request.user, "get_tipo_usuario", None)
+    if user_type == UserType.ROOT.value:
+        if is_htmx_or_ajax(request):
+            return HttpResponseForbidden(ROOT_CONNECTIONS_FORBIDDEN_MESSAGE)
+        messages.error(request, ROOT_CONNECTIONS_FORBIDDEN_MESSAGE)
+        return redirect("organizacoes:list")
+    return None
 
 
 def _get_user_connections(user, query: str):
@@ -155,6 +168,9 @@ def _build_search_page_context(request, query: str, form: ConnectionsSearchForm 
 
 @login_required
 def perfil_conexoes(request):
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     view_mode = (request.GET.get("view") or "").strip().lower()
     if not is_htmx_or_ajax(request) and view_mode == "buscar":
         params = request.GET.copy()
@@ -196,6 +212,9 @@ def perfil_conexoes(request):
 
 @login_required
 def perfil_conexoes_partial(request):
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
         params = request.GET.copy()
         params = params.copy()
@@ -239,6 +258,9 @@ def perfil_conexoes_partial(request):
 
 @login_required
 def perfil_conexoes_buscar(request):
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     search_form = ConnectionsSearchForm(
         request.GET or None,
         placeholder=_("Buscar por nome, razão social ou CNPJ..."),
@@ -344,6 +366,10 @@ def solicitar_conexao(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
+
     other_user = get_object_or_404(User, id=id)
 
     if other_user == request.user:
@@ -374,6 +400,10 @@ def solicitar_conexao(request, id):
 def remover_conexao(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     try:
         other_user = User.objects.get(id=id)
         request.user.connections.remove(other_user)
@@ -396,6 +426,10 @@ def remover_conexao(request, id):
 def aceitar_conexao(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
@@ -418,6 +452,10 @@ def aceitar_conexao(request, id):
 def recusar_conexao(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:

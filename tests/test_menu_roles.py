@@ -15,8 +15,8 @@ GERAR_CONVITE_URL = "/tokens/convites/gerar"
 @pytest.mark.parametrize(
     "role,expected",
     [
-        (UserType.ROOT, CONVITES_LIST_URL),
         (UserType.ADMIN, CONVITES_LIST_URL),
+        (UserType.COORDENADOR, CONVITES_LIST_URL),
     ],
 )
 def test_token_menu_visible_for_roles(client, role, expected, settings):
@@ -34,6 +34,7 @@ def test_token_menu_visible_for_roles(client, role, expected, settings):
 @pytest.mark.parametrize(
     "role",
     [
+        UserType.ROOT,
         UserType.NUCLEADO,
         UserType.ASSOCIADO,
         UserType.CONVIDADO,

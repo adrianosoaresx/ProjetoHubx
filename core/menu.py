@@ -292,20 +292,30 @@ def _get_menu_items() -> List[MenuItem]:
     ]
 
     conexoes_dashboard_url = reverse("conexoes:perfil_sections_conexoes")
+    non_root_authenticated_users = [
+        "admin",
+        "coordenador",
+        "nucleado",
+        "associado",
+        "convidado",
+        "operador",
+        "consultor",
+    ]
+
     conexoes_children = [
         MenuItem(
             id="conexoes_solicitacoes",
             path=f"{conexoes_dashboard_url}?tab=solicitacoes",
             label="Solicitações",
             icon=ICON_PLUG,
-            permissions=["authenticated"],
+            permissions=non_root_authenticated_users,
         ),
         MenuItem(
             id="conexoes_buscar",
             path=reverse("conexoes:perfil_conexoes_buscar"),
             label="Adicionar conexão",
             icon=ICON_LINK,
-            permissions=["authenticated"],
+            permissions=non_root_authenticated_users,
         ),
     ]
 
@@ -329,7 +339,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("configuracoes:operadores"),
             label="Operadores",
             icon=ICON_USERS,
-            permissions=["admin", "root"],
+            permissions=["admin"],
         ),
     ]
 
@@ -453,7 +463,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=conexoes_dashboard_url,
             label="Conexões",
             icon=ICON_LINK,
-            permissions=["authenticated"],
+            permissions=non_root_authenticated_users,
             children=conexoes_children,
         ),
         MenuItem(
@@ -524,21 +534,21 @@ def _get_menu_items() -> List[MenuItem]:
       reverse("tokens:listar_convites"),
       "Tokens",
       ICON_TOKEN,
-      ["root", "admin", "coordenador"],
+      ["admin", "coordenador"],
       children=[
         MenuItem(
           id="tokens_gerar",
           path=reverse("tokens:gerar_convite"),
           label="Gerar Token",
           icon=ICON_PLUS,
-          permissions=["root", "admin", "coordenador"],
+          permissions=["admin", "coordenador"],
         ),
         MenuItem(
           id="tokens_listar",
           path=reverse("tokens:listar_convites"),
           label="Listar Tokens",
           icon=ICON_TABLE,
-          permissions=["root", "admin", "coordenador"],
+          permissions=["admin", "coordenador"],
         ),
       ],
     ),

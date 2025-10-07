@@ -1,38 +1,46 @@
 {% load i18n %}
-<form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-5 gap-2">
-  <select name="tipo" class="w-full p-2 border rounded-lg">
-    <option value="">{% trans 'Tipo' %}</option>
-    {% for value, label in tipos %}
-      <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-  </select>
-  <select name="cidade" class="w-full p-2 border rounded-lg">
-    <option value="">{% trans 'Cidade' %}</option>
-    {% for c in cidades %}
-      <option value="{{ c }}" {% if request.GET.cidade == c %}selected{% endif %}>{{ c }}</option>
-    {% endfor %}
-  </select>
-  <select name="estado" class="w-full p-2 border rounded-lg">
-    <option value="">{% trans 'Estado' %}</option>
-    {% for e in estados %}
-      <option value="{{ e }}" {% if request.GET.estado == e %}selected{% endif %}>{{ e }}</option>
-    {% endfor %}
-  </select>
-  <select name="inativa" class="w-full p-2 border rounded-lg">
-    <option value="">{% trans 'Status' %}</option>
-    <option value="false" {% if inativa == 'false' %}selected{% endif %}>{% trans 'Ativas' %}</option>
-    <option value="true" {% if inativa == 'true' %}selected{% endif %}>{% trans 'Inativas' %}</option>
-  </select>
-  <select name="ordering" class="w-full p-2 border rounded-lg">
-    <option value="nome" {% if request.GET.ordering == 'nome' or not request.GET.ordering %}selected{% endif %}>{% trans 'Nome' %}</option>
-    <option value="tipo" {% if request.GET.ordering == 'tipo' %}selected{% endif %}>{% trans 'Tipo' %}</option>
-    <option value="cidade" {% if request.GET.ordering == 'cidade' %}selected{% endif %}>{% trans 'Localização' %}</option>
-    <option value="created_at" {% if request.GET.ordering == 'created_at' %}selected{% endif %}>{% trans 'Data' %}</option>
-  </select>
-  <div class="md:col-span-5 flex justify-end">
-    <button type="submit" class="btn">{% trans 'Filtrar' %}</button>
+{% with select_classes="form-select w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition" %}
+<div class="card">
+  <div class="card-body space-y-4">
+    <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="grid gap-4 md:grid-cols-5">
+      <select name="tipo" class="{{ select_classes }}" aria-label="{% trans 'Filtrar por tipo' %}">
+        <option value="">{% trans 'Tipo' %}</option>
+        {% for value, label in tipos %}
+          <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="cidade" class="{{ select_classes }}" aria-label="{% trans 'Filtrar por cidade' %}">
+        <option value="">{% trans 'Cidade' %}</option>
+        {% for c in cidades %}
+          <option value="{{ c }}" {% if request.GET.cidade == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <select name="estado" class="{{ select_classes }}" aria-label="{% trans 'Filtrar por estado' %}">
+        <option value="">{% trans 'Estado' %}</option>
+        {% for e in estados %}
+          <option value="{{ e }}" {% if request.GET.estado == e %}selected{% endif %}>{{ e }}</option>
+        {% endfor %}
+      </select>
+      <select name="inativa" class="{{ select_classes }}" aria-label="{% trans 'Filtrar por status' %}">
+        <option value="">{% trans 'Status' %}</option>
+        <option value="false" {% if inativa == 'false' %}selected{% endif %}>{% trans 'Ativas' %}</option>
+        <option value="true" {% if inativa == 'true' %}selected{% endif %}>{% trans 'Inativas' %}</option>
+      </select>
+      <select name="ordering" class="{{ select_classes }}" aria-label="{% trans 'Ordenar resultados' %}">
+        <option value="nome" {% if request.GET.ordering == 'nome' or not request.GET.ordering %}selected{% endif %}>{% trans 'Nome' %}</option>
+        <option value="tipo" {% if request.GET.ordering == 'tipo' %}selected{% endif %}>{% trans 'Tipo' %}</option>
+        <option value="cidade" {% if request.GET.ordering == 'cidade' %}selected{% endif %}>{% trans 'Localização' %}</option>
+        <option value="created_at" {% if request.GET.ordering == 'created_at' %}selected{% endif %}>{% trans 'Data' %}</option>
+      </select>
+      <div class="md:col-span-5 flex flex-wrap items-center justify-end gap-2">
+        <button type="submit" class="btn">{% trans 'Filtrar' %}</button>
+        {% if request.GET %}
+          <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Limpar' %}</a>
+        {% endif %}
+      </div>
+    </form>
   </div>
-</form>
+</div>
 
   {% if object_list %}
     <section class="card-grid">
@@ -54,7 +62,7 @@
           {% endif %}
         </div>
       </div>
-      {% if request.user.user_type != 'root' %}
+      {% if request.user.get_tipo_usuario != 'root' %}
       <div class="grid grid-cols-3 gap-4 text-center mt-auto">
         <div>
           <p class="text-xs text-[var(--text-muted)]">{% trans 'Usuários' %}</p>
@@ -70,7 +78,7 @@
         </div>
       </div>
       {% endif %}
-      <div class="flex gap-2 justify-center {% if request.user.user_type == 'root' %}mt-auto{% else %}mt-4{% endif %}">
+      <div class="flex gap-2 justify-center {% if request.user.get_tipo_usuario == 'root' %}mt-auto{% else %}mt-4{% endif %}">
         <a href="{% url 'organizacoes:detail' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
         {% if perms.organizacoes.change_organizacao %}
         <a href="{% url 'organizacoes:update' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
@@ -99,3 +107,4 @@
       </div>
     </article>
   {% endif %}
+{% endwith %}

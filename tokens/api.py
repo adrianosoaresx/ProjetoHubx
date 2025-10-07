@@ -267,7 +267,7 @@ class TokenViewSet(viewsets.GenericViewSet):
         url_name="revogar",
     )
     def revogar(self, request, codigo: str | None = None):
-        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.COORDENADOR.value}:
             return Response(status=403)
         try:
             token = find_token_by_code(codigo)
@@ -298,7 +298,7 @@ class TokenViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["get"], url_path="logs")
     def listar_logs(self, request, pk: str | None = None):
-        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.COORDENADOR.value}:
             return Response(status=403)
         token = self.get_object()
         logs = token.logs.select_related("usuario")
