@@ -130,10 +130,6 @@ def purge_user(user) -> None:
         PostView.objects.filter(post_id__in=post_ids).delete()
         hard_delete_queryset(user_posts, "posts do usuário")
 
-    eventos_coordenados = Evento.all_objects.filter(coordenador=user)
-    for evento in eventos_coordenados.iterator():
-        purge_evento(evento)
-
 
 def main() -> None:
     setup_django()

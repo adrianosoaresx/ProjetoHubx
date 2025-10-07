@@ -22,7 +22,6 @@ def test_avaliar_inscricao(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org, nucleo_obj=None)
     evento = EventoFactory(
-        coordenador=user,
         organizacao=org,
         nucleo=None,
         data_inicio=timezone.now() - timedelta(days=2),
@@ -47,7 +46,6 @@ def test_avaliar_inscricao_antes_evento(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org, nucleo_obj=None)
     evento = EventoFactory(
-        coordenador=user,
         organizacao=org,
         nucleo=None,
         data_inicio=timezone.now() + timedelta(days=1),
@@ -65,7 +63,6 @@ def test_reavaliar_inscricao(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org, nucleo_obj=None)
     evento = EventoFactory(
-        coordenador=user,
         organizacao=org,
         nucleo=None,
         data_inicio=timezone.now() - timedelta(days=2),

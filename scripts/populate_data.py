@@ -152,7 +152,6 @@ def main() -> None:
                         "cidade": org.cidade,
                         "estado": org.estado,
                         "cep": "88000-000" if org == organizacoes[0] else "89000-000",
-                        "coordenador": admin,
                         "nucleo": nucleos[i % len(nucleos)],
                         "status": 0,
                         "publico_alvo": 0,

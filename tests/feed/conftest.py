@@ -89,7 +89,7 @@ def nucleo(db, organizacao, coordenador_user, nucleado_user):
 
 @pytest.fixture
 def evento(db, organizacao, nucleo, admin_user):
-    return EventoFactory(organizacao=organizacao, nucleo=nucleo, coordenador=admin_user)
+    return EventoFactory(organizacao=organizacao, nucleo=nucleo)
 
 
 @pytest.fixture(autouse=True)

@@ -28,7 +28,6 @@ def test_evento_orcamento_atualiza_e_registra_log(client):
     user = _admin_user()
     evento = EventoFactory(
         organizacao=user.organizacao,
-        coordenador=user,
         orcamento_estimado=Decimal("100.00"),
         valor_gasto=Decimal("50.00"),
     )
@@ -48,7 +47,7 @@ def test_evento_orcamento_atualiza_e_registra_log(client):
 @override_settings(ROOT_URLCONF=__name__)
 def test_evento_orcamento_valores_invalidos(client):
     user = _admin_user()
-    evento = EventoFactory(organizacao=user.organizacao, coordenador=user)
+    evento = EventoFactory(organizacao=user.organizacao)
     client.force_login(user)
     url = f"/eventos/api/eventos/{evento.pk}/orcamento/"
     resp = client.post(url, {"orcamento_estimado": "abc", "valor_gasto": "10"})
