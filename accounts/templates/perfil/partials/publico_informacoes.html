@@ -19,31 +19,51 @@
     <dd class="font-medium text-[var(--text-primary)]">{{ profile.cnpj }}</dd>
   </div>
   {% endif %}
-  {% if profile.area_atuacao %}
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Área de atuação" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.get_area_atuacao_display }}</dd>
-  </div>
-  {% endif %}
-  {% if profile.descricao_atividade %}
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Descrição da atividade" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ profile.descricao_atividade }}</dd>
+  {% if profile.area_atuacao or profile.descricao_atividade %}
+  <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% if profile.area_atuacao %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Área de atuação" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ profile.get_area_atuacao_display }}</dd>
+    </div>
+    {% endif %}
+    {% if profile.descricao_atividade %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Descrição da atividade" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ profile.descricao_atividade }}</dd>
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.endereco }}</dd>
+  {% if profile.endereco or profile.cidade or profile.estado or profile.cep %}
+  <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% if profile.endereco %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ profile.endereco }}</dd>
+    </div>
+    {% endif %}
+    {% if profile.cidade %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Cidade" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ profile.cidade }}</dd>
+    </div>
+    {% endif %}
+    {% if profile.estado %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Estado" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ profile.estado }}</dd>
+    </div>
+    {% endif %}
+    {% if profile.cep %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ profile.cep }}</dd>
+    </div>
+    {% endif %}
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Cidade / Estado" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.cidade }} - {{ profile.estado }}</dd>
-  </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.cep }}</dd>
-  </div>
+  {% endif %}
 
   {% if profile.contato %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
