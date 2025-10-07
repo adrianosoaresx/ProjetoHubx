@@ -882,11 +882,6 @@ def confirmar_email(request, token: str):
         )
     return render(request, "accounts/email_confirm.html", {"status": "sucesso"})
 
-
-def onboarding(request):
-    return render(request, "register/onboarding.html")
-
-
 def cancel_delete(request, token: str):
     """Reativa a conta utilizando um token de cancelamento."""
     try:
