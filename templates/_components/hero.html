@@ -1,25 +1,39 @@
 {% load i18n %}
-<section class="{% if neural_background %}hero-with-neural {% endif %}bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if style %} {{ style }}{% endif %}">
-  {% if neural_background %}
+{% with hero_title=title hero_subtitle=subtitle hero_breadcrumb_template=breadcrumb_template|default:'' hero_action_template=action_template|default:'' hero_neural_background=neural_background hero_helper_text=helper_text hero_style=style hero_section_classes=section_classes|default:'bg-gradient-to-br from-[var(--hero-from)] to-[var(--hero-to)] text-white' hero_container_classes=container_classes|default:'max-w-7xl mx-auto w-full px-4 py-12 md:py-16' hero_content_classes=content_classes|default:'flex flex-col gap-6 md:flex-row md:items-center md:justify-between' hero_title_classes=title_classes|default:'text-4xl md:text-5xl font-bold text-white' hero_subtitle_classes=subtitle_classes|default:'text-lg text-white/90' hero_action_container_classes=action_container_classes|default:'flex justify-center md:justify-end md:self-start' hero_helper_classes=helper_classes|default:'mt-6 text-base text-white/80' hero_alignment=alignment|default:'responsive-left' %}
+<section class="{% if hero_neural_background %}hero-with-neural {% endif %}{{ hero_section_classes }}"
+         style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if hero_style %} {{ hero_style }}{% endif %}">
+  {% if hero_neural_background %}
     <div class="neural-bg-base" aria-hidden="true">
-      {% include 'backgrounds/neural_backgrounds.html' with bg_type=neural_background only %}
+      {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
     </div>
     <div class="hero-overlay" aria-hidden="true"></div>
   {% endif %}
-  <div class="{% if neural_background %}hero-content relative z-10 w-full {% endif %}max-w-7xl mx-auto px-4 py-10">
-    {% if breadcrumb_template %}
-      <div class="mb-4">{% include breadcrumb_template %}</div>
-    {% endif %}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-4xl font-bold">{{ title }}</h1>
-        {% if subtitle %}
-          <p class="text-base text-secondary">{{ subtitle }}</p>
+  <div class="{% if hero_neural_background %}hero-content relative z-10 w-full {% endif %}">
+    <div class="{{ hero_container_classes }} {% if hero_alignment == 'center' %}text-center{% elif hero_alignment == 'left' %}text-left{% elif hero_alignment == 'right' %}text-right{% else %}text-center md:text-left{% endif %}">
+      {% if hero_breadcrumb_template %}
+        <div class="mb-4">{% include hero_breadcrumb_template %}</div>
+      {% elif breadcrumb %}
+        <div class="mb-4">{% include breadcrumb %}</div>
+      {% endif %}
+      <div class="{{ hero_content_classes }}">
+        <div class="space-y-3 md:max-w-3xl">
+          {% if hero_title %}
+            <h1 class="{{ hero_title_classes }}">{{ hero_title }}</h1>
+          {% endif %}
+          {% if hero_subtitle %}
+            <p class="{{ hero_subtitle_classes }}">{{ hero_subtitle }}</p>
+          {% endif %}
+        </div>
+        {% if hero_action_template %}
+          <div class="{{ hero_action_container_classes }}">{% include hero_action_template %}</div>
+        {% elif actions %}
+          <div class="{{ hero_action_container_classes }}">{% include actions %}</div>
         {% endif %}
       </div>
-      {% if action_template %}
-      <div>{% include action_template %}</div>
+      {% if hero_helper_text %}
+        <p class="{{ hero_helper_classes }}">{{ hero_helper_text }}</p>
       {% endif %}
     </div>
   </div>
 </section>
+{% endwith %}

@@ -18,21 +18,47 @@ Todo texto visível e atributos de acessibilidade (`aria-label`, `aria-current`,
 ```
 
 ## hero.html
-Seção de destaque para cabeçalhos de páginas. Aceita variáveis `title`,
-`subtitle` e `cta` para botões de ação. Os valores devem ser textos já
-traduzidos ou envolvidos por `{% trans %}` dentro da partial.
+Seção de destaque reutilizável para cabeçalhos de páginas. O componente inclui
+gradiente configurável, suporte a *breadcrumb*, CTA opcional e pode receber o
+mesmo fundo neural utilizado nos módulos especializados.
+
+### Parâmetros principais
+
+- `title` / `subtitle`: textos exibidos no cabeçalho. Devem chegar traduzidos
+  ou envolver `{% trans %}`.
+- `action_template`: caminho de template incluído ao lado direito para CTA(s).
+  O alias legado `actions` também é aceito.
+- `breadcrumb_template`: caminho de template para o *breadcrumb*. O alias
+  `breadcrumb` continua funcional.
+- `helper_text`: texto auxiliar exibido abaixo do conteúdo principal.
+- `neural_background`: identifica o fundo em
+  `templates/backgrounds/neural_backgrounds.html` (ex.: `'home'`, `'feed'`,
+  `'nucleos'`). Quando omitido, o hero mantém apenas o gradiente.
+- `style`: sobrescreve `--hero-from` e `--hero-to` quando necessário.
+- `alignment`: controla a classe de alinhamento do container (`'responsive-left'`
+  padrão, `'center'`, `'left'` ou `'right'`).
+- `section_classes`, `container_classes`, `content_classes`, `title_classes`,
+  `subtitle_classes`, `action_container_classes` e `helper_classes`: permitem
+  ajustar classes utilitárias conforme a necessidade de cada tela.
+
+### Exemplos
 
 ```django
-{% include "_components/hero.html" with title=_("Título") %}
-```
+{# Hero simples com gradiente padrão #}
+{% include "_components/hero.html" with title=_("Título") subtitle=_("Resumo da página") %}
 
-O gradiente utiliza as variáveis CSS `--hero-from` e `--hero-to`, com valores
-padronizados de `var(--color-primary-500)` e `var(--color-primary-700)`.
-Essas cores podem ser sobrescritas ao incluir o componente passando o atributo
-`style`:
+{# Hero com fundo neural reutilizando o tema "home" #}
+{% include "_components/hero.html" with
+    title=_("Bem-vindo")
+    subtitle=_("Plataforma colaborativa do HubX")
+    neural_background='home'
+%}
 
-```django
-{% include "_components/hero.html" with title=_("Título") style="--hero-from: var(--color-accent-500); --hero-to: var(--color-accent-700);" %}
+{# Alterando as cores do gradiente via CSS custom properties #}
+{% include "_components/hero.html" with
+    title=_("Área de Relatórios")
+    style="--hero-from: var(--color-accent-500); --hero-to: var(--color-accent-700);"
+%}
 ```
 
 ## back_button.html
