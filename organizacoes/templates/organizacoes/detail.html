@@ -111,7 +111,16 @@
     {% endif %}
     {% if request.user.user_type == 'root' %}
       {% if perms.organizacoes.delete_organizacao %}
-        <a href="{% url 'organizacoes:delete' object.id %}" class="btn btn-danger">{% trans 'Excluir' %}</a>
+        <a
+          href="{% url 'organizacoes:delete' object.id %}"
+          hx-get="{% url 'organizacoes:delete' object.id %}"
+          hx-target="#modal"
+          hx-trigger="click"
+          hx-swap="innerHTML"
+          hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+          class="btn btn-danger"
+          aria-label="{% trans 'Excluir organização' %}"
+        >{% trans 'Excluir' %}</a>
       {% endif %}
       <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
         {% csrf_token %}
