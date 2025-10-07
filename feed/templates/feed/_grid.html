@@ -65,6 +65,11 @@
               {% lucide 'pencil' class='h-5 w-5' %}
             </a>
             <a href="{% url 'feed:post_delete' post.id %}"
+               hx-get="{% url 'feed:post_delete' post.id %}"
+               hx-target="#modal"
+               hx-trigger="click"
+               hx-swap="innerHTML"
+               hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
                class="relative inline-flex items-center justify-center rounded-full p-2 text-[var(--error)] transition hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--error)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                aria-label="{% trans 'Excluir postagem' %}">
               {% lucide 'trash-2' class='h-5 w-5' %}
