@@ -19,7 +19,6 @@ def can_issue_invite(issuer, target_role: str) -> bool:
         return False
 
     return issuer_type in {
-        UserType.ROOT,
         UserType.ADMIN,
         UserType.COORDENADOR,
     }

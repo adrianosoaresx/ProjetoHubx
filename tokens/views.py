@@ -42,12 +42,24 @@ from .utils import get_client_ip
 
 User = get_user_model()
 
+ROOT_TOKENS_FORBIDDEN_MESSAGE = _("Usuários root não gerenciam tokens de acesso.")
+
+
+def _redirect_root_from_tokens(request):
+    user_type = getattr(request.user, "get_tipo_usuario", None)
+    if user_type == UserType.ROOT.value:
+        messages.error(request, ROOT_TOKENS_FORBIDDEN_MESSAGE)
+        return redirect("organizacoes:list")
+    return None
+
 
 def token(request):
-    if request.user.is_authenticated and (
-        request.user.is_superuser or request.user.user_type in [UserType.ROOT, UserType.ADMIN]
-    ):
-        return redirect("tokens:listar_convites")
+    if request.user.is_authenticated:
+        redirect_response = _redirect_root_from_tokens(request)
+        if redirect_response:
+            return redirect_response
+        if request.user.is_superuser or request.user.get_tipo_usuario == UserType.ADMIN.value:
+            return redirect("tokens:listar_convites")
 
     form = ValidarTokenConviteForm()
     if request.method == "POST":
@@ -61,6 +73,9 @@ def token(request):
 
 @login_required
 def listar_convites(request):
+    redirect_response = _redirect_root_from_tokens(request)
+    if redirect_response:
+        return redirect_response
     if not request.user.is_staff:
         messages.error(request, _("Você não tem permissão para visualizar convites."))
         return redirect("accounts:perfil")
@@ -114,6 +129,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         }
 
     def get(self, request, *args, **kwargs):
+        redirect_response = _redirect_root_from_tokens(request)
+        if redirect_response:
+            return redirect_response
         form = GerarTokenConviteForm(user=request.user)
         if not form.fields["tipo_destino"].choices:
             messages.error(
@@ -131,6 +149,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         return render(request, "tokens/gerar_token.html", context)
 
     def post(self, request, *args, **kwargs):
+        redirect_response = _redirect_root_from_tokens(request)
+        if redirect_response:
+            return redirect_response
         ip = get_client_ip(request)
         rl = check_rate_limit(f"user:{request.user.id}:{ip}")
         if not rl.allowed:

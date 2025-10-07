@@ -405,9 +405,11 @@ def setup_domain_objects(member_password: str) -> None:
     ).count()
 
     print("Resumo do processamento:")
+
     print(f"- Usuário root senha: J0529*435")
     print(f"- Usuário admin senha: pionera")
     print(f"- Senha padrão de membros: {member_password}")
+
     print(f"- Membros criados: {created_members}")
     print(f"- Membros atualizados: {updated_members}")
     print(f"- Participações ativas no núcleo: {participacoes_ativas}")
