@@ -25,6 +25,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.functional import Promise
+from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -380,11 +381,33 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if getattr(request, "htmx", False):
+            context = {
+                "evento": self.object,
+                "titulo": _("Remover Evento"),
+                "mensagem": format_html(
+                    _("Tem certeza que deseja remover o evento <strong>{titulo}</strong>?"),
+                    titulo=self.object.titulo,
+                ),
+                "submit_label": _("Remover"),
+                "form_action": reverse("eventos:evento_excluir", args=[self.object.pk]),
+            }
+            return TemplateResponse(
+                request,
+                "eventos/partials/evento_delete_modal.html",
+                context,
+            )
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["evento"] = self.object
         context["title"] = _("Remover Evento")
         context["subtitle"] = getattr(self.object, "descricao", None)
+        fallback = reverse("eventos:detail", args=[self.object.pk])
+        context["back_href"] = resolve_back_href(self.request, fallback=fallback)
         return context
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
@@ -396,7 +419,12 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
             detalhes={"titulo": self.object.titulo},
         )
         messages.success(self.request, _("Evento removido."))  # pragma: no cover
-        return super().delete(request, *args, **kwargs)  # pragma: no cover
+        response = super().delete(request, *args, **kwargs)  # pragma: no cover
+        if getattr(request, "htmx", False):
+            hx_response = HttpResponse(status=204)
+            hx_response["HX-Redirect"] = str(self.get_success_url())
+            return hx_response
+        return response  # pragma: no cover
 
 
 class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
