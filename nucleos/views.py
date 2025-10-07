@@ -387,6 +387,23 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
+
+        is_htmx = bool(request.headers.get("HX-Request"))
+        form_action = reverse("nucleos:delete", args=[nucleo.pk])
+
+        if is_htmx:
+            contexto_modal = {
+                "objeto": nucleo,
+                "titulo": _("Remover Núcleo"),
+                "mensagem": format_html(
+                    _("Tem certeza que deseja remover o núcleo <strong>{nome}</strong>?"),
+                    nome=nucleo.nome,
+                ),
+                "submit_label": _("Remover"),
+                "form_action": form_action,
+            }
+            return render(request, "nucleos/partials/nucleo_delete_modal.html", contexto_modal)
+
         back_href = self._resolve_back_href(request, nucleo)
         fallback_url = reverse("nucleos:detail", args=[nucleo.pk])
         return render(
@@ -414,6 +431,10 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
             return redirect("nucleos:list")
         nucleo.soft_delete()
         messages.success(request, _("Núcleo removido."))
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse("nucleos:list")
+            return response
         return redirect("nucleos:list")
 
     def _resolve_back_href(self, request, nucleo: Nucleo) -> str:
