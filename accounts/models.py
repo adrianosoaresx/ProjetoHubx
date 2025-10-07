@@ -22,6 +22,30 @@ from organizacoes.utils import validate_cnpj
 from .validators import cpf_validator
 
 
+# --- BEGIN: Área de atuação (choices) ---
+AREA_ATUACAO_CHOICES = [
+    ("tecnologia", "Tecnologia da Informação"),
+    ("comercio", "Comércio e Varejo"),
+    ("industria", "Indústria e Produção"),
+    ("construcao", "Construção Civil e Engenharia"),
+    ("educacao", "Educação e Treinamento"),
+    ("saude", "Saúde e Bem-Estar"),
+    ("alimentacao", "Alimentação e Gastronomia"),
+    ("agro", "Agropecuária e Meio Ambiente"),
+    ("financeiro", "Serviços Financeiros e Contábeis"),
+    ("juridico", "Serviços Jurídicos"),
+    ("marketing", "Marketing, Comunicação e Mídia"),
+    ("transporte", "Transporte e Logística"),
+    ("servicos", "Serviços Gerais e Terceirização"),
+    ("turismo", "Turismo, Hotelaria e Eventos"),
+    ("imobiliario", "Mercado Imobiliário"),
+    ("publico", "Setor Público e Governamental"),
+    ("social", "Associações, ONGs e Projetos Sociais"),
+    ("outros", "Outros Setores"),
+]
+# --- END: Área de atuação (choices) ---
+
+
 def generate_secure_token() -> str:
     """Retorna um token seguro com entropia >= 128 bits."""
     return secrets.token_urlsafe(32)
@@ -91,6 +115,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     """
 
     username_validator = UnicodeUsernameValidator()
+    AREA_ATUACAO_CHOICES = AREA_ATUACAO_CHOICES
 
     username = models.CharField(
         _("username"),
@@ -135,6 +160,18 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     )
     razao_social = models.CharField("Razão Social", max_length=255, blank=True, null=True)
     nome_fantasia = models.CharField("Nome fantasia", max_length=255, blank=True, null=True)
+    area_atuacao = models.CharField(
+        max_length=50,
+        choices=AREA_ATUACAO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Área de atuação",
+    )
+    descricao_atividade = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descrição da atividade",
+    )
     biografia = models.TextField(blank=True)
     cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
     whatsapp = models.CharField(max_length=20, blank=True)

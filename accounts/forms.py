@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
 
-from .models import AccountToken, SecurityEvent, UserMedia
+from .models import AREA_ATUACAO_CHOICES, AccountToken, SecurityEvent, UserMedia
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
@@ -41,6 +41,8 @@ class CustomUserCreationForm(UserCreationForm):
             "redes_sociais",
             "organizacao",
             "nucleo",
+            "area_atuacao",
+            "descricao_atividade",
         )
         labels = {"contato": "Contato"}
         widgets = {
@@ -115,6 +117,8 @@ class CustomUserChangeForm(UserChangeForm):
             "redes_sociais",
             "organizacao",
             "nucleo",
+            "area_atuacao",
+            "descricao_atividade",
         )
         labels = {"contato": "Contato"}
         widgets = {
@@ -143,6 +147,16 @@ class InformacoesPessoaisForm(forms.ModelForm):
     cnpj = forms.CharField(max_length=18, required=False, label="CNPJ")
     razao_social = forms.CharField(max_length=255, required=False, label="Razão social")
     nome_fantasia = forms.CharField(max_length=255, required=False, label="Nome fantasia")
+    area_atuacao = forms.ChoiceField(
+        choices=getattr(User, "AREA_ATUACAO_CHOICES", AREA_ATUACAO_CHOICES),
+        required=False,
+        label="Área de atuação",
+    )
+    descricao_atividade = forms.CharField(
+        required=False,
+        label="Descrição da atividade",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
     facebook = forms.URLField(required=False, label=_("Facebook"), assume_scheme="https")
     twitter = forms.URLField(required=False, label=_("Twitter"), assume_scheme="https")
     instagram = forms.URLField(required=False, label=_("Instagram"), assume_scheme="https")
@@ -174,6 +188,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "cidade",
             "estado",
             "cep",
+            "area_atuacao",
+            "descricao_atividade",
         )
 
     field_order = (
@@ -181,6 +197,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
         "razao_social",
         "nome_fantasia",
         "cnpj",
+        "area_atuacao",
+        "descricao_atividade",
         "biografia",
         "contato",
         "cpf",
@@ -209,6 +227,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
             self.initial["cnpj"] = self.instance.cnpj
             self.initial["razao_social"] = self.instance.razao_social
             self.initial["nome_fantasia"] = self.instance.nome_fantasia
+            self.initial["area_atuacao"] = self.instance.area_atuacao
+            self.initial["descricao_atividade"] = self.instance.descricao_atividade
             self.initial["birth_date"] = self.instance.birth_date
             self.original_email = self.instance.email
         else:
@@ -243,6 +263,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user.cnpj = self.cleaned_data.get("cnpj")
         user.razao_social = self.cleaned_data.get("razao_social")
         user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
+        user.area_atuacao = self.cleaned_data.get("area_atuacao")
+        user.descricao_atividade = self.cleaned_data.get("descricao_atividade")
         user.birth_date = self.cleaned_data.get("birth_date")
         redes = {}
         for field in ("facebook", "twitter", "instagram", "linkedin"):
