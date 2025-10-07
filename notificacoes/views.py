@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.utils import resolve_back_href
 
-from .forms import NotificationTemplateForm
+from .forms import HistoricoNotificacaoFilterForm, NotificationTemplateForm
 from .models import (
     Canal,
     Frequencia,
@@ -143,26 +143,31 @@ def list_logs(request):
 @login_required
 def historico_notificacoes(request):
     historico = HistoricoNotificacao.objects.filter(user=request.user)
-    inicio = request.GET.get("inicio")
-    fim = request.GET.get("fim")
-    canal = request.GET.get("canal")
-    frequencia = request.GET.get("frequencia")
-    ordenacao = request.GET.get("ordenacao", "-enviado_em")
+    form = HistoricoNotificacaoFilterForm(request.GET or None)
 
-    if inicio:
-        historico = historico.filter(enviado_em__date__gte=inicio)
-    if fim:
-        historico = historico.filter(enviado_em__date__lte=fim)
-    if canal in Canal.values:
-        historico = historico.filter(canal=canal)
-    if frequencia in Frequencia.values:
-        historico = historico.filter(frequencia=frequencia)
-    if ordenacao in ["enviado_em", "-enviado_em"]:
-        historico = historico.order_by(ordenacao)
+    if form.is_valid():
+        inicio = form.cleaned_data.get("inicio")
+        fim = form.cleaned_data.get("fim")
+        canal = form.cleaned_data.get("canal")
+        frequencia = form.cleaned_data.get("frequencia")
+        ordenacao = form.cleaned_data.get("ordenacao") or "-enviado_em"
+
+        if inicio:
+            historico = historico.filter(enviado_em__date__gte=inicio)
+        if fim:
+            historico = historico.filter(enviado_em__date__lte=fim)
+        if canal in Canal.values:
+            historico = historico.filter(canal=canal)
+        if frequencia in Frequencia.values:
+            historico = historico.filter(frequencia=frequencia)
+        if ordenacao in ["enviado_em", "-enviado_em"]:
+            historico = historico.order_by(ordenacao)
+    else:
+        historico = historico.order_by("-enviado_em")
 
     paginator = Paginator(historico, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
-    context = {"historicos": page_obj}
+    context = {"historicos": page_obj, "form": form}
     template_name = (
         "notificacoes/historico_table.html" if request.headers.get("HX-Request") else "notificacoes/historico_list.html"
     )
