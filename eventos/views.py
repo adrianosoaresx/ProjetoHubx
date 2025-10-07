@@ -383,7 +383,8 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if getattr(request, "htmx", False):
+        is_htmx = bool(request.headers.get("HX-Request"))
+        if is_htmx:
             context = {
                 "evento": self.object,
                 "titulo": _("Remover Evento"),
@@ -420,7 +421,7 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         )
         messages.success(self.request, _("Evento removido."))  # pragma: no cover
         response = super().delete(request, *args, **kwargs)  # pragma: no cover
-        if getattr(request, "htmx", False):
+        if bool(request.headers.get("HX-Request")):
             hx_response = HttpResponse(status=204)
             hx_response["HX-Redirect"] = str(self.get_success_url())
             return hx_response
