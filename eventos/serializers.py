@@ -22,7 +22,6 @@ class EventoSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "organizacao",
-            "coordenador",
             "created_at",
             "updated_at",
             "nota_media",
@@ -46,7 +45,6 @@ class EventoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
         validated_data["organizacao"] = request.user.organizacao
-        validated_data["coordenador"] = request.user
         instance = super().create(validated_data)
         EventoLog.objects.create(evento=instance, usuario=request.user, acao="evento_criado")
         return instance

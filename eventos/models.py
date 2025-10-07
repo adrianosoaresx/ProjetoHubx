@@ -194,11 +194,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         max_length=9,
         validators=[RegexValidator(r"^\d{5}-\d{3}$", "CEP inválido")],
     )
-    coordenador = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="eventos_criados",
-    )
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.PositiveSmallIntegerField(choices=Status.choices)

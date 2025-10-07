@@ -10,7 +10,7 @@ from eventos.models import InscricaoEvento, EventoLog
 def test_inscricao_confirmacao_gera_log():
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org)
-    evento = EventoFactory(organizacao=org, coordenador=user)
+    evento = EventoFactory(organizacao=org)
     inscricao = InscricaoEvento.objects.create(user=user, evento=evento)
     inscricao.confirmar_inscricao()
     assert EventoLog.objects.filter(evento=evento, acao="inscricao_confirmada", usuario=user).exists()

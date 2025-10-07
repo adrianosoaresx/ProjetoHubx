@@ -80,7 +80,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         user = self.request.user
         qs = (
             Evento.objects.filter(organizacao=user.organizacao)
-            .select_related("nucleo", "coordenador", "organizacao")
+            .select_related("nucleo", "organizacao")
             .prefetch_related("inscricoes")
         )
         if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
@@ -244,7 +244,7 @@ def lista_eventos(request, dia_iso: str):
     eventos = (
         _queryset_por_organizacao(request)
         .filter(data_inicio__date=dia)
-        .select_related("organizacao", "coordenador", "nucleo")
+        .select_related("organizacao", "nucleo")
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )
@@ -778,7 +778,7 @@ def eventos_por_dia(request):
     eventos = (
         _queryset_por_organizacao(request)
         .filter(data_inicio__date=dia)
-        .select_related("organizacao", "coordenador", "nucleo")
+        .select_related("organizacao", "nucleo")
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )

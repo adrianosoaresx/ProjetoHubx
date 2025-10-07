@@ -4,26 +4,13 @@
     <div>
       {% include '_forms/field.html' with field=form.status %}
     </div>
-    <div{% if coordinator_in_status_group %} class="space-y-6"{% endif %}>
-      <div id="nucleo-field-container">
-        {% include '_forms/field.html' with field=form.nucleo %}
-      </div>
-      {% if coordinator_in_status_group %}
-        <div>
-          {% include '_forms/field.html' with field=form.coordenador %}
-        </div>
-      {% endif %}
+    <div id="nucleo-field-container">
+      {% include '_forms/field.html' with field=form.nucleo %}
     </div>
     <div>
       {% include '_forms/field.html' with field=form.publico_alvo %}
     </div>
   </div>
-
-  {% if not coordinator_in_status_group %}
-    <div>
-      {% include '_forms/field.html' with field=form.coordenador %}
-    </div>
-  {% endif %}
 
   <div>
     {% include '_forms/field.html' with field=form.titulo %}

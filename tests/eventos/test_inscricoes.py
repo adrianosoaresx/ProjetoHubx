@@ -41,7 +41,6 @@ def evento(organizacao, usuario_logado):
         cidade="Cidade Teste",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,

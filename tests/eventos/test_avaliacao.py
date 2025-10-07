@@ -29,14 +29,13 @@ def usuario(client, organizacao):
     return user
 
 
-def criar_evento(organizacao, usuario, inicio, fim):
+def criar_evento(organizacao, inicio, fim):
     return Evento.objects.create(
         organizacao=organizacao,
         titulo="Evento",
         descricao="Desc",
         data_inicio=inicio,
         data_fim=fim,
-        coordenador=usuario,
         status=Evento.Status.ATIVO,
         publico_alvo=1,
         numero_convidados=50,
@@ -47,7 +46,6 @@ def criar_evento(organizacao, usuario, inicio, fim):
 def test_avaliacao_permitida_pos_evento(client, usuario, organizacao):
     evento = criar_evento(
         organizacao,
-        usuario,
         timezone.now() - timedelta(days=1),
         timezone.now() - timedelta(hours=1),
     )
@@ -67,7 +65,6 @@ def test_avaliacao_permitida_pos_evento(client, usuario, organizacao):
 def test_avaliacao_negada_evento_future(client, usuario, organizacao):
     evento = criar_evento(
         organizacao,
-        usuario,
         timezone.now() + timedelta(hours=1),
         timezone.now() + timedelta(days=1),
     )

@@ -60,7 +60,6 @@ class CalendarViewTests(TestCase):
             cidade="Cidade",
             estado="ST",
             cep="12345-678",
-            coordenador=self.admin,
             contato_nome="Admin",
         )
         InscricaoEvento.objects.create(evento=evento, user=self.admin, status="confirmada")
