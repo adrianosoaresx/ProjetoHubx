@@ -47,10 +47,16 @@
                           <button type="submit" class="btn btn-secondary btn-sm">{% trans 'Ativar' %}</button>
                         {% endif %}
                       </form>
-                      <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</button>
-                      </form>
+                      <a
+                        href="{% url 'notificacoes:template_delete' tpl.codigo %}"
+                        hx-get="{% url 'notificacoes:template_delete' tpl.codigo %}"
+                        hx-target="#modal"
+                        hx-trigger="click"
+                        hx-swap="innerHTML"
+                        hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                        class="btn btn-danger btn-sm"
+                        aria-haspopup="dialog"
+                      >{% trans 'Excluir' %}</a>
                     </div>
                   </td>
                 </tr>
@@ -69,4 +75,5 @@
       </div>
     </article>
   </div>
+  <div id="modal"></div>
 {% endblock %}
