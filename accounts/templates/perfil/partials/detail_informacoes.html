@@ -19,6 +19,18 @@
     <dd class="font-medium text-[var(--text-primary)]">{{ user.cnpj }}</dd>
   </div>
   {% endif %}
+  {% if user.area_atuacao %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Área de atuação" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.get_area_atuacao_display }}</dd>
+  </div>
+  {% endif %}
+  {% if user.descricao_atividade %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Descrição da atividade" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ user.descricao_atividade }}</dd>
+  </div>
+  {% endif %}
 
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>

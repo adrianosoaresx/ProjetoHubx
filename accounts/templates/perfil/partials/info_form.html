@@ -27,7 +27,32 @@
       <input type="hidden" name="username" value="{{ target_user.username }}" />
     {% endif %}
     {% for field in form %}
-      {% include '_forms/field.html' with field=field %}
+      {% if field.name != "area_atuacao" and field.name != "descricao_atividade" %}
+        {% include '_forms/field.html' with field=field %}
+        {% if field.name == "cnpj" %}
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">
+                {{ form.area_atuacao.label }}
+              </label>
+              {{ form.area_atuacao }}
+              {% if form.area_atuacao.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.area_atuacao.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">
+                {{ form.descricao_atividade.label }}
+              </label>
+              {{ form.descricao_atividade }}
+              {% if form.descricao_atividade.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.descricao_atividade.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
     {% endfor %}
     <div class="pt-4">
       <button type="submit" class="btn btn-primary">
