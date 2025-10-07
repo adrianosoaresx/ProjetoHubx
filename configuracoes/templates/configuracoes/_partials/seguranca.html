@@ -57,3 +57,29 @@
     {% endif %}
   </div>
 </article>
+
+<article class="card" aria-labelledby="delete-account-heading">
+  <div class="card-body space-y-3">
+    <h2 id="delete-account-heading" class="text-lg font-semibold text-[var(--text-primary)]">
+      {% trans 'Excluir conta' %}
+    </h2>
+    <p class="text-sm text-[var(--text-secondary)]">
+      {% blocktrans %}
+        A exclusão é permanente e remove todo o histórico da sua conta. Digite "EXCLUIR" para confirmar quando o modal for aberto.
+      {% endblocktrans %}
+    </p>
+    <div>
+      <a
+        href="{% url 'accounts:excluir_conta' %}"
+        hx-get="{% url 'accounts:delete_account' %}"
+        hx-target="#modal"
+        hx-trigger="click"
+        hx-swap="innerHTML"
+        hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+        class="btn btn-danger"
+      >
+        {% trans 'Excluir conta' %}
+      </a>
+    </div>
+  </div>
+</article>

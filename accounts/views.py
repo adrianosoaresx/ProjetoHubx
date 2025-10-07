@@ -671,12 +671,16 @@ def conta_inativa(request):
     return render(request, "account_inactive.html")
 
 
+ACCOUNT_DELETE_CONFIRMATION_TOKEN = "EXCLUIR"
+
+
 @login_required
 def excluir_conta(request):
     """Permite que o usuário exclua sua própria conta."""
 
     target_user = _resolve_management_target_user(request)
     is_self = target_user == request.user
+    is_htmx = bool(request.headers.get("HX-Request"))
 
     def _redirect_to_form():
         url = reverse("accounts:excluir_conta")
@@ -690,18 +694,38 @@ def excluir_conta(request):
             url = f"{url}?{params}"
         return redirect(url)
 
-    if request.method == "GET":
-        return render(
-            request,
-            "accounts/delete_account_confirm.html",
-            {"target_user": target_user, "is_self": is_self},
+    def _render_form(status: int = 200, **extra_context):
+        context = {
+            "target_user": target_user,
+            "is_self": is_self,
+            "confirmation_token": ACCOUNT_DELETE_CONFIRMATION_TOKEN,
+        }
+        context.update(extra_context)
+        template_name = (
+            "accounts/partials/account_delete_modal.html"
+            if is_htmx
+            else "accounts/delete_account_confirm.html"
         )
+        return render(request, template_name, context, status=status)
+
+    if request.method == "GET":
+        return _render_form()
 
     if request.method != "POST":
+        if is_htmx:
+            return _render_form(status=405)
         return _redirect_to_form()
 
-    if request.POST.get("confirm") != "EXCLUIR":
-        messages.error(request, _("Confirme digitando EXCLUIR."))
+    confirm_value = request.POST.get("confirm", "")
+    if confirm_value != ACCOUNT_DELETE_CONFIRMATION_TOKEN:
+        error_message = _("Confirme digitando EXCLUIR.")
+        if is_htmx:
+            return _render_form(
+                status=400,
+                error_message=error_message,
+                confirm_value=confirm_value,
+            )
+        messages.error(request, error_message)
         return _redirect_to_form()
 
     with transaction.atomic():
@@ -730,14 +754,21 @@ def excluir_conta(request):
             request,
             _("Sua conta foi excluída com sucesso. Você pode reativá-la em até 30 dias."),
         )
-        return redirect("core:home")
+        redirect_url = reverse("core:home")
+    else:
+        messages.success(
+            request,
+            _("Conta de %(username)s excluída com sucesso.")
+            % {"username": target_user.get_full_name()},
+        )
+        redirect_url = reverse("associados:associados_lista")
 
-    messages.success(
-        request,
-        _("Conta de %(username)s excluída com sucesso.")
-        % {"username": target_user.get_full_name()},
-    )
-    return redirect("associados:associados_lista")
+    if is_htmx:
+        response = HttpResponse(status=204)
+        response["HX-Redirect"] = redirect_url
+        return response
+
+    return redirect(redirect_url)
 
 
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
