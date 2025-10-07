@@ -7,8 +7,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db.models import Count
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from core.utils import resolve_back_href
@@ -181,10 +183,34 @@ def delete_template(request, codigo: str):
         else:
             template.delete()
             messages.success(request, _("Template excluído com sucesso."))
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse("notificacoes:templates_list")
+            return response
         return redirect("notificacoes:templates_list")
 
     fallback_url = reverse("notificacoes:templates_list")
     back_href = resolve_back_href(request, fallback=fallback_url)
+    if request.headers.get("HX-Request"):
+        form_action = reverse("notificacoes:template_delete", args=[template.codigo])
+        modal_context = {
+            "template": template,
+            "modal_identifier": template.pk or template.codigo,
+            "titulo": _("Confirmar exclusão"),
+            "mensagem": _("Esta ação não poderá ser desfeita."),
+            "pergunta": format_html(
+                _("Tem certeza que deseja excluir o template <strong>{codigo}</strong>?"),
+                codigo=template.codigo,
+            ),
+            "submit_label": _("Excluir"),
+            "form_action": form_action,
+        }
+        return render(
+            request,
+            "notificacoes/partials/template_delete_modal.html",
+            modal_context,
+        )
+
     context = {
         "template": template,
         "back_href": back_href,
