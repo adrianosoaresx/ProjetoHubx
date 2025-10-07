@@ -1,5 +1,6 @@
 {% load i18n %}
-{% with modal_suffix=post.pk|stringformat:"s" modal_title_id="modal-delete-title-"|add:modal_suffix modal_description_id="modal-delete-description-"|add:modal_suffix %}
+{% with modal_suffix=post.pk|stringformat:"s" %}
+{% with modal_title_id="modal-delete-title-"|add:modal_suffix modal_description_id="modal-delete-description-"|add:modal_suffix %}
 <div
   class="modal !active"
   role="dialog"
@@ -102,4 +103,5 @@
     }
   })();
 </script>
+{% endwith %}
 {% endwith %}
