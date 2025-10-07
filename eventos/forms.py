@@ -95,6 +95,13 @@ class EventoForm(forms.ModelForm):
             if field_name in self.fields:
                 self.fields[field_name].label = label
 
+        for field_name, help_text in (
+            ("briefing", _("Informe a URL do briefing.")),
+            ("parcerias", _("Informe a URL das parcerias.")),
+        ):
+            if field_name in self.fields:
+                self.fields[field_name].help_text = help_text
+
     def clean(self):
         cleaned_data = super().clean()
         publico_alvo = cleaned_data.get("publico_alvo")
