@@ -60,7 +60,7 @@ User = get_user_model()
 Midia = UserMedia
 
 
-PERFIL_DEFAULT_SECTION = "portfolio"
+PERFIL_DEFAULT_SECTION = "info"
 PERFIL_SECTION_URLS = {
     "portfolio": "accounts:perfil_portfolio",
     "info": "accounts:perfil_info_partial",
