@@ -3,7 +3,7 @@
 <section class="{% if hero_neural_background %}hero-with-neural {% endif %}{{ hero_section_classes }}"
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if hero_style %} {{ hero_style }}{% endif %}">
   {% if hero_neural_background %}
-    <div class="neural-bg-base" aria-hidden="true">
+    <div class="hero-neural-background" aria-hidden="true">
       {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
     </div>
     <div class="hero-overlay" aria-hidden="true"></div>

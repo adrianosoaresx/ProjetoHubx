@@ -4,10 +4,9 @@
 {% block title %}{% trans "Registro Concluído" %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include 'register/_hero.html' with
-    title=_('Registro concluído')
-    subtitle=_('Verifique seu e-mail para ativar sua conta e começar a utilizar o HubX.')
-  %}
+  {% translate "Registro concluído" as success_hero_title %}
+  {% translate "Verifique seu e-mail para ativar sua conta e começar a utilizar o HubX." as success_hero_subtitle %}
+  {% include 'register/_hero.html' with title=success_hero_title subtitle=success_hero_subtitle %}
 {% endblock %}
 
 {% block content %}

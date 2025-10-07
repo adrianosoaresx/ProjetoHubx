@@ -1,6 +1,4 @@
 {% load i18n %}
-{% include '_components/hero_auth.html' with
-    title=title|default:_('Crie sua conta no HubX')
-    subtitle=subtitle|default:_('Siga as etapas para configurar sua presença e conectar-se à comunidade.')
-    helper_text=helper_text
-%}
+{% translate "Crie sua conta no HubX" as register_default_title %}
+{% translate "Siga as etapas para configurar sua presença e conectar-se à comunidade." as register_default_subtitle %}
+{% include '_components/hero_auth.html' with title=title|default:register_default_title subtitle=subtitle|default:register_default_subtitle helper_text=helper_text %}

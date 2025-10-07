@@ -213,6 +213,14 @@
   isolation: isolate;
 }
 
+.hero-neural-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-content {
   position: relative;
   z-index: 10;

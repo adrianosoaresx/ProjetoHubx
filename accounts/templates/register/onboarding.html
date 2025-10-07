@@ -4,10 +4,9 @@
 {% block title %}{% trans "Cadastre-se" %} - HubX{% endblock %}
 
 {% block hero %}
-  {% include 'register/_hero.html' with
-    title=_('Junte-se ao HubX')
-    subtitle=_('Conecte-se com comunidades e organizações em uma única plataforma.')
-  %}
+  {% translate "Junte-se ao HubX" as onboarding_hero_title %}
+  {% translate "Conecte-se com comunidades e organizações em uma única plataforma." as onboarding_hero_subtitle %}
+  {% include 'register/_hero.html' with title=onboarding_hero_title subtitle=onboarding_hero_subtitle %}
 {% endblock %}
 
 {% block content %}
