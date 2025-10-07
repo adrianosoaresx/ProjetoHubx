@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Prefetch
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
@@ -49,17 +49,10 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     cache_timeout = 60
 
     def _cache_key(self) -> str:
-        params = self.request.GET
         version = get_cache_version("organizacoes_list")
         keys = [
             str(getattr(self.request.user, "pk", "")),
-            params.get("search", ""),
-            params.get("tipo", ""),
-            params.get("cidade", ""),
-            params.get("estado", ""),
-            params.get("ordering", ""),
-            params.get("page", ""),
-            params.get("inativa", ""),
+            self.request.GET.get("page", ""),
             "hx" if self.request.headers.get("HX-Request") else "full",
         ]
         return f"organizacoes_list_v{version}_" + "_".join(keys)
@@ -80,42 +73,10 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(pk=user.organizacao_id)
 
-        search = self.request.GET.get("search")
-        tipo = self.request.GET.get("tipo")
-        cidade = self.request.GET.get("cidade")
-        estado = self.request.GET.get("estado")
-        ordering = self.request.GET.get("ordering", "nome")
-        inativa = self.request.GET.get("inativa")
-
-        if inativa is not None and inativa != "":
-            qs = qs.filter(inativa=inativa.lower() in ["1", "true", "t", "yes"])
-        else:
-            qs = qs.filter(inativa=False)
-
-        if search:
-            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
-        if tipo:
-            qs = qs.filter(tipo=tipo)
-        if cidade:
-            qs = qs.filter(cidade=cidade)
-        if estado:
-            qs = qs.filter(estado=estado)
-
-        allowed_order = {"nome", "tipo", "cidade", "estado", "created_at"}
-        if ordering not in allowed_order:
-            ordering = "nome"
-        return qs.order_by(ordering)
+        return qs.filter(inativa=False).order_by("nome")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tipos"] = Organizacao._meta.get_field("tipo").choices
-        qs = Organizacao.objects.filter(inativa=False)
-        user = self.request.user
-        if user.user_type == UserType.ADMIN:
-            qs = qs.filter(pk=user.organizacao_id)
-        context["cidades"] = qs.exclude(cidade="").values_list("cidade", flat=True).distinct().order_by("cidade")
-        context["estados"] = qs.exclude(estado="").values_list("estado", flat=True).distinct().order_by("estado")
-        context["inativa"] = self.request.GET.get("inativa", "")
         return context
 
     def render_to_response(self, context, **response_kwargs):
