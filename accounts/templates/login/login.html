@@ -4,10 +4,9 @@
 {% block title %}{% trans "Entrar" %} - HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_auth.html' with
-    title=_('Bem-vindo de volta')
-    subtitle=_('Entre para acessar sua conta e conectar-se à sua rede.')
-  %}
+  {% translate "Bem-vindo de volta" as login_hero_title %}
+  {% translate "Entre para acessar sua conta e conectar-se à sua rede." as login_hero_subtitle %}
+  {% include '_components/hero_auth.html' with title=login_hero_title subtitle=login_hero_subtitle %}
 {% endblock %}
 
 {% block content %}
