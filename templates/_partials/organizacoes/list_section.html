@@ -1,75 +1,145 @@
 {% load i18n %}
 {% with select_classes="form-select w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition" %}
-<div class="card">
-  <div class="card-body space-y-4">
-    
-  </div>
-
-
-  {% if object_list %}
-    <section class="card-grid">
-    {% for organizacao in object_list %}
-      <article class="card flex flex-col">
-      <div class="card-body flex flex-col">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
-          {% if organizacao.avatar %}
-            <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" loading="lazy" />
-          {% else %}
-            <span class="text-sm font-bold text-[var(--text-muted)]">{{ organizacao.nome|make_list|first|upper }}</span>
-          {% endif %}
-        </div>
-        <div>
-          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-[var(--text-primary)] font-medium hover:underline">{{ organizacao.nome }}</a>
-          {% if organizacao.inativa %}
-            <span class="ml-2 badge badge-warning">{% trans 'Inativa' %}</span>
-          {% endif %}
-        </div>
-      </div>
-      {% if request.user.get_tipo_usuario != 'root' %}
-      <div class="grid grid-cols-3 gap-4 text-center mt-auto">
-        <div>
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Usuários' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.users_count }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Núcleos' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.nucleos_count }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Eventos' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.events_count }}</p>
-        </div>
-      </div>
-      {% endif %}
-      <div class="flex gap-2 justify-center {% if request.user.get_tipo_usuario == 'root' %}mt-auto{% else %}mt-4{% endif %}">
-        <a href="{% url 'organizacoes:detail' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
-        {% if perms.organizacoes.change_organizacao %}
-        <a href="{% url 'organizacoes:update' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
-        {% endif %}
-      </div>
-      </div>
-    </article>
-    {% endfor %}
-  </section>
-  <div class="mt-6 flex justify-center gap-2">
-    {% if page_obj.has_previous %}
-      <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="btn btn-secondary" aria-label="{% trans 'Anterior' %}">{% trans 'Anterior' %}</a>
-    {% endif %}
-    <span class="btn btn-secondary">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-      <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="btn btn-secondary" aria-label="{% trans 'Próxima' %}">{% trans 'Próxima' %}</a>
-    {% endif %}
-  </div>
-{% else %}
-    <article class="card text-center">
-      <div class="card-body p-10">
-        <p class="text-[var(--text-muted)] mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
-        <a href="{% url 'organizacoes:create' %}" class="btn">
-          {% trans 'Cadastrar' %}
+<article class="card">
+  <div class="card-header">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-xl font-semibold">{% trans 'Organizações' %}</h2>
+      {% if request.GET.urlencode %}
+        <a href="{{ request.path }}" class="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          {% trans 'Limpar filtros' %}
         </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card-body space-y-6">
+    <form method="get" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="{% trans 'Filtros de organizações' %}">
+      <div class="sm:col-span-2">
+        <label for="search" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Buscar' %}</label>
+        <input
+          type="search"
+          name="search"
+          id="search"
+          value="{{ request.GET.search|default_if_none:'' }}"
+          class="form-input w-full"
+          placeholder="{% trans 'Buscar por nome ou slug' %}"
+        />
       </div>
-    </article>
-  {% endif %}
+      <div>
+        <label for="tipo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Tipo' %}</label>
+        <select name="tipo" id="tipo" class="{{ select_classes }}">
+          <option value="">{% trans 'Todos os tipos' %}</option>
+          {% for value, label in tipos %}
+            <option value="{{ value }}"{% if request.GET.tipo == value|stringformat:'s' %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="cidade" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Cidade' %}</label>
+        <select name="cidade" id="cidade" class="{{ select_classes }}">
+          <option value="">{% trans 'Todas as cidades' %}</option>
+          {% for cidade in cidades %}
+            <option value="{{ cidade }}"{% if request.GET.cidade == cidade %} selected{% endif %}>{{ cidade }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="estado" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Estado' %}</label>
+        <select name="estado" id="estado" class="{{ select_classes }}">
+          <option value="">{% trans 'Todos os estados' %}</option>
+          {% for estado in estados %}
+            <option value="{{ estado }}"{% if request.GET.estado == estado %} selected{% endif %}>{{ estado }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="ordering" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Ordenar por' %}</label>
+        {% with current_order=request.GET.ordering|default:'nome' %}
+          <select name="ordering" id="ordering" class="{{ select_classes }}">
+            <option value="nome"{% if current_order == 'nome' %} selected{% endif %}>{% trans 'Nome' %}</option>
+            <option value="tipo"{% if current_order == 'tipo' %} selected{% endif %}>{% trans 'Tipo' %}</option>
+            <option value="cidade"{% if current_order == 'cidade' %} selected{% endif %}>{% trans 'Cidade' %}</option>
+            <option value="estado"{% if current_order == 'estado' %} selected{% endif %}>{% trans 'Estado' %}</option>
+            <option value="created_at"{% if current_order == 'created_at' %} selected{% endif %}>{% trans 'Data de criação' %}</option>
+          </select>
+        {% endwith %}
+      </div>
+      <div>
+        <label for="inativa" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Status' %}</label>
+        {% with normalized=request.GET.inativa|default_if_none:''|lower %}
+          <select name="inativa" id="inativa" class="{{ select_classes }}">
+            <option value=""{% if normalized == '' or normalized == 'false' or normalized == '0' or normalized == 'no' %} selected{% endif %}>{% trans 'Somente ativas' %}</option>
+            <option value="true"{% if normalized == 'true' or normalized == 't' or normalized == '1' or normalized == 'yes' %} selected{% endif %}>{% trans 'Somente inativas' %}</option>
+          </select>
+        {% endwith %}
+      </div>
+      <div class="sm:col-span-2 xl:col-span-1 flex flex-col justify-end gap-3 sm:flex-row">
+        <button type="submit" class="btn btn-primary w-full sm:w-auto">{% trans 'Aplicar filtros' %}</button>
+        <a href="{{ request.path }}" class="btn btn-secondary w-full sm:w-auto">{% trans 'Limpar' %}</a>
+      </div>
+    </form>
+
+    <div role="list" class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 items-stretch">
+      {% for organizacao in object_list %}
+        <article role="listitem" class="card flex flex-col">
+          <div class="card-body flex grow flex-col gap-4">
+            <div class="flex items-start gap-3">
+              <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-tertiary)]"{% if not organizacao.avatar %} role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
+                {% if organizacao.avatar %}
+                  <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="h-full w-full object-cover" loading="lazy" />
+                {% else %}
+                  <span class="text-sm font-semibold text-[var(--text-muted)]">{{ organizacao.nome|make_list|first|upper }}</span>
+                {% endif %}
+              </div>
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-lg font-semibold text-[var(--text-primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]">{{ organizacao.nome }}</a>
+                  {% if organizacao.inativa %}
+                    <span class="badge badge-warning">{% trans 'Inativa' %}</span>
+                  {% endif %}
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--text-secondary)]">
+                  {% if organizacao.get_tipo_display %}
+                    <span>{% trans 'Tipo:' %} {{ organizacao.get_tipo_display }}</span>
+                  {% endif %}
+                  {% if organizacao.cidade or organizacao.estado %}
+                    <span>
+                      {% trans 'Localização:' %}
+                      {{ organizacao.cidade }}{% if organizacao.cidade and organizacao.estado %}/{% endif %}{{ organizacao.estado }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% if request.user.get_tipo_usuario != 'root' %}
+              <dl class="grid grid-cols-3 gap-3 text-center text-sm text-[var(--text-secondary)]">
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+                  <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Usuários' %}</dt>
+                  <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.users_count }}</dd>
+                </div>
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+                  <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Núcleos' %}</dt>
+                  <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.nucleos_count }}</dd>
+                </div>
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+                  <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Eventos' %}</dt>
+                  <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.events_count }}</dd>
+                </div>
+              </dl>
+            {% endif %}
+          </div>
+          <footer class="card-footer flex flex-wrap justify-center gap-3">
+            <a href="{% url 'organizacoes:detail' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
+            {% if perms.organizacoes.change_organizacao %}
+              <a href="{% url 'organizacoes:update' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
+            {% endif %}
+          </footer>
+        </article>
+      {% empty %}
+        <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhuma organização cadastrada.' %}</p>
+      {% endfor %}
+    </div>
+
+    {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode hx_target='#org-list' hx_get=request.path hx_push_url='true' %}
+  </div>
+</article>
 {% endwith %}
-</div>
