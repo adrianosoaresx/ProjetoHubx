@@ -4,7 +4,10 @@
 {% block title %}{% trans "Cadastre-se" %} - HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' %}
+  {% include 'register/_hero.html' with
+    title=_('Junte-se ao HubX')
+    subtitle=_('Conecte-se com comunidades e organizações em uma única plataforma.')
+  %}
 {% endblock %}
 
 {% block content %}
@@ -22,7 +25,7 @@
         </div>
         <div class="space-y-2">
           <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Junte-se ao HubX" %}</h1>
-          <p class="text-[var(--text-secondary)]">{% trans "Conecte-se com comunidades e organizações em uma única plataforma" %}</p>
+          <p class="text-[var(--text-secondary)]">{% trans "Escolha a melhor forma de começar sua jornada no HubX." %}</p>
         </div>
       </div>
 

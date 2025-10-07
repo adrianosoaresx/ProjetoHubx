@@ -4,7 +4,10 @@
 {% block title %}{% trans "Entrar" %} - HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Bem-vindo de volta') %}
+  {% include '_components/hero_auth.html' with
+    title=_('Bem-vindo de volta')
+    subtitle=_('Entre para acessar sua conta e conectar-se à sua rede.')
+  %}
 {% endblock %}
 
 {% block content %}
@@ -12,7 +15,7 @@
   <div class="card" role="dialog">
     <div class="card-body space-y-6">
       <p class="text-center text-sm text-[var(--text-secondary)]">
-        {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
+        {% trans "Informe seu e-mail e senha cadastrados para continuar." %}
       </p>
 
       {% if form.non_field_errors %}
