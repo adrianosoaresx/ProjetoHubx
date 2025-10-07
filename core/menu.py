@@ -283,13 +283,6 @@ def _get_menu_items() -> List[MenuItem]:
     eventos_url = reverse("eventos:lista")  # Link principal (menu raiz) abre a lista de eventos
     perfil_children = [
         MenuItem(
-            id="perfil_info",
-            path=f"{perfil_url}?section=info",
-            label="Informações",
-            icon=ICON_INFO,
-            permissions=["authenticated"],
-        ),
-        MenuItem(
             id="perfil_portfolio",
             path=f"{perfil_url}?section=portfolio",
             label="Portfólio",
