@@ -25,7 +25,6 @@ def evento_passado(organizacao, usuario):
         descricao="Já aconteceu",
         data_inicio=make_aware(datetime(2024, 6, 10, 14, 0)),
         data_fim=make_aware(datetime(2024, 6, 10, 16, 0)),
-        coordenador=usuario,
         status=Evento.Status.ATIVO,  # Ativo
         publico_alvo=1,  # Corrigido para usar um número inteiro válido
         numero_convidados=50,  # Adicionado para corrigir o erro

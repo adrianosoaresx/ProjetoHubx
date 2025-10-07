@@ -3,7 +3,6 @@ from datetime import timedelta, timezone as dt_timezone
 import factory
 from factory.django import DjangoModelFactory
 
-from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
@@ -16,7 +15,6 @@ class EventoFactory(DjangoModelFactory):
 
     organizacao = factory.SubFactory(OrganizacaoFactory)
     nucleo = factory.SubFactory(NucleoFactory, organizacao=factory.SelfAttribute("..organizacao"))
-    coordenador = factory.SubFactory(UserFactory)
     titulo = factory.Faker("sentence", locale="pt_BR")
     descricao = factory.Faker("paragraph", locale="pt_BR")
     data_inicio = factory.Faker("future_datetime", tzinfo=dt_timezone.utc)

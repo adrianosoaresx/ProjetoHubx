@@ -51,9 +51,13 @@ def _send_for_frequency(frequency: str) -> None:
             hora_notificacao_semanal__minute=now.minute,
         )
     for config in configs:
+        eventos_qs = Evento.objects.filter(created_at__gte=since)
+        organizacao = getattr(config.user, "organizacao", None)
+        if organizacao:
+            eventos_qs = eventos_qs.filter(organizacao=organizacao)
         counts = {
             "feed": Post.objects.filter(created_at__gte=since).exclude(autor=config.user).count(),
-            "eventos": Evento.objects.filter(created_at__gte=since).exclude(coordenador=config.user).count(),
+            "eventos": eventos_qs.count(),
         }
         if sum(counts.values()) == 0:
             continue

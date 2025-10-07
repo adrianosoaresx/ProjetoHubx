@@ -15,7 +15,7 @@ def test_list_view_returns_counts(client, admin_user):
     user = UserFactory(organizacao=org, nucleo_obj=nucleo)
     NucleoFactory(organizacao=org)
     for _ in range(3):
-        EventoFactory(organizacao=org, nucleo=nucleo, coordenador=user)
+        EventoFactory(organizacao=org, nucleo=nucleo)
 
     client.force_login(admin_user)
     response = client.get(reverse("organizacoes:list"))

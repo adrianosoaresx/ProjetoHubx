@@ -22,7 +22,6 @@ class EventoForm(forms.ModelForm):
             "cidade",
             "estado",
             "cep",
-            "coordenador",
             "status",
             "publico_alvo",
             "nucleo",

@@ -51,7 +51,6 @@ def evento(organizacao, gerente):
         cidade="Cidade",
         estado="SP",
         cep="00000-000",
-        coordenador=gerente,
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,

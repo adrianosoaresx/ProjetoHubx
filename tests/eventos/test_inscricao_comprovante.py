@@ -52,7 +52,7 @@ def _form_data():
 
 
 def test_inscricao_form_rejeita_mime_divergente(admin_user):
-    evento = EventoFactory(organizacao=admin_user.organizacao, coordenador=admin_user)
+    evento = EventoFactory(organizacao=admin_user.organizacao)
     arquivo = SimpleUploadedFile("fake.png", b"%PDF-1.4", content_type="application/pdf")
     form = InscricaoEventoForm(data=_form_data(), files={"comprovante_pagamento": arquivo})
     assert not form.is_valid()
@@ -60,7 +60,7 @@ def test_inscricao_form_rejeita_mime_divergente(admin_user):
 
 
 def test_inscricao_api_rejeita_mime_divergente(api_client, cliente_user):
-    evento = EventoFactory(organizacao=cliente_user.organizacao, coordenador=cliente_user)
+    evento = EventoFactory(organizacao=cliente_user.organizacao)
     arquivo = SimpleUploadedFile("fake.png", b"%PDF-1.4", content_type="application/pdf")
     data = {"evento": evento.id, "comprovante_pagamento": arquivo}
     api_client.force_authenticate(cliente_user)
