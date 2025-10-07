@@ -61,7 +61,6 @@ def evento(organizacao, usuario_logado):
         cidade="Cidade Teste",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=Evento.Status.PLANEJAMENTO,
         publico_alvo=0,
@@ -90,9 +89,9 @@ def test_calendar_view_get(client):
 
 
 @override_settings(ROOT_URLCONF="Hubx.urls")
-def test_evento_detail_view_htmx(evento, client):
+def test_evento_detail_view_htmx(evento, client, usuario_logado):
     url = f"/eventos/evento/{evento.pk}/"
-    client.force_login(evento.coordenador)
+    client.force_login(usuario_logado)
     response = client.get(url, HTTP_HX_REQUEST="true")
     content = response.content.decode()
     assert response.status_code == 200
@@ -140,7 +139,6 @@ def test_evento_list_filters_by_status(usuario_logado, organizacao, client, even
         cidade="Cidade Teste",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=Evento.Status.CONCLUIDO,
         publico_alvo=0,
@@ -185,7 +183,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         cidade="Cidade Teste",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
@@ -223,7 +220,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         cidade="Cidade Futuro",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
@@ -244,7 +240,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         cidade="Cidade Passado",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
@@ -280,7 +275,6 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         cidade="Cidade Cancelada",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=2,
         publico_alvo=0,
@@ -301,7 +295,6 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         cidade="Cidade Ativa",
         estado="ST",
         cep="12345-678",
-        coordenador=usuario_logado,
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
@@ -345,7 +338,6 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
         "cidade": "Cidade",
         "estado": "ST",
         "cep": "12345-678",
-        "coordenador": usuario_logado.pk,
         "status": 0,
         "publico_alvo": 0,
         "numero_convidados": 10,

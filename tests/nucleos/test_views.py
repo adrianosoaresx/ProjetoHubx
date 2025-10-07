@@ -187,7 +187,7 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
         periodo_inicio=timezone.now(),
         periodo_fim=timezone.now(),
     )
-    EventoFactory.create(organizacao=organizacao, nucleo=nucleo, coordenador=admin_user)
+    EventoFactory.create(organizacao=organizacao, nucleo=nucleo)
     request = RequestFactory().get("/")
     request.user = admin_user
     view = NucleoDetailView()
