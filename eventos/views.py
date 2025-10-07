@@ -406,7 +406,7 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         context["evento"] = self.object
         context["title"] = _("Remover Evento")
         context["subtitle"] = getattr(self.object, "descricao", None)
-        fallback = reverse("eventos:detail", args=[self.object.pk])
+        fallback = reverse("eventos:evento_detalhe", args=[self.object.pk])
         context["back_href"] = resolve_back_href(self.request, fallback=fallback)
         return context
 
