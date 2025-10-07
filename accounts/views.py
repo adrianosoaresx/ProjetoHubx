@@ -616,6 +616,18 @@ def perfil_portfolio_delete(request, pk):
         return redirect_to_profile_section(request, "portfolio")
     context = {"media": media}
     context.update(_portfolio_navigation_config(request))
+    if request.method in {"GET", "HEAD"}:
+        hx_target = request.headers.get("HX-Target", "")
+        if hx_target == "modal":
+            context.update(
+                {
+                    "titulo": _("Remover item do portfólio"),
+                    "mensagem": _("Tem certeza que deseja remover este item do portfólio?"),
+                    "submit_label": _("Remover"),
+                    "form_action": reverse("accounts:portfolio_delete", args=[media.pk]),
+                }
+            )
+            return render(request, "perfil/partials/portfolio_delete_modal.html", context)
 
     return render(request, "perfil/partials/portfolio_confirm_delete.html", context)
 

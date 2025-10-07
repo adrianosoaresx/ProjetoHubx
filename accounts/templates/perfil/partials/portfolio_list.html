@@ -87,9 +87,11 @@
                     href="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
                     class="btn btn-danger btn-sm"
                     aria-label="{% trans 'Excluir' %}"
-                    hx-get="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
-                    hx-target="#perfil-content"
-                    hx-push-url="?section=portfolio&amp;portfolio_view=delete&amp;media={{ media.pk }}"
+                    hx-get="{% url 'accounts:portfolio_delete' media.pk %}"
+                    hx-target="#modal"
+                    hx-trigger="click"
+                    hx-swap="innerHTML"
+                    hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
                   >
                     {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
                   </a>
@@ -130,3 +132,4 @@
     {% endif %}
   </div>
 </article>
+<div id="modal" role="presentation" aria-live="polite"></div>
