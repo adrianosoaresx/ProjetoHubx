@@ -8,8 +8,10 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import (
@@ -249,6 +251,29 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
     template_name = "organizacoes/delete.html"
     success_url = reverse_lazy("organizacoes:list")
 
+    def _is_htmx(self, request) -> bool:
+        return bool(request.headers.get("HX-Request") or getattr(request, "htmx", False))
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self._is_htmx(request):
+            context = {
+                "organizacao": self.object,
+                "titulo": _("Remover Organização"),
+                "mensagem": format_html(
+                    _("Tem certeza que deseja remover <strong>{nome}</strong>?"),
+                    nome=self.object.nome,
+                ),
+                "submit_label": _("Remover"),
+                "form_action": reverse("organizacoes:delete", args=[self.object.pk]),
+            }
+            return TemplateResponse(
+                request,
+                "organizacoes/partials/organizacao_delete_modal.html",
+                context,
+            )
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         fallback_url = str(self.success_url)
@@ -281,6 +306,10 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="deleted")
         messages.success(self.request, _("Organização removida."))
+        if self._is_htmx(request):
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = str(self.get_success_url())
+            return response
         return redirect(self.success_url)
 
 
