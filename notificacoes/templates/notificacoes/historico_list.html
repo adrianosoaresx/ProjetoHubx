@@ -3,18 +3,33 @@
 {% block title %}{% trans 'Histórico de Notificações' %} | HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Histórico de Notificações') subtitle=_('Consulte notificações recorrentes enviadas para os núcleos.') %}
+  <section class="relative isolate overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700 text-white">
+    <div class="absolute inset-0 opacity-60 mix-blend-screen" aria-hidden="true">
+      {% include 'backgrounds/neural_backgrounds.html' with bg_type='configuracao' %}
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-950/70 via-slate-950/60 to-purple-950/70" aria-hidden="true"></div>
+    <div class="relative mx-auto w-full max-w-6xl px-6 py-16">
+      <div class="max-w-3xl space-y-4">
+        <h1 class="text-4xl font-bold tracking-tight md:text-5xl">{% trans 'Histórico de Notificações' %}</h1>
+        <p class="text-lg text-white/90">
+          {% trans 'Consulte notificações recorrentes enviadas para os núcleos.' %}
+        </p>
+      </div>
+    </div>
+  </section>
 {% endblock %}
 
 {% block content %}
-  <div class="max-w-6xl mx-auto card-grid">
+  <div class="mx-auto w-full max-w-6xl">
     <article class="card">
-      <header class="card-header space-y-1">
+      <header class="card-header space-y-2">
         <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Histórico de Notificações' %}</h2>
-        <p class="text-sm text-[var(--text-secondary)]">{% trans 'Consulte notificações recorrentes enviadas para os núcleos.' %}</p>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% trans 'Consulte notificações recorrentes enviadas para os núcleos.' %}
+        </p>
       </header>
       <div class="card-body space-y-6">
-        <form method="get" class="space-y-4">
+        <form method="get" class="space-y-6">
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {% for field in form %}
               {% include '_forms/field.html' with field=field %}
@@ -24,7 +39,7 @@
             <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
           </div>
         </form>
-        {# HTMX alvo que atualiza a tabela de histórico mantendo o cartão intacto #}
+        {# Container atualizado via HTMX para preservar o layout do card enquanto o histórico é recarregado dinamicamente #}
         <div id="historico-container">
           {% include 'notificacoes/historico_table.html' %}
         </div>
