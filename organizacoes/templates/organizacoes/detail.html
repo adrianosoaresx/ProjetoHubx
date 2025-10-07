@@ -4,134 +4,156 @@
 {% block title %}{{ object.nome }} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=object.nome %}
+  {% include '_components/hero.html' with title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' %}
 {% endblock %}
 
 {% block content %}
-<section class="max-w-4xl mx-auto px-4 py-10 space-y-6">
-  <div class="w-full h-40 bg-[var(--bg-secondary)] rounded-xl overflow-hidden">
-    {% if object.cover %}
-      <img src="{{ object.cover.url }}" alt="{{ object.nome }}" class="w-full h-full object-cover" loading="lazy">
-    {% endif %}
-  </div>
-  <div class="text-center">
-    {% if object.avatar %}
-      <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-4" loading="lazy">
-    {% else %}
-      <div class="w-24 h-24 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-semibold text-[var(--text-tertiary)]" role="img" aria-label="{{ object.nome }}">
-        {{ object.nome|make_list|first|upper }}
-      </div>
-    {% endif %}
-    <div class="flex items-center justify-center">
-      <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ object.nome }}</h1>
-      {% if object.inativa %}
-        <span class="ml-2 text-xs bg-[var(--warning-light)] text-[var(--warning)] px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
-      {% endif %}
-    </div>
-  </div>
+  <div class="max-w-5xl mx-auto space-y-6" id="organizacao-detail">
+    <article class="card">
+      <div class="card-body space-y-6">
+        <figure class="h-48 w-full overflow-hidden rounded-xl bg-[var(--bg-secondary)]">
+          {% if object.cover %}
+            <img src="{{ object.cover.url }}" alt="{{ object.nome }}" class="h-full w-full object-cover" loading="lazy">
+          {% else %}
+            <div class="flex h-full items-center justify-center text-sm text-[var(--text-muted)]">
+              {% trans 'Esta organização ainda não possui imagem de capa.' %}
+            </div>
+          {% endif %}
+        </figure>
 
-  <section>
-    <dl class="divide-y divide-[var(--border)]">
-      <div class="py-4 grid grid-cols-1 gap-4">
-        <dt class="font-medium text-[var(--text-secondary)]">{% trans 'CNPJ' %}</dt>
-        <dd class="text-[var(--text-primary)]">{{ object.cnpj }}</dd>
+        <div class="flex flex-col items-center gap-4 text-center">
+          {% if object.avatar %}
+            <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="h-24 w-24 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow" loading="lazy">
+          {% else %}
+            <div class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-secondary)] text-xl font-semibold text-[var(--text-tertiary)]" role="img" aria-label="{{ object.nome }}">
+              {{ object.nome|make_list|first|upper }}
+            </div>
+          {% endif %}
+
+          <div class="flex flex-col items-center gap-2">
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ object.nome }}</h1>
+              {% if object.inativa %}
+                <span class="inline-flex items-center rounded-full bg-[var(--warning-light)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--warning)]">{% trans 'Inativa' %}</span>
+              {% endif %}
+            </div>
+            <p class="text-sm text-[var(--text-secondary)]">{{ object.get_tipo_display }}</p>
+          </div>
+        </div>
+
+        <dl class="grid gap-4 text-sm sm:grid-cols-2">
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'CNPJ' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.cnpj }}</dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'Endereço' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">
+              {{ object.rua }}<br>
+              {{ object.cidade }}{% if object.estado %}/{{ object.estado }}{% endif %}
+            </dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'Contato' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)] space-y-1">
+              <p>{{ object.contato_nome }}</p>
+              <p>{{ object.contato_email }}</p>
+              <p>{{ object.contato_telefone }}</p>
+            </dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'Identificador' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">#{{ object.id }}</dd>
+          </div>
+        </dl>
+
+        {% if object.descricao %}
+          <section aria-labelledby="organizacao-description" class="space-y-2">
+            <h2 id="organizacao-description" class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Descrição' %}</h2>
+            <p class="text-sm leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">{{ object.descricao }}</p>
+          </section>
+        {% endif %}
       </div>
-      <div class="py-4 grid grid-cols-1 gap-4">
-        <dt class="font-medium text-[var(--text-secondary)]">{% trans 'Tipo' %}</dt>
-        <dd class="text-[var(--text-primary)]">{{ object.get_tipo_display }}</dd>
-      </div>
-      <div class="py-4 grid grid-cols-1 gap-4">
-        <dt class="font-medium text-[var(--text-secondary)]">{% trans 'Endereço' %}</dt>
-        <dd class="text-[var(--text-primary)]">
-          {{ object.rua }}<br>
-          {{ object.cidade }}{% if object.estado %}/{{ object.estado }}{% endif %}
-        </dd>
-      </div>
-      <div class="py-4 grid grid-cols-1 gap-4">
-        <dt class="font-medium text-[var(--text-secondary)]">{% trans 'Contato' %}</dt>
-        <dd class="text-[var(--text-primary)]">
-          {{ object.contato_nome }}<br>
-          {{ object.contato_email }}<br>
-          {{ object.contato_telefone }}
-        </dd>
-      </div>
-      {% if object.descricao %}
-      <div class="py-4 grid grid-cols-1 gap-4">
-        <dt class="font-medium text-[var(--text-secondary)]">{% trans 'Descrição' %}</dt>
-        <dd class="text-[var(--text-primary)]">{{ object.descricao }}</dd>
-      </div>
-      {% endif %}
-    </dl>
-  </section>
+      <footer class="card-footer flex flex-wrap justify-end gap-3">
+        {% if perms.organizacoes.change_organizacao %}
+          <a href="{% url 'organizacoes:update' object.id %}" class="btn btn-secondary">{% trans 'Editar' %}</a>
+        {% endif %}
+        {% if request.user.user_type == 'root' %}
+          {% if perms.organizacoes.delete_organizacao %}
+            <a
+              href="{% url 'organizacoes:delete' object.id %}"
+              hx-get="{% url 'organizacoes:delete' object.id %}"
+              hx-target="#modal"
+              hx-trigger="click"
+              hx-swap="innerHTML"
+              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+              class="btn btn-danger"
+              aria-label="{% trans 'Excluir organização' %}"
+            >{% trans 'Excluir' %}</a>
+          {% endif %}
+          <form method="post" action="{% url 'organizacoes:toggle' object.id %}" class="inline-flex">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">
+              {% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
+            </button>
+          </form>
+          <a href="{% url 'organizacoes:historico' object.id %}" class="btn btn-secondary">{% trans 'Histórico' %}</a>
+        {% endif %}
+        <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
+      </footer>
+    </article>
 
     {% if request.user.user_type == 'root' %}
-    <div id="org-stats" class="card-grid">
-      <div class="card">
-        <div class="card-body text-center">
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Usuários' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ usuarios|length }}</p>
+      <section class="card-grid" aria-label="{% trans 'Indicadores da organização' %}" id="org-stats">
+        <div class="card">
+          <div class="card-body text-center">
+            <p class="text-xs text-[var(--text-muted)]">{% trans 'Usuários' %}</p>
+            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ usuarios|length }}</p>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-body text-center">
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Núcleos' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ nucleos|length }}</p>
+        <div class="card">
+          <div class="card-body text-center">
+            <p class="text-xs text-[var(--text-muted)]">{% trans 'Núcleos' %}</p>
+            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ nucleos|length }}</p>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-body text-center">
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Eventos' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ eventos|length }}</p>
+        <div class="card">
+          <div class="card-body text-center">
+            <p class="text-xs text-[var(--text-muted)]">{% trans 'Eventos' %}</p>
+            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ eventos|length }}</p>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
     {% endif %}
 
-  {% if request.user.user_type != 'root' %}
-    <section id="usuarios-section">
-      {% include '_partials/organizacoes/usuarios_list.html' %}
-    </section>
+    {% if request.user.user_type != 'root' %}
+      <section class="space-y-6" aria-label="{% trans 'Relacionamentos da organização' %}">
+        <article class="card" id="usuarios-section">
+          <div class="card-body space-y-4">
+            {% include '_partials/organizacoes/usuarios_list.html' %}
+          </div>
+        </article>
 
-    <section id="nucleos-section">
-      {% include '_partials/organizacoes/nucleos_list.html' %}
-    </section>
+        <article class="card" id="nucleos-section">
+          <div class="card-body space-y-4">
+            {% include '_partials/organizacoes/nucleos_list.html' %}
+          </div>
+        </article>
 
-    <section id="eventos-section">
-      {% include '_partials/organizacoes/eventos_list.html' %}
-    </section>
+        <article class="card" id="eventos-section">
+          <div class="card-body space-y-4">
+            {% include '_partials/organizacoes/eventos_list.html' %}
+          </div>
+        </article>
 
-    <section id="posts-section">
-      {% include '_partials/organizacoes/posts_list.html' %}
-    </section>
-  {% endif %}
-
-  <div class="flex justify-end gap-3">
-    {% if perms.organizacoes.change_organizacao %}
-      <a href="{% url 'organizacoes:update' object.id %}" class="btn btn-secondary">{% trans 'Editar' %}</a>
+        <article class="card" id="posts-section">
+          <div class="card-body space-y-4">
+            {% include '_partials/organizacoes/posts_list.html' %}
+          </div>
+        </article>
+      </section>
     {% endif %}
-    {% if request.user.user_type == 'root' %}
-      {% if perms.organizacoes.delete_organizacao %}
-        <a
-          href="{% url 'organizacoes:delete' object.id %}"
-          hx-get="{% url 'organizacoes:delete' object.id %}"
-          hx-target="#modal"
-          hx-trigger="click"
-          hx-swap="innerHTML"
-          hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-          class="btn btn-danger"
-          aria-label="{% trans 'Excluir organização' %}"
-        >{% trans 'Excluir' %}</a>
-      {% endif %}
-      <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-secondary">
-          {% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
-        </button>
-      </form>
-      <a href="{% url 'organizacoes:historico' object.id %}" class="btn btn-secondary">{% trans 'Histórico' %}</a>
-    {% endif %}
-    <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
   </div>
-  <div id="modal"></div>
-</section>
+
+  <div id="modal" aria-live="polite"></div>
 {% endblock %}
