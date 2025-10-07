@@ -21,86 +21,8 @@
   </div>
   {% endif %}
 </div>
-<section class="py-12 px-4 bg-[var(--bg-secondary)]">
-  <div class="card max-w-7xl mx-auto px-4 text-center">
-    <div class="card-header">
-      <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-8">{% trans "Principais Funcionalidades" %}</h2>
-    </div>
-    <div class="card-body">
-      <div class="card-grid">
-        <div class="card text-center flex flex-col items-center">
-          <div class="card-body">
-            {% lucide 'rss' class='text-[var(--link)] w-8 h-8 mb-4' %}
-            <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Feed/Mural" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)] mb-4">{% trans "Compartilhe novidades e acompanhe atualizações." %}</p>
-            <a href="{% url 'feed:listar' %}" class="text-sm font-medium text-[var(--link)] hover:underline">{% trans "Acessar" %}</a>
-          </div>
-        </div>
-        <div class="card text-center flex flex-col items-center">
-          <div class="card-body">
-            {% lucide 'calendar-days' class='text-[var(--link)] w-8 h-8 mb-4' %}
-            <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Eventos" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)] mb-4">{% trans "Organize eventos e gerencie inscrições." %}</p>
-            <a href="{% url 'eventos:calendario' %}" class="text-sm font-medium text-[var(--link)] hover:underline">{% trans "Acessar" %}</a>
-          </div>
-        </div>
-        <div class="card text-center flex flex-col items-center">
-          <div class="card-body">
-            {% lucide 'users' class='text-[var(--link)] w-8 h-8 mb-4' %}
-            <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Núcleos" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)] mb-4">{% trans "Encontre grupos de interesse e colabore." %}</p>
-            <a href="{% url 'nucleos:list' %}" class="text-sm font-medium text-[var(--link)] hover:underline">{% trans "Acessar" %}</a>
-          </div>
-        </div>
-        <div class="card text-center flex flex-col items-center">
-          <div class="card-body">
-            {% lucide 'building-2' class='text-[var(--link)] w-8 h-8 mb-4' %}
-            <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Organizações" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)] mb-4">{% trans "Gerencie empresas, equipes e hierarquias." %}</p>
-            <a href="{% url 'organizacoes:list' %}" class="text-sm font-medium text-[var(--link)] hover:underline">{% trans "Acessar" %}</a>
-          </div>
-        </div>
-        <div class="card text-center flex flex-col items-center">
-          <div class="card-body">
-            {% lucide 'bell' class='text-[var(--link)] w-8 h-8 mb-4' %}
-            <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Notificações" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)] mb-4">{% trans "Centralize alertas e preferências de contato." %}</p>
-            <a href="{% url 'configuracoes:configuracoes_preferencias' %}" class="text-sm font-medium text-[var(--link)] hover:underline">{% trans "Acessar" %}</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section class="py-12 px-4">
-  <div class="card max-w-7xl mx-auto px-4">
-    <div class="card-header">
-      <h2 class="text-xl font-semibold mb-4">{% trans "Próximos Eventos" %}</h2>
-    </div>
-    <div class="card-body">
-      {% now 'Y-m-d' as today %}
-      <div id="eventos-destaque" hx-get="{% url 'eventos:lista_eventos' today %}" hx-trigger="load" hx-swap="innerHTML">
-        <p class="text-center text-sm text-[var(--text-tertiary)]">{% trans "Carregando eventos..." %}</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-{% if user.is_authenticated %}
-<section class="py-12 px-4 bg-[var(--bg-secondary)]">
-  <div class="card max-w-7xl mx-auto px-4">
-    <div class="card-header">
-      <h2 class="text-xl font-semibold mb-4">{% trans "Posts em destaque" %}</h2>
-    </div>
-    <div class="card-body">
-      <div id="posts-destaque" hx-get="{% url 'core:posts_highlights' %}" hx-trigger="load" hx-swap="innerHTML">
-        <p class="text-center text-sm text-[var(--text-tertiary)]">{% trans "Carregando posts..." %}</p>
-      </div>
-    </div>
-  </div>
-</section>
-{% endif %}
 <footer class="py-6 text-center text-sm text-[var(--text-tertiary)]">
   &copy; {{ now|date:"Y" }} {% trans "Hubx" %}
 </footer>
