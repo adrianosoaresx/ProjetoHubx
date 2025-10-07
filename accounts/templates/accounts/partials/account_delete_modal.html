@@ -1,0 +1,180 @@
+{% load i18n %}
+{% with modal_title_id="modal-delete-account-title" modal_description_id="modal-delete-account-description" %}
+<div
+  class="modal !active"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_title_id }}"
+  aria-describedby="{{ modal_description_id }}"
+  data-modal-root
+>
+  <div class="modal-content rounded-lg bg-[var(--bg-primary)] shadow-xl focus:outline-none">
+    <div class="flex items-start justify-between gap-4 border-b border-[var(--border)] px-6 py-4">
+      <h2 id="{{ modal_title_id }}" class="text-xl font-semibold text-[var(--text-primary)]">
+        {% trans "Excluir conta" %}
+      </h2>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        aria-label="{% trans 'Fechar modal' %}"
+        data-modal-dismiss
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-5">
+      <p id="{{ modal_description_id }}" class="text-sm text-[var(--text-secondary)]">
+        {% blocktrans %}
+          A exclusão da conta é permanente e removerá todos os dados associados. Esta ação não pode ser desfeita.
+        {% endblocktrans %}
+      </p>
+      {% if not is_self %}
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% blocktrans with nome=target_user.get_full_name %}
+            Você está prestes a excluir a conta de {{ nome }}.
+          {% endblocktrans %}
+        </p>
+      {% endif %}
+      {% if error_message %}
+        <div class="alert alert-error" role="alert">
+          <p class="text-sm">{{ error_message }}</p>
+        </div>
+      {% endif %}
+      <form
+        method="post"
+        action="{{ form_action|default:request.get_full_path }}"
+        class="space-y-4"
+        hx-post="{{ form_action|default:request.get_full_path }}"
+        hx-target="#modal"
+        hx-swap="innerHTML"
+      >
+        {% csrf_token %}
+        {% if not is_self %}
+          <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
+          <input type="hidden" name="username" value="{{ target_user.username }}" />
+        {% endif %}
+        <div class="space-y-2">
+          <label for="confirm" class="block text-sm font-medium text-[var(--text-secondary)]">
+            {% trans "Digite EXCLUIR para confirmar" %}
+          </label>
+          <input
+            type="text"
+            name="confirm"
+            id="confirm"
+            required
+            inputmode="latin"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            value="{{ confirm_value|default_if_none:'' }}"
+            placeholder="{{ confirmation_token }}"
+            class="w-full rounded-md border px-3 py-2 bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-primary)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-light)]"
+            aria-describedby="delete-confirm-helper"
+            data-confirm-input
+            data-confirm-token="{{ confirmation_token }}"
+          />
+          <p id="delete-confirm-helper" class="text-xs text-[var(--text-tertiary)]">
+            {% blocktrans with token=confirmation_token %}
+              Digite {{ token }} exatamente como mostrado para habilitar a exclusão.
+            {% endblocktrans %}
+          </p>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4 border-t border-[var(--border)] pt-4">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-modal-dismiss
+          >
+            {% trans "Cancelar" %}
+          </button>
+          <button
+            type="submit"
+            class="btn btn-danger"
+            data-confirm-submit
+            disabled
+            aria-disabled="true"
+          >
+            {% trans "Confirmar exclusão" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const modalContainer = document.getElementById('modal');
+    if (!modalContainer) {
+      return;
+    }
+    const dialog = modalContainer.querySelector('[data-modal-root]');
+    if (!dialog) {
+      return;
+    }
+    const focusableSelectors = [
+      'a[href]',
+      'area[href]',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      'button:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+    const focusableElements = Array.from(dialog.querySelectorAll(focusableSelectors)).filter((el) => !el.hasAttribute('hidden'));
+    const previouslyFocused = window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : document.activeElement;
+    function closeModal(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      modalContainer.innerHTML = '';
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+      if (window.HubxModalTrigger) {
+        window.HubxModalTrigger = null;
+      }
+    }
+    const cancelButtons = dialog.querySelectorAll('[data-modal-dismiss]');
+    cancelButtons.forEach((button) => {
+      button.addEventListener('click', closeModal);
+    });
+    modalContainer.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeModal(event);
+      }
+      if (event.key === 'Tab' && focusableElements.length) {
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    const confirmInput = dialog.querySelector('[data-confirm-input]');
+    const submitButton = dialog.querySelector('[data-confirm-submit]');
+    if (confirmInput && submitButton) {
+      const expectedToken = (confirmInput.getAttribute('data-confirm-token') || '').trim().toUpperCase();
+      const updateState = () => {
+        const normalized = (confirmInput.value || '').trim().toUpperCase();
+        if (confirmInput.value !== normalized) {
+          confirmInput.value = normalized;
+        }
+        const isValid = normalized === expectedToken && expectedToken.length > 0;
+        submitButton.disabled = !isValid;
+        submitButton.setAttribute('aria-disabled', String(!isValid));
+      };
+      confirmInput.addEventListener('input', updateState);
+      confirmInput.addEventListener('blur', updateState);
+      updateState();
+      confirmInput.focus();
+    } else if (focusableElements.length) {
+      focusableElements[0].focus();
+    }
+  })();
+</script>
+{% endwith %}

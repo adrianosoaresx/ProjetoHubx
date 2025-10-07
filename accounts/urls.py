@@ -73,6 +73,7 @@ urlpatterns = [
     ),
 
     path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),
+    path("excluir/modal/", views.excluir_conta, name="delete_account"),
     path("excluir/", views.excluir_conta, name="excluir_conta"),
     path(
         "confirmar-email/<str:token>/",
