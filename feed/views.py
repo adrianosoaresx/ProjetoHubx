@@ -623,12 +623,25 @@ def post_delete(request, pk):
         messages.error(request, "Você não tem permissão para remover esta postagem.")
         return redirect("feed:post_detail", pk=pk)
 
+    form_action = reverse("feed:post_delete", args=[post.pk])
+    is_htmx = bool(request.headers.get("HX-Request"))
+
     if request.method == "POST":
         post.soft_delete()
-        if request.headers.get("HX-Request"):
+        if is_htmx:
             return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:listar")})
         messages.success(request, "Postagem removida.")
         return redirect("feed:listar")
+
+    if is_htmx:
+        modal_context = {
+            "post": post,
+            "titulo": _("Remover Postagem"),
+            "mensagem": _("Tem certeza que deseja remover esta postagem?"),
+            "submit_label": _("Remover"),
+            "form_action": form_action,
+        }
+        return render(request, "feed/partials/post_delete_modal.html", modal_context)
 
     fallback_url = reverse("feed:post_detail", args=[post.pk])
     back_href = resolve_back_href(request, fallback=fallback_url)
