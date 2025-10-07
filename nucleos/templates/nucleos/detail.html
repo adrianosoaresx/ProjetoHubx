@@ -107,8 +107,12 @@
             {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
               <a
                 href="{% url 'nucleos:delete' object.pk %}"
+                hx-get="{% url 'nucleos:delete' object.pk %}"
+                hx-target="#modal"
+                hx-trigger="click"
+                hx-swap="innerHTML"
+                hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
                 class="btn btn-danger"
-                hx-confirm="{% trans 'Deseja realmente excluir?' %}"
               >{% trans "Excluir" %}</a>
             {% endif %}
           </div>
@@ -144,7 +148,7 @@
         {% endif %}
       {% endwith %}
     </div>
-  
 
-  
+    <div id="modal" role="presentation" aria-live="polite"></div>
+
 {% endblock %}
