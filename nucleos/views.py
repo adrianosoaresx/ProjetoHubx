@@ -144,44 +144,51 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        show_totals = self.request.user.user_type in {UserType.ADMIN, UserType.OPERADOR}
+        ctx["show_totals"] = show_totals
+
         # Totais: número de núcleos e membros ativos na organização do usuário
         qs = self.get_queryset()
-        ctx["total_nucleos"] = len(qs)
-        nucleo_ids = [n.pk for n in qs]
-        # contar membros ativos (sem suspensão) somando participações únicas por usuário
-        from .models import ParticipacaoNucleo
 
-        ctx["total_membros_org"] = (
-            ParticipacaoNucleo.objects.filter(nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False)
-            .values("user")
-            .distinct()
-            .count()
-        )
-        # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
-        ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
-        ctx["total_eventos_planejamento_org"] = Evento.objects.filter(
-            nucleo_id__in=nucleo_ids,
-            status=Evento.Status.PLANEJAMENTO,
-        ).count()
-        ctx["total_eventos_ativos_org"] = Evento.objects.filter(
-            nucleo_id__in=nucleo_ids,
-            status=Evento.Status.ATIVO,
-        ).count()
-        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
-            nucleo_id__in=nucleo_ids,
-            status=Evento.Status.CONCLUIDO,
-        ).count()
+        if show_totals:
+            ctx["total_nucleos"] = len(qs)
+            nucleo_ids = [n.pk for n in qs]
+            # contar membros ativos (sem suspensão) somando participações únicas por usuário
+            from .models import ParticipacaoNucleo
+
+            ctx["total_membros_org"] = (
+                ParticipacaoNucleo.objects.filter(nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False)
+                .values("user")
+                .distinct()
+                .count()
+            )
+            # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
+            ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
+            ctx["total_eventos_planejamento_org"] = Evento.objects.filter(
+                nucleo_id__in=nucleo_ids,
+                status=Evento.Status.PLANEJAMENTO,
+            ).count()
+            ctx["total_eventos_ativos_org"] = Evento.objects.filter(
+                nucleo_id__in=nucleo_ids,
+                status=Evento.Status.ATIVO,
+            ).count()
+            ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
+                nucleo_id__in=nucleo_ids,
+                status=Evento.Status.CONCLUIDO,
+            ).count()
+        else:
+            ctx["total_nucleos"] = None
+            ctx["total_membros_org"] = None
+            ctx["total_eventos_org"] = None
+            ctx["total_eventos_planejamento_org"] = None
+            ctx["total_eventos_ativos_org"] = None
+            ctx["total_eventos_concluidos_org"] = None
         params = self.request.GET.copy()
         try:
             params.pop("page")
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
-
-        base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
-        counts = {choice.value: 0 for choice in Nucleo.Classificacao}
-        for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
-            counts[row["classificacao"]] = row["total"]
 
         selected_classificacao = self.get_classificacao()
         ctx["selected_classificacao"] = selected_classificacao
@@ -206,28 +213,35 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         ctx["nucleos_reset_extra_attributes"] = card_extra_attributes(ctx["nucleos_reset_url"])
 
-        classificacao_filters = []
-        classificacao_labels = [
-            (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
-            (Nucleo.Classificacao.PLANEJAMENTO.value, _("Planejamento")),
-            (Nucleo.Classificacao.CONSTITUIDO.value, _("Constituído")),
-        ]
+        classificacao_filters: list[dict[str, object]] = []
 
-        for classificacao, label in classificacao_labels:
-            params_for_filter = params_without_classificacao.copy()
-            params_for_filter["classificacao"] = classificacao
-            filter_query = params_for_filter.urlencode()
-            filter_url = f"{base_url}?{filter_query}" if filter_query else base_url
-            classificacao_filters.append(
-                {
-                    "value": classificacao,
-                    "label": label,
-                    "count": counts.get(classificacao, 0),
-                    "url": filter_url,
-                    "is_active": selected_classificacao == classificacao,
-                    "extra_attributes": card_extra_attributes(filter_url),
-                }
-            )
+        if show_totals:
+            base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
+            counts = {choice.value: 0 for choice in Nucleo.Classificacao}
+            for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
+                counts[row["classificacao"]] = row["total"]
+
+            classificacao_labels = [
+                (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
+                (Nucleo.Classificacao.PLANEJAMENTO.value, _("Planejamento")),
+                (Nucleo.Classificacao.CONSTITUIDO.value, _("Constituído")),
+            ]
+
+            for classificacao, label in classificacao_labels:
+                params_for_filter = params_without_classificacao.copy()
+                params_for_filter["classificacao"] = classificacao
+                filter_query = params_for_filter.urlencode()
+                filter_url = f"{base_url}?{filter_query}" if filter_query else base_url
+                classificacao_filters.append(
+                    {
+                        "value": classificacao,
+                        "label": label,
+                        "count": counts.get(classificacao, 0),
+                        "url": filter_url,
+                        "is_active": selected_classificacao == classificacao,
+                        "extra_attributes": card_extra_attributes(filter_url),
+                    }
+                )
 
         ctx["classificacao_filters"] = classificacao_filters
 
@@ -299,6 +313,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
+        ctx.setdefault("show_totals", False)
         params = self.request.GET.copy()
         try:
             params.pop("page")
