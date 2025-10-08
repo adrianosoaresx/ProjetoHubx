@@ -144,45 +144,33 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
-        show_totals = self.request.user.user_type in {UserType.ADMIN, UserType.OPERADOR}
-        ctx["show_totals"] = show_totals
-
         # Totais: número de núcleos e membros ativos na organização do usuário
         qs = self.get_queryset()
+        ctx["total_nucleos"] = len(qs)
+        nucleo_ids = [n.pk for n in qs]
+        # contar membros ativos (sem suspensão) somando participações únicas por usuário
+        from .models import ParticipacaoNucleo
 
-        if show_totals:
-            ctx["total_nucleos"] = len(qs)
-            nucleo_ids = [n.pk for n in qs]
-            # contar membros ativos (sem suspensão) somando participações únicas por usuário
-            from .models import ParticipacaoNucleo
-
-            ctx["total_membros_org"] = (
-                ParticipacaoNucleo.objects.filter(nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False)
-                .values("user")
-                .distinct()
-                .count()
-            )
-            # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
-            ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
-            ctx["total_eventos_planejamento_org"] = Evento.objects.filter(
-                nucleo_id__in=nucleo_ids,
-                status=Evento.Status.PLANEJAMENTO,
-            ).count()
-            ctx["total_eventos_ativos_org"] = Evento.objects.filter(
-                nucleo_id__in=nucleo_ids,
-                status=Evento.Status.ATIVO,
-            ).count()
-            ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
-                nucleo_id__in=nucleo_ids,
-                status=Evento.Status.CONCLUIDO,
-            ).count()
-        else:
-            ctx["total_nucleos"] = None
-            ctx["total_membros_org"] = None
-            ctx["total_eventos_org"] = None
-            ctx["total_eventos_planejamento_org"] = None
-            ctx["total_eventos_ativos_org"] = None
-            ctx["total_eventos_concluidos_org"] = None
+        ctx["total_membros_org"] = (
+            ParticipacaoNucleo.objects.filter(nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False)
+            .values("user")
+            .distinct()
+            .count()
+        )
+        # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
+        ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
+        ctx["total_eventos_planejamento_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.PLANEJAMENTO,
+        ).count()
+        ctx["total_eventos_ativos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.ATIVO,
+        ).count()
+        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids,
+            status=Evento.Status.CONCLUIDO,
+        ).count()
         params = self.request.GET.copy()
         try:
             params.pop("page")
@@ -311,7 +299,6 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
-        ctx.setdefault("show_totals", False)
         params = self.request.GET.copy()
         try:
             params.pop("page")
