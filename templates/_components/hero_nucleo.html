@@ -21,7 +21,7 @@
       {% if total_nucleos is not None or classificacao_filters %}
         <div class="mt-10 space-y-4 text-left">
           <div class="card-grid">
-            {% if total_nucleos is not None %}
+            {% if show_totals and total_nucleos is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Núcleos') valor=total_nucleos icon_name='network' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True button_type='button' active_class='border border-white/80 bg-white/20 shadow-lg text-white' is_active=is_all_classificacao_active extra_attributes=nucleos_reset_extra_attributes|default:'' %}
             {% endif %}
             {% for filtro in classificacao_filters %}
