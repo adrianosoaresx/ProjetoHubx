@@ -14,6 +14,8 @@ import base64
 import os
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs, urlparse, unquote
 
 import sentry_sdk
 from celery.schedules import crontab
@@ -25,6 +27,72 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Versão do HTMX utilizada nos templates
 HTMX_VERSION = "1.9.12"
+
+
+def _database_config_from_url(url: str) -> dict[str, Any]:
+    """Return a DATABASES configuration parsed from a connection URL."""
+
+    parsed = urlparse(url)
+    scheme = parsed.scheme.lower().split("+", 1)[0]
+    engine_map = {
+        "postgres": "django.db.backends.postgresql",
+        "postgresql": "django.db.backends.postgresql",
+        "postgis": "django.contrib.gis.db.backends.postgis",
+        "mysql": "django.db.backends.mysql",
+        "mariadb": "django.db.backends.mysql",
+        "sqlite": "django.db.backends.sqlite3",
+        "sqlite3": "django.db.backends.sqlite3",
+    }
+    engine = engine_map.get(scheme)
+    if not engine:
+        raise ValueError(f"Unsupported database scheme: {scheme!r}")
+
+    config: dict[str, Any] = {"ENGINE": engine, "ATOMIC_REQUESTS": True}
+
+    if engine.endswith("sqlite3"):
+        netloc = unquote(parsed.netloc or "")
+        path = unquote(parsed.path or "")
+        if netloc and not path:
+            path = netloc
+        elif netloc:
+            path = f"{netloc}{path}"
+
+        if not path or path == "/":
+            config["NAME"] = str(BASE_DIR / "db.sqlite3")
+        elif path.startswith("//"):
+            config["NAME"] = path[1:]
+        elif path.startswith("/"):
+            config["NAME"] = str(BASE_DIR / path.lstrip("/"))
+        else:
+            config["NAME"] = str(BASE_DIR / path)
+        return config
+
+    if parsed.path and parsed.path != "/":
+        config["NAME"] = unquote(parsed.path.lstrip("/"))
+    else:
+        raise ValueError("DATABASE_URL must include a database name")
+
+    if parsed.username:
+        config["USER"] = unquote(parsed.username)
+    if parsed.password:
+        config["PASSWORD"] = unquote(parsed.password)
+    if parsed.hostname:
+        config["HOST"] = parsed.hostname
+    if parsed.port:
+        config["PORT"] = str(parsed.port)
+
+    query = parse_qs(parsed.query, keep_blank_values=True)
+    if "conn_max_age" in query:
+        try:
+            config["CONN_MAX_AGE"] = int(query["conn_max_age"][-1])
+        except ValueError as exc:  # pragma: no cover - defensive
+            raise ValueError("Invalid conn_max_age value in DATABASE_URL") from exc
+    options = {key: values[-1] for key, values in query.items() if key != "conn_max_age"}
+    if options:
+        config["OPTIONS"] = options
+
+    return config
+
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
@@ -175,6 +243,9 @@ else:
         }
     }
 
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL") or (_REDIS_URL or "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+
 # Habilita/desabilita inicialização de sockets no front (templates)
 # Em ambientes que iniciam com runserver (sem ASGI), defina como False para evitar 404
 WEBSOCKETS_ENABLED = os.getenv("WEBSOCKETS_ENABLED", "1").strip().lower() in {"1", "true", "yes", "on"}
@@ -187,6 +258,13 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
     }
 }
+
+_DATABASE_URL = os.getenv("DATABASE_URL")
+if _DATABASE_URL:
+    try:
+        DATABASES["default"] = _database_config_from_url(_DATABASE_URL)
+    except ValueError as exc:  # pragma: no cover - validação
+        raise RuntimeError(f"Invalid DATABASE_URL: {exc}") from exc
 
 CACHE_URL = os.getenv("CACHE_URL")
 if CACHE_URL:
