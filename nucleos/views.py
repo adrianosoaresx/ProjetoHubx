@@ -190,11 +190,6 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
 
-        base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
-        counts = {choice.value: 0 for choice in Nucleo.Classificacao}
-        for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
-            counts[row["classificacao"]] = row["total"]
-
         selected_classificacao = self.get_classificacao()
         ctx["selected_classificacao"] = selected_classificacao
         ctx["is_all_classificacao_active"] = selected_classificacao is None
@@ -218,28 +213,35 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         ctx["nucleos_reset_extra_attributes"] = card_extra_attributes(ctx["nucleos_reset_url"])
 
-        classificacao_filters = []
-        classificacao_labels = [
-            (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
-            (Nucleo.Classificacao.PLANEJAMENTO.value, _("Planejamento")),
-            (Nucleo.Classificacao.CONSTITUIDO.value, _("Constituído")),
-        ]
+        classificacao_filters: list[dict[str, object]] = []
 
-        for classificacao, label in classificacao_labels:
-            params_for_filter = params_without_classificacao.copy()
-            params_for_filter["classificacao"] = classificacao
-            filter_query = params_for_filter.urlencode()
-            filter_url = f"{base_url}?{filter_query}" if filter_query else base_url
-            classificacao_filters.append(
-                {
-                    "value": classificacao,
-                    "label": label,
-                    "count": counts.get(classificacao, 0),
-                    "url": filter_url,
-                    "is_active": selected_classificacao == classificacao,
-                    "extra_attributes": card_extra_attributes(filter_url),
-                }
-            )
+        if show_totals:
+            base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
+            counts = {choice.value: 0 for choice in Nucleo.Classificacao}
+            for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
+                counts[row["classificacao"]] = row["total"]
+
+            classificacao_labels = [
+                (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
+                (Nucleo.Classificacao.PLANEJAMENTO.value, _("Planejamento")),
+                (Nucleo.Classificacao.CONSTITUIDO.value, _("Constituído")),
+            ]
+
+            for classificacao, label in classificacao_labels:
+                params_for_filter = params_without_classificacao.copy()
+                params_for_filter["classificacao"] = classificacao
+                filter_query = params_for_filter.urlencode()
+                filter_url = f"{base_url}?{filter_query}" if filter_query else base_url
+                classificacao_filters.append(
+                    {
+                        "value": classificacao,
+                        "label": label,
+                        "count": counts.get(classificacao, 0),
+                        "url": filter_url,
+                        "is_active": selected_classificacao == classificacao,
+                        "extra_attributes": card_extra_attributes(filter_url),
+                    }
+                )
 
         ctx["classificacao_filters"] = classificacao_filters
 
