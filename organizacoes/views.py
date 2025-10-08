@@ -167,6 +167,10 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
             "fallback_href": fallback_url,
             "aria_label": _("Cancelar edição"),
         }
+        if self.object:
+            context["organizacao_usuarios_total"] = self.object.users.count()
+            context["organizacao_nucleos_total"] = self.object.nucleos.count()
+            context["organizacao_eventos_total"] = self.object.evento_set.count()
         return context
 
     def get_queryset(self):
