@@ -283,6 +283,13 @@ def upsert_participacao(user, nucleo):
     if created or updated:
         participacao.save()
 
+    # Pelo requisito de negócio, todo nucleado também precisa estar marcado
+    # como associado. Garantimos o flag mesmo que o usuário já exista e tenha
+    # sido importado anteriormente com outro estado.
+    if not getattr(user, "is_associado", False):
+        user.is_associado = True
+        user.save(update_fields=["is_associado"])
+
     return created, updated
 
 
