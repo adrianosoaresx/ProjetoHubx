@@ -242,9 +242,9 @@ def upsert_user(
         user.deleted_at = None
         changed = True
 
-    if password is not None:
-        user.set_password(password)
-        changed = True
+    if created and password is not None:
+            user.set_password(password)
+            changed = True
 
     if created or changed:
         user.save()
@@ -387,7 +387,9 @@ def setup_domain_objects(member_password: str) -> None:
     skipped = 0
 
     for row in members_data:
+
         email = extract_primary_email(row.get("e_mail"))
+
         nome = (row.get("nome") or "").strip()
         if not email or not nome:
             skipped += 1
