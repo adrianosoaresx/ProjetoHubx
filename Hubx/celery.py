@@ -4,9 +4,6 @@ import os
 
 from celery import Celery
 
-from Hubx.env import load_env
-
-load_env()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 
 app = Celery("Hubx")
