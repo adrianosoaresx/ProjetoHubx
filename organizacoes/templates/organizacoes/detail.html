@@ -4,7 +4,16 @@
 {% block title %}{{ object.nome }} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' %}
+  {% include '_components/hero_organizacao.html' with
+    organizacao=object
+    title=object.nome
+    subtitle=_('Acompanhe os detalhes da organização.')
+    neural_background='home'
+    show_stats=request.user.user_type == 'root'
+    usuarios_total=usuarios|length
+    nucleos_total=nucleos|length
+    eventos_total=eventos|length
+  %}
 {% endblock %}
 
 {% block content %}
@@ -102,29 +111,6 @@
         <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
       </footer>
     </article>
-
-    {% if request.user.user_type == 'root' %}
-      <section class="card-grid" aria-label="{% trans 'Indicadores da organização' %}" id="org-stats">
-        <div class="card">
-          <div class="card-body text-center">
-            <p class="text-xs text-[var(--text-muted)]">{% trans 'Usuários' %}</p>
-            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ usuarios|length }}</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body text-center">
-            <p class="text-xs text-[var(--text-muted)]">{% trans 'Núcleos' %}</p>
-            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ nucleos|length }}</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-body text-center">
-            <p class="text-xs text-[var(--text-muted)]">{% trans 'Eventos' %}</p>
-            <p class="text-lg font-semibold text-[var(--text-primary)]">{{ eventos|length }}</p>
-          </div>
-        </div>
-      </section>
-    {% endif %}
 
     {% if request.user.user_type != 'root' %}
       <section class="space-y-6" aria-label="{% trans 'Relacionamentos da organização' %}">
