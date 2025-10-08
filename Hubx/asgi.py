@@ -7,6 +7,9 @@ from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
+from Hubx.env import load_env
+
+load_env()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 django.setup()  # Deve vir antes de qualquer importação que acesse models
 

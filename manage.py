@@ -4,9 +4,13 @@
 import os
 import sys
 
+from Hubx.env import load_env
+
 
 def main():
     """Run administrative tasks."""
+    # Load variables defined in the project .env file before importing Django.
+    load_env()
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 
     try:

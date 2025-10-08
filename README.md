@@ -158,6 +158,12 @@ npm install
 npm run build
 ```
 
+---
+
+## 📦 Pacote de instalação para servidores
+
+Use o script `scripts/build_install_package.sh` para gerar um pacote `.tar.gz` com os arquivos versionados do projeto. No servidor, extraia o pacote, configure o arquivo `.env` (a partir de `deploy/install/env.production.example`) e execute `deploy/install/install.sh` para instalar dependências, aplicar migrações e coletar os arquivos estáticos automaticamente.
+
 > Isso gerará o CSS final otimizado para produção em `static/tailwind.css`.
 
 ---

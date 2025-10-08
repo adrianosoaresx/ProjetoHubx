@@ -12,6 +12,9 @@ import os
 from django.core.wsgi import get_wsgi_application
 from prometheus_client import start_http_server
 
+from Hubx.env import load_env
+
+load_env()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 
 # Expose Prometheus metrics
