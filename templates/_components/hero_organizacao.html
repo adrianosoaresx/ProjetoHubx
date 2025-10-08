@@ -28,7 +28,8 @@
       {% if hero_helper_text %}
         <p class="{{ hero_helper_classes }}">{{ hero_helper_text }}</p>
       {% endif %}
-      {% if show_stats and (usuarios_total is not None or nucleos_total is not None or eventos_total is not None or extra_stats) %}
+      {% if show_stats %}
+        {% if usuarios_total is not None or nucleos_total is not None or eventos_total is not None or extra_stats %}
         {% with default_card_class='card-compact border border-white/30 bg-white/20 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md dark:border-white/15 dark:bg-slate-950/55 dark:text-white' default_body_class='card-body-compact' %}
           <div class="mt-8 space-y-4 text-left">
             <div class="card-grid">
@@ -49,6 +50,7 @@
             </div>
           </div>
         {% endwith %}
+        {% endif %}
       {% endif %}
     </div>
   </div>
