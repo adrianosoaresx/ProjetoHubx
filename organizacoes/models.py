@@ -1,6 +1,5 @@
 import os
 import uuid
-from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -41,9 +40,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
     rate_limit_multiplier = models.FloatField(default=1)
-    indice_reajuste = models.DecimalField(
-        max_digits=5, decimal_places=4, default=Decimal("0"), help_text="Índice de reajuste anual"
-    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
