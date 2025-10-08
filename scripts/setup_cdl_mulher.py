@@ -21,6 +21,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
@@ -41,6 +42,11 @@ def parse_args() -> argparse.Namespace:
         help="Senha padrão atribuída aos membros importados",
     )
     return parser.parse_args()
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 
 def ensure_django() -> None:
@@ -125,6 +131,27 @@ def load_members_data() -> list[dict[str, Any]]:
 
 
 USERNAME_CLEAN_RE = re.compile(r"[^a-z0-9.+-_]")
+
+
+def extract_primary_email(raw: str | None) -> str:
+    """Return the first non-empty token that looks like an email address."""
+
+    if not raw:
+        return ""
+
+    normalized = raw.strip().lower()
+    if not normalized:
+        return ""
+
+    tokens = [token for token in re.split(r"[\s,;/]+", normalized) if token]
+    if not tokens:
+        return ""
+
+    for token in tokens:
+        if "@" in token:
+            return token
+
+    return tokens[0]
 
 
 def normalize_username(value: str | None) -> str:
@@ -360,7 +387,7 @@ def setup_domain_objects(member_password: str) -> None:
     skipped = 0
 
     for row in members_data:
-        email = (row.get("e_mail") or "").strip().lower()
+        email = extract_primary_email(row.get("e_mail"))
         nome = (row.get("nome") or "").strip()
         if not email or not nome:
             skipped += 1
