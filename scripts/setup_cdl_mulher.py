@@ -133,6 +133,27 @@ def load_members_data() -> list[dict[str, Any]]:
 USERNAME_CLEAN_RE = re.compile(r"[^a-z0-9.+-_]")
 
 
+def extract_primary_email(raw: str | None) -> str:
+    """Return the first non-empty token that looks like an email address."""
+
+    if not raw:
+        return ""
+
+    normalized = raw.strip().lower()
+    if not normalized:
+        return ""
+
+    tokens = [token for token in re.split(r"[\s,;/]+", normalized) if token]
+    if not tokens:
+        return ""
+
+    for token in tokens:
+        if "@" in token:
+            return token
+
+    return tokens[0]
+
+
 def normalize_username(value: str | None) -> str:
     if not value:
         return "usuario"
@@ -366,7 +387,9 @@ def setup_domain_objects(member_password: str) -> None:
     skipped = 0
 
     for row in members_data:
-        email = (row.get("e_mail") or "").strip().lower().split()[0]
+
+        email = extract_primary_email(row.get("e_mail"))
+
         nome = (row.get("nome") or "").strip()
         if not email or not nome:
             skipped += 1
