@@ -1,5 +1,4 @@
 import factory
-from decimal import Decimal
 from factory.django import DjangoModelFactory
 
 from .models import Organizacao
@@ -20,4 +19,3 @@ class OrganizacaoFactory(DjangoModelFactory):
     contato_nome = factory.Faker("name", locale="pt_BR")
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_telefone = factory.Faker("phone_number", locale="pt_BR")
-    indice_reajuste = Decimal("0")
