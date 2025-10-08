@@ -44,6 +44,7 @@ Django==5.2.5
 django-appconf==1.1.0
 django-extensions==4.1
 django-formtools==2.5.1
+django-lucide-icons==0.2.2
 django-model-utils==5.0.0
 django-phonenumber-field==8.1.0
 django-prometheus==2.4.1
@@ -70,6 +71,7 @@ filelock==3.18.0
 fonttools==4.59.0
 freezegun==1.5.3
 frozenlist==1.7.0
+git-filter-repo==2.47.0
 gprof2dot==2025.4.14
 h11==0.16.0
 http_ece==1.2.1
