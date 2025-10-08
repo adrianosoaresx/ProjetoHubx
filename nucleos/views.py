@@ -236,7 +236,8 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
 class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Nucleo
-    template_name = "nucleos/meus_list.html"
+    # Reutiliza o template padrão de listagem de núcleos para evitar duplicação
+    template_name = "nucleos/nucleo_list.html"
     paginate_by = 10
 
     def dispatch(self, request, *args, **kwargs):
@@ -288,6 +289,16 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        # Ajusta títulos e rótulos para o contexto "Meus Núcleos"
+        ctx.setdefault("list_title", _("Meus Núcleos"))
+        ctx.setdefault("list_aria_label", _("Lista de núcleos do usuário"))
+        ctx.setdefault("empty_message", _("Nenhum núcleo encontrado."))
+        # Usa o mesmo hero padrão, apenas trocando o título
+        ctx.setdefault("list_hero_template", "_components/hero_nucleo.html")
+        # Mantém as ações do hero iguais às da listagem principal
+        ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
+        ctx.setdefault("list_card_template", "_components/card_nucleo.html")
+        ctx.setdefault("item_context_name", "nucleo")
         params = self.request.GET.copy()
         try:
             params.pop("page")

@@ -489,18 +489,6 @@ def _get_menu_items() -> List[MenuItem]:
             children=nucleos_children,
         ),
         MenuItem(
-            "meus_nucleos",
-            reverse("nucleos:meus"),
-            "Meus Núcleos",
-            ICON_USERS,
-            [
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
             "eventos",
             eventos_url,
             "Eventos",
