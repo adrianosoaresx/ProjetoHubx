@@ -4,20 +4,16 @@
 {% block title %}{{ object.nome }} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_organizacao.html' with
-    organizacao=object
-    title=object.nome
-    subtitle=_('Acompanhe os detalhes da organização.')
-    neural_background='home'
-    show_stats=request.user.user_type == 'root'
-    usuarios_total=usuarios|length
-    nucleos_total=nucleos|length
-    eventos_total=eventos|length
-  %}
+  {% if request.user.user_type == 'root' %}
+    {% include '_components/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=True usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
+  {% else %}
+    {% include '_components/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=False usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
+  {% endif %}
+
 {% endblock %}
 
 {% block content %}
-  <div class="max-w-5xl mx-auto space-y-6" id="organizacao-detail">
+  
     <article class="card">
       <div class="card-body space-y-6">
         <figure class="h-48 w-full overflow-hidden rounded-xl bg-[var(--bg-secondary)]">
@@ -139,7 +135,7 @@
         </article>
       </section>
     {% endif %}
-  </div>
+  
 
   <div id="modal" aria-live="polite"></div>
 {% endblock %}
