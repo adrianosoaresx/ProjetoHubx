@@ -8,7 +8,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Q, Count, Model
@@ -166,6 +166,8 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 # ---------------------------------------------------------------------------
 
 
+@login_required
+@no_superadmin_required
 def calendario(request, ano: int | None = None, mes: int | None = None):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
@@ -212,6 +214,8 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     return TemplateResponse(request, "eventos/calendario_mes.html", context)
 
 
+@login_required
+@no_superadmin_required
 def calendario_cards_ultimos_30(request):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
@@ -235,6 +239,8 @@ def calendario_cards_ultimos_30(request):
     return TemplateResponse(request, "eventos/calendario.html", context)
 
 
+@login_required
+@no_superadmin_required
 def lista_eventos(request, dia_iso: str):
     try:
         dia = date.fromisoformat(dia_iso)
@@ -257,6 +263,8 @@ def lista_eventos(request, dia_iso: str):
     )
 
 
+@login_required
+@no_superadmin_required
 def painel_eventos(request):
     return calendario_cards_ultimos_30(request)
 
@@ -266,12 +274,11 @@ def painel_eventos(request):
 # ---------------------------------------------------------------------------
 
 
-class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, CreateView):
+class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, CreateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
-    permission_required = "eventos.add_evento"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -307,12 +314,11 @@ class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         return response
 
 
-class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, UpdateView):
+class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
     success_url = reverse_lazy("eventos:calendario")
-    permission_required = "eventos.change_evento"
 
     def get_form_kwargs(self):  # pragma: no cover
         kwargs = super().get_form_kwargs()
@@ -372,11 +378,10 @@ class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         return response
 
 
-class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, DeleteView):
+class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, DeleteView):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
-    permission_required = "eventos.delete_evento"
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
