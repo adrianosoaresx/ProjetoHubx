@@ -5,7 +5,7 @@
 
 {% block hero %}
   {% if object and object.pk %}
-    {% include "_components/hero_evento_detail.html" with evento=object total_inscricoes=total_inscricoes total_inscricoes_confirmadas=total_inscricoes_confirmadas total_inscricoes_pendentes=total_inscricoes_pendentes total_inscricoes_canceladas=total_inscricoes_canceladas total_presentes=total_presentes vagas_disponiveis=vagas_disponiveis media_feedback=media_feedback total_feedbacks=total_feedbacks %}
+    {% include "_components/hero_evento.html" with title=title|default:object.titulo|default:_("Eventos") subtitle=subtitle|default:object.descricao|default_if_none:"" neural_background="eventos" %}
   {% else %}
     {% include "_components/hero_evento.html" with title=title|default:_("Eventos") subtitle=subtitle|default_if_none:"" neural_background="eventos" %}
   {% endif %}
