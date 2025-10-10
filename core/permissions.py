@@ -181,4 +181,11 @@ class IsOrgAdminOrSuperuser(BasePermission):
         org_id = getattr(obj, "pk", None)
         if org_id is None:
             org_id = getattr(obj, "organizacao_id", None)
-        return user.get_tipo_usuario == UserType.ADMIN.value and getattr(user, "organizacao_id", None) == org_id
+        user_tipo = getattr(user, "user_type", None)
+        if isinstance(user_tipo, UserType):
+            user_tipo_value = user_tipo.value
+        else:
+            user_tipo_value = user_tipo
+        is_admin_tipo = user.get_tipo_usuario == UserType.ADMIN.value
+        is_admin_flag = user_tipo_value == UserType.ADMIN.value
+        return (is_admin_tipo or is_admin_flag) and getattr(user, "organizacao_id", None) == org_id
