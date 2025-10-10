@@ -654,12 +654,15 @@ class AssociadoPromoverFormView(AssociadosPermissionMixin, LoginRequiredMixin, T
             )
             return self.render_to_response(context, status=400)
 
-        nucleos_queryset = {
-            nucleo.id: nucleo
-            for nucleo in Nucleo.objects.filter(organizacao=self.organizacao, id__in=valid_action_ids).select_for_update()
-        }
-
         with transaction.atomic():
+            nucleos_queryset = {
+                nucleo.id: nucleo
+                for nucleo in Nucleo.objects.filter(
+                    organizacao=self.organizacao,
+                    id__in=valid_action_ids,
+                ).select_for_update()
+            }
+
             participacoes_map = {
                 participacao.nucleo_id: participacao
                 for participacao in ParticipacaoNucleo.objects.select_for_update()
