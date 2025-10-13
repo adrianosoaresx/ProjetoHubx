@@ -72,10 +72,10 @@
           <article class="card">
             <div class="card-body space-y-4 relative">
               {% if is_owner %}
-                <div class="absolute right-0 top-0 z-10 flex gap-3">
+                <div class="absolute right-4 top-4 z-10 flex gap-2">
                   <a
                     href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
-                    class="btn btn-secondary btn-sm"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                     aria-label="{% trans 'Editar' %}"
                     hx-get="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
                     hx-target="#perfil-content"
@@ -85,7 +85,7 @@
                   </a>
                   <a
                     href="{% url 'accounts:perfil_sections_portfolio_delete' media.pk %}"
-                    class="btn btn-danger btn-sm"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--error)] bg-[var(--error)] text-[var(--text-inverse)] shadow-sm transition hover:bg-[var(--color-error-700)] focus:outline-none focus:ring-2 focus:ring-[var(--error)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                     aria-label="{% trans 'Excluir' %}"
                     hx-get="{% url 'accounts:portfolio_delete' media.pk %}"
                     hx-target="#modal"
