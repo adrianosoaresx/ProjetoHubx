@@ -28,7 +28,13 @@ from django.views.generic import (
 
 from accounts.models import UserType
 from core.cache import get_cache_version
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from core.permissions import (
+    AdminOperatorOrCoordinatorRequiredMixin,
+    AdminOrOperatorRequiredMixin,
+    AdminRequiredMixin,
+    GerenteRequiredMixin,
+    NoSuperadminMixin,
+)
 from core.utils import resolve_back_href
 from eventos.models import Evento
 
@@ -323,7 +329,9 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         return ctx
 
 
-class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class NucleoCreateView(
+    NoSuperadminMixin, AdminOrOperatorRequiredMixin, LoginRequiredMixin, CreateView
+):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/nucleo_form.html"
@@ -360,7 +368,12 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return response
 
 
-class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class NucleoUpdateView(
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    LoginRequiredMixin,
+    UpdateView,
+):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/nucleo_form.html"
@@ -393,7 +406,7 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False)
         user = self.request.user
-        if user.user_type == UserType.ADMIN:
+        if user.user_type in {UserType.ADMIN, UserType.OPERADOR}:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(participacoes__user=user)

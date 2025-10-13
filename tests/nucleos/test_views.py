@@ -31,6 +31,18 @@ def admin_user(organizacao):
 
 
 @pytest.fixture
+def operador_user(organizacao):
+    User = get_user_model()
+    return User.objects.create_user(
+        username="operador",
+        email="operador@example.com",
+        password="pass",
+        user_type=UserType.OPERADOR,
+        organizacao=organizacao,
+    )
+
+
+@pytest.fixture
 def membro_user(organizacao):
     User = get_user_model()
     return User.objects.create_user(
@@ -72,6 +84,45 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
     resp = client.post(reverse("nucleos:delete", args=[nucleo.pk]))
     nucleo.refresh_from_db()
     assert nucleo.deleted is True
+
+
+def test_operador_cria_nucleo(client, operador_user, organizacao):
+    client.force_login(operador_user)
+    resp = client.post(
+        reverse("nucleos:create"),
+        data={
+            "nome": "N Operador",
+            "descricao": "d",
+            "classificacao": Nucleo.Classificacao.PLANEJAMENTO,
+            "ativo": True,
+            "mensalidade": "10.00",
+        },
+    )
+    assert resp.status_code == 302
+    nucleo = Nucleo.objects.get(nome="N Operador")
+    assert nucleo.organizacao == organizacao
+
+
+def test_operador_edita_nucleo(client, operador_user, organizacao):
+    nucleo = Nucleo.objects.create(
+        nome="N Inicial",
+        organizacao=organizacao,
+        classificacao=Nucleo.Classificacao.PLANEJAMENTO,
+    )
+    client.force_login(operador_user)
+    resp = client.post(
+        reverse("nucleos:update", args=[nucleo.pk]),
+        data={
+            "nome": "N Atualizado",
+            "descricao": "desc",
+            "classificacao": Nucleo.Classificacao.PLANEJAMENTO,
+            "ativo": True,
+            "mensalidade": "15.00",
+        },
+    )
+    assert resp.status_code == 302
+    nucleo.refresh_from_db()
+    assert nucleo.nome == "N Atualizado"
 
 
 def test_participacao_flow(client, admin_user, membro_user, organizacao):
