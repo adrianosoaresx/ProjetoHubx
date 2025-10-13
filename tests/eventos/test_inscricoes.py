@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import pytest
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
 from accounts.models import User, UserType
-from django.template import Template, Context
 from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
@@ -75,6 +75,17 @@ def gerente(organizacao):
 
 
 @pytest.fixture
+def operador(organizacao):
+    return User.objects.create_user(
+        username="operador",
+        email="operador@example.com",
+        password="12345",
+        user_type=UserType.OPERADOR,
+        organizacao=organizacao,
+    )
+
+
+@pytest.fixture
 def usuario_associado(client, organizacao):
     user = User.objects.create_user(
         username="associado",
@@ -134,11 +145,80 @@ def test_gerente_pode_remover_inscrito(evento, usuario_comum, gerente, client):
     assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
 
 
-def test_coordenador_ve_botao_remover():
-    user = User(username="coord", email="coord@example.com", user_type=UserType.COORDENADOR)
-    template = Template("{% if user.user_type == 'admin' or user.user_type == 'coordenador' %}Remover{% endif %}")
-    rendered = template.render(Context({"user": user}))
-    assert "Remover" in rendered
+def test_operador_pode_remover_inscrito(evento, usuario_comum, operador, client):
+    evento.organizacao = operador.organizacao
+    evento.save()
+    InscricaoEvento.objects.create(evento=evento, user=usuario_comum, status="confirmada")
+
+    client.force_login(operador)
+    url = reverse("eventos:evento_remover_inscrito", args=[evento.pk, usuario_comum.pk])
+    response = client.post(url)
+    assert response.status_code == 302
+    assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
+
+
+def test_admin_pode_editar_inscricao(evento, usuario_logado, client, organizacao):
+    outro_usuario = User.objects.create_user(
+        username="participante",
+        email="participante@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=outro_usuario,
+        status="confirmada",
+    )
+    url = reverse("eventos:inscricao_editar", args=[inscricao.pk])
+
+    response_get = client.get(url)
+    assert response_get.status_code == 200
+
+    response_post = client.post(
+        url,
+        {
+            "valor_pago": "123.45",
+            "metodo_pagamento": "pix",
+            "observacao": "Atualizado",
+        },
+    )
+    assert response_post.status_code == 302
+    inscricao.refresh_from_db()
+    assert inscricao.valor_pago == Decimal("123.45")
+    assert inscricao.metodo_pagamento == "pix"
+    assert inscricao.observacao == "Atualizado"
+
+
+def test_admin_ve_acoes_de_inscricao_no_detalhe(evento, usuario_logado, client, organizacao):
+    participante = User.objects.create_user(
+        username="inscrito",
+        email="inscrito@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=participante,
+        status="confirmada",
+    )
+    detail_url = reverse("eventos:evento_detalhe", args=[evento.pk])
+    response = client.get(detail_url)
+    assert response.status_code == 200
+    assert reverse("eventos:inscricao_editar", args=[inscricao.pk]) in response.content.decode()
+    remover_url = reverse("eventos:evento_remover_inscrito", args=[evento.pk, participante.pk])
+    assert remover_url in response.content.decode()
+
+
+def test_operador_tem_contexto_para_gerenciar_inscricoes(evento, client, operador):
+    evento.organizacao = operador.organizacao
+    evento.save()
+    client.force_login(operador)
+    detail_url = reverse("eventos:evento_detalhe", args=[evento.pk])
+    response = client.get(detail_url)
+    assert response.status_code == 200
+    assert response.context["pode_gerenciar_inscricoes"] is True
 
 
 def test_confirmar_inscricao(inscricao):
