@@ -74,9 +74,7 @@
               <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                 <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
                 <dd class="font-medium text-[var(--text-primary)]">
-                  <a href="{{ object.briefing }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
-                    {% trans "Abrir briefing" %}
-                  </a>
+                  {% include 'eventos/partials/shared/_file_link.html' with file=object.briefing %}
                 </dd>
               </div>
             {% endif %}
@@ -84,9 +82,7 @@
               <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                 <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>
                 <dd class="font-medium text-[var(--text-primary)]">
-                  <a href="{{ object.parcerias }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
-                    {% trans "Abrir parcerias" %}
-                  </a>
+                  {% include 'eventos/partials/shared/_file_link.html' with file=object.parcerias %}
                 </dd>
               </div>
             {% endif %}
