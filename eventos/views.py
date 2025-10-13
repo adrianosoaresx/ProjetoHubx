@@ -464,7 +464,12 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         evento: Evento = self.object
         context["evento"] = evento
         minha_inscricao = (
-            evento.inscricoes.filter(user=user, status="confirmada", deleted=False)
+            InscricaoEvento.objects.filter(
+                evento=evento,
+                user=user,
+                status="confirmada",
+                deleted=False,
+            )
             .select_related("user")
             .first()
         )
@@ -475,7 +480,10 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["back_href"] = self._resolve_back_href()
         if context["avaliacao_permitida"]:
             context["feedback_form"] = FeedbackForm()
-        inscricoes = list(evento.inscricoes.filter(deleted=False).select_related("user"))
+        inscricoes = list(
+            InscricaoEvento.objects.filter(evento=evento, deleted=False)
+            .select_related("user")
+        )
         inscricoes_confirmadas = [inscricao for inscricao in inscricoes if inscricao.status == "confirmada"]
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
