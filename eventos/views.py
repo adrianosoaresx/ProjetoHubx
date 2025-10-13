@@ -527,6 +527,11 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         tipo_usuario = _get_tipo_usuario(user)
         pode_editar_evento = user.has_perm("eventos.change_evento")
         pode_excluir_evento = user.has_perm("eventos.delete_evento")
+        pode_gerenciar_inscricoes = tipo_usuario in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
+        }
         if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
             pode_editar_evento = True
             pode_excluir_evento = True
@@ -554,6 +559,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "inscricoes_confirmadas": inscricoes_confirmadas,
                 "pode_editar_evento": pode_editar_evento,
                 "pode_excluir_evento": pode_excluir_evento,
+                "pode_gerenciar_inscricoes": pode_gerenciar_inscricoes,
             }
         )
         context["title"] = evento.titulo
@@ -696,12 +702,22 @@ class EventoCancelarInscricaoModalView(LoginRequiredMixin, NoSuperadminMixin, Vi
         return TemplateResponse(request, self.template_name, context)
 
 
-class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
+class EventoRemoveInscritoView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    View,
+):
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         tipo_usuario = _get_tipo_usuario(request.user)
         if (
-            tipo_usuario in {UserType.ADMIN.value, UserType.COORDENADOR.value}
+            tipo_usuario
+            in {
+                UserType.ADMIN.value,
+                UserType.COORDENADOR.value,
+                UserType.OPERADOR.value,
+            }
             and evento.organizacao != request.user.organizacao
         ):
             messages.error(request, _("Acesso negado."))  # pragma: no cover
@@ -716,7 +732,48 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             detalhes={"inscrito_id": inscrito.id},
         )
         messages.success(request, _("Inscrito removido."))  # pragma: no cover
-        return redirect("eventos:evento_editar", pk=pk)
+        return redirect("eventos:evento_detalhe", pk=pk)
+
+
+class InscricaoEventoUpdateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    UpdateView,
+):
+    model = InscricaoEvento
+    form_class = InscricaoEventoForm
+    template_name = "eventos/inscricoes/inscricao_form.html"
+
+    def get_queryset(self):
+        eventos_qs = _queryset_por_organizacao(self.request)
+        return (
+            InscricaoEvento.objects.select_related("evento", "user")
+            .filter(evento__in=eventos_qs)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        evento = self.object.evento
+        fallback = reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk})
+        context.update(
+            {
+                "evento": evento,
+                "title": _("Editar inscrição"),
+                "subtitle": getattr(evento, "descricao", None),
+                "back_href": resolve_back_href(self.request, fallback=fallback),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Inscrição atualizada com sucesso."))
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "eventos:evento_detalhe", kwargs={"pk": self.object.evento.pk}
+        )
 
 
 class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):

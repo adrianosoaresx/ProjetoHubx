@@ -166,22 +166,45 @@
           </div>
           <div class="card-body space-y-4">
             {% if inscricoes_confirmadas %}
-              <div class="flex flex-col gap-4">
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {% for ins in inscricoes_confirmadas %}
                   {% with inscrito=ins.user %}
-                    <article class="card">
-                      <div class="card-body flex items-center gap-4">
-                        {% if inscrito.avatar %}
-                          <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
-                        {% else %}
-                          <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
-                            {{ inscrito.username|make_list|first|upper }}
+                    <article class="card h-full">
+                      <div class="card-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-center gap-4">
+                          {% if inscrito.avatar %}
+                            <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                          {% else %}
+                            <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
+                              {{ inscrito.username|make_list|first|upper }}
+                            </div>
+                          {% endif %}
+                          <div>
+                            <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
+                            <p class="text-xs">@{{ inscrito.username }}</p>
+                          </div>
+                        </div>
+                        {% if pode_gerenciar_inscricoes %}
+                          <div class="flex flex-wrap gap-2 sm:justify-end">
+                            <a
+                              href="{% url 'eventos:inscricao_editar' ins.pk %}"
+                              class="btn btn-secondary btn-sm"
+                              aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Editar inscrição de {{ username }}{% endblocktrans %}"
+                            >{% trans "Editar" %}</a>
+                            <form
+                              method="post"
+                              action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
+                              class="inline-flex"
+                            >
+                              {% csrf_token %}
+                              <button
+                                type="submit"
+                                class="btn btn-danger btn-sm"
+                                aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+                              >{% trans "Excluir" %}</button>
+                            </form>
                           </div>
                         {% endif %}
-                        <div>
-                          <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
-                          <p class="text-xs">@{{ inscrito.username }}</p>
-                        </div>
                       </div>
                     </article>
                   {% endwith %}
