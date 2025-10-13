@@ -114,6 +114,50 @@ def test_promover_list_filter_actions(client):
 
 
 @pytest.mark.django_db
+def test_promover_list_accessible_to_operator(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+
+    operador = User.objects.create_user(
+        username="operador",
+        email="operador-promover@example.com",
+        password="pass",
+        user_type=UserType.OPERADOR,
+        organizacao=organizacao,
+    )
+
+    client.force_login(operador)
+
+    url = reverse("associados:associados_promover")
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_promover_list_forbidden_for_coordinator(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+
+    coordenador = User.objects.create_user(
+        username="coordenador",
+        email="coordenador-bloqueado@example.com",
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+        is_coordenador=True,
+        is_associado=True,
+    )
+
+    client.force_login(coordenador)
+
+    url = reverse("associados:associados_promover")
+    response = client.get(url)
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
 def test_promover_form_get(client):
     organizacao = OrganizacaoFactory()
     User = get_user_model()
@@ -140,6 +184,64 @@ def test_promover_form_get(client):
 
     assert response.status_code == 200
     assert associado.username in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_promover_form_accessible_to_operator(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+
+    operador = User.objects.create_user(
+        username="operador",
+        email="operador-form@example.com",
+        password="pass",
+        user_type=UserType.OPERADOR,
+        organizacao=organizacao,
+    )
+    associado = User.objects.create_user(
+        username="membro-operador",
+        email="membro-operador@example.com",
+        password="pass",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+
+    client.force_login(operador)
+
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_promover_form_forbidden_for_coordinator(client):
+    organizacao = OrganizacaoFactory()
+    User = get_user_model()
+
+    coordenador = User.objects.create_user(
+        username="coordenador",
+        email="coordenador-form@example.com",
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+        is_coordenador=True,
+        is_associado=True,
+    )
+    associado = User.objects.create_user(
+        username="membro-bloqueado",
+        email="membro-bloqueado@example.com",
+        password="pass",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+
+    client.force_login(coordenador)
+
+    url = reverse("associados:associado_promover_form", args=[associado.pk])
+    response = client.get(url)
+
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db

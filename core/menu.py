@@ -366,7 +366,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("associados:associados_promover"),
             label="Promover associado",
             icon=ICON_STAR,
-            permissions=["admin", "coordenador", "operador"],
+            permissions=["admin", "operador"],
         ),
     ]
 

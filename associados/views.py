@@ -36,6 +36,18 @@ class AssociadosPermissionMixin(AssociadosRequiredMixin, NoSuperadminMixin):
         return AssociadosRequiredMixin.test_func(self) and NoSuperadminMixin.test_func(self)
 
 
+class AssociadosPromocaoPermissionMixin(AssociadosPermissionMixin):
+    """Restricts acesso às telas de promoção a admins e operadores."""
+
+    allowed_roles = {UserType.ADMIN.value, UserType.OPERADOR.value}
+
+    def test_func(self):
+        if not super().test_func():
+            return False
+        tipo_usuario = getattr(self.request.user, "get_tipo_usuario", None)
+        return tipo_usuario in self.allowed_roles
+
+
 class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView):
     template_name = "associados/usuario_form.html"
     form_class = OrganizacaoUserCreateForm
@@ -263,7 +275,7 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView)
         return super().render_to_response(context, **response_kwargs)
 
 
-class AssociadoPromoverListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView):
+class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
     template_name = "associados/promover_list.html"
     context_object_name = "associados"
     paginate_by = 12
@@ -414,7 +426,7 @@ class AssociadoPromoverListView(AssociadosPermissionMixin, LoginRequiredMixin, L
         return super().render_to_response(context, **response_kwargs)
 
 
-class AssociadoPromoverFormView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateView):
+class AssociadoPromoverFormView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):
     template_name = "associados/promover_form.html"
 
     def dispatch(self, request, *args, **kwargs):
