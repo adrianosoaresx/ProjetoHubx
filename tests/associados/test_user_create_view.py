@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.template.loader import render_to_string
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from accounts.models import UserType
@@ -66,3 +67,39 @@ class OrganizacaoUserCreateViewTests(TestCase):
         self.assertTrue(
             get_user_model().objects.filter(email="outro@example.com").exists()
         )
+
+
+class HeroActionTemplateTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def render_template(self, user):
+        request = self.factory.get("/")
+        request.user = user
+        return render_to_string("associados/hero_action.html", request=request)
+
+    def test_root_without_organizacao_does_not_render_cta(self):
+        root_user = get_user_model().objects.create_user(
+            email="root@example.com",
+            username="root",
+            password="Root!123",
+            user_type=UserType.ROOT,
+        )
+
+        rendered = self.render_template(root_user)
+
+        self.assertNotIn("Adicionar associado", rendered)
+
+    def test_admin_with_organizacao_renders_cta(self):
+        organizacao = OrganizacaoFactory()
+        admin_user = get_user_model().objects.create_user(
+            email="admin-template@example.com",
+            username="admin-template",
+            password="AdminTemp!123",
+            user_type=UserType.ADMIN,
+            organizacao=organizacao,
+        )
+
+        rendered = self.render_template(admin_user)
+
+        self.assertIn("Adicionar associado", rendered)
