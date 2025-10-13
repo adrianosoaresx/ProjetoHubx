@@ -18,6 +18,8 @@ class TimeStampedModel(models.Model):
 class SoftDeleteManager(models.Manager):
     """Manager que retorna apenas objetos não deletados logicamente."""
 
+    use_for_related_fields = True
+
     def get_queryset(self) -> models.QuerySet:  # type: ignore[override]
         return super().get_queryset().filter(deleted=False)
 
@@ -33,6 +35,8 @@ class SoftDeleteModel(models.Model):
 
     class Meta:
         abstract = True
+        default_manager_name = "objects"
+        base_manager_name = "objects"
 
     def delete(
         self,

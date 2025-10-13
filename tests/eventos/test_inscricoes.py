@@ -75,6 +75,20 @@ def gerente(organizacao):
 
 
 @pytest.fixture
+def usuario_associado(client, organizacao):
+    user = User.objects.create_user(
+        username="associado",
+        email="associado@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    client.force_login(user)
+    return user
+
+
+@pytest.fixture
 def inscricao(evento, usuario_logado):
     return InscricaoEvento.objects.create(user=usuario_logado, evento=evento)
 
@@ -184,3 +198,58 @@ def test_cancelar_inscricao_decrementa_numero_presentes(evento, inscricao):
     inscricao.cancelar_inscricao()
     evento.refresh_from_db()
     assert evento.numero_presentes == 0
+
+
+def test_cancelar_remove_associado_da_lista(evento, usuario_associado, client):
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    detail_url = reverse("eventos:evento_detalhe", args=[evento.pk])
+
+    response_subscribe = client.post(subscribe_url)
+    assert response_subscribe.status_code == 302
+    assert (
+        InscricaoEvento.objects.filter(evento=evento, user=usuario_associado, status="confirmada")
+        .filter(deleted=False)
+        .exists()
+    )
+
+    response_cancel = client.post(subscribe_url, {"action": "cancel"})
+    assert response_cancel.status_code == 302
+    assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_associado).exists()
+
+    client.force_login(usuario_associado)
+    detail_response = client.get(detail_url)
+    assert detail_response.status_code == 200
+    assert not detail_response.context["inscricoes_confirmadas"]
+    assert detail_response.context["inscricao"] is None
+
+
+def test_associado_pode_reinscrever_apos_cancelar(evento, usuario_associado, client):
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+
+    first_subscribe = client.post(subscribe_url)
+    assert first_subscribe.status_code == 302
+
+    cancel_response = client.post(subscribe_url, {"action": "cancel"})
+    assert cancel_response.status_code == 302
+    assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_associado).exists()
+    assert (
+        InscricaoEvento.all_objects.filter(evento=evento, user=usuario_associado, status="cancelada")
+        .filter(deleted=True)
+        .count()
+        == 1
+    )
+
+    second_subscribe = client.post(subscribe_url)
+    assert second_subscribe.status_code == 302
+    assert (
+        InscricaoEvento.objects.filter(evento=evento, user=usuario_associado, status="confirmada")
+        .filter(deleted=False)
+        .count()
+        == 1
+    )
+    assert (
+        InscricaoEvento.all_objects.filter(evento=evento, user=usuario_associado)
+        .filter(deleted=False)
+        .count()
+        == 1
+    )
