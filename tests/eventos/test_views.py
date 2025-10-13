@@ -146,6 +146,20 @@ def test_evento_detail_view_htmx(evento, client, usuario_logado):
     assert str(int(evento.valor_gasto)) in content
 
 
+def test_evento_detail_admin_sees_edit_button(evento, client, usuario_logado):
+    url = reverse("eventos:evento_detalhe", args=[evento.pk])
+    response = client.get(url, HTTP_HX_REQUEST="true")
+    assert response.status_code == 200
+    assert reverse("eventos:evento_editar", args=[evento.pk]) in response.content.decode()
+
+
+def test_evento_detail_non_admin_hides_edit_button(evento, client, usuario_comum):
+    url = reverse("eventos:evento_detalhe", args=[evento.pk])
+    response = client.get(url, HTTP_HX_REQUEST="true")
+    assert response.status_code == 200
+    assert reverse("eventos:evento_editar", args=[evento.pk]) not in response.content.decode()
+
+
 @pytest.mark.xfail(reason="Erro de template em produção")
 def test_evento_detail_view_sem_htmx(evento, client):
     url = reverse("eventos:evento_detalhe", args=[evento.pk])
