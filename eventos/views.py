@@ -66,6 +66,26 @@ def _get_tipo_usuario(user) -> str | None:
     return tipo
 
 
+def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
+    tipo_usuario = _get_tipo_usuario(user)
+    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return True
+    if tipo_usuario != UserType.COORDENADOR.value:
+        return False
+    if evento.nucleo_id is None:
+        return False
+    participacoes = getattr(user, "participacoes", None)
+    if participacoes is not None:
+        if participacoes.filter(
+            nucleo=evento.nucleo,
+            papel="coordenador",
+            status="ativo",
+            status_suspensao=False,
+        ).exists():
+            return True
+    return getattr(user, "nucleo_id", None) == evento.nucleo_id and getattr(user, "is_coordenador", False)
+
+
 # ---------------------------------------------------------------------------
 # List / Calendário
 # ---------------------------------------------------------------------------
@@ -523,6 +543,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         )
         context["title"] = evento.titulo
         context["subtitle"] = getattr(evento, "descricao", None)
+        context["pode_ver_inscritos"] = _usuario_pode_ver_inscritos(user, evento)
         return context
 
     def _resolve_back_href(self) -> str:

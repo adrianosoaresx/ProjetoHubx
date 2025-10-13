@@ -87,113 +87,109 @@
               </div>
             {% endif %}
           </dl>
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            {% if perms.eventos.change_evento %}
-              <a href="{% url 'eventos:evento_editar' object.pk %}"
-                 class="btn btn-secondary"
-                 aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
-            {% endif %}
-            {% if perms.eventos.delete_evento %}
-              <a
-                href="{% url 'eventos:evento_excluir' object.pk %}"
-                hx-get="{% url 'eventos:evento_excluir' object.pk %}"
-                hx-target="#modal"
-                hx-trigger="click"
-                hx-swap="innerHTML"
-                hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-                class="btn btn-danger"
-                aria-label="{% trans 'Excluir evento' %}"
-              >{% trans 'Excluir' %}</a>
+
+          {% if inscricao and avaliacao_permitida %}
+            <section aria-labelledby="evento-avaliacao" class="space-y-4">
+              <h3 id="evento-avaliacao" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Avaliação" %}</h3>
+              <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-6">
+                {% csrf_token %}
+                {{ feedback_form.non_field_errors }}
+                {% include '_forms/field.html' with field=feedback_form.nota %}
+                {% include '_forms/field.html' with field=feedback_form.comentario %}
+                <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+                  <button type="submit" class="btn btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+                </div>
+              </form>
+            </section>
+          {% endif %}
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--border)]">
+            <div class="flex flex-wrap gap-3">
+              {% if perms.eventos.change_evento %}
+                <a href="{% url 'eventos:evento_editar' object.pk %}"
+                   class="btn btn-secondary"
+                   aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
+              {% endif %}
+              {% if perms.eventos.delete_evento %}
+                <a
+                  href="{% url 'eventos:evento_excluir' object.pk %}"
+                  hx-get="{% url 'eventos:evento_excluir' object.pk %}"
+                  hx-target="#modal"
+                  hx-trigger="click"
+                  hx-swap="innerHTML"
+                  hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                  class="btn btn-danger"
+                  aria-label="{% trans 'Excluir evento' %}"
+                >{% trans 'Excluir' %}</a>
+              {% endif %}
+            </div>
+
+            {% if user.is_authenticated and user.get_tipo_usuario != 'admin' %}
+              {% if inscricao %}
+                <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="cancel" />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    hx-get="{% url 'eventos:evento_cancelar_inscricao_modal' object.pk %}"
+                    hx-target="#modal"
+                    hx-trigger="click"
+                    hx-swap="innerHTML"
+                    hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                    aria-label="{% trans 'Cancelar inscrição' %}"
+                  >
+                    {% trans 'Cancelar inscrição' %}
+                  </button>
+                  <noscript>
+                    <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
+                  </noscript>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</button>
+                </form>
+              {% endif %}
             {% endif %}
           </div>
         </div>
       </article>
 
-      {% if user.is_authenticated and user.user_type != 'admin' %}
+      {% if pode_ver_inscritos %}
         <article class="card">
           <div class="card-header">
-            {% if inscricao and avaliacao_permitida %}
-              <h2 class="text-xl font-semibold">{% trans "Avaliação" %}</h2>
-            {% else %}
-              <h2 class="text-xl font-semibold">{% trans "Inscrição" %}</h2>
-            {% endif %}
+            <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
           </div>
-          <div class="card-body space-y-6">
-            {% if inscricao %}
-              {% if avaliacao_permitida %}
-                <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-6">
-                  {% csrf_token %}
-                  {{ feedback_form.non_field_errors }}
-                  {% include '_forms/field.html' with field=feedback_form.nota %}
-                  {% include '_forms/field.html' with field=feedback_form.comentario %}
-                  <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                    <button type="submit" class="btn btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
-                  </div>
-                </form>
-              {% else %}
-                <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="space-y-6">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="cancel" />
-                  <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      hx-get="{% url 'eventos:evento_cancelar_inscricao_modal' object.pk %}"
-                      hx-target="#modal"
-                      hx-trigger="click"
-                      hx-swap="innerHTML"
-                      hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-                      aria-label="{% trans 'Cancelar inscrição' %}"
-                    >
-                      {% trans 'Cancelar inscrição' %}
-                    </button>
-                    <noscript>
-                      <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
-                    </noscript>
-                  </div>
-                </form>
-              {% endif %}
-            {% else %}
-              <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
+          <div class="card-body space-y-4">
+            {% if inscricoes_confirmadas %}
+              <div class="flex flex-col gap-4">
+                {% for ins in inscricoes_confirmadas %}
+                  {% with inscrito=ins.user %}
+                    <article class="card">
+                      <div class="card-body flex items-center gap-4">
+                        {% if inscrito.avatar %}
+                          <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                        {% else %}
+                          <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
+                            {{ inscrito.username|make_list|first|upper }}
+                          </div>
+                        {% endif %}
+                        <div>
+                          <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
+                          <p class="text-xs">@{{ inscrito.username }}</p>
+                        </div>
+                      </div>
+                    </article>
+                  {% endwith %}
+                {% endfor %}
               </div>
+            {% else %}
+              <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
             {% endif %}
           </div>
         </article>
       {% endif %}
-
-      <article class="card">
-        <div class="card-header">
-          <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
-        </div>
-        <div class="card-body space-y-4">
-          {% if inscricoes_confirmadas %}
-            <div class="flex flex-col gap-4">
-              {% for ins in inscricoes_confirmadas %}
-                {% with inscrito=ins.user %}
-                  <article class="card">
-                    <div class="card-body flex items-center gap-4">
-                      {% if inscrito.avatar %}
-                        <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
-                      {% else %}
-                        <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
-                          {{ inscrito.username|make_list|first|upper }}
-                        </div>
-                      {% endif %}
-                      <div>
-                        <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
-                        <p class="text-xs">@{{ inscrito.username }}</p>
-                      </div>
-                    </div>
-                  </article>
-                {% endwith %}
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
-          {% endif %}
-        </div>
-      </article>
     </div>
 
     <div id="modal" role="presentation" aria-live="polite"></div>
