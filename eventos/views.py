@@ -497,11 +497,16 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
         context["inscricao"] = minha_inscricao
+        context["inscricao_permitida"] = evento.status == Evento.Status.ATIVO
         context["back_href"] = self._resolve_back_href()
         if context["avaliacao_permitida"]:
             context["feedback_form"] = FeedbackForm()
         # Evita oferecer cancelamento quando o evento já começou
-        context["pode_cancelar"] = bool(minha_inscricao) and timezone.now() < evento.data_inicio
+        context["pode_cancelar"] = (
+            bool(minha_inscricao)
+            and context["inscricao_permitida"]
+            and timezone.now() < evento.data_inicio
+        )
         inscricoes = list(
             InscricaoEvento.objects.filter(evento=evento, deleted=False)
             .select_related("user")
@@ -570,6 +575,12 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
 
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+        if evento.status != Evento.Status.ATIVO:
+            messages.error(
+                request,
+                _("Inscrições disponíveis apenas para eventos ativos."),
+            )
+            return self._redirect(request, pk)
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return self._redirect(request, pk)

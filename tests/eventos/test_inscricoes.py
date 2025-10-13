@@ -171,6 +171,31 @@ def test_usuario_nao_pode_cancelar_apos_inicio(evento, usuario_comum, client):
     assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
 
 
+def test_usuario_nao_pode_inscrever_evento_inativo(evento, usuario_comum, client):
+    evento.status = Evento.Status.CANCELADO
+    evento.save(update_fields=["status"])
+    url = reverse("eventos:evento_subscribe", args=[evento.pk])
+
+    resp = client.post(url)
+
+    assert resp.status_code == 302
+    assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
+
+
+def test_usuario_nao_pode_cancelar_evento_inativo(evento, usuario_comum, client):
+    url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    client.post(url)
+    assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
+
+    evento.status = Evento.Status.CONCLUIDO
+    evento.save(update_fields=["status"])
+
+    resp = client.post(url, {"action": "cancel"})
+
+    assert resp.status_code == 302
+    assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
+
+
 def test_qrcode_and_checkin(client, inscricao):
     inscricao.confirmar_inscricao()
     assert inscricao.qrcode_url
