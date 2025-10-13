@@ -145,13 +145,15 @@
                     <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
                   </noscript>
                 </form>
-              {% elif not inscricao %}
+              {% elif not inscricao and inscricao_permitida %}
                 <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</button>
                 </form>
-              {% else %}
+              {% elif inscricao %}
                 <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrição confirmada' %}</p>
+              {% elif not inscricao %}
+                <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrições indisponíveis para este evento.' %}</p>
               {% endif %}
             {% endif %}
           </div>
