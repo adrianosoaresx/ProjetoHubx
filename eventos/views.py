@@ -471,7 +471,8 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["back_href"] = self._resolve_back_href()
         if context["avaliacao_permitida"]:
             context["feedback_form"] = FeedbackForm()
-        inscricoes = list(evento.inscricoes.all())
+        inscricoes = list(evento.inscricoes.select_related("user"))
+        inscricoes_confirmadas = [inscricao for inscricao in inscricoes if inscricao.status == "confirmada"]
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
         total_pendentes = status_counts.get("pendente", 0)
@@ -505,6 +506,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "vagas_disponiveis": vagas_disponiveis,
                 "media_feedback": media_feedback,
                 "total_feedbacks": total_feedbacks,
+                "inscricoes_confirmadas": inscricoes_confirmadas,
             }
         )
         context["title"] = evento.titulo
@@ -523,11 +525,19 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
+    def _redirect(self, request, pk):
+        redirect_url = reverse("eventos:evento_detalhe", args=[pk])
+        if bool(request.headers.get("HX-Request")):
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = redirect_url
+            return response
+        return redirect(redirect_url)
+
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
-            return redirect("eventos:evento_detalhe", pk=pk)
+            return self._redirect(request, pk)
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
         if request.POST.get("action") == "cancel":
             if created:
@@ -542,7 +552,7 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                     messages.error(request, str(exc))
                 else:
                     messages.success(request, _("Inscrição cancelada."))
-            return redirect("eventos:evento_detalhe", pk=pk)
+            return self._redirect(request, pk)
         if inscricao.status == "confirmada":
             try:
                 inscricao.cancelar_inscricao()
@@ -558,7 +568,40 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 messages.error(request, str(exc))
             else:
                 messages.success(request, _("Inscrição realizada."))  # pragma: no cover
-        return redirect("eventos:evento_detalhe", pk=pk)
+        return self._redirect(request, pk)
+
+
+class EventoCancelarInscricaoModalView(LoginRequiredMixin, NoSuperadminMixin, View):
+    template_name = "eventos/partials/evento_cancelar_inscricao_modal.html"
+
+    def get(self, request, pk):  # pragma: no cover - interface simples
+        if request.headers.get("HX-Target") != "modal":
+            return redirect("eventos:evento_detalhe", pk=pk)
+
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+
+        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
+            return HttpResponseForbidden(_("Administradores não podem cancelar inscrições."))
+
+        get_object_or_404(
+            InscricaoEvento,
+            user=request.user,
+            evento=evento,
+            status="confirmada",
+        )
+
+        context = {
+            "evento": evento,
+            "titulo": _("Cancelar inscrição"),
+            "mensagem": _(
+                "Tem certeza que deseja cancelar sua inscrição no evento %(evento)s?"
+            )
+            % {"evento": evento.titulo},
+            "submit_label": _("Cancelar inscrição"),
+            "form_action": reverse("eventos:evento_subscribe", args=[evento.pk]),
+        }
+
+        return TemplateResponse(request, self.template_name, context)
 
 
 class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
