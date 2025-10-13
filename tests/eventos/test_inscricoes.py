@@ -99,15 +99,16 @@ def test_evento_detail_htmx(evento, client):
 
 
 def test_usuario_pode_inscrever_e_cancelar(evento, usuario_comum, client):
-    url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
 
     # Inscreve
-    resp1 = client.post(url)
+    resp1 = client.post(subscribe_url)
     assert resp1.status_code == 302
     assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
 
     # Cancela
-    resp2 = client.post(url)
+    resp2 = client.post(cancel_url)
     assert resp2.status_code == 302
     assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
     assert (
@@ -162,11 +163,12 @@ def test_cancelar_inscricao_apos_inicio_model(inscricao):
 
 
 def test_usuario_nao_pode_cancelar_apos_inicio(evento, usuario_comum, client):
-    url = reverse("eventos:evento_subscribe", args=[evento.pk])
-    client.post(url)
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
+    client.post(subscribe_url)
     evento.data_inicio = make_aware(datetime.now() - timedelta(hours=1))
     evento.save(update_fields=["data_inicio"])
-    resp = client.post(url)
+    resp = client.post(cancel_url)
     assert resp.status_code == 302
     assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
 
@@ -183,14 +185,15 @@ def test_usuario_nao_pode_inscrever_evento_inativo(evento, usuario_comum, client
 
 
 def test_usuario_nao_pode_cancelar_evento_inativo(evento, usuario_comum, client):
-    url = reverse("eventos:evento_subscribe", args=[evento.pk])
-    client.post(url)
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
+    client.post(subscribe_url)
     assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
 
     evento.status = Evento.Status.CONCLUIDO
     evento.save(update_fields=["status"])
 
-    resp = client.post(url, {"action": "cancel"})
+    resp = client.post(cancel_url)
 
     assert resp.status_code == 302
     assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
@@ -227,6 +230,7 @@ def test_cancelar_inscricao_decrementa_numero_presentes(evento, inscricao):
 
 def test_cancelar_remove_associado_da_lista(evento, usuario_associado, client):
     subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
     detail_url = reverse("eventos:evento_detalhe", args=[evento.pk])
 
     response_subscribe = client.post(subscribe_url)
@@ -237,7 +241,7 @@ def test_cancelar_remove_associado_da_lista(evento, usuario_associado, client):
         .exists()
     )
 
-    response_cancel = client.post(subscribe_url, {"action": "cancel"})
+    response_cancel = client.post(cancel_url)
     assert response_cancel.status_code == 302
     assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_associado).exists()
 
@@ -250,11 +254,12 @@ def test_cancelar_remove_associado_da_lista(evento, usuario_associado, client):
 
 def test_associado_pode_reinscrever_apos_cancelar(evento, usuario_associado, client):
     subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
 
     first_subscribe = client.post(subscribe_url)
     assert first_subscribe.status_code == 302
 
-    cancel_response = client.post(subscribe_url, {"action": "cancel"})
+    cancel_response = client.post(cancel_url)
     assert cancel_response.status_code == 302
     assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_associado).exists()
     assert (
