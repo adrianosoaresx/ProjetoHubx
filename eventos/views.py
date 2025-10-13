@@ -463,7 +463,11 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         user = self.request.user
         evento: Evento = self.object
         context["evento"] = evento
-        minha_inscricao = evento.inscricoes.filter(user=user, status="confirmada").select_related("user").first()
+        minha_inscricao = (
+            evento.inscricoes.filter(user=user, status="confirmada", deleted=False)
+            .select_related("user")
+            .first()
+        )
         confirmada = bool(minha_inscricao)
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
@@ -471,7 +475,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["back_href"] = self._resolve_back_href()
         if context["avaliacao_permitida"]:
             context["feedback_form"] = FeedbackForm()
-        inscricoes = list(evento.inscricoes.select_related("user"))
+        inscricoes = list(evento.inscricoes.filter(deleted=False).select_related("user"))
         inscricoes_confirmadas = [inscricao for inscricao in inscricoes if inscricao.status == "confirmada"]
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
@@ -538,7 +542,19 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return self._redirect(request, pk)
-        inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
+        inscricao, created = InscricaoEvento.all_objects.get_or_create(
+            user=request.user,
+            evento=evento,
+        )
+
+        if inscricao.deleted:
+            update_fields = ["deleted", "deleted_at", "updated_at"]
+            inscricao.deleted = False
+            inscricao.deleted_at = None
+            if inscricao.status == "cancelada":
+                inscricao.status = "pendente"
+                update_fields.append("status")
+            inscricao.save(update_fields=update_fields)
         if request.POST.get("action") == "cancel":
             if created:
                 inscricao.delete()
