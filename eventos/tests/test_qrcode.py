@@ -101,5 +101,8 @@ def test_usuario_cancela_inscricao_confirmada(client, monkeypatch):
     response = client.post(url, {"action": "cancel"})
 
     assert response.status_code == 302
-    inscricao = InscricaoEvento.objects.get(user=usuario, evento=evento)
+    with pytest.raises(InscricaoEvento.DoesNotExist):
+        InscricaoEvento.objects.get(user=usuario, evento=evento)
+    inscricao = InscricaoEvento.all_objects.get(user=usuario, evento=evento)
     assert inscricao.status == "cancelada"
+    assert inscricao.deleted is True
