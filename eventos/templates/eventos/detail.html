@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n l10n static %}
+{% load i18n l10n static lucide_icons %}
 
 {% block title %}{{ title|default:object.titulo|default:_('Eventos') }}{% endblock %}
 
@@ -190,7 +190,9 @@
                               href="{% url 'eventos:inscricao_editar' ins.pk %}"
                               class="btn btn-secondary btn-sm"
                               aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Editar inscrição de {{ username }}{% endblocktrans %}"
-                            >{% trans "Editar" %}</a>
+                            >
+                              {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+                            </a>
                             <form
                               method="post"
                               action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
@@ -201,7 +203,9 @@
                                 type="submit"
                                 class="btn btn-danger btn-sm"
                                 aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
-                              >{% trans "Excluir" %}</button>
+                              >
+                                {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+                              </button>
                             </form>
                           </div>
                         {% endif %}
