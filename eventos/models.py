@@ -131,6 +131,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                 usuario=self.user,
                 acao="inscricao_cancelada",
             )
+            self.delete()
 
     def realizar_check_in(self) -> None:
         if self.check_in_realizado_em:

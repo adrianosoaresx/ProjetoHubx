@@ -95,7 +95,16 @@ def test_usuario_pode_inscrever_e_cancelar(evento, usuario_comum, client):
     # Cancela
     resp2 = client.post(url)
     assert resp2.status_code == 302
-    assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="cancelada").exists()
+    assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
+    assert (
+        InscricaoEvento.all_objects.filter(
+            evento=evento,
+            user=usuario_comum,
+            status="cancelada",
+            deleted=True,
+        ).count()
+        == 1
+    )
 
 
 def test_gerente_pode_remover_inscrito(evento, usuario_comum, gerente, client):
@@ -126,6 +135,7 @@ def test_confirmar_inscricao(inscricao):
 def test_cancelar_inscricao(inscricao):
     inscricao.cancelar_inscricao()
     assert inscricao.status == "cancelada"
+    assert inscricao.deleted is True
 
 
 def test_cancelar_inscricao_apos_inicio_model(inscricao):
