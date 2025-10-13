@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import secrets
+import posixpath
 from pathlib import Path
 import uuid
 
@@ -451,6 +452,23 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
             if self.file.size > max_size:
                 raise ValidationError(
                     {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}
+                )
+
+            file_field = self._meta.get_field("file")
+            max_length = file_field.max_length or 100
+            upload_to = file_field.upload_to if isinstance(file_field.upload_to, str) else ""
+            filename = Path(self.file.name).name
+            generated_path = posixpath.join(upload_to, filename) if upload_to else filename
+            if len(generated_path) > max_length:
+                prefix_length = len(posixpath.join(upload_to, "")) if upload_to else 0
+                allowed_length = max_length - prefix_length
+                raise ValidationError(
+                    {
+                        "file": _(
+                            "O nome do arquivo é muito longo. Renomeie o arquivo para no máximo %(chars)d caracteres."
+                        )
+                        % {"chars": max(allowed_length, 1)}
+                    }
                 )
 
     def delete(
