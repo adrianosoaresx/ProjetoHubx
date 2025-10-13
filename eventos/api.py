@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import permissions, status, viewsets
@@ -9,11 +8,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from accounts.models import UserType
-
 from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 from .permissions import IsAdminOrCoordenadorOrReadOnly
 from .serializers import EventoSerializer, InscricaoEventoSerializer
+from .querysets import filter_eventos_por_usuario
 
 
 class DefaultPagination(PageNumberPagination):
@@ -24,15 +22,7 @@ class OrganizacaoFilterMixin:
     """Filtra objetos pela organização do usuário."""
 
     def filter_by_organizacao(self, qs, evento_field: str | None = None):
-        user = self.request.user
-        if getattr(user, "user_type", None) == UserType.ROOT:
-            return qs
-        prefix = f"{evento_field}__" if evento_field else ""
-        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-        filtro = Q(**{f"{prefix}organizacao": user.organizacao})
-        if nucleo_ids:
-            filtro |= Q(**{f"{prefix}nucleo__in": nucleo_ids})
-        return qs.filter(filtro)
+        return filter_eventos_por_usuario(qs, self.request.user, evento_field=evento_field)
 
 
 class EventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):

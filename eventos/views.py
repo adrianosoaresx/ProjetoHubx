@@ -42,6 +42,7 @@ from core.utils import resolve_back_href
 
 from .forms import EventoForm, FeedbackForm, InscricaoEventoForm
 from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
+from .querysets import filter_eventos_por_usuario
 
 User = get_user_model()
 
@@ -52,16 +53,7 @@ User = get_user_model()
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
-    user = request.user
-    if not getattr(user, "is_authenticated", False):
-        return qs.none()
-    if user.user_type == UserType.ROOT:
-        return qs
-    nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-    filtro = Q(organizacao=user.organizacao)
-    if nucleo_ids:
-        filtro |= Q(nucleo__in=nucleo_ids)
-    return qs.filter(filtro)
+    return filter_eventos_por_usuario(qs, request.user)
 
 
 # ---------------------------------------------------------------------------
@@ -80,17 +72,10 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             return self._base_queryset_cache
         user = self.request.user
         qs = (
-            Evento.objects.filter(organizacao=user.organizacao)
-            .select_related("nucleo", "organizacao")
+            Evento.objects.select_related("nucleo", "organizacao")
             .prefetch_related("inscricoes")
         )
-        if user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-            UserType.OPERADOR.value,
-        }:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            qs = qs.filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
+        qs = filter_eventos_por_usuario(qs, user)
         q = self.request.GET.get("q", "").strip()
         if q:
             qs = qs.filter(
@@ -460,12 +445,8 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     template_name = "eventos/detail.html"
 
     def get_queryset(self):
-        user = self.request.user
         base = Evento.objects.select_related("organizacao").prefetch_related("inscricoes", "feedbacks")
-        if user.user_type == UserType.ADMIN:
-            return base.filter(organizacao=user.organizacao)
-        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-        return base.filter(organizacao=user.organizacao).filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
+        return filter_eventos_por_usuario(base, self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -639,13 +620,7 @@ class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequ
 
     def get_queryset(self):
         qs = InscricaoEvento.objects.select_related("user", "evento")
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
+        qs = filter_eventos_por_usuario(qs, self.request.user, evento_field="evento")
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(Q(user__username__icontains=q) | Q(evento__titulo__icontains=q))
