@@ -524,6 +524,12 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         media_feedback = None
         if total_feedbacks:
             media_feedback = sum(f.nota for f in feedbacks) / total_feedbacks
+        tipo_usuario = _get_tipo_usuario(user)
+        pode_editar_evento = user.has_perm("eventos.change_evento")
+        pode_excluir_evento = user.has_perm("eventos.delete_evento")
+        if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+            pode_editar_evento = True
+            pode_excluir_evento = True
         context.update(
             {
                 "local": evento.local,
@@ -546,6 +552,8 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "media_feedback": media_feedback,
                 "total_feedbacks": total_feedbacks,
                 "inscricoes_confirmadas": inscricoes_confirmadas,
+                "pode_editar_evento": pode_editar_evento,
+                "pode_excluir_evento": pode_excluir_evento,
             }
         )
         context["title"] = evento.titulo

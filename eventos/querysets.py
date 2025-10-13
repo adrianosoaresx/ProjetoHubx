@@ -29,8 +29,13 @@ def filter_eventos_por_usuario(qs, user, *, evento_field: str | None = None):
     qs = qs.filter(**{organizacao_field: getattr(user, "organizacao", None)})
 
     tipo_usuario = getattr(user, "get_tipo_usuario", None)
+    if isinstance(tipo_usuario, UserType):  # pragma: no cover - defensive fallback
+        tipo_usuario = tipo_usuario.value
     nucleos_qs = getattr(user, "nucleos", None)
     nucleo_ids = list(nucleos_qs.values_list("id", flat=True)) if nucleos_qs is not None else []
+
+    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return qs
 
     if tipo_usuario == UserType.ASSOCIADO.value and not nucleo_ids:
         status_field = f"{prefix}status"
