@@ -4,19 +4,9 @@
 {% block title %}{% trans "Conexões" %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_conexoes.html' with title=_('Conexões') subtitle=_('Gerencie suas conexões dentro da organização') action_url=search_page_url action_icon='user-round-plus' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas %}
+  {% include '_components/hero_conexoes.html' with title=_('Conexões') subtitle=_('Gerencie suas conexões dentro da organização') action_url=search_page_url action_icon='user-round-plus' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas filter_cards=connection_filter_cards %}
 {% endblock %}
 
 {% block content %}
-  <div class="space-y-6" id="connections-dashboard">
-    <article class="card" aria-labelledby="connections-list-heading">
-      <div class="card-header">
-        <h2 id="connections-list-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
-      </div>
-      <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/connections_list.html' %}
-      </div>
-    </article>
-
-  </div>
+  {% include 'conexoes/partiais/connections_list_content.html' %}
 {% endblock %}

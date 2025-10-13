@@ -305,7 +305,7 @@ def _get_menu_items() -> List[MenuItem]:
     conexoes_children = [
         MenuItem(
             id="conexoes_solicitacoes",
-            path=f"{conexoes_dashboard_url}?tab=solicitacoes",
+            path=f"{conexoes_dashboard_url}?filter=pendentes",
             label="Solicitações",
             icon=ICON_PLUG,
             permissions=non_root_authenticated_users,

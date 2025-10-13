@@ -7,6 +7,9 @@
   {% if search_form_hx_target %}hx-target="#{{ search_form_hx_target }}"{% endif %}
   {% if search_form_hx_push_url %}hx-push-url="{{ search_form_hx_push_url }}"{% endif %}
 >
+  {% if connections_filter %}
+    <input type="hidden" name="filter" value="{{ connections_filter }}" />
+  {% endif %}
   <div class="sm:flex-1">
     {% include '_forms/field.html' with field=form.q %}
   </div>
