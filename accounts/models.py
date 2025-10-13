@@ -258,8 +258,13 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     def get_tipo_usuario(self):
         if self.is_superuser:
             return UserType.ROOT.value
-        if self.is_staff and not self.is_associado:
-            return UserType.ADMIN.value
+        explicit_roles = {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.CONSULTOR.value,
+        }
+        if self.user_type in explicit_roles:
+            return self.user_type
         if self.is_associado and self.nucleo and self.is_coordenador:
             return UserType.COORDENADOR.value
         if self.is_associado and self.nucleo and not self.is_coordenador:

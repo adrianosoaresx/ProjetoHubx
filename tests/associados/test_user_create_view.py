@@ -27,6 +27,15 @@ class OrganizacaoUserCreateViewTests(TestCase):
         self.assertEqual(response.context["back_href"], referer)
         self.assertContains(response, f'name="next" value="{referer}"')
 
+    def test_admin_associado_can_access_create_view(self):
+        self.admin.is_associado = True
+        self.admin.save(update_fields=["is_associado"])
+
+        self.client.force_login(self.admin)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+
     def test_success_redirects_to_next_when_valid(self):
         self.client.force_login(self.admin)
         next_url = "/organizacoes/"
