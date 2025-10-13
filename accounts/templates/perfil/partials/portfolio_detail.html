@@ -24,16 +24,27 @@
           </div>
         {% elif media.media_type == 'pdf' %}
           <div class="overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
-            <object data="{{ media.file.url }}" type="application/pdf" class="h-[32rem] w-full" aria-label="{{ media.descricao }}">
-              <embed src="{{ media.file.url }}" type="application/pdf" />
-              <p class="px-4 py-3 text-center text-sm text-[var(--text-secondary)]">
-                {% trans "Este navegador não suporta visualização de PDF." %}
-                <a href="{{ media.file.url }}" class="inline-flex items-center gap-2 text-primary hover:underline" download>
+            <div class="flex flex-col items-center justify-center gap-6 py-16">
+              <span class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-primary)]">
+                {% lucide 'file-text' class='h-10 w-10' aria_hidden='true' %}
+              </span>
+              <div class="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="{{ media.file.url }}"
+                  class="btn btn-primary"
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="{% trans 'Abrir PDF em uma nova aba' %}"
+                >
+                  {% lucide 'external-link' class='w-4 h-4' aria_hidden='true' %}
+                  {% trans "Abrir PDF" %}
+                </a>
+                <a href="{{ media.file.url }}" class="btn btn-secondary" download aria-label="{% trans 'Baixar PDF' %}">
                   {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}
                   {% trans "Baixar PDF" %}
                 </a>
-              </p>
-            </object>
+              </div>
+            </div>
           </div>
         {% else %}
           <div class="flex justify-center">
