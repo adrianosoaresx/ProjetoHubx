@@ -1,7 +1,7 @@
 from datetime import timedelta, timezone as dt_timezone
 
 import factory
-from factory.django import DjangoModelFactory
+from factory.django import DjangoModelFactory, FileField
 
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -30,8 +30,16 @@ class EventoFactory(DjangoModelFactory):
     valor_ingresso = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
-    briefing = factory.Faker("url")
-    parcerias = factory.Faker("url")
+    briefing = FileField(
+        filename="briefing.pdf",
+        data=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n",
+        content_type="application/pdf",
+    )
+    parcerias = FileField(
+        filename="parcerias.pdf",
+        data=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n",
+        content_type="application/pdf",
+    )
     contato_nome = factory.Faker("name", locale="pt_BR")
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_whatsapp = factory.Faker("msisdn")

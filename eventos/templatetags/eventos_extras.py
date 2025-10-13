@@ -1,4 +1,6 @@
 from __future__ import annotations
+import os
+
 from django import template
 from django.utils.translation import gettext as _
 
@@ -73,3 +75,21 @@ def evento_badges(evento):
         "cover_badges": cover_badges,
         "target_badge": target_badge,
     }
+
+
+@register.filter
+def filename(file_obj):
+    if not file_obj:
+        return ""
+    name = getattr(file_obj, "name", str(file_obj))
+    return os.path.basename(name)
+
+
+@register.filter
+def file_url(file_obj):
+    if not file_obj:
+        return ""
+    try:
+        return file_obj.url
+    except (AttributeError, ValueError):
+        return ""

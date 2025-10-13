@@ -10,6 +10,10 @@ from .validators import validate_uploaded_file
 from .models import Evento, FeedbackNota, InscricaoEvento
 
 
+class PDFClearableFileInput(ClearableFileInput):
+    template_name = "eventos/widgets/pdf_clearable_file_input.html"
+
+
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
@@ -44,6 +48,8 @@ class EventoForm(forms.ModelForm):
             "descricao": forms.Textarea(attrs={"rows": 3}),
             "avatar": ClearableFileInput(),
             "cover": ClearableFileInput(),
+            "briefing": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
+            "parcerias": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -95,8 +101,8 @@ class EventoForm(forms.ModelForm):
                 self.fields[field_name].label = label
 
         for field_name, help_text in (
-            ("briefing", _("Informe a URL do briefing.")),
-            ("parcerias", _("Informe a URL das parcerias.")),
+            ("briefing", _("Envie o briefing em formato PDF (até 20 MB).")),
+            ("parcerias", _("Envie os documentos de parcerias em PDF (até 20 MB).")),
         ):
             if field_name in self.fields:
                 self.fields[field_name].help_text = help_text
@@ -113,6 +119,19 @@ class EventoForm(forms.ModelForm):
             cleaned_data["nucleo"] = None
 
         return cleaned_data
+
+    def _clean_pdf_file(self, field_name):
+        arquivo = self.cleaned_data.get(field_name)
+        if not arquivo:
+            return arquivo
+        validate_uploaded_file(arquivo)
+        return arquivo
+
+    def clean_briefing(self):
+        return self._clean_pdf_file("briefing")
+
+    def clean_parcerias(self):
+        return self._clean_pdf_file("parcerias")
 
 
 class EventoWidget(s2forms.ModelSelect2Widget):
