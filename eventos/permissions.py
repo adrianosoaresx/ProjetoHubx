@@ -9,20 +9,25 @@ class IsAdminOrCoordenadorOrReadOnly(permissions.IsAuthenticated):
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
         if not super().has_permission(request, view):
             return False
-        if request.method in permissions.SAFE_METHODS:
-            return True
         tipo_usuario = getattr(request.user, "get_tipo_usuario", None)
         if callable(tipo_usuario):  # pragma: no cover - defensive
             tipo_usuario = tipo_usuario()
         if not tipo_usuario:
             tipo_usuario = getattr(request.user, "user_type", None)
-        return tipo_usuario in {
+
+        if isinstance(tipo_usuario, UserType):
+            tipo_usuario_valor = tipo_usuario.value
+        else:
+            tipo_usuario_valor = tipo_usuario
+
+        if tipo_usuario_valor == UserType.ROOT.value:
+            return False
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return tipo_usuario_valor in {
             UserType.ADMIN.value,
             UserType.COORDENADOR.value,
             UserType.OPERADOR.value,
-            UserType.ROOT.value,
-            UserType.ADMIN,
-            UserType.COORDENADOR,
-            UserType.OPERADOR,
-            UserType.ROOT,
         }

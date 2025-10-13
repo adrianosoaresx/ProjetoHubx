@@ -8,6 +8,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
+from accounts.models import UserType
+
 from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
 from .permissions import IsAdminOrCoordenadorOrReadOnly
 from .serializers import EventoSerializer, InscricaoEventoSerializer
@@ -22,6 +24,18 @@ class OrganizacaoFilterMixin:
     """Filtra objetos pela organização do usuário."""
 
     def filter_by_organizacao(self, qs, evento_field: str | None = None):
+        tipo_usuario = getattr(self.request.user, "get_tipo_usuario", None)
+        if callable(tipo_usuario):  # pragma: no cover - defensive
+            tipo_usuario = tipo_usuario()
+        if not tipo_usuario:
+            tipo_usuario = getattr(self.request.user, "user_type", None)
+
+        if isinstance(tipo_usuario, UserType):
+            tipo_usuario = tipo_usuario.value
+
+        if tipo_usuario == UserType.ROOT.value:
+            return qs.none()
+
         return filter_eventos_por_usuario(qs, self.request.user, evento_field=evento_field)
 
 
