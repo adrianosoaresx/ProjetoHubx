@@ -564,7 +564,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 # ---------------------------------------------------------------------------
 
 
-class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
+class EventoInscricaoActionMixin:
     def _redirect(self, request, pk):
         redirect_url = reverse("eventos:evento_detalhe", args=[pk])
         if bool(request.headers.get("HX-Request")):
@@ -573,6 +573,8 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
             return response
         return redirect(redirect_url)
 
+
+class EventoSubscribeView(EventoInscricaoActionMixin, LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if evento.status != Evento.Status.ATIVO:
@@ -597,35 +599,59 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 inscricao.status = "pendente"
                 update_fields.append("status")
             inscricao.save(update_fields=update_fields)
-        if request.POST.get("action") == "cancel":
+        if inscricao.status == "confirmada":
+            messages.info(request, _("Inscrição já confirmada."))
+            return self._redirect(request, pk)
+        try:
+            inscricao.confirmar_inscricao()
+        except ValueError as exc:
             if created:
                 inscricao.delete()
-                messages.success(request, _("Inscrição cancelada."))
-            elif inscricao.status == "cancelada":
+            messages.error(request, str(exc))
+        else:
+            messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+        return self._redirect(request, pk)
+
+
+class EventoCancelSubscriptionView(EventoInscricaoActionMixin, LoginRequiredMixin, NoSuperadminMixin, View):
+    def post(self, request, pk):  # pragma: no cover
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+        if evento.status != Evento.Status.ATIVO:
+            messages.error(
+                request,
+                _("Inscrições disponíveis apenas para eventos ativos."),
+            )
+            return self._redirect(request, pk)
+        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
+            messages.error(request, _("Administradores não podem cancelar inscrições."))
+            return self._redirect(request, pk)
+
+        try:
+            inscricao = InscricaoEvento.objects.get(
+                user=request.user,
+                evento=evento,
+            )
+        except InscricaoEvento.DoesNotExist:
+            if InscricaoEvento.all_objects.filter(
+                user=request.user,
+                evento=evento,
+                deleted=True,
+            ).exists():
                 messages.info(request, _("Inscrição já cancelada."))
             else:
-                try:
-                    inscricao.cancelar_inscricao()
-                except ValueError as exc:
-                    messages.error(request, str(exc))
-                else:
-                    messages.success(request, _("Inscrição cancelada."))
+                messages.error(request, _("Nenhuma inscrição ativa encontrada."))
             return self._redirect(request, pk)
-        if inscricao.status == "confirmada":
-            try:
-                inscricao.cancelar_inscricao()
-                messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
-            except ValueError as exc:
-                messages.error(request, str(exc))
+
+        if inscricao.status == "cancelada":
+            messages.info(request, _("Inscrição já cancelada."))
+            return self._redirect(request, pk)
+
+        try:
+            inscricao.cancelar_inscricao()
+        except ValueError as exc:
+            messages.error(request, str(exc))
         else:
-            try:
-                inscricao.confirmar_inscricao()
-            except ValueError as exc:
-                if created:
-                    inscricao.delete()
-                messages.error(request, str(exc))
-            else:
-                messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+            messages.success(request, _("Inscrição cancelada."))
         return self._redirect(request, pk)
 
 
@@ -656,7 +682,7 @@ class EventoCancelarInscricaoModalView(LoginRequiredMixin, NoSuperadminMixin, Vi
             )
             % {"evento": evento.titulo},
             "submit_label": _("Cancelar inscrição"),
-            "form_action": reverse("eventos:evento_subscribe", args=[evento.pk]),
+            "form_action": reverse("eventos:evento_cancelar_inscricao", args=[evento.pk]),
         }
 
         return TemplateResponse(request, self.template_name, context)

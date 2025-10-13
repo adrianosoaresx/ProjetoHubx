@@ -95,10 +95,11 @@ def test_usuario_cancela_inscricao_confirmada(client, monkeypatch):
         numero_presentes=0,
     )
 
-    url = reverse("eventos:evento_subscribe", args=[evento.pk])
-    client.post(url)
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
+    client.post(subscribe_url)
 
-    response = client.post(url, {"action": "cancel"})
+    response = client.post(cancel_url)
 
     assert response.status_code == 302
     with pytest.raises(InscricaoEvento.DoesNotExist):

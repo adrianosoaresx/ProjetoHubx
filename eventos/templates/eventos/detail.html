@@ -125,10 +125,9 @@
             </div>
 
             {% if user.is_authenticated and user.get_tipo_usuario != 'admin' %}
-              {% if inscricao and inscricao_permitida %}
-                <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
+              {% if inscricao and pode_cancelar %}
+                <form method="post" action="{% url 'eventos:evento_cancelar_inscricao' object.pk %}" class="flex">
                   {% csrf_token %}
-                  <input type="hidden" name="action" value="cancel" />
                   <button
                     type="button"
                     class="btn btn-secondary"
