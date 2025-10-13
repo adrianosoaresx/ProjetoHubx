@@ -500,6 +500,8 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["back_href"] = self._resolve_back_href()
         if context["avaliacao_permitida"]:
             context["feedback_form"] = FeedbackForm()
+        # Evita oferecer cancelamento quando o evento já começou
+        context["pode_cancelar"] = bool(minha_inscricao) and timezone.now() < evento.data_inicio
         inscricoes = list(
             InscricaoEvento.objects.filter(evento=evento, deleted=False)
             .select_related("user")

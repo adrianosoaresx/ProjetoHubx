@@ -125,7 +125,7 @@
             </div>
 
             {% if user.is_authenticated and user.get_tipo_usuario != 'admin' %}
-              {% if inscricao %}
+              {% if inscricao and pode_cancelar %}
                 <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="cancel" />
@@ -145,11 +145,13 @@
                     <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
                   </noscript>
                 </form>
-              {% else %}
+              {% elif not inscricao %}
                 <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</button>
                 </form>
+              {% else %}
+                <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrição confirmada' %}</p>
               {% endif %}
             {% endif %}
           </div>
