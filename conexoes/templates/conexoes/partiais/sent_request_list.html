@@ -1,0 +1,36 @@
+{% load i18n %}
+<div class="space-y-3" role="list">
+  {% for destinatario in sent_requests %}
+    <article class="card" role="listitem">
+      <div class="card-body space-y-4">
+        <div class="flex items-center gap-3">
+          {% if destinatario.avatar %}
+            <img src="{{ destinatario.avatar.url }}" alt="{{ destinatario.display_name|default:destinatario.username }}" class="h-10 w-10 rounded-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ destinatario.display_name|default:destinatario.username }}">
+              {{ destinatario.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <p class="font-medium text-[var(--text-primary)]">{{ destinatario.display_name }}</p>
+            <p class="text-sm text-[var(--text-secondary)]">@{{ destinatario.username }}</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <a href="{% url 'accounts:perfil_publico_uuid' destinatario.public_id %}" class="btn btn-secondary btn-sm">
+            {% trans "Ver perfil" %}
+          </a>
+          <span class="inline-flex items-center rounded-md bg-[var(--bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
+            {% trans "Aguardando resposta" %}
+          </span>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <article class="card">
+      <div class="card-body space-y-4 text-sm text-[var(--text-secondary)]">
+        <p>{% trans "Você não enviou solicitações de conexão recentemente." %}</p>
+      </div>
+    </article>
+  {% endfor %}
+</div>

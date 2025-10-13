@@ -32,7 +32,15 @@
       {% if helper_text %}
         <p class="mt-6 text-base text-white/80">{{ helper_text }}</p>
       {% endif %}
-      {% if total_conexoes is not None or total_solicitacoes is not None or total_solicitacoes_enviadas is not None %}
+      {% if filter_cards %}
+        <div class="mt-10">
+          <div class="card-grid md:grid-cols-3 gap-4">
+            {% for card in filter_cards %}
+              {% include '_partials/cards/total_card.html' with label=card.label valor=card.valor icon_name=card.icon_name href=card.href card_class=card.card_class body_class='card-body-compact' is_active=card.is_active active_class=card.active_class hx_get=card.hx_get hx_target=card.hx_target hx_push_url=card.hx_push_url %}
+            {% endfor %}
+          </div>
+        </div>
+      {% elif total_conexoes is not None or total_solicitacoes is not None or total_solicitacoes_enviadas is not None %}
         <div class="mt-10">
           <div class="card-grid md:grid-cols-3 gap-4">
             {% if total_conexoes is not None %}

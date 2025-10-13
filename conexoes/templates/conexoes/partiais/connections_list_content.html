@@ -1,20 +1,40 @@
 {% load i18n %}
 <div class="space-y-6" id="connections-dashboard">
-  <article class="card" aria-labelledby="connections-list-heading">
-    <div class="card-header">
-      <h2 id="connections-list-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
-    </div>
-    <div class="card-body space-y-6">
-      {% include 'conexoes/partiais/connections_list.html' %}
-    </div>
-  </article>
+  {% if connections_filter == 'pendentes' %}
+    <article class="card" aria-labelledby="connections-requests-heading">
+      <div class="card-header">
+        <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
+      </div>
+      <div class="card-body space-y-6">
+        {% include 'conexoes/partiais/request_list.html' %}
+      </div>
+    </article>
+  {% elif connections_filter == 'enviadas' %}
+    <article class="card" aria-labelledby="connections-sent-heading">
+      <div class="card-header">
+        <h2 id="connections-sent-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações enviadas" %}</h2>
+      </div>
+      <div class="card-body space-y-6">
+        {% include 'conexoes/partiais/sent_request_list.html' %}
+      </div>
+    </article>
+  {% else %}
+    <article class="card" aria-labelledby="connections-list-heading">
+      <div class="card-header">
+        <h2 id="connections-list-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
+      </div>
+      <div class="card-body space-y-6">
+        {% include 'conexoes/partiais/connections_list.html' %}
+      </div>
+    </article>
 
-  <article class="card" aria-labelledby="connections-requests-heading">
-    <div class="card-header">
-      <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
-    </div>
-    <div class="card-body space-y-6">
-      {% include 'conexoes/partiais/request_list.html' %}
-    </div>
-  </article>
+    <article class="card" aria-labelledby="connections-requests-heading">
+      <div class="card-header">
+        <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
+      </div>
+      <div class="card-body space-y-6">
+        {% include 'conexoes/partiais/request_list.html' %}
+      </div>
+    </article>
+  {% endif %}
 </div>
