@@ -33,6 +33,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from accounts.models import UserType
 from core.permissions import (
+    AdminOperatorOrCoordinatorRequiredMixin,
     AdminOrOperatorRequiredMixin,
     GerenteRequiredMixin,
     NoSuperadminMixin,
@@ -54,6 +55,15 @@ User = get_user_model()
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
     return filter_eventos_por_usuario(qs, request.user)
+
+
+def _get_tipo_usuario(user) -> str | None:
+    tipo = getattr(user, "get_tipo_usuario", None)
+    if isinstance(tipo, UserType):
+        return tipo.value
+    if hasattr(tipo, "value"):
+        return tipo.value  # pragma: no cover - compatibilidade defensiva
+    return tipo
 
 
 # ---------------------------------------------------------------------------
@@ -283,7 +293,7 @@ class EventoCreateView(
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type == UserType.ROOT:
+        if _get_tipo_usuario(request.user) == UserType.ROOT.value:
             raise PermissionDenied("Usuário root não pode criar eventos.")
         return super().dispatch(request, *args, **kwargs)
 
@@ -314,7 +324,7 @@ class EventoCreateView(
 class EventoUpdateView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOrOperatorRequiredMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
     UpdateView,
 ):
     model = Evento
@@ -383,7 +393,7 @@ class EventoUpdateView(
 class EventoDeleteView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOrOperatorRequiredMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
     DeleteView,
 ):
     model = Evento
@@ -515,7 +525,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
-        if request.user.user_type == UserType.ADMIN:
+        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return redirect("eventos:evento_detalhe", pk=pk)
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
@@ -540,8 +550,9 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
 class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+        tipo_usuario = _get_tipo_usuario(request.user)
         if (
-            request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}
+            tipo_usuario in {UserType.ADMIN.value, UserType.COORDENADOR.value}
             and evento.organizacao != request.user.organizacao
         ):
             messages.error(request, _("Acesso negado."))  # pragma: no cover
@@ -648,7 +659,7 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
-        if request.user.user_type == UserType.ADMIN:
+        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))
             return redirect("eventos:evento_detalhe", pk=kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
@@ -695,8 +706,10 @@ def checkin_form(request, pk: int):
     if evento.organizacao != getattr(user, "organizacao", None):
         return HttpResponseForbidden()
     # Regras simples de permissão: o próprio usuário inscrito ou staff
-    staff_tipos = {UserType.ADMIN, UserType.COORDENADOR, UserType.GERENTE} if hasattr(UserType, 'GERENTE') else {UserType.ADMIN, UserType.COORDENADOR}
-    if user != inscricao.user and getattr(user, "user_type", None) not in staff_tipos:
+    staff_tipos = {UserType.ADMIN.value, UserType.COORDENADOR.value}
+    if hasattr(UserType, "GERENTE"):
+        staff_tipos.add(UserType.GERENTE.value)
+    if user != inscricao.user and _get_tipo_usuario(user) not in staff_tipos:
         return HttpResponseForbidden()
     context = {
         "evento": evento,
@@ -753,7 +766,8 @@ def evento_orcamento(request, pk):
         return HttpResponseBadRequest("Método não suportado.")
     evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
     user = request.user
-    if user.user_type != UserType.ADMIN:
+    tipo_usuario = _get_tipo_usuario(user)
+    if tipo_usuario not in {UserType.ADMIN.value, UserType.COORDENADOR.value}:
         return HttpResponseForbidden()
     dados = {}
     errors = {}

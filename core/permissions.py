@@ -39,6 +39,23 @@ class AdminOrOperatorRequiredMixin(AdminRequiredMixin):
         }
 
 
+class AdminOperatorOrCoordinatorRequiredMixin(UserPassesTestMixin):
+    """Permite acesso a administradores, operadores e coordenadores."""
+
+    raise_exception = True
+
+    def test_func(self) -> bool:  # pragma: no cover - comportamento validado em views
+        user = self.request.user
+        tipo = getattr(user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        return tipo in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
+        }
+
+
 class GerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a gerentes, administradores e superadmins."""
 
@@ -161,10 +178,12 @@ class IsAdminOrCoordenador(BasePermission):
     """Permite acesso a administradores ou coordenadores."""
 
     def has_permission(self, request, view) -> bool:
-        return bool(
-            request.user.is_authenticated
-            and getattr(request.user, "user_type", None) in {UserType.ADMIN, UserType.COORDENADOR}
-        )
+        if not request.user.is_authenticated:
+            return False
+        tipo = getattr(request.user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        return tipo in {UserType.ADMIN.value, UserType.COORDENADOR.value}
 
 
 class IsModeratorUser(BasePermission):

@@ -9,7 +9,7 @@ from django.test import override_settings
 from accounts.models import User, UserType
 from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
+from nucleos.models import Nucleo, ParticipacaoNucleo
 
 pytestmark = pytest.mark.django_db
 
@@ -65,6 +65,28 @@ def usuario_operador(organizacao):
 @pytest.fixture
 def nucleo(organizacao):
     return Nucleo.objects.create(organizacao=organizacao, nome="Núcleo Restrito")
+
+
+@pytest.fixture
+def usuario_coordenador(organizacao, nucleo):
+    user = User.objects.create_user(
+        username="coordenador",
+        email="coordenador@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.ASSOCIADO,
+        is_associado=True,
+        is_coordenador=True,
+        nucleo=nucleo,
+    )
+    ParticipacaoNucleo.objects.create(
+        user=user,
+        nucleo=nucleo,
+        status="ativo",
+        papel="coordenador",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.EVENTOS,
+    )
+    return user
 
 
 @pytest.fixture
@@ -426,3 +448,53 @@ def test_operador_acessa_edicao_evento(client, organizacao, usuario_operador, nu
 
     assert response.status_code == 200
     assert "Editar Evento" in response.content.decode()
+
+
+def _criar_evento(
+    organizacao,
+    nucleo,
+    titulo="Evento Núcleo",
+    *,
+    publico_alvo=0,
+):
+    return Evento.objects.create(
+        titulo=titulo,
+        descricao="Descrição do evento",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Exemplo, 123",
+        cidade="Cidade",
+        estado="SP",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=nucleo,
+        status=Evento.Status.PLANEJAMENTO,
+        publico_alvo=publico_alvo,
+        numero_convidados=10,
+        numero_presentes=0,
+        valor_ingresso=50,
+    )
+
+
+def test_coordenador_edita_evento_do_proprio_nucleo(client, organizacao, nucleo, usuario_coordenador):
+    evento_nucleo = _criar_evento(organizacao, nucleo)
+    client.force_login(usuario_coordenador)
+
+    url = reverse("eventos:evento_editar", args=[evento_nucleo.pk])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert evento_nucleo.titulo in content
+    assert "Editar Evento" in content
+
+
+def test_coordenador_bloqueado_em_evento_de_outro_nucleo(client, organizacao, nucleo, usuario_coordenador):
+    outro_nucleo = Nucleo.objects.create(organizacao=organizacao, nome="Outro Núcleo")
+    evento_outro = _criar_evento(organizacao, outro_nucleo, titulo="Outro", publico_alvo=1)
+    client.force_login(usuario_coordenador)
+
+    url = reverse("eventos:evento_editar", args=[evento_outro.pk])
+    response = client.get(url)
+
+    assert response.status_code in {403, 404}
