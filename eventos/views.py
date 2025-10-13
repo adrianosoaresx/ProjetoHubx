@@ -529,6 +529,20 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return redirect("eventos:evento_detalhe", pk=pk)
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
+        if request.POST.get("action") == "cancel":
+            if created:
+                inscricao.delete()
+                messages.success(request, _("Inscrição cancelada."))
+            elif inscricao.status == "cancelada":
+                messages.info(request, _("Inscrição já cancelada."))
+            else:
+                try:
+                    inscricao.cancelar_inscricao()
+                except ValueError as exc:
+                    messages.error(request, str(exc))
+                else:
+                    messages.success(request, _("Inscrição cancelada."))
+            return redirect("eventos:evento_detalhe", pk=pk)
         if inscricao.status == "confirmada":
             try:
                 inscricao.cancelar_inscricao()
