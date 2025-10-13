@@ -28,6 +28,17 @@ class AdminRequiredMixin(UserPassesTestMixin):
         return self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}
 
 
+class AdminOrOperatorRequiredMixin(AdminRequiredMixin):
+    """Permite acesso a administradores e operadores (além do root)."""
+
+    def test_func(self):  # pragma: no cover - comportamento validado em views
+        return self.request.user.user_type in {
+            UserType.ROOT,
+            UserType.ADMIN,
+            UserType.OPERADOR,
+        }
+
+
 class GerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a gerentes, administradores e superadmins."""
 

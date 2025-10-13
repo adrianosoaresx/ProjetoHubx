@@ -9,6 +9,7 @@ from django.test import override_settings
 from accounts.models import User, UserType
 from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
 
 pytestmark = pytest.mark.django_db
 
@@ -48,6 +49,22 @@ def usuario_comum(client, organizacao):
     )
     client.force_login(user)
     return user
+
+
+@pytest.fixture
+def usuario_operador(organizacao):
+    return User.objects.create_user(
+        username="operador",
+        email="operador@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.OPERADOR,
+    )
+
+
+@pytest.fixture
+def nucleo(organizacao):
+    return Nucleo.objects.create(organizacao=organizacao, nome="Núcleo Restrito")
 
 
 @pytest.fixture
@@ -347,3 +364,65 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
     response = client.post(url, data=data, follow=True)
     assert response.status_code == 200
     assert Evento.objects.filter(titulo="Novo Evento").exists()
+
+
+def test_operador_lista_eventos_restritos(client, organizacao, usuario_operador, nucleo):
+    evento_restrito = Evento.objects.create(
+        titulo="Evento Restrito",
+        descricao="Somente para teste",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Teste, 456",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=1,
+        numero_convidados=50,
+        numero_presentes=0,
+        valor_ingresso=30.00,
+        participantes_maximo=80,
+        contato_nome="Contato",
+        contato_email="contato@teste.com",
+        contato_whatsapp="11999990000",
+        nucleo=nucleo,
+    )
+
+    client.force_login(usuario_operador)
+    response = client.get(reverse("eventos:lista"))
+
+    assert response.status_code == 200
+    eventos = list(response.context["eventos"])
+    assert evento_restrito in eventos
+
+
+def test_operador_acessa_edicao_evento(client, organizacao, usuario_operador, nucleo):
+    evento_restrito = Evento.objects.create(
+        titulo="Evento Para Edição",
+        descricao="Somente para teste",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Teste, 456",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=1,
+        numero_convidados=50,
+        numero_presentes=0,
+        valor_ingresso=30.00,
+        participantes_maximo=80,
+        contato_nome="Contato",
+        contato_email="contato@teste.com",
+        contato_whatsapp="11999990000",
+        nucleo=nucleo,
+    )
+
+    client.force_login(usuario_operador)
+    url = reverse("eventos:evento_editar", args=[evento_restrito.pk])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert "Editar Evento" in response.content.decode()

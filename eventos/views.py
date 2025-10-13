@@ -33,7 +33,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from accounts.models import UserType
 from core.permissions import (
-    AdminRequiredMixin,
+    AdminOrOperatorRequiredMixin,
     GerenteRequiredMixin,
     NoSuperadminMixin,
     no_superadmin_required,
@@ -84,7 +84,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             .select_related("nucleo", "organizacao")
             .prefetch_related("inscricoes")
         )
-        if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+        if user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+            UserType.OPERADOR.value,
+        }:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
             qs = qs.filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
         q = self.request.GET.get("q", "").strip()
@@ -116,7 +120,10 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         user = self.request.user
         ctx["title"] = _("Eventos")
         ctx["subtitle"] = None
-        ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
+        ctx["is_admin_org"] = user.get_tipo_usuario in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+        }
         current_filter = self.request.GET.get("status") or ""
         if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
             current_filter = "todos"
@@ -274,7 +281,12 @@ def painel_eventos(request):
 # ---------------------------------------------------------------------------
 
 
-class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, CreateView):
+class EventoCreateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOrOperatorRequiredMixin,
+    CreateView,
+):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
@@ -314,7 +326,12 @@ class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         return response
 
 
-class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, UpdateView):
+class EventoUpdateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOrOperatorRequiredMixin,
+    UpdateView,
+):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
@@ -378,7 +395,12 @@ class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         return response
 
 
-class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, DeleteView):
+class EventoDeleteView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOrOperatorRequiredMixin,
+    DeleteView,
+):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")

@@ -11,8 +11,18 @@ class IsAdminOrCoordenadorOrReadOnly(permissions.IsAuthenticated):
             return False
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.user_type in {
+        tipo_usuario = getattr(request.user, "get_tipo_usuario", None)
+        if callable(tipo_usuario):  # pragma: no cover - defensive
+            tipo_usuario = tipo_usuario()
+        if not tipo_usuario:
+            tipo_usuario = getattr(request.user, "user_type", None)
+        return tipo_usuario in {
+            UserType.ADMIN.value,
+            UserType.COORDENADOR.value,
+            UserType.OPERADOR.value,
+            UserType.ROOT.value,
             UserType.ADMIN,
             UserType.COORDENADOR,
+            UserType.OPERADOR,
             UserType.ROOT,
         }
