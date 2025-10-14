@@ -43,6 +43,18 @@ def operador_user(organizacao):
 
 
 @pytest.fixture
+def coordenador_user(organizacao):
+    User = get_user_model()
+    return User.objects.create_user(
+        username="coordenador",
+        email="coordenador@example.com",
+        password="pass",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+    )
+
+
+@pytest.fixture
 def membro_user(organizacao):
     User = get_user_model()
     return User.objects.create_user(
@@ -123,6 +135,45 @@ def test_operador_edita_nucleo(client, operador_user, organizacao):
     assert resp.status_code == 302
     nucleo.refresh_from_db()
     assert nucleo.nome == "N Atualizado"
+
+
+def test_coordenador_nao_ve_acoes_de_edicao_ou_exclusao(client, coordenador_user, organizacao):
+    nucleo = Nucleo.objects.create(
+        nome="N Coordenado",
+        organizacao=organizacao,
+        classificacao=Nucleo.Classificacao.PLANEJAMENTO,
+    )
+    ParticipacaoNucleo.objects.create(
+        nucleo=nucleo,
+        user=coordenador_user,
+        status="ativo",
+        papel="coordenador",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+    )
+
+    client.force_login(coordenador_user)
+    response = client.get(reverse("nucleos:detail", args=[nucleo.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert reverse("nucleos:update", args=[nucleo.pk]) not in content
+    assert reverse("nucleos:delete", args=[nucleo.pk]) not in content
+
+
+def test_operador_ve_acoes_de_edicao_e_exclusao(client, operador_user, organizacao):
+    nucleo = Nucleo.objects.create(
+        nome="N Operador",
+        organizacao=organizacao,
+        classificacao=Nucleo.Classificacao.PLANEJAMENTO,
+    )
+
+    client.force_login(operador_user)
+    response = client.get(reverse("nucleos:detail", args=[nucleo.pk]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert reverse("nucleos:update", args=[nucleo.pk]) in content
+    assert reverse("nucleos:delete", args=[nucleo.pk]) in content
 
 
 def test_participacao_flow(client, admin_user, membro_user, organizacao):
