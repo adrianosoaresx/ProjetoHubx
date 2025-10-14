@@ -80,7 +80,7 @@ msgid "Sem eventos."
 msgstr ""
 
 #: eventos/templates/eventos/partials/calendario/calendario.html:4
-msgid "Últimos 30 dias com eventos"
+msgid "Próximos 30 dias com eventos"
 msgstr ""
 
 #: eventos/templates/eventos/partials/calendario/calendario.html:28
@@ -93,7 +93,7 @@ msgid "Detalhes"
 msgstr ""
 
 #: eventos/templates/eventos/partials/calendario/calendario.html:80
-msgid "Nenhum evento nos últimos 30 dias."
+msgid "Nenhum evento nos próximos 30 dias."
 msgstr ""
 
 #: eventos/templates/eventos/partials/calendario/calendario_mes.html:12

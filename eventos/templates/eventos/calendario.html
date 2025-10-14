@@ -9,7 +9,7 @@
   
     <article class="card">
       <div class="card-header">
-        <h2 class="text-xl font-semibold">{% trans "Últimos 30 dias com eventos" %}</h2>
+        <h2 class="text-xl font-semibold">{% trans "Próximos 30 dias com eventos" %}</h2>
       </div>
       <div class="card-body space-y-6">
         {% if dias_com_eventos %}
@@ -103,7 +103,7 @@
             {% endfor %}
           </div>
         {% else %}
-          <p class="text-[var(--text-secondary)]">{% trans "Nenhum evento nos últimos 30 dias." %}</p>
+          <p class="text-[var(--text-secondary)]">{% trans "Nenhum evento nos próximos 30 dias." %}</p>
         {% endif %}
       </div>
     </article>

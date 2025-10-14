@@ -380,7 +380,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             id="eventos_calendario_30",
             path=reverse("eventos:calendario"),
-            label="Últimos 30 dias",
+            label="Calendário",
             icon=ICON_CLOCK,
             permissions=[
                 "admin",
