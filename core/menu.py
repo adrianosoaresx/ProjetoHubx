@@ -281,15 +281,7 @@ def _get_menu_items() -> List[MenuItem]:
     eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
     eventos_url = reverse("eventos:lista")  # Link principal (menu raiz) abre a lista de eventos
-    perfil_children = [
-        MenuItem(
-            id="perfil_portfolio",
-            path=f"{perfil_url}?section=portfolio",
-            label="Portfólio",
-            icon=ICON_BRIEFCASE,
-            permissions=["authenticated"],
-        ),
-    ]
+    perfil_children: list[MenuItem] = []
 
     conexoes_dashboard_url = reverse("conexoes:perfil_sections_conexoes")
     non_root_authenticated_users = [
@@ -450,6 +442,13 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["authenticated"],
             classes="flex items-center hover:text-primary transition",
             children=perfil_children,
+        ),
+        MenuItem(
+            id="portfolio",
+            path=f"{perfil_url}?section=portfolio",
+            label="Portfólio",
+            icon=ICON_BRIEFCASE,
+            permissions=["authenticated"],
         ),
         MenuItem(
             id="conexoes",
