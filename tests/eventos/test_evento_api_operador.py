@@ -57,9 +57,7 @@ def test_operador_lista_e_atualiza_evento(api_client, organizacao, usuario_opera
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=1,
-        numero_convidados=50,
         numero_presentes=0,
-        valor_ingresso=30.00,
         participantes_maximo=80,
         nucleo=nucleo,
     )

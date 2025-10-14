@@ -25,9 +25,10 @@ class EventoFactory(DjangoModelFactory):
     cep = factory.Faker("postcode", locale="pt_BR")
     status = factory.Faker("random_element", elements=[0, 1, 2, 3])
     publico_alvo = factory.Faker("random_element", elements=[0, 1, 2])
-    numero_convidados = factory.Faker("pyint", min_value=10, max_value=100)
-    numero_presentes = factory.LazyAttribute(lambda o: o.numero_convidados // 2)
-    valor_ingresso = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
+    participantes_maximo = factory.Faker("pyint", min_value=10, max_value=100)
+    numero_presentes = factory.LazyAttribute(
+        lambda o: (o.participantes_maximo or 0) // 2
+    )
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
     briefing = FileField(

@@ -181,9 +181,7 @@ Campos:
 - `nucleo`: FK → Nucleo.id — opcional
 - `status`: enum {0: Ativo, 1: Concluído, 2: Cancelado}
 - `publico_alvo`: enum {0: Público, 1: Somente nucleados, 2: Apenas associados}
-- `numero_convidados`: integer
 - `numero_presentes`: integer
-- `valor_ingresso`: decimal — opcional
 - `orcamento`: decimal — opcional
 - `orcamento_estimado`: decimal — opcional
 - `valor_gasto`: decimal — opcional

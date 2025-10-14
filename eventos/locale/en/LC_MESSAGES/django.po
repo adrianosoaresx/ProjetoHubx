@@ -50,6 +50,10 @@ msgstr ""
 msgid "CNPJ inválido."
 msgstr ""
 
+#: eventos/forms.py:54
+msgid "Participantes (lotação)"
+msgstr "Participants (capacity)"
+
 #: eventos/models.py:258
 msgid "A data de fim deve ser posterior à data de início."
 msgstr ""
@@ -172,9 +176,9 @@ msgstr ""
 msgid "Contato"
 msgstr ""
 
-#: eventos/templates/eventos/partials/eventos/detail.html:27
-msgid "Participantes máximo"
-msgstr ""
+#: eventos/templates/eventos/detail.html:84
+msgid "Máximo de participantes"
+msgstr "Maximum participants"
 
 #: eventos/templates/eventos/partials/eventos/detail.html:30
 msgid "Lista de espera"

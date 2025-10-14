@@ -103,9 +103,7 @@ def evento(organizacao, usuario_logado):
         organizacao=organizacao,
         status=Evento.Status.PLANEJAMENTO,
         publico_alvo=0,
-        numero_convidados=100,
         numero_presentes=0,
-        valor_ingresso=50.00,
         orcamento_estimado=5500.00,
         valor_gasto=4500.00,
         participantes_maximo=150,
@@ -189,9 +187,7 @@ def test_evento_list_filters_by_status(usuario_logado, organizacao, client, even
         organizacao=organizacao,
         status=Evento.Status.CONCLUIDO,
         publico_alvo=0,
-        numero_convidados=80,
         numero_presentes=60,
-        valor_ingresso=40.00,
         orcamento_estimado=3000.00,
         valor_gasto=2500.00,
         participantes_maximo=120,
@@ -230,9 +226,7 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=80,
         numero_presentes=0,
-        valor_ingresso=30.00,
         orcamento_estimado=2500.00,
         valor_gasto=2000.00,
         participantes_maximo=90,
@@ -264,9 +258,7 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
-        numero_convidados=50,
         numero_presentes=0,
-        valor_ingresso=30.00,
         participantes_maximo=80,
     )
     Evento.objects.create(
@@ -281,9 +273,7 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
-        numero_convidados=50,
         numero_presentes=0,
-        valor_ingresso=30.00,
         participantes_maximo=80,
     )
 
@@ -313,9 +303,7 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         organizacao=organizacao,
         status=2,
         publico_alvo=0,
-        numero_convidados=40,
         numero_presentes=0,
-        valor_ingresso=25.00,
         participantes_maximo=60,
     )
     Evento.objects.create(
@@ -330,9 +318,7 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         organizacao=organizacao,
         status=0,
         publico_alvo=0,
-        numero_convidados=40,
         numero_presentes=0,
-        valor_ingresso=25.00,
         participantes_maximo=60,
     )
 
@@ -369,8 +355,7 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
         "cep": "12345-678",
         "status": 0,
         "publico_alvo": 0,
-        "numero_convidados": 10,
-        "numero_presentes": 0,
+        "participantes_maximo": 10,
     }
     response = client.post(url, data=data, follow=True)
     assert response.status_code == 200
@@ -390,9 +375,7 @@ def test_operador_lista_eventos_restritos(client, organizacao, usuario_operador,
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=1,
-        numero_convidados=50,
         numero_presentes=0,
-        valor_ingresso=30.00,
         participantes_maximo=80,
         nucleo=nucleo,
     )
@@ -418,9 +401,7 @@ def test_operador_acessa_edicao_evento(client, organizacao, usuario_operador, nu
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=1,
-        numero_convidados=50,
         numero_presentes=0,
-        valor_ingresso=30.00,
         participantes_maximo=80,
         nucleo=nucleo,
     )
@@ -450,9 +431,7 @@ def test_evento_update_redirects_to_detail(client, organizacao, usuario_operador
         "status": str(evento_nucleo.status),
         "publico_alvo": str(evento_nucleo.publico_alvo),
         "nucleo": "",
-        "numero_convidados": str(evento_nucleo.numero_convidados),
         "participantes_maximo": evento_nucleo.participantes_maximo or "",
-        "valor_ingresso": str(evento_nucleo.valor_ingresso),
         "cronograma": "",
         "informacoes_adicionais": "",
         "briefing": "",
@@ -485,9 +464,8 @@ def _criar_evento(
         nucleo=nucleo,
         status=Evento.Status.PLANEJAMENTO,
         publico_alvo=publico_alvo,
-        numero_convidados=10,
         numero_presentes=0,
-        valor_ingresso=50,
+        participantes_maximo=10,
     )
 
 

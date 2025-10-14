@@ -49,8 +49,8 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=10,
         numero_presentes=0,
+        participantes_maximo=10,
     )
 
     url = reverse("eventos:evento_subscribe", args=[evento.pk])
@@ -91,8 +91,8 @@ def test_usuario_cancela_inscricao_confirmada(client, monkeypatch):
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=10,
         numero_presentes=0,
+        participantes_maximo=10,
     )
 
     subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])

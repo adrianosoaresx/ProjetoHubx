@@ -54,7 +54,6 @@ def evento(organizacao, gerente):
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=10,
         numero_presentes=0,
         participantes_maximo=1,
     )

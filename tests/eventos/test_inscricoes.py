@@ -44,9 +44,8 @@ def evento(organizacao, usuario_logado):
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=100,
         numero_presentes=0,
-        valor_ingresso=50.00,
+        participantes_maximo=100,
     )
 
 
