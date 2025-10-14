@@ -9,14 +9,19 @@
   hx-indicator="#membros-loading"
   hx-push-url="true"
 >
-  <label for="membros-search" class="sr-only">{% trans "Pesquisar membros" %}</label>
-  <input
-    type="search"
-    id="membros-search"
-    name="search"
-    value="{{ membros_search_query }}"
-    placeholder="{% trans 'Buscar por nome ou email' %}"
-    class="input input-bordered w-full sm:max-w-sm"
-  >
+  <div class="flex w-full items-center gap-2 sm:max-w-sm">
+    <label for="membros-search" class="sr-only">{% trans "Pesquisar membros" %}</label>
+    <input
+      type="search"
+      id="membros-search"
+      name="search"
+      value="{{ membros_search_query }}"
+      placeholder="{% trans 'Buscar por nome ou email' %}"
+      class="input input-bordered w-full"
+    >
+    <button type="submit" class="btn btn-secondary whitespace-nowrap">
+      {% trans "Buscar" %}
+    </button>
+  </div>
   <input type="hidden" name="papel" value="{{ current_papel_filter|default:'todos' }}">
 </form>
