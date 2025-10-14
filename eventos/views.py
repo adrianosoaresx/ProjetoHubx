@@ -250,10 +250,10 @@ def calendario_cards_ultimos_30(request):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
     hoje = timezone.localdate()
-    inicio = hoje - timedelta(days=30)
+    fim = hoje + timedelta(days=30)
     qs = (
         _queryset_por_organizacao(request)
-        .filter(data_inicio__date__range=(inicio, hoje))
+        .filter(data_inicio__date__range=(hoje, fim))
         .select_related("organizacao")
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
@@ -263,7 +263,7 @@ def calendario_cards_ultimos_30(request):
         d = timezone.localtime(ev.data_inicio).date()
         agrupado.setdefault(d, []).append(ev)
     dias_com_eventos = [
-        {"data": d, "eventos": evs} for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
+        {"data": d, "eventos": evs} for d, evs in sorted(agrupado.items(), key=lambda x: x[0])
     ]
     context = {"dias_com_eventos": dias_com_eventos, "data_atual": hoje, "title": _("Eventos"), "subtitle": None}
     return TemplateResponse(request, "eventos/calendario.html", context)
