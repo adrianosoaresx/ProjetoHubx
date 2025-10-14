@@ -29,9 +29,7 @@ class EventoForm(forms.ModelForm):
             "status",
             "publico_alvo",
             "nucleo",
-            "numero_convidados",
             "participantes_maximo",
-            "valor_ingresso",
             "cronograma",
             "informacoes_adicionais",
             "briefing",
@@ -91,6 +89,10 @@ class EventoForm(forms.ModelForm):
         if "cover" in self.fields:
             self.fields["cover"].label = _("Capa")
 
+        participantes_field = self.fields.get("participantes_maximo")
+        if participantes_field:
+            participantes_field.label = _("Participantes (lotação)")
+
         for field_name, help_text in (
             ("briefing", _("Envie o briefing em formato PDF (até 20 MB).")),
             ("parcerias", _("Envie os documentos de parcerias em PDF (até 20 MB).")),
@@ -108,6 +110,8 @@ class EventoForm(forms.ModelForm):
                 self.add_error("nucleo", _("Selecione um núcleo para eventos destinados apenas ao núcleo."))
         else:
             cleaned_data["nucleo"] = None
+
+        participantes_maximo = cleaned_data.get("participantes_maximo")
 
         return cleaned_data
 

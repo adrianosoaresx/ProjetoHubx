@@ -45,7 +45,7 @@ def test_admin_with_nucleo_membership_sees_all_org_events():
         "cep": "12345-678",
         "organizacao": organizacao,
         "status": Evento.Status.ATIVO,
-        "numero_convidados": 10,
+        "participantes_maximo": 10,
     }
 
     evento_publico = Evento.objects.create(

@@ -203,9 +203,7 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     publico_alvo = models.PositiveSmallIntegerField(
         choices=[(0, "Público"), (1, "Nucleados"), (2, "Associados")]
     )
-    numero_convidados = models.PositiveIntegerField()
     numero_presentes = models.PositiveIntegerField(default=0, editable=False)
-    valor_ingresso = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
@@ -255,8 +253,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         if self.data_fim and self.data_inicio and self.data_fim <= self.data_inicio:
             errors["data_fim"] = _("A data de fim deve ser posterior à data de início.")
         positive_fields = [
-            "numero_convidados",
-            "valor_ingresso",
             "orcamento_estimado",
             "valor_gasto",
             "participantes_maximo",

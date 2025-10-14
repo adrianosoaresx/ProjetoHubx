@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import pytest
 from django.urls import reverse
@@ -57,8 +56,6 @@ def evento(organizacao: Organizacao) -> Evento:
         organizacao=organizacao,
         status=Evento.Status.ATIVO,
         publico_alvo=0,
-        numero_convidados=10,
-        valor_ingresso=Decimal("0.00"),
         participantes_maximo=100,
     )
 
