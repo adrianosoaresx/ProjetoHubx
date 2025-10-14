@@ -489,13 +489,38 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
     def get_membros_paginate_by(self) -> int:
         return getattr(settings, "NUCLEOS_MEMBROS_PAGINATE_BY", 12)
 
-    def get_membros_queryset(self):
+    def get_participacoes_queryset(self):
         nucleo = self.object
         return nucleo.participacoes.filter(
             status="ativo",
             status_suspensao=False,
             user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
         ).select_related("user").order_by("-created_at")
+
+    def get_membros_queryset(self):
+        qs = self.get_participacoes_queryset()
+        papel_filter = self.request.GET.get("papel", "todos")
+        if papel_filter not in {"todos", "membro", "coordenador"}:
+            papel_filter = "todos"
+
+        if papel_filter == "membro":
+            qs = qs.exclude(papel="coordenador")
+        elif papel_filter == "coordenador":
+            qs = qs.filter(papel="coordenador")
+
+        search_term = self.request.GET.get("search", "").strip()
+        if search_term:
+            for term in search_term.split():
+                qs = qs.filter(
+                    Q(user__first_name__icontains=term)
+                    | Q(user__last_name__icontains=term)
+                    | Q(user__email__icontains=term)
+                    | Q(user__username__icontains=term)
+                )
+
+        self.papel_filter = papel_filter
+        self.search_term = search_term
+        return qs
 
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False).prefetch_related("participacoes__user", "coordenadores_suplentes")
@@ -517,6 +542,10 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object
         # Lista de membros ativos (nucleados) com paginação
+        base_participacoes_qs = self.get_participacoes_queryset()
+        ctx["total_membros"] = base_participacoes_qs.count()
+        ctx["total_coordenadores"] = base_participacoes_qs.filter(papel="coordenador").count()
+
         membros_qs = self.get_membros_queryset()
         paginator = Paginator(membros_qs, self.get_membros_paginate_by())
         page_number = self.request.GET.get("page")
@@ -535,7 +564,6 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         eventos_qs = Evento.objects.filter(nucleo=nucleo)
         ctx["eventos"] = eventos_qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
         # Totais para cards
-        ctx["total_membros"] = paginator.count
         # Totais de eventos por status
         ctx["total_eventos"] = eventos_qs.filter(
             status__in=[
@@ -558,6 +586,11 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         if section not in {"membros", "eventos", "feed"}:
             section = "membros"
         ctx["current_section"] = section
+
+        ctx["current_papel_filter"] = getattr(self, "papel_filter", "todos")
+        ctx["membros_search_query"] = getattr(self, "search_term", "")
+        ctx["is_membros_filter_active"] = ctx["current_papel_filter"] in {"todos", "membro"}
+        ctx["is_coordenadores_filter_active"] = ctx["current_papel_filter"] == "coordenador"
 
         # Posts do feed do núcleo para a aba "Feed"
         try:
