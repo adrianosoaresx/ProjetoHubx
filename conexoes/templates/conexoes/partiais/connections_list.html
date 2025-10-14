@@ -18,20 +18,22 @@
           >
             {% lucide 'eye' class='w-4 h-4' aria_hidden='true' %}
           </a>
-          <form
-            method="post"
-            action="{% url 'conexoes:remover_conexao' connection.id %}"
-            hx-post="{% url 'conexoes:remover_conexao' connection.id %}"
-            hx-target="closest .connection-card"
-            hx-swap="outerHTML"
-            hx-confirm="{% trans 'Tem certeza que deseja remover esta conexão?' %}"
-            class="space-y-4"
-          >
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm" aria-label="{% trans 'Desconectar' %}" title="{% trans 'Desconectar' %}">
-              {% lucide 'user-x' class='w-4 h-4' aria_hidden='true' %}
-            </button>
-          </form>
+          {% with connection_id=connection.id|stringformat:'s' %}
+            {% with target_id='connection-'|add:connection_id %}
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                aria-label="{% trans 'Desconectar' %}"
+                title="{% trans 'Desconectar' %}"
+                hx-get="{% url 'conexoes:remover_conexao_modal' connection.id %}?target_id={{ target_id }}&swap=outerHTML&remove_target={{ target_id }}"
+                hx-target="#modal"
+                hx-swap="innerHTML"
+                hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+              >
+                {% lucide 'user-x' class='w-4 h-4' aria_hidden='true' %}
+              </button>
+            {% endwith %}
+          {% endwith %}
         </div>
         <div class="flex items-center gap-3">
           {% if connection.avatar %}

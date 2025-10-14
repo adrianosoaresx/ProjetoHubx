@@ -1,0 +1,128 @@
+{% load i18n %}
+{% with modal_suffix=connection.pk|stringformat:"s" %}
+{% with modal_title_id="modal-remove-connection-title-"|add:modal_suffix modal_description_id="modal-remove-connection-description-"|add:modal_suffix %}
+<div
+  class="modal !active"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_title_id }}"
+  aria-describedby="{{ modal_description_id }}"
+  data-modal-root
+>
+  <div class="modal-content rounded-lg bg-[var(--bg-primary)] shadow-xl focus:outline-none">
+    <div class="flex items-start justify-between gap-4 border-b border-[var(--border)] px-6 py-4">
+      <h2 id="{{ modal_title_id }}" class="text-xl font-semibold text-[var(--text-primary)]">{{ titulo }}</h2>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        aria-label="{% trans 'Fechar modal' %}"
+        data-modal-dismiss
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-5">
+      <p id="{{ modal_description_id }}" class="text-sm text-[var(--text-secondary)]">
+        {{ mensagem|safe }}
+      </p>
+      <form
+        method="post"
+        action="{{ form_action }}"
+        class="flex flex-col gap-3"
+        hx-post="{{ form_action }}"
+        {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+        {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+        data-modal-form
+        {% if remove_target %}data-remove-target="{{ remove_target }}"{% endif %}
+      >
+        {% csrf_token %}
+        {% if query %}
+          <input type="hidden" name="q" value="{{ query }}" />
+        {% endif %}
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4 border-t border-[var(--border)] pt-4">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-modal-dismiss
+          >
+            {% trans 'Cancelar' %}
+          </button>
+          <button type="submit" class="btn btn-danger">
+            {{ submit_label }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const modalContainer = document.getElementById('modal');
+    if (!modalContainer) {
+      return;
+    }
+    const dialog = modalContainer.querySelector('[data-modal-root]');
+    if (!dialog) {
+      return;
+    }
+    const focusableSelectors = [
+      'a[href]','area[href]','input:not([disabled])','select:not([disabled])','textarea:not([disabled])',
+      'button:not([disabled])','[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+    const focusableElements = Array.from(dialog.querySelectorAll(focusableSelectors)).filter((el) => !el.hasAttribute('hidden'));
+    const previouslyFocused = window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : document.activeElement;
+    function closeModal(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      modalContainer.innerHTML = '';
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+      if (window.HubxModalTrigger) {
+        window.HubxModalTrigger = null;
+      }
+    }
+    const cancelButtons = dialog.querySelectorAll('[data-modal-dismiss]');
+    cancelButtons.forEach((button) => {
+      button.addEventListener('click', closeModal);
+    });
+    const form = dialog.querySelector('[data-modal-form]');
+    if (form) {
+      form.addEventListener('htmx:afterRequest', function (event) {
+        const status = event.detail.xhr.status;
+        if (status >= 200 && status < 400) {
+          const removeSelector = form.dataset.removeTarget;
+          if (status === 204 && removeSelector) {
+            const element = document.querySelector(removeSelector);
+            if (element) {
+              element.remove();
+            }
+          }
+          closeModal();
+        }
+      });
+    }
+    modalContainer.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeModal(event);
+      }
+      if (event.key === 'Tab' && focusableElements.length) {
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+    if (focusableElements.length) {
+      focusableElements[0].focus();
+    }
+  })();
+</script>
+{% endwith %}
+{% endwith %}
