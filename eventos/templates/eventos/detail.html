@@ -193,20 +193,35 @@
                             >
                               {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
                             </a>
-                            <form
-                              method="post"
-                              action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
-                              class="inline-flex"
-                            >
-                              {% csrf_token %}
+                            <div class="inline-flex">
                               <button
-                                type="submit"
+                                type="button"
                                 class="btn btn-danger btn-sm"
+                                hx-get="{% url 'eventos:evento_remover_inscrito_modal' object.pk inscrito.pk %}"
+                                hx-target="#modal"
+                                hx-trigger="click"
+                                hx-swap="innerHTML"
+                                hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
                                 aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
                               >
                                 {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
                               </button>
-                            </form>
+                              <noscript>
+                                <form
+                                  method="post"
+                                  action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
+                                >
+                                  {% csrf_token %}
+                                  <button
+                                    type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+                                  >
+                                    {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+                                  </button>
+                                </form>
+                              </noscript>
+                            </div>
                           </div>
                         {% endif %}
                       </div>
