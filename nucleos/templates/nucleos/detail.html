@@ -56,26 +56,6 @@
               <dd class="font-medium text-[var(--text-primary)]">{{ coordenadores|length }}</dd>
             </div>
 
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-[var(--text-secondary)]">{% trans "Eventos" %}</dt>
-              <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos }}</dd>
-            </div>
-
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-[var(--text-secondary)]">{% trans "Eventos em planejamento" %}</dt>
-              <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos_planejamento }}</dd>
-            </div>
-
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-[var(--text-secondary)]">{% trans "Eventos ativos" %}</dt>
-              <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos_ativos }}</dd>
-            </div>
-
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-[var(--text-secondary)]">{% trans "Eventos concluídos" %}</dt>
-              <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos_concluidos }}</dd>
-            </div>
-
             {% if object.created_at %}
               <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                 <dt class="text-[var(--text-secondary)]">{% trans "Criado em" %}</dt>
