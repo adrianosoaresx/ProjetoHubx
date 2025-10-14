@@ -15,6 +15,14 @@
         <div class="card-body space-y-6">
           <dl class="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ object.get_status_display }}</dd>
+            </div>
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Público alvo" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ object.get_publico_alvo_display }}</dd>
+            </div>
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
               <dt class="text-[var(--text-secondary)]">{% trans "Início" %}</dt>
               <dd class="font-medium text-[var(--text-primary)]">{{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</dd>
             </div>
@@ -50,6 +58,22 @@
                   {% if object.contato_email %}<span>{{ object.contato_email }}</span>{% endif %}
                   {% if object.contato_whatsapp %}<span>{{ object.contato_whatsapp }}</span>{% endif %}
                 </dd>
+              </div>
+            {% endif %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2 lg:col-span-3">
+              <dt class="text-[var(--text-secondary)]">{% trans "Descrição" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ object.descricao|linebreaksbr }}</dd>
+            </div>
+            {% if object.cronograma %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2 lg:col-span-3">
+                <dt class="text-[var(--text-secondary)]">{% trans "Cronograma" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ object.cronograma|linebreaksbr }}</dd>
+              </div>
+            {% endif %}
+            {% if object.informacoes_adicionais %}
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2 lg:col-span-3">
+                <dt class="text-[var(--text-secondary)]">{% trans "Informações adicionais" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ object.informacoes_adicionais|linebreaksbr }}</dd>
               </div>
             {% endif %}
             {% if object.participantes_maximo %}
