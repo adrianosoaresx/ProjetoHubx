@@ -350,8 +350,6 @@ class EventoUpdateView(
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
-    success_url = reverse_lazy("eventos:calendario")
-
     def get_form_kwargs(self):  # pragma: no cover
         kwargs = super().get_form_kwargs()
         kwargs["request"] = self.request
@@ -373,6 +371,9 @@ class EventoUpdateView(
             }
         )
         return context
+
+    def get_success_url(self):
+        return reverse("eventos:evento_detalhe", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):  # pragma: no cover
         old_obj = self.get_object()

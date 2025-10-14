@@ -464,6 +464,41 @@ def test_operador_acessa_edicao_evento(client, organizacao, usuario_operador, nu
     assert "Editar Evento" in response.content.decode()
 
 
+def test_evento_update_redirects_to_detail(client, organizacao, usuario_operador, nucleo):
+    evento_nucleo = _criar_evento(organizacao, nucleo)
+    client.force_login(usuario_operador)
+
+    url = reverse("eventos:evento_editar", args=[evento_nucleo.pk])
+    data = {
+        "titulo": "Evento Atualizado",
+        "descricao": "Descrição do evento",
+        "data_inicio": evento_nucleo.data_inicio.isoformat(),
+        "data_fim": evento_nucleo.data_fim.isoformat(),
+        "local": evento_nucleo.local,
+        "cidade": evento_nucleo.cidade,
+        "estado": evento_nucleo.estado,
+        "cep": evento_nucleo.cep,
+        "status": str(evento_nucleo.status),
+        "publico_alvo": str(evento_nucleo.publico_alvo),
+        "nucleo": "",
+        "numero_convidados": str(evento_nucleo.numero_convidados),
+        "participantes_maximo": evento_nucleo.participantes_maximo or "",
+        "valor_ingresso": str(evento_nucleo.valor_ingresso),
+        "cronograma": "",
+        "informacoes_adicionais": "",
+        "briefing": "",
+        "parcerias": "",
+        "contato_nome": "Contato",
+        "contato_email": "contato@example.com",
+        "contato_whatsapp": "11999999999",
+    }
+
+    response = client.post(url, data=data)
+
+    assert response.status_code == 302
+    assert response["Location"] == reverse("eventos:evento_detalhe", args=[evento_nucleo.pk])
+
+
 def _criar_evento(
     organizacao,
     nucleo,
