@@ -2855,10 +2855,6 @@ a:focus {
   height: 2rem;
 }
 
-.h-\[32rem\] {
-  height: 32rem;
-}
-
 .h-auto {
   height: auto;
 }
@@ -2969,10 +2965,6 @@ a:focus {
 
 .max-w-4xl {
   max-width: 56rem;
-}
-
-.max-w-5xl {
-  max-width: 64rem;
 }
 
 .max-w-6xl {
@@ -3354,6 +3346,10 @@ a:focus {
 
 .border-white\/80 {
   border-color: rgb(255 255 255 / 0.8);
+}
+
+.bg-\[var\(--background-secondary\)\] {
+  background-color: var(--background-secondary);
 }
 
 .bg-\[var\(--bg-emphasis\)\] {
@@ -4100,6 +4096,10 @@ a:focus {
   --tw-ring-color: rgb(255 255 255 / 0.5);
 }
 
+.ring-white\/80 {
+  --tw-ring-color: rgb(255 255 255 / 0.8);
+}
+
 .blur {
   --tw-blur: blur(8px);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
@@ -4517,6 +4517,10 @@ a:focus {
   border-color: var(--accent);
 }
 
+.hover\:border-primary:hover {
+  border-color: var(--primary);
+}
+
 .hover\:bg-\[var\(--bg-tertiary\)\]:hover {
   background-color: var(--bg-tertiary);
 }
@@ -4531,6 +4535,10 @@ a:focus {
 
 .hover\:bg-\[var\(--surface-tertiary\)\]:hover {
   background-color: var(--surface-tertiary);
+}
+
+.hover\:bg-white\/20:hover {
+  background-color: rgb(255 255 255 / 0.2);
 }
 
 .hover\:text-\[var\(--accent\)\]:hover {
@@ -4646,6 +4654,10 @@ a:focus {
   --tw-ring-offset-width: 2px;
 }
 
+.focus\:ring-offset-\[var\(--background\)\]:focus {
+  --tw-ring-offset-color: var(--background);
+}
+
 .focus\:ring-offset-\[var\(--bg-primary\)\]:focus {
   --tw-ring-offset-color: var(--bg-primary);
 }
@@ -4656,6 +4668,11 @@ a:focus {
 
 .focus-visible\:text-\[var\(--text-inverse\)\]:focus-visible {
   color: var(--text-inverse);
+}
+
+.focus-visible\:outline-none:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
 .focus-visible\:outline:focus-visible {
@@ -4688,6 +4705,10 @@ a:focus {
 
 .focus-visible\:ring-\[var\(--primary\)\]:focus-visible {
   --tw-ring-color: var(--primary);
+}
+
+.focus-visible\:ring-white\/70:focus-visible {
+  --tw-ring-color: rgb(255 255 255 / 0.7);
 }
 
 .focus-visible\:ring-white\/80:focus-visible {
