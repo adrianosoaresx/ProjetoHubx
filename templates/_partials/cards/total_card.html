@@ -43,6 +43,7 @@
   {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
   {% if hx_select %}hx-select="{{ hx_select }}"{% endif %}
   {% if hx_include %}hx-include="{{ hx_include }}"{% endif %}
+  {% if hx_vals %}hx-vals='{{ hx_vals }}'{% endif %}
   {% if extra_attributes %} {{ extra_attributes|safe }}{% endif %}
   aria-pressed="{{ is_active|yesno:'true,false,false' }}"
   {% if active_class %}data-active-class="{{ active_class }}"{% endif %}

@@ -1,0 +1,22 @@
+{% load i18n %}
+{% url 'nucleos:membros_list' object.pk as membros_list_url %}
+<form
+  id="membros-filter-form"
+  class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+  hx-get="{{ membros_list_url }}"
+  hx-target="#membros-list"
+  hx-trigger="input changed delay:500ms, submit"
+  hx-indicator="#membros-loading"
+  hx-push-url="true"
+>
+  <label for="membros-search" class="sr-only">{% trans "Pesquisar membros" %}</label>
+  <input
+    type="search"
+    id="membros-search"
+    name="search"
+    value="{{ membros_search_query }}"
+    placeholder="{% trans 'Buscar por nome ou email' %}"
+    class="input input-bordered w-full sm:max-w-sm"
+  >
+  <input type="hidden" name="papel" value="{{ current_papel_filter|default:'todos' }}">
+</form>

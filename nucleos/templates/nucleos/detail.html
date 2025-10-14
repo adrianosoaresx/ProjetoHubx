@@ -126,6 +126,9 @@
               <h2 class="text-xl font-semibold">{% trans "Membros" %}</h2>
             </div>
             <div class="card-body space-y-6">
+              <div id="membros-filter-container">
+                {% include 'nucleos/partials/membros_filter_form.html' %}
+              </div>
               <section id="nucleo-membros" class="space-y-6">
                 <div id="membros-list">
                   {% if partial_template %}
