@@ -109,9 +109,6 @@ def evento(organizacao, usuario_logado):
         orcamento_estimado=5500.00,
         valor_gasto=4500.00,
         participantes_maximo=150,
-        contato_nome="Contato Teste",
-        contato_email="contato@teste.com",
-        contato_whatsapp="12999998888",
     )
 
 
@@ -138,9 +135,6 @@ def test_evento_detail_view_htmx(evento, client, usuario_logado):
     assert evento.cidade in content
     assert evento.estado in content
     assert evento.cep in content
-    assert evento.contato_nome in content
-    assert evento.contato_email in content
-    assert evento.contato_whatsapp in content
     assert str(evento.participantes_maximo) in content
     assert str(int(evento.orcamento_estimado)) in content
     assert str(int(evento.valor_gasto)) in content
@@ -201,9 +195,6 @@ def test_evento_list_filters_by_status(usuario_logado, organizacao, client, even
         orcamento_estimado=3000.00,
         valor_gasto=2500.00,
         participantes_maximo=120,
-        contato_nome="Contato Realizado",
-        contato_email="realizado@teste.com",
-        contato_whatsapp="12999996666",
     )
 
     url = reverse("eventos:lista")
@@ -245,9 +236,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         orcamento_estimado=2500.00,
         valor_gasto=2000.00,
         participantes_maximo=90,
-        contato_nome="Contato Ativo",
-        contato_email="ativo@teste.com",
-        contato_whatsapp="12999997777",
     )
 
     url = reverse("eventos:lista")
@@ -280,9 +268,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         numero_presentes=0,
         valor_ingresso=30.00,
         participantes_maximo=80,
-        contato_nome="Contato Futuro",
-        contato_email="futuro@teste.com",
-        contato_whatsapp="12999997777",
     )
     Evento.objects.create(
         titulo="Evento Passado",
@@ -300,9 +285,6 @@ def test_evento_list_filters_by_planejamento(usuario_logado, organizacao, client
         numero_presentes=0,
         valor_ingresso=30.00,
         participantes_maximo=80,
-        contato_nome="Contato Passado",
-        contato_email="passado@teste.com",
-        contato_whatsapp="12999996666",
     )
 
     url = reverse("eventos:lista")
@@ -335,9 +317,6 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         numero_presentes=0,
         valor_ingresso=25.00,
         participantes_maximo=60,
-        contato_nome="Contato Cancelado",
-        contato_email="cancelado@teste.com",
-        contato_whatsapp="12999995555",
     )
     Evento.objects.create(
         titulo="Evento Ativo",
@@ -355,9 +334,6 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
         numero_presentes=0,
         valor_ingresso=25.00,
         participantes_maximo=60,
-        contato_nome="Contato Ativo",
-        contato_email="ativo@teste.com",
-        contato_whatsapp="12999994444",
     )
 
     url = reverse("eventos:lista")
@@ -395,7 +371,6 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
         "publico_alvo": 0,
         "numero_convidados": 10,
         "numero_presentes": 0,
-        "contato_nome": "Fulano",
     }
     response = client.post(url, data=data, follow=True)
     assert response.status_code == 200
@@ -419,9 +394,6 @@ def test_operador_lista_eventos_restritos(client, organizacao, usuario_operador,
         numero_presentes=0,
         valor_ingresso=30.00,
         participantes_maximo=80,
-        contato_nome="Contato",
-        contato_email="contato@teste.com",
-        contato_whatsapp="11999990000",
         nucleo=nucleo,
     )
 
@@ -450,9 +422,6 @@ def test_operador_acessa_edicao_evento(client, organizacao, usuario_operador, nu
         numero_presentes=0,
         valor_ingresso=30.00,
         participantes_maximo=80,
-        contato_nome="Contato",
-        contato_email="contato@teste.com",
-        contato_whatsapp="11999990000",
         nucleo=nucleo,
     )
 
@@ -488,9 +457,6 @@ def test_evento_update_redirects_to_detail(client, organizacao, usuario_operador
         "informacoes_adicionais": "",
         "briefing": "",
         "parcerias": "",
-        "contato_nome": "Contato",
-        "contato_email": "contato@example.com",
-        "contato_whatsapp": "11999999999",
     }
 
     response = client.post(url, data=data)

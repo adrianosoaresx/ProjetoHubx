@@ -37,9 +37,13 @@ def criar_evento(organizacao, inicio, fim):
         data_inicio=inicio,
         data_fim=fim,
         status=Evento.Status.ATIVO,
-        publico_alvo=1,
+        publico_alvo=0,
         numero_convidados=50,
         numero_presentes=30,
+        local="Auditório",
+        cidade="Cidade",
+        estado="SC",
+        cep="12345-678",
     )
 
 

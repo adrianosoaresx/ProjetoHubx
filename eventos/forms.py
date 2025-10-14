@@ -36,9 +36,6 @@ class EventoForm(forms.ModelForm):
             "informacoes_adicionais",
             "briefing",
             "parcerias",
-            "contato_nome",
-            "contato_email",
-            "contato_whatsapp",
             "avatar",
             "cover",
         ]
@@ -91,14 +88,8 @@ class EventoForm(forms.ModelForm):
 
             nucleo_field.queryset = queryset.distinct()
 
-        for field_name, label in (
-            ("contato_nome", _("Contato")),
-            ("contato_email", _("Email")),
-            ("contato_whatsapp", _("Whatsapp")),
-            ("cover", _("Capa")),
-        ):
-            if field_name in self.fields:
-                self.fields[field_name].label = label
+        if "cover" in self.fields:
+            self.fields["cover"].label = _("Capa")
 
         for field_name, help_text in (
             ("briefing", _("Envie o briefing em formato PDF (até 20 MB).")),

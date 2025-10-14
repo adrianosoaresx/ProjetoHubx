@@ -61,9 +61,6 @@ def test_operador_lista_e_atualiza_evento(api_client, organizacao, usuario_opera
         numero_presentes=0,
         valor_ingresso=30.00,
         participantes_maximo=80,
-        contato_nome="Contato API",
-        contato_email="api@teste.com",
-        contato_whatsapp="11999990000",
         nucleo=nucleo,
     )
 
