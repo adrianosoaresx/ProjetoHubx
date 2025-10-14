@@ -78,7 +78,7 @@
                   <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ object.informacoes_adicionais|linebreaksbr }}</dd>
                 </div>
               {% endif %}
-              {% if object.participantes_maximo %}
+              {% if object.participantes_maximo and pode_ver_campos_restritos %}
                 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                   <dt class="text-[var(--text-secondary)]">{% trans "Máximo de participantes" %}</dt>
                   <dd class="font-medium text-[var(--text-primary)]">{{ object.participantes_maximo }}</dd>
@@ -96,7 +96,7 @@
                   <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
                 </div>
               {% endif %}
-              {% if object.briefing %}
+              {% if object.briefing and pode_ver_campos_restritos %}
                 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                   <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
                   <dd class="font-medium text-[var(--text-primary)]">
@@ -104,7 +104,7 @@
                   </dd>
                 </div>
               {% endif %}
-              {% if object.parcerias %}
+              {% if object.parcerias and pode_ver_campos_restritos %}
                 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                   <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>
                   <dd class="font-medium text-[var(--text-primary)]">

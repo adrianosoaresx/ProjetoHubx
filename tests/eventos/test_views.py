@@ -2,9 +2,10 @@ from datetime import datetime, timedelta
 
 import pytest
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import make_aware
-from django.test import override_settings
 
 from accounts.models import User, UserType
 from eventos.models import Evento, InscricaoEvento
@@ -150,6 +151,98 @@ def test_evento_detail_non_admin_hides_edit_button(evento, client, usuario_comum
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert reverse("eventos:evento_editar", args=[evento.pk]) not in response.content.decode()
+
+
+@override_settings(ROOT_URLCONF="Hubx.urls")
+def test_evento_detail_nucleado_sem_coordenacao_oculta_campos(
+    client, organizacao, nucleo
+):
+    briefing = SimpleUploadedFile("briefing.pdf", b"briefing", content_type="application/pdf")
+    parcerias = SimpleUploadedFile("parcerias.pdf", b"parcerias", content_type="application/pdf")
+    evento_restrito = Evento.objects.create(
+        titulo="Evento Restrito",
+        descricao="Somente para nucleados",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Teste, 456",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=nucleo,
+        status=Evento.Status.ATIVO,
+        publico_alvo=1,
+        numero_presentes=0,
+        participantes_maximo=40,
+        briefing=briefing,
+        parcerias=parcerias,
+    )
+
+    usuario_nucleado = User.objects.create_user(
+        username="nucleado",
+        email="nucleado@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.ASSOCIADO,
+        is_associado=True,
+        nucleo=nucleo,
+    )
+    ParticipacaoNucleo.objects.create(
+        user=usuario_nucleado,
+        nucleo=nucleo,
+        status="ativo",
+        papel="membro",
+    )
+
+    client.force_login(usuario_nucleado)
+    response = client.get(
+        reverse("eventos:evento_detalhe", args=[evento_restrito.pk]),
+        HTTP_HX_REQUEST="true",
+    )
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "Máximo de participantes" not in content
+    assert "Briefing" not in content
+    assert "Parcerias" not in content
+
+
+@override_settings(ROOT_URLCONF="Hubx.urls")
+def test_evento_detail_coordenador_visualiza_campos_restritos(
+    client, organizacao, nucleo, usuario_coordenador
+):
+    briefing = SimpleUploadedFile("briefing.pdf", b"briefing", content_type="application/pdf")
+    parcerias = SimpleUploadedFile("parcerias.pdf", b"parcerias", content_type="application/pdf")
+    evento_restrito = Evento.objects.create(
+        titulo="Evento Coordenado",
+        descricao="Apenas coordenador",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Teste, 789",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=nucleo,
+        status=Evento.Status.ATIVO,
+        publico_alvo=1,
+        numero_presentes=0,
+        participantes_maximo=55,
+        briefing=briefing,
+        parcerias=parcerias,
+    )
+
+    client.force_login(usuario_coordenador)
+    response = client.get(
+        reverse("eventos:evento_detalhe", args=[evento_restrito.pk]),
+        HTTP_HX_REQUEST="true",
+    )
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "Máximo de participantes" in content
+    assert "Briefing" in content
+    assert "Parcerias" in content
 
 
 @pytest.mark.xfail(reason="Erro de template em produção")

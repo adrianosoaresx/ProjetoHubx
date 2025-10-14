@@ -66,12 +66,7 @@ def _get_tipo_usuario(user) -> str | None:
     return tipo
 
 
-def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
-    tipo_usuario = _get_tipo_usuario(user)
-    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
-        return True
-    if tipo_usuario != UserType.COORDENADOR.value:
-        return False
+def _usuario_eh_coordenador_do_evento(user, evento: Evento) -> bool:
     if evento.nucleo_id is None:
         return False
     participacoes = getattr(user, "participacoes", None)
@@ -84,6 +79,19 @@ def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
         ).exists():
             return True
     return getattr(user, "nucleo_id", None) == evento.nucleo_id and getattr(user, "is_coordenador", False)
+
+
+def _usuario_tem_acesso_restrito_evento(user, evento: Evento) -> bool:
+    tipo_usuario = _get_tipo_usuario(user)
+    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return True
+    if tipo_usuario != UserType.COORDENADOR.value:
+        return False
+    return _usuario_eh_coordenador_do_evento(user, evento)
+
+
+def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
+    return _usuario_tem_acesso_restrito_evento(user, evento)
 
 
 # ---------------------------------------------------------------------------
@@ -558,6 +566,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "pode_editar_evento": pode_editar_evento,
                 "pode_excluir_evento": pode_excluir_evento,
                 "pode_gerenciar_inscricoes": pode_gerenciar_inscricoes,
+                "pode_ver_campos_restritos": _usuario_tem_acesso_restrito_evento(user, evento),
             }
         )
         context["title"] = evento.titulo
