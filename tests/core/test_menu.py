@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
@@ -60,3 +62,50 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
     assert len(menu) == 1
     child_ids = [child.id for child in menu[0].children or []]
     assert child_ids == expected_children
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("user_type", "expected_visibility"),
+    [
+        (UserType.ASSOCIADO, {"associados": False, "tokens": False}),
+        (UserType.COORDENADOR, {"associados": False, "tokens": False}),
+        (UserType.ADMIN, {"associados": True, "tokens": True}),
+    ],
+)
+def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email=f"{user_type.value}-menu@example.com",
+        username=f"{user_type.value}_menu",
+        password="test-pass",
+        user_type=user_type,
+    )
+
+    if user_type is UserType.ADMIN:
+        user.is_staff = True
+        user.save(update_fields=["is_staff"])
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+
+    def _get_item(item_id: str) -> Optional[MenuItem]:
+        for item in menu:
+            if item.id == item_id:
+                return item
+        return None
+
+    for item_id, should_exist in expected_visibility.items():
+        item = _get_item(item_id)
+        if should_exist:
+            assert item is not None, f"{item_id} should be visible for {user_type.value}"
+        else:
+            assert item is None, f"{item_id} should be hidden for {user_type.value}"
+
+    if expected_visibility.get("tokens"):
+        tokens_item = _get_item("tokens")
+        assert tokens_item is not None
+        child_ids = {child.id for child in tokens_item.children or []}
+        assert {"tokens_gerar", "tokens_listar"} <= child_ids
