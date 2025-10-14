@@ -165,9 +165,6 @@ def main() -> None:
                         "informacoes_adicionais": "",
                         "briefing": "",
                         "parcerias": "",
-                        "contato_nome": "Contato",
-                        "contato_email": f"contato@{slugify(org.nome)}.com",
-                        "contato_whatsapp": "",
                     },
                 )
                 print(f"Criados {i + 1}/3 eventos para {org.nome}")

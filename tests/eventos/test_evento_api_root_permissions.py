@@ -60,9 +60,6 @@ def evento(organizacao: Organizacao) -> Evento:
         numero_convidados=10,
         valor_ingresso=Decimal("0.00"),
         participantes_maximo=100,
-        contato_nome="Contato",
-        contato_email="contato@example.com",
-        contato_whatsapp="11999999999",
     )
 
 

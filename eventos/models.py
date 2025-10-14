@@ -221,9 +221,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         blank=True,
         validators=[validate_uploaded_file],
     )
-    contato_nome = models.CharField(max_length=100)
-    contato_email = models.EmailField(blank=True)
-    contato_whatsapp = models.CharField(max_length=15, blank=True)
     avatar = models.ImageField(
         upload_to="eventos/avatars/",
         blank=True,

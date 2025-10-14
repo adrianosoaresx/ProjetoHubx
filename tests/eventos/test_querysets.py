@@ -46,7 +46,6 @@ def test_admin_with_nucleo_membership_sees_all_org_events():
         "organizacao": organizacao,
         "status": Evento.Status.ATIVO,
         "numero_convidados": 10,
-        "contato_nome": "Contato",
     }
 
     evento_publico = Evento.objects.create(
