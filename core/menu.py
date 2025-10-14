@@ -465,7 +465,7 @@ def _get_menu_items() -> List[MenuItem]:
             reverse("associados:associados_lista"),
             "Associados",
             ICON_USERS,
-            ["admin", "coordenador", "operador"],
+            ["admin", "operador"],
             children=associados_children,
         ),
         MenuItem(
@@ -516,21 +516,21 @@ def _get_menu_items() -> List[MenuItem]:
       reverse("tokens:listar_convites"),
       "Tokens",
       ICON_TOKEN,
-      ["admin", "coordenador"],
+      ["admin"],
       children=[
         MenuItem(
           id="tokens_gerar",
           path=reverse("tokens:gerar_convite"),
           label="Gerar Token",
           icon=ICON_PLUS,
-          permissions=["admin", "coordenador"],
+          permissions=["admin"],
         ),
         MenuItem(
           id="tokens_listar",
           path=reverse("tokens:listar_convites"),
           label="Listar Tokens",
           icon=ICON_TABLE,
-          permissions=["admin", "coordenador"],
+          permissions=["admin"],
         ),
       ],
     ),
