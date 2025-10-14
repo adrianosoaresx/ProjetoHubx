@@ -9,6 +9,7 @@ from django.db.models.functions import Replace
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import UserType
@@ -483,6 +484,55 @@ def solicitar_conexao(request, id):
     if q:
         params["q"] = q
     return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?{urlencode(params)}")
+
+
+@login_required
+def remover_conexao_modal(request, id):
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+
+    response = _deny_root_connections_access(request)
+    if response:
+        return response
+
+    if not is_htmx_or_ajax(request):
+        return redirect("conexoes:perfil_sections_conexoes")
+
+    connection = get_object_or_404(User, id=id)
+    target_id = (request.GET.get("target_id") or "").strip()
+    swap = (request.GET.get("swap") or "").strip()
+    remove_target = (request.GET.get("remove_target") or "").strip()
+    query = (request.GET.get("q") or "").strip()
+
+    def _normalize_target(value: str) -> str | None:
+        if not value:
+            return None
+        if value.startswith("#") or value.startswith("."):
+            return value
+        return f"#{value}"
+
+    hx_target = _normalize_target(target_id)
+    hx_swap = swap or None
+    remove_selector = _normalize_target(remove_target)
+
+    display_name = connection.display_name or connection.get_full_name() or connection.username
+
+    context = {
+        "connection": connection,
+        "titulo": _("Remover conexão"),
+        "mensagem": format_html(
+            _("Tem certeza que deseja remover a conexão com <strong>{nome}</strong>?"),
+            nome=display_name,
+        ),
+        "submit_label": _("Remover"),
+        "form_action": reverse("conexoes:remover_conexao", args=[connection.id]),
+        "hx_target": hx_target,
+        "hx_swap": hx_swap,
+        "remove_target": remove_selector,
+        "query": query,
+    }
+
+    return render(request, "conexoes/partiais/remove_connection_modal.html", context)
 
 
 @login_required

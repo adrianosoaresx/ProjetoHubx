@@ -72,24 +72,37 @@
                   </a>
 
                   {% if associado.id in conexoes_ids %}
-                    <form
-                      method="post"
-                      action="{% url 'conexoes:remover_conexao' associado.id %}"
-                      {% if search_form_hx_target %}
-                        hx-post="{% url 'conexoes:remover_conexao' associado.id %}"
-                        hx-target="#{{ search_form_hx_target }}"
-                        hx-swap="innerHTML"
-                      {% endif %}
-                      class="w-full"
-                    >
-                      {% csrf_token %}
-                      {% if form.q.value %}
-                        <input type="hidden" name="q" value="{{ form.q.value }}" />
-                      {% endif %}
-                      <button type="submit" class="btn btn-danger btn-sm w-full justify-center">
-                        {% trans "Desconectar" %}
-                      </button>
-                    </form>
+                    {% with associado_id=associado.id|stringformat:'s' %}
+                      {% with card_id='connection-'|add:associado_id %}
+                        {% if search_form_hx_target %}
+                          {% with query_value=form.q.value %}
+                            <button
+                              type="button"
+                              class="btn btn-danger btn-sm w-full justify-center"
+                              hx-get="{% url 'conexoes:remover_conexao_modal' associado.id %}?target_id={{ search_form_hx_target }}&swap=innerHTML{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+                              hx-target="#modal"
+                              hx-swap="innerHTML"
+                              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                            >
+                              {% trans "Desconectar" %}
+                            </button>
+                          {% endwith %}
+                        {% else %}
+                          {% with query_value=form.q.value %}
+                            <button
+                              type="button"
+                              class="btn btn-danger btn-sm w-full justify-center"
+                              hx-get="{% url 'conexoes:remover_conexao_modal' associado.id %}?target_id={{ card_id }}&swap=outerHTML&remove_target={{ card_id }}{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+                              hx-target="#modal"
+                              hx-swap="innerHTML"
+                              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                            >
+                              {% trans "Desconectar" %}
+                            </button>
+                          {% endwith %}
+                        {% endif %}
+                      {% endwith %}
+                    {% endwith %}
                   {% elif associado.id in solicitacoes_enviadas_ids %}
                     <button type="button" class="btn btn-secondary btn-sm w-full cursor-default justify-center opacity-70" disabled>
                       {% trans "Solicitação enviada" %}
@@ -137,3 +150,4 @@
     {% endif %}
   </div>
 </article>
+<div id="modal" role="presentation" aria-live="polite"></div>
