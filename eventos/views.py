@@ -702,6 +702,58 @@ class EventoCancelarInscricaoModalView(LoginRequiredMixin, NoSuperadminMixin, Vi
         return TemplateResponse(request, self.template_name, context)
 
 
+class EventoRemoverInscritoModalView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    View,
+):
+    template_name = "eventos/partials/evento_remover_inscricao_modal.html"
+
+    def get(self, request, pk, user_id):  # pragma: no cover - interface simples
+        if request.headers.get("HX-Target") != "modal":
+            return redirect("eventos:evento_detalhe", pk=pk)
+
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+        tipo_usuario = _get_tipo_usuario(request.user)
+        if (
+            tipo_usuario
+            in {
+                UserType.ADMIN.value,
+                UserType.COORDENADOR.value,
+                UserType.OPERADOR.value,
+            }
+            and evento.organizacao != getattr(request.user, "organizacao", None)
+        ):
+            return HttpResponseForbidden(_("Acesso negado."))
+
+        inscrito = get_object_or_404(User, pk=user_id)
+        get_object_or_404(
+            InscricaoEvento,
+            user=inscrito,
+            evento=evento,
+            deleted=False,
+        )
+
+        inscrito_nome = getattr(inscrito, "display_name", None) or inscrito.get_username()
+        context = {
+            "evento": evento,
+            "titulo": _("Excluir inscrição"),
+            "mensagem": _(
+                "Tem certeza que deseja excluir a inscrição de %(inscrito)s no evento %(evento)s?"
+            )
+            % {"inscrito": inscrito_nome, "evento": evento.titulo},
+            "submit_label": _("Excluir inscrição"),
+            "cancel_label": _("Manter inscrição"),
+            "form_action": reverse(
+                "eventos:evento_remover_inscrito",
+                args=[evento.pk, inscrito.pk],
+            ),
+        }
+
+        return TemplateResponse(request, self.template_name, context)
+
+
 class EventoRemoveInscritoView(
     LoginRequiredMixin,
     NoSuperadminMixin,

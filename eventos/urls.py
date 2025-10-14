@@ -8,6 +8,7 @@ from .views import (
     EventoDeleteView,
     EventoDetailView,
     EventoFeedbackView,
+    EventoRemoverInscritoModalView,
     EventoRemoveInscritoView,
     EventoSubscribeView,
     EventoUpdateView,
@@ -53,6 +54,11 @@ urlpatterns = [
         "evento/<uuid:pk>/cancelar-inscricao/",
         EventoCancelarInscricaoModalView.as_view(),
         name="evento_cancelar_inscricao_modal",
+    ),
+    path(
+        "evento/<uuid:pk>/inscrito/<int:user_id>/remover/modal/",
+        EventoRemoverInscritoModalView.as_view(),
+        name="evento_remover_inscrito_modal",
     ),
     path(
         "evento/<uuid:pk>/inscrito/<int:user_id>/remover/",
