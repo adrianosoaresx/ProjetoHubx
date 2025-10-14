@@ -389,7 +389,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("eventos:evento_novo"),
             label="Adicionar evento",
             icon=ICON_PLUS,
-            permissions=["admin", "coordenador"],
+            permissions=["admin", "operador"],
         ),
     ]
 

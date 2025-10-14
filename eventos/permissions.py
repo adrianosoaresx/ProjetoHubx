@@ -26,8 +26,10 @@ class IsAdminOrCoordenadorOrReadOnly(permissions.IsAuthenticated):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return tipo_usuario_valor in {
-            UserType.ADMIN.value,
-            UserType.COORDENADOR.value,
-            UserType.OPERADOR.value,
-        }
+        admin_or_operador = {UserType.ADMIN.value, UserType.OPERADOR.value}
+        if request.method in {"PUT", "PATCH"}:
+            allowed = admin_or_operador | {UserType.COORDENADOR.value}
+        else:
+            allowed = admin_or_operador
+
+        return tipo_usuario_valor in allowed
