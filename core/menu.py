@@ -1,6 +1,8 @@
 from __future__ import annotations
+from collections import defaultdict
 from dataclasses import dataclass, replace
 from typing import List
+from urllib.parse import parse_qsl, urlsplit
 
 from django.urls import reverse
 from django.utils import timezone
@@ -577,26 +579,54 @@ def _filter_items(items: List[MenuItem], user) -> List[MenuItem]:
     return filtered
 
 
-def _mark_active(items: List[MenuItem], current_path: str, current_full_path: str) -> bool:
+def _collect_path_queries(items: List[MenuItem], mapping):
+    for item in items:
+        split = urlsplit(item.path)
+        query = tuple(sorted(parse_qsl(split.query, keep_blank_values=True)))
+        mapping[split.path].add(query)
+        if item.children:
+            _collect_path_queries(item.children, mapping)
+
+
+def _mark_active(items: List[MenuItem], current_full_path: str, path_queries) -> bool:
     any_active = False
+    current_split = urlsplit(current_full_path)
+    current_query = tuple(sorted(parse_qsl(current_split.query, keep_blank_values=True)))
     for item in items:
         child_active = False
         if item.children:
-            child_active = _mark_active(item.children, current_path, current_full_path)
-        is_current = current_path == item.path or current_full_path == item.path
+            child_active = _mark_active(item.children, current_full_path, path_queries)
+
+        split = urlsplit(item.path)
+        item_query = tuple(sorted(parse_qsl(split.query, keep_blank_values=True)))
+        same_path = current_split.path == split.path
+        is_current = False
+
+        if same_path:
+            if item_query:
+                is_current = current_query == item_query
+            else:
+                other_queries = {
+                    q for q in path_queries.get(split.path, set()) if q
+                }
+                is_current = current_query not in other_queries
+
         item.is_current = is_current
         item.has_active_child = child_active
         item.is_active = is_current or child_active
         item.is_expanded = item.is_active
         any_active = any_active or item.is_active
     return any_active
+
+
 def build_menu(request) -> List[MenuItem]:
     """Retorna itens de menu filtrados por tipo de usuário."""
 
     items = _get_menu_items()
     user = request.user
     filtered = _filter_items(items, user)
-    current_path = request.path
     current_full_path = request.get_full_path()
-    _mark_active(filtered, current_path, current_full_path)
+    path_queries = defaultdict(set)
+    _collect_path_queries(filtered, path_queries)
+    _mark_active(filtered, current_full_path, path_queries)
     return filtered
