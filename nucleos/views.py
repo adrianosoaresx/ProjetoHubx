@@ -510,10 +510,13 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
         search_term = self.request.GET.get("search", "").strip()
         if search_term:
+            # O modelo de usuário personalizado não possui os campos ``first_name``
+            # e ``last_name`` herdados do ``AbstractUser``. Usamos os campos
+            # disponíveis que compõem o nome exibido para o usuário.
             for term in search_term.split():
                 qs = qs.filter(
-                    Q(user__first_name__icontains=term)
-                    | Q(user__last_name__icontains=term)
+                    Q(user__contato__icontains=term)
+                    | Q(user__nome_fantasia__icontains=term)
                     | Q(user__email__icontains=term)
                     | Q(user__username__icontains=term)
                 )
