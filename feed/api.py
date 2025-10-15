@@ -33,6 +33,9 @@ REACTIONS_TOTAL = Gauge("feed_reactions_total", "Total de reações registradas"
 POST_VIEWS_TOTAL = Counter("feed_post_views_total", "Total de visualizações de posts")
 POST_VIEW_DURATION = Histogram("feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos")
 
+DEFAULT_POST_RATE_LIMIT = "20/m"
+DEFAULT_READ_RATE_LIMIT = "100/m"
+
 
 class CanModerate(permissions.BasePermission):
     def has_permission(self, request, view):  # pragma: no cover - simples
@@ -207,12 +210,14 @@ def _rate_with_multiplier(base: str, multiplier: float) -> str:
 
 def _post_rate(group, request) -> str:  # pragma: no cover - simples
     mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
-    return _rate_with_multiplier(settings.FEED_RATE_LIMIT_POST, mult)
+    base = getattr(settings, "FEED_RATE_LIMIT_POST", DEFAULT_POST_RATE_LIMIT)
+    return _rate_with_multiplier(base, mult)
 
 
 def _read_rate(group, request) -> str:  # pragma: no cover - simples
     mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
-    return _rate_with_multiplier(settings.FEED_RATE_LIMIT_READ, mult)
+    base = getattr(settings, "FEED_RATE_LIMIT_READ", DEFAULT_READ_RATE_LIMIT)
+    return _rate_with_multiplier(base, mult)
 
 
 def ratelimit_exceeded(request, exception):  # pragma: no cover - simples
