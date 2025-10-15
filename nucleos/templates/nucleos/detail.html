@@ -99,7 +99,12 @@
         {% if section == 'membros' %}
           <article class="card">
             <div class="card-header">
-              <h2 class="text-xl font-semibold">
+              <h2
+                id="nucleo-membros-title"
+                class="text-xl font-semibold"
+                data-membros-label="{% trans 'Membros' %}"
+                data-coordenadores-label="{% trans 'Coordenadores' %}"
+              >
                 {% if is_coordenadores_filter_active %}
                   {% trans "Coordenadores" %}
                 {% else %}
@@ -136,4 +141,44 @@
 
     <div id="modal" role="presentation" aria-live="polite"></div>
 
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const titleEl = document.getElementById('nucleo-membros-title');
+      if (!titleEl) {
+        return;
+      }
+
+      const labels = {
+        membros: titleEl.dataset.membrosLabel || titleEl.textContent.trim(),
+        coordenador: titleEl.dataset.coordenadoresLabel || titleEl.textContent.trim(),
+      };
+
+      function updateTitle(papel) {
+        if (!titleEl) {
+          return;
+        }
+        const key = papel === 'coordenador' ? 'coordenador' : 'membros';
+        const label = labels[key];
+        if (label) {
+          titleEl.textContent = label;
+        }
+      }
+
+      function handleEvent(event) {
+        const detail = event.detail || {};
+        const params = detail.parameters || (detail.requestConfig && detail.requestConfig.parameters);
+        if (!params || typeof params.papel === 'undefined') {
+          return;
+        }
+        updateTitle(params.papel);
+      }
+
+      document.body.addEventListener('htmx:beforeRequest', handleEvent);
+      document.body.addEventListener('htmx:afterSwap', handleEvent);
+    })();
+  </script>
 {% endblock %}
