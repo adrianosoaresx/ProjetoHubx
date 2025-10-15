@@ -177,8 +177,40 @@
         updateTitle(params.papel);
       }
 
+      function handleSearchAll(event) {
+        const button = event.target.closest('[data-search-all-button]');
+        if (!button) {
+          return;
+        }
+        const form = button.closest('form');
+        if (!form) {
+          return;
+        }
+        const baseUrl = form.dataset.searchAllUrl;
+        if (!baseUrl) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const params = new URLSearchParams(form.dataset.searchAllParams || '');
+        const searchInput = form.querySelector('#membros-search');
+        const query = searchInput ? searchInput.value.trim() : '';
+
+        if (query) {
+          params.set('q', query);
+        } else {
+          params.delete('q');
+        }
+
+        const queryString = params.toString();
+        const targetUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+        window.location.href = targetUrl;
+      }
+
       document.body.addEventListener('htmx:beforeRequest', handleEvent);
       document.body.addEventListener('htmx:afterSwap', handleEvent);
+      document.body.addEventListener('click', handleSearchAll);
     })();
   </script>
 {% endblock %}

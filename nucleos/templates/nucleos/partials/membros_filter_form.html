@@ -8,6 +8,8 @@
   hx-trigger="input changed delay:500ms, submit"
   hx-indicator="#membros-loading"
   hx-push-url="true"
+  data-search-all-url="{{ membros_search_all_url }}"
+  {% if membros_search_all_params %}data-search-all-params="{{ membros_search_all_params }}"{% endif %}
 >
   <div class="flex w-full items-center gap-2 sm:max-w-sm">
     <label for="membros-search" class="sr-only">{% trans "Pesquisar membros" %}</label>
@@ -19,7 +21,11 @@
       placeholder="{% trans 'Buscar por nome ou email' %}"
       class="input input-bordered w-full"
     >
-    <button type="submit" class="btn btn-secondary whitespace-nowrap">
+    <button
+      type="button"
+      class="btn btn-secondary whitespace-nowrap"
+      data-search-all-button
+    >
       {% trans "Buscar" %}
     </button>
   </div>
