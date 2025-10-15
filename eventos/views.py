@@ -445,6 +445,7 @@ class EventoDeleteView(
                 ),
                 "submit_label": _("Remover"),
                 "form_action": reverse("eventos:evento_excluir", args=[self.object.pk]),
+                "redirect_url": str(self.get_success_url()),
             }
             return TemplateResponse(
                 request,
