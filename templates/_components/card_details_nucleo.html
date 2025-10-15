@@ -19,23 +19,27 @@
     <dd class="font-medium">
       {% with coordenador_geral=nucleo.coordenador_geral %}
         {% if coordenador_geral %}
-          {{ coordenador_geral.display_name|default:coordenador_geral.username }}
-        {% else %}
-          {% with contato=nucleo.organizacao.contato_nome|default_if_none:'' %}
+          {% with contato=coordenador_geral.contato|default_if_none:'' %}
             {% if contato %}
               {{ contato }}
             {% else %}
-              {% with nome_fantasia=nucleo.organizacao.nome_fantasia|default_if_none:'' %}
+              {% with nome_fantasia=coordenador_geral.nome_fantasia|default_if_none:'' %}
                 {% if nome_fantasia %}
                   {{ nome_fantasia }}
-                {% elif nucleo.organizacao.nome %}
-                  {{ nucleo.organizacao.nome }}
                 {% else %}
-                  -
+                  {% with razao_social=coordenador_geral.razao_social|default_if_none:'' %}
+                    {% if razao_social %}
+                      {{ razao_social }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  {% endwith %}
                 {% endif %}
               {% endwith %}
             {% endif %}
           {% endwith %}
+        {% else %}
+          -
         {% endif %}
       {% endwith %}
     </dd>
