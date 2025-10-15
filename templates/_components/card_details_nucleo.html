@@ -15,13 +15,21 @@
     </dd>
   </div>
   <div>
-    <dt class="text-[var(--text-secondary)]">{% trans 'Coordenador Geral' %}</dt>
+    <dt class="text-[var(--text-secondary)]">{% trans 'Contato' %}</dt>
     <dd class="font-medium">
-      {% with coord=nucleo.coordenador_geral %}
-        {% if coord %}
-          {{ coord.display_name|default:coord.username }}
+      {% with contato=nucleo.organizacao.contato_nome|default_if_none:'' %}
+        {% if contato %}
+          {{ contato }}
         {% else %}
-          -
+          {% with nome_fantasia=nucleo.organizacao.nome_fantasia|default_if_none:'' %}
+            {% if nome_fantasia %}
+              {{ nome_fantasia }}
+            {% elif nucleo.organizacao.nome %}
+              {{ nucleo.organizacao.nome }}
+            {% else %}
+              -
+            {% endif %}
+          {% endwith %}
         {% endif %}
       {% endwith %}
     </dd>
