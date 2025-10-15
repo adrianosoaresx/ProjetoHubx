@@ -427,7 +427,7 @@ class EventoDeleteView(
 ):
     model = Evento
     template_name = "eventos/delete.html"
-    success_url = reverse_lazy("eventos:calendario")
+    success_url = reverse_lazy("eventos:lista")
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
