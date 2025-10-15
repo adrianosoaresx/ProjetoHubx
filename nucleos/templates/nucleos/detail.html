@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n l10n %}
+{% load i18n l10n lucide_icons %}
 
 {% block title %}{{ object.nome }}{% endblock %}
 
@@ -12,10 +12,13 @@
 {% block content %}
   
     <div class="flex flex-col gap-6">
-      <article class="card">
-        <div class="card-header">
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
           <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
-        </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
         <div class="card-body space-y-6">
           <dl class="space-y-6 text-sm">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -93,12 +96,12 @@
             {% endif %}
           </div>
         </div>
-      </article>
+      </details>
 
       {% with section=current_section|default:"membros" %}
         {% if section == 'membros' %}
-          <article class="card">
-            <div class="card-header">
+          <details class="card group" open>
+            <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
               <h2
                 id="nucleo-membros-title"
                 class="text-xl font-semibold"
@@ -111,7 +114,10 @@
                   {% trans "Membros" %}
                 {% endif %}
               </h2>
-            </div>
+              <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+                {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+              </span>
+            </summary>
             <div class="card-body space-y-6">
               <div id="membros-filter-container">
                 {% include 'nucleos/partials/membros_filter_form.html' %}
@@ -134,7 +140,7 @@
                 </div>
               </section>
             </div>
-          </article>
+          </details>
         {% endif %}
       {% endwith %}
     </div>
