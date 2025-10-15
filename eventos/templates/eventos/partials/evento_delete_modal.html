@@ -31,6 +31,7 @@
         hx-post="{{ form_action }}"
         hx-target="#modal"
         hx-swap="none"
+        data-redirect-url="{{ redirect_url }}"
       >
         {% csrf_token %}
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4 border-t border-[var(--border)] pt-4">
@@ -81,6 +82,33 @@
     cancelButtons.forEach((button) => {
       button.addEventListener('click', closeModal);
     });
+
+    const form = dialog.querySelector('form[data-redirect-url]');
+    if (form) {
+      form.addEventListener('htmx:afterRequest', (event) => {
+        if (!event.detail || event.detail.successful === false) {
+          return;
+        }
+
+        let redirectHeader = null;
+        const xhr = event.detail.xhr;
+        if (xhr && typeof xhr.getResponseHeader === 'function') {
+          redirectHeader = xhr.getResponseHeader('HX-Redirect');
+        }
+
+        if (!redirectHeader && event.detail.fetchResponse && event.detail.fetchResponse.headers) {
+          const headers = event.detail.fetchResponse.headers;
+          if (typeof headers.get === 'function') {
+            redirectHeader = headers.get('HX-Redirect');
+          }
+        }
+
+        const redirectUrl = redirectHeader || form.dataset.redirectUrl;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        }
+      });
+    }
     modalContainer.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         closeModal(event);
