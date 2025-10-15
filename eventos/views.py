@@ -313,7 +313,7 @@ class EventoCreateView(
     model = Evento
     form_class = EventoForm
     template_name = "eventos/evento_form.html"
-    success_url = reverse_lazy("eventos:calendario")
+    success_url = reverse_lazy("eventos:lista")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
