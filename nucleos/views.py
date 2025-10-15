@@ -592,10 +592,6 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         ctx["is_membros_filter_active"] = ctx["current_papel_filter"] in {"todos", "membro"}
         ctx["is_coordenadores_filter_active"] = ctx["current_papel_filter"] == "coordenador"
 
-        search_all_params = {"section": "conexoes", "view": "buscar"}
-        ctx["membros_search_all_url"] = reverse("conexoes:perfil_conexoes_buscar")
-        ctx["membros_search_all_params"] = urlencode(search_all_params)
-
         # Posts do feed do núcleo para a aba "Feed"
         try:
             from django.db.models import OuterRef, Subquery, Exists
