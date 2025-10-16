@@ -22,7 +22,6 @@ import {
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_FLOATING = "18rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -172,32 +171,11 @@ const Sidebar = React.forwardRef<
       collapsible = "offcanvas",
       className,
       children,
-      style,
       ...props
     },
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
-
-    const sidebarStyle = React.useMemo(() => {
-      if (variant === "floating") {
-        return {
-          "--sidebar-width": SIDEBAR_WIDTH_FLOATING,
-          ...style,
-        } as React.CSSProperties
-      }
-
-      return style
-    }, [style, variant])
-
-    const mobileSidebarStyle = React.useMemo(
-      () =>
-        ({
-          "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-          ...style,
-        } as React.CSSProperties),
-      [style]
-    )
 
     if (collapsible === "none") {
       return (
@@ -206,7 +184,6 @@ const Sidebar = React.forwardRef<
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
-          style={sidebarStyle}
           ref={ref}
           {...props}
         >
@@ -222,7 +199,11 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             data-mobile="true"
             className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={mobileSidebarStyle}
+            style={
+              {
+                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              } as React.CSSProperties
+            }
             side={side}
           >
             <div className="flex h-full w-full flex-col">{children}</div>
@@ -239,7 +220,6 @@ const Sidebar = React.forwardRef<
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
-        style={sidebarStyle}
       >
         {/* This is what handles the sidebar gap on desktop */}
         <div
@@ -264,7 +244,6 @@ const Sidebar = React.forwardRef<
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
-          style={sidebarStyle}
           {...props}
         >
           <div
