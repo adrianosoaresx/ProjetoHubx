@@ -1,21 +1,28 @@
 {% load i18n %}
 <header class="layout-header bg-[var(--bg-secondary)] border-[var(--border)] px-4 py-4 flex items-center gap-4 justify-between sticky top-0 z-30">
-  <a href="/" class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2" aria-label="{% trans 'Página inicial' %}">
-    {% if request.user.is_authenticated and request.user.organizacao %}
-      <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-        {% if request.user.organizacao.avatar %}
-          <img src="{{ request.user.organizacao.avatar.url }}" alt="{{ request.user.organizacao.nome }}" class="h-full w-full object-cover" loading="lazy" />
-        {% else %}
-          <span class="text-sm font-semibold text-[var(--text-muted)]">
-            {{ request.user.organizacao.nome|make_list|first|upper }}
-          </span>
-        {% endif %}
-      </span>
-      <span>{{ request.user.organizacao.nome }}</span>
-    {% else %}
-      {% trans 'Hubx.Space' %}
-    {% endif %}
-  </a>
+  <div class="flex items-center gap-3">
+    <button type="button" id="sidebar-mobile-toggle" class="btn btn-secondary btn-sm md:hidden" aria-label="{% trans 'Abrir menu' %}" aria-controls="sidebar" aria-expanded="false">
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+    <a href="/" class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2" aria-label="{% trans 'Página inicial' %}">
+      {% if request.user.is_authenticated and request.user.organizacao %}
+        <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
+          {% if request.user.organizacao.avatar %}
+            <img src="{{ request.user.organizacao.avatar.url }}" alt="{{ request.user.organizacao.nome }}" class="h-full w-full object-cover" loading="lazy" />
+          {% else %}
+            <span class="text-sm font-semibold text-[var(--text-muted)]">
+              {{ request.user.organizacao.nome|make_list|first|upper }}
+            </span>
+          {% endif %}
+        </span>
+        <span>{{ request.user.organizacao.nome }}</span>
+      {% else %}
+        {% trans 'Hubx.Space' %}
+      {% endif %}
+    </a>
+  </div>
   <form action="#" method="get" role="search" class="flex-1 max-w-md">
     <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
     <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
