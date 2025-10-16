@@ -53,7 +53,7 @@
     <div id="sidebar-backdrop" class="sidebar-backdrop hidden md:hidden" aria-hidden="true"></div>
   {% endif %}
 
-  <div id="content" class="flex flex-col flex-1 transition-all ml-0 {% if not hide_nav %}md:ml-64{% endif %}">
+  <div id="content" class="flex flex-col flex-1 transition-all ml-0">
     {% include '_partials/header.html' %}
     {% block hero %}{% endblock %}
     <main id="main-content" class="container mx-auto p-6 flex-grow">
@@ -138,8 +138,6 @@
         const mediaQuery = typeof window.matchMedia === 'function'
           ? window.matchMedia('(min-width: 768px)')
           : { matches: true, addEventListener: noop, removeEventListener: noop, addListener: noop, removeListener: noop };
-        const expandedMarginClass = 'md:ml-64';
-        const collapsedMarginClass = 'md:ml-16';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
         const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -235,8 +233,6 @@
           sidebar.classList.toggle('sidebar-collapsed', isDesktop && desktopCollapsed);
           sidebar.classList.toggle('sidebar-open', isDesktop || shouldShowMobileSidebar);
           sidebar.classList.toggle('sidebar-closed', !isDesktop && !mobileOpen);
-          content.classList.toggle(expandedMarginClass, isDesktop && !desktopCollapsed);
-          content.classList.toggle(collapsedMarginClass, isDesktop && desktopCollapsed);
           sidebarLabels.forEach((el) => {
             el.classList.toggle('hidden', isDesktop && desktopCollapsed);
           });
