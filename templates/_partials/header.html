@@ -1,5 +1,5 @@
 {% load i18n %}
-<header class="layout-header bg-[var(--bg-secondary)] border-[var(--border)] px-4 py-4 flex items-center gap-4 justify-between sticky top-0 z-30">
+<header class="layout-header bg-[var(--bg-secondary)] border-[var(--border)] px-4 py-4 flex items-center gap-4 justify-between fixed md:sticky inset-x-0 top-0 z-30 shadow-sm">
   <button
     type="button"
     id="mobile-sidebar-toggle"
@@ -12,7 +12,7 @@
       <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   </button>
-  <a href="/" class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2" aria-label="{% trans 'Página inicial' %}">
+  <a href="/" class="text-base md:text-xl font-bold text-[var(--text-primary)] flex items-center gap-2 min-w-0" aria-label="{% trans 'Página inicial' %}">
     {% if request.user.is_authenticated and request.user.organizacao %}
       <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
         {% if request.user.organizacao.avatar %}
@@ -23,17 +23,17 @@
           </span>
         {% endif %}
       </span>
-      <span>{{ request.user.organizacao.nome }}</span>
+      <span class="truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-none" title="{{ request.user.organizacao.nome }}">{{ request.user.organizacao.nome }}</span>
     {% else %}
       {% trans 'Hubx.Space' %}
     {% endif %}
   </a>
-  <form action="#" method="get" role="search" class="flex-1 max-w-md">
+  <form action="#" method="get" role="search" class="hidden sm:block flex-1 max-w-md">
     <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
     <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
   </form>
   <div class="flex items-center gap-4">
-    <div class="flex items-center gap-2" role="group" aria-label="{% trans 'Tema' %}">
+    <div class="hidden sm:flex items-center gap-2" role="group" aria-label="{% trans 'Tema' %}">
       <button type="button" class="btn btn-secondary btn-sm aria-pressed:bg-[var(--primary)] aria-pressed:text-[var(--text-inverse)] aria-pressed:border-[var(--primary)]" data-theme-option="claro" aria-pressed="false">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="4" />
