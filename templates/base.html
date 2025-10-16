@@ -37,6 +37,17 @@
   {% block extra_css %}{% endblock %}
   <style>
     .preload { opacity: 0; }
+
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.2s ease-in-out;
+      }
+
+      #sidebar.mobile-open {
+        transform: translateX(0);
+      }
+    }
   </style>
 </head>
 
@@ -132,11 +143,16 @@
       const sidebarBackdrop = document.getElementById('sidebar-backdrop');
       const content = document.getElementById('content');
       if (sidebarToggle && sidebar && content) {
-        const mediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 768px)') : { matches: true };
+        const noop = () => {};
+        const mediaQuery = typeof window.matchMedia === 'function'
+          ? window.matchMedia('(min-width: 768px)')
+          : { matches: true, addEventListener: noop, removeEventListener: noop, addListener: noop, removeListener: noop };
         const expandedMarginClass = 'md:ml-64';
         const collapsedMarginClass = 'md:ml-16';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
+        const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const initialBodyOverflow = document.body.style.overflow;
 
         const getSubmenu = (toggle) => {
           const controls = toggle.getAttribute('aria-controls');
@@ -179,53 +195,140 @@
           });
         };
 
-        const updateBackdrop = (collapsed) => {
+        const updateBackdropVisibility = () => {
           if (!sidebarBackdrop) {
             return;
           }
-          const shouldShowBackdrop = !collapsed && !mediaQuery.matches;
-          sidebarBackdrop.classList.toggle('hidden', !shouldShowBackdrop);
+          if (mediaQuery.matches) {
+            sidebarBackdrop.classList.add('hidden');
+            sidebarBackdrop.setAttribute('aria-hidden', 'true');
+          } else {
+            const shouldShow = mobileOpen;
+            sidebarBackdrop.classList.toggle('hidden', !shouldShow);
+            sidebarBackdrop.setAttribute('aria-hidden', String(!shouldShow));
+          }
         };
 
-        const setSidebarState = (collapsed) => {
-          sidebar.classList.toggle('w-64', !collapsed);
-          sidebar.classList.toggle('w-16', collapsed);
-          sidebar.classList.toggle('sidebar-collapsed', collapsed);
-          content.classList.toggle(expandedMarginClass, !collapsed);
-          content.classList.toggle(collapsedMarginClass, collapsed);
-          sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+        const updateAria = () => {
+          if (mediaQuery.matches) {
+            sidebarToggle.setAttribute('aria-expanded', String(!desktopCollapsed));
+            sidebar.setAttribute('aria-hidden', 'false');
+          } else {
+            sidebarToggle.setAttribute('aria-expanded', String(mobileOpen));
+            sidebar.setAttribute('aria-hidden', String(!mobileOpen));
+          }
+        };
+
+        const getStoredDesktopState = () => localStorage.getItem('sidebar') === 'collapsed';
+        let desktopCollapsed = getStoredDesktopState();
+        let mobileOpen = false;
+        let bodyOverflowBeforeMobile = initialBodyOverflow;
+        let lastFocusedElement = null;
+
+        const updateSidebarLayout = () => {
+          const isDesktop = mediaQuery.matches;
+          sidebar.classList.toggle('w-64', isDesktop && !desktopCollapsed);
+          sidebar.classList.toggle('w-16', isDesktop && desktopCollapsed);
+          sidebar.classList.toggle('sidebar-collapsed', isDesktop && desktopCollapsed);
+          content.classList.toggle(expandedMarginClass, isDesktop && !desktopCollapsed);
+          content.classList.toggle(collapsedMarginClass, isDesktop && desktopCollapsed);
           sidebarLabels.forEach((el) => {
-            el.classList.toggle('hidden', collapsed);
+            el.classList.toggle('hidden', isDesktop && desktopCollapsed);
           });
-          syncSubmenus(collapsed);
-          updateBackdrop(collapsed);
+          syncSubmenus(isDesktop && desktopCollapsed);
+
+          if (isDesktop) {
+            sidebar.classList.remove('mobile-open');
+          } else {
+            sidebar.classList.toggle('mobile-open', mobileOpen);
+          }
+
+          updateAria();
+          updateBackdropVisibility();
         };
 
-        const savedCollapsed = localStorage.getItem('sidebar') === 'collapsed';
-        setSidebarState(savedCollapsed);
+        const setDesktopCollapsed = (collapsed) => {
+          desktopCollapsed = collapsed;
+          localStorage.setItem('sidebar', collapsed ? 'collapsed' : 'expanded');
+          updateSidebarLayout();
+        };
+
+        const setMobileOpen = (open, { skipFocus = false } = {}) => {
+          if (!mediaQuery.matches && open) {
+            const activeElement = document.activeElement;
+            if (activeElement instanceof HTMLElement) {
+              lastFocusedElement = activeElement;
+            }
+            bodyOverflowBeforeMobile = document.body.style.overflow;
+          }
+
+          mobileOpen = open;
+          updateSidebarLayout();
+
+          if (mediaQuery.matches) {
+            if (!open) {
+              document.body.style.overflow = bodyOverflowBeforeMobile;
+            }
+          } else {
+            document.body.style.overflow = open ? 'hidden' : bodyOverflowBeforeMobile;
+          }
+
+          if (skipFocus || mediaQuery.matches) {
+            return;
+          }
+
+          if (open) {
+            requestAnimationFrame(() => {
+              const focusTarget = sidebar.querySelector(focusableSelector);
+              if (focusTarget instanceof HTMLElement) {
+                focusTarget.focus();
+              }
+            });
+          } else if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus();
+            lastFocusedElement = null;
+          }
+        };
+
+        const handleMediaChange = () => {
+          if (mediaQuery.matches) {
+            desktopCollapsed = getStoredDesktopState();
+            if (mobileOpen) {
+              setMobileOpen(false, { skipFocus: true });
+            } else {
+              updateSidebarLayout();
+            }
+          } else {
+            updateSidebarLayout();
+          }
+        };
+
+        updateSidebarLayout();
 
         sidebarToggle.addEventListener('click', () => {
-          const currentlyExpanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
-          const nextCollapsed = currentlyExpanded;
-          setSidebarState(nextCollapsed);
-          localStorage.setItem('sidebar', nextCollapsed ? 'collapsed' : 'expanded');
+          if (mediaQuery.matches) {
+            setDesktopCollapsed(!desktopCollapsed);
+          } else {
+            setMobileOpen(!mobileOpen);
+          }
         });
 
         if (sidebarBackdrop) {
-          const handleMediaChange = () => {
-            updateBackdrop(sidebar.classList.contains('sidebar-collapsed'));
-          };
-
           sidebarBackdrop.addEventListener('click', () => {
-            setSidebarState(true);
-            localStorage.setItem('sidebar', 'collapsed');
+            setMobileOpen(false);
           });
+        }
 
-          if (typeof mediaQuery.addEventListener === 'function') {
-            mediaQuery.addEventListener('change', handleMediaChange);
-          } else if (typeof mediaQuery.addListener === 'function') {
-            mediaQuery.addListener(handleMediaChange);
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && mobileOpen && !mediaQuery.matches) {
+            setMobileOpen(false);
           }
+        });
+
+        if (typeof mediaQuery.addEventListener === 'function') {
+          mediaQuery.addEventListener('change', handleMediaChange);
+        } else if (typeof mediaQuery.addListener === 'function') {
+          mediaQuery.addListener(handleMediaChange);
         }
       }
       document.body.classList.remove('preload');
