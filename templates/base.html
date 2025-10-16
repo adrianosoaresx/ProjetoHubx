@@ -37,16 +37,6 @@
   {% block extra_css %}{% endblock %}
   <style>
     .preload { opacity: 0; }
-
-    @media (max-width: 767px) {
-      #sidebar {
-        transition: transform 0.2s ease-in-out;
-      }
-
-      #sidebar.mobile-open {
-        --tw-translate-x: 0;
-      }
-    }
   </style>
 </head>
 
@@ -60,7 +50,7 @@
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
   {% if not hide_nav %}
     {% include '_partials/sidebar.html' %}
-    <div id="sidebar-backdrop" class="fixed inset-0 z-10 bg-black/50 hidden md:hidden" aria-hidden="true"></div>
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden md:hidden" aria-hidden="true"></div>
   {% endif %}
 
   <div id="content" class="flex flex-col flex-1 transition-all ml-0 {% if not hide_nav %}md:ml-64{% endif %}">
@@ -237,11 +227,14 @@
 
         const updateSidebarLayout = () => {
           const isDesktop = mediaQuery.matches;
+          const shouldShowMobileSidebar = !isDesktop && mobileOpen;
           sidebar.classList.toggle('w-64', isDesktop && !desktopCollapsed);
           sidebar.classList.toggle('md:w-64', isDesktop && !desktopCollapsed);
           sidebar.classList.toggle('w-16', isDesktop && desktopCollapsed);
           sidebar.classList.toggle('md:w-16', isDesktop && desktopCollapsed);
           sidebar.classList.toggle('sidebar-collapsed', isDesktop && desktopCollapsed);
+          sidebar.classList.toggle('sidebar-open', isDesktop || shouldShowMobileSidebar);
+          sidebar.classList.toggle('sidebar-closed', !isDesktop && !mobileOpen);
           content.classList.toggle(expandedMarginClass, isDesktop && !desktopCollapsed);
           content.classList.toggle(collapsedMarginClass, isDesktop && desktopCollapsed);
           sidebarLabels.forEach((el) => {
@@ -254,6 +247,8 @@
           } else {
             sidebar.classList.toggle('mobile-open', mobileOpen);
           }
+
+          document.body.classList.toggle('sidebar-mobile-open', shouldShowMobileSidebar);
 
           updateAria();
           updateBackdropVisibility();
