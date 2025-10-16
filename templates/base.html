@@ -50,10 +50,9 @@
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
   {% if not hide_nav %}
     {% include '_partials/sidebar.html' %}
-    <div id="sidebar-backdrop" class="sidebar-backdrop hidden md:hidden" aria-hidden="true"></div>
   {% endif %}
 
-  <div id="content" class="flex flex-col flex-1 transition-all {% if not hide_nav %}ml-0 md:ml-64{% else %}ml-0{% endif %}">
+  <div id="content" class="flex flex-col flex-1 {% if not hide_nav %}ml-64{% else %}ml-0{% endif %} transition-all">
     {% include '_partials/header.html' %}
     {% block hero %}{% endblock %}
     <main id="main-content" class="container mx-auto p-6 flex-grow">
@@ -128,20 +127,10 @@
       }
 
       const sidebarToggle = document.getElementById('sidebar-toggle');
-      const sidebarMobileToggle = document.getElementById('sidebar-mobile-toggle');
-      const sidebarMobileClose = document.getElementById('sidebar-mobile-close');
       const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebar-backdrop');
       const content = document.getElementById('content');
-      const mql = window.matchMedia('(min-width: 768px)');
-      let isDesktop = mql.matches;
-      let desktopCollapsed = localStorage.getItem('sidebar') === 'collapsed';
-      let mobileOpen = false;
-      let restoreFocusEl = null;
-      let focusableElements = [];
-      const focusableSelector = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
-
-      if (sidebar && content) {
+      if (sidebarToggle && sidebar && content) {
+        const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
 
@@ -161,220 +150,53 @@
             event.preventDefault();
             const nextExpanded = toggle.dataset.sidebarExpanded !== 'true';
             toggle.dataset.sidebarExpanded = nextExpanded ? 'true' : 'false';
-            if (isDesktop && desktopCollapsed) {
-              return;
-            }
             const submenuEl = getSubmenu(toggle);
-            if (submenuEl) {
+            if (!sidebar.classList.contains('sidebar-collapsed') && submenuEl) {
               toggle.setAttribute('aria-expanded', String(nextExpanded));
               submenuEl.classList.toggle('hidden', !nextExpanded);
             }
           });
         });
 
-        const updateFocusableElements = () => {
-          focusableElements = Array.from(sidebar.querySelectorAll(focusableSelector)).filter((el) => {
-            if (el.hasAttribute('disabled') || el.getAttribute('aria-hidden') === 'true' || el.tabIndex === -1) {
-              return false;
-            }
-            const style = window.getComputedStyle(el);
-            return style.display !== 'none' && style.visibility !== 'hidden';
-          });
-        };
-
-        const syncSubmenus = () => {
+        const syncSubmenus = (collapsed) => {
           submenuToggles.forEach((toggle) => {
             const submenu = getSubmenu(toggle);
             if (!submenu) {
               return;
             }
             const storedExpanded = toggle.dataset.sidebarExpanded === 'true';
-            const shouldHide = isDesktop && desktopCollapsed;
-            if (shouldHide) {
+            if (collapsed) {
               submenu.classList.add('hidden');
               toggle.setAttribute('aria-expanded', 'false');
             } else {
-              submenu.classList.toggle('hidden', !storedExpanded);
               toggle.setAttribute('aria-expanded', String(storedExpanded));
+              submenu.classList.toggle('hidden', !storedExpanded);
             }
           });
         };
 
-        const updateAriaHidden = () => {
-          if (isDesktop) {
-            sidebar.setAttribute('aria-hidden', 'false');
-          } else {
-            sidebar.setAttribute('aria-hidden', mobileOpen ? 'false' : 'true');
-          }
-        };
-
-        const applyDesktopState = () => {
-          if (!isDesktop) {
-            sidebar.classList.remove('sidebar-collapsed');
-            sidebar.classList.remove('md:w-16');
-            content.classList.remove('md:ml-16');
-            sidebarLabels.forEach((el) => el.classList.remove('hidden'));
-            syncSubmenus();
-            return;
-          }
-
-          sidebar.classList.toggle('sidebar-collapsed', desktopCollapsed);
-          if (desktopCollapsed) {
-            sidebar.classList.add('md:w-16');
-            content.classList.add('md:ml-16');
-            content.classList.remove('md:ml-64');
-          } else {
-            sidebar.classList.remove('md:w-16');
-            content.classList.add('md:ml-64');
-            content.classList.remove('md:ml-16');
-          }
-          if (sidebarToggle) {
-            sidebarToggle.setAttribute('aria-expanded', String(!desktopCollapsed));
-          }
-          sidebarLabels.forEach((el) => el.classList.toggle('hidden', desktopCollapsed));
-          syncSubmenus();
-        };
-
-        const setDesktopCollapsed = (collapsed) => {
-          desktopCollapsed = collapsed;
-          localStorage.setItem('sidebar', collapsed ? 'collapsed' : 'expanded');
-          applyDesktopState();
-        };
-
-        const openMobileSidebar = (triggerEl) => {
-          if (isDesktop || mobileOpen) {
-            return;
-          }
-          mobileOpen = true;
-          restoreFocusEl = triggerEl || document.activeElement;
-          sidebar.classList.add('translate-x-0', 'sidebar-mobile-active');
-          sidebar.classList.remove('-translate-x-full');
-          document.body.classList.add('sidebar-mobile-open');
-          updateAriaHidden();
-          if (sidebarMobileToggle) {
-            sidebarMobileToggle.setAttribute('aria-expanded', 'true');
-          }
-          if (backdrop) {
-            backdrop.classList.remove('hidden');
-            requestAnimationFrame(() => backdrop.classList.add('is-visible'));
-          }
-          updateFocusableElements();
-          const firstFocusable = focusableElements[0] || sidebar;
-          requestAnimationFrame(() => {
-            if (firstFocusable && typeof firstFocusable.focus === 'function') {
-              firstFocusable.focus();
-            }
+        const setSidebarState = (collapsed) => {
+          sidebar.classList.toggle('w-64', !collapsed);
+          sidebar.classList.toggle('w-16', collapsed);
+          sidebar.classList.toggle('sidebar-collapsed', collapsed);
+          content.classList.toggle(baseMargin, !collapsed);
+          content.classList.toggle('ml-16', collapsed);
+          sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+          sidebarLabels.forEach((el) => {
+            el.classList.toggle('hidden', collapsed);
           });
+          syncSubmenus(collapsed);
         };
 
-        const closeMobileSidebar = (restoreFocus = true) => {
-          if (!mobileOpen) {
-            updateAriaHidden();
-            return;
-          }
-          mobileOpen = false;
-          sidebar.classList.remove('translate-x-0', 'sidebar-mobile-active');
-          sidebar.classList.add('-translate-x-full');
-          document.body.classList.remove('sidebar-mobile-open');
-          if (sidebarMobileToggle) {
-            sidebarMobileToggle.setAttribute('aria-expanded', 'false');
-          }
-          if (backdrop) {
-            backdrop.classList.remove('is-visible');
-            const hideBackdrop = () => {
-              if (!mobileOpen) {
-                backdrop.classList.add('hidden');
-              }
-            };
-            backdrop.addEventListener('transitionend', hideBackdrop, { once: true });
-            if (getComputedStyle(backdrop).transitionDuration === '0s') {
-              hideBackdrop();
-            }
-          }
-          updateAriaHidden();
-          if (restoreFocus && restoreFocusEl && typeof restoreFocusEl.focus === 'function') {
-            restoreFocusEl.focus();
-          }
-          restoreFocusEl = null;
-        };
+        const savedCollapsed = localStorage.getItem('sidebar') === 'collapsed';
+        setSidebarState(savedCollapsed);
 
-        const handleViewportChange = (event) => {
-          isDesktop = event.matches;
-          if (isDesktop) {
-            closeMobileSidebar(false);
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.remove('translate-x-0');
-            document.body.classList.remove('sidebar-mobile-open');
-          } else if (!mobileOpen) {
-            sidebar.classList.remove('translate-x-0');
-            sidebar.classList.add('-translate-x-full');
-          }
-          updateAriaHidden();
-          applyDesktopState();
-        };
-
-        applyDesktopState();
-        updateAriaHidden();
-
-        if (sidebarToggle) {
-          sidebarToggle.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (!isDesktop) {
-              return;
-            }
-            setDesktopCollapsed(!desktopCollapsed);
-          });
-        }
-
-        if (sidebarMobileToggle) {
-          sidebarMobileToggle.addEventListener('click', () => {
-            if (mobileOpen) {
-              closeMobileSidebar(true);
-            } else {
-              openMobileSidebar(sidebarMobileToggle);
-            }
-          });
-        }
-
-        if (sidebarMobileClose) {
-          sidebarMobileClose.addEventListener('click', () => closeMobileSidebar(true));
-        }
-
-        if (backdrop) {
-          backdrop.addEventListener('click', () => closeMobileSidebar(true));
-        }
-
-        document.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape' && mobileOpen) {
-            event.preventDefault();
-            closeMobileSidebar(true);
-            return;
-          }
-          if (event.key === 'Tab' && mobileOpen) {
-            updateFocusableElements();
-            if (!focusableElements.length) {
-              event.preventDefault();
-              return;
-            }
-            const first = focusableElements[0];
-            const last = focusableElements[focusableElements.length - 1];
-            if (event.shiftKey) {
-              if (document.activeElement === first || !sidebar.contains(document.activeElement)) {
-                event.preventDefault();
-                last.focus();
-              }
-            } else if (document.activeElement === last) {
-              event.preventDefault();
-              first.focus();
-            }
-          }
+        sidebarToggle.addEventListener('click', () => {
+          const currentlyExpanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
+          const nextCollapsed = currentlyExpanded;
+          setSidebarState(nextCollapsed);
+          localStorage.setItem('sidebar', nextCollapsed ? 'collapsed' : 'expanded');
         });
-
-        if (typeof mql.addEventListener === 'function') {
-          mql.addEventListener('change', handleViewportChange);
-        } else if (typeof mql.addListener === 'function') {
-          mql.addListener(handleViewportChange);
-        }
       }
       document.body.classList.remove('preload');
     })();
