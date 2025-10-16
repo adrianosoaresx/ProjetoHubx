@@ -3820,10 +3820,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-top: 1rem;
 }
 
-.pt-\[calc\(var\(--layout-header-height\)\+1rem\)\] {
-  padding-top: calc(var(--layout-header-height) + 1rem);
-}
-
 .text-left {
   text-align: left;
 }
@@ -4328,6 +4324,18 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .feed-video-frame {
     max-width: 720px;
+  }
+}
+
+/* Ensure the main content starts immediately below the fixed header on small screens */
+
+.mobile-header-offset {
+  padding-top: var(--layout-header-height);
+}
+
+@media (min-width: 768px) {
+  .mobile-header-offset {
+    padding-top: 0;
   }
 }
 
