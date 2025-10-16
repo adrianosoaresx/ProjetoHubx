@@ -2626,10 +2626,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   position: relative;
 }
 
-.sticky {
-  position: sticky;
-}
-
 .inset-0 {
   inset: 0px;
 }
@@ -3013,6 +3009,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .max-w-7xl {
   max-width: 80rem;
+}
+
+.max-w-\[10rem\] {
+  max-width: 10rem;
 }
 
 .max-w-full {
@@ -3724,6 +3724,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-right: 1.5rem;
 }
 
+.px-\[2px\] {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
 .py-0\.5 {
   padding-top: 0.125rem;
   padding-bottom: 0.125rem;
@@ -3813,6 +3818,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pt-4 {
   padding-top: 1rem;
+}
+
+.pt-\[calc\(var\(--layout-header-height\)\+1rem\)\] {
+  padding-top: calc(var(--layout-header-height) + 1rem);
 }
 
 .text-left {
@@ -4963,6 +4972,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     margin-top: -3rem;
   }
 
+  .sm\:block {
+    display: block;
+  }
+
   .sm\:flex {
     display: flex;
   }
@@ -4977,6 +4990,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .sm\:w-auto {
     width: auto;
+  }
+
+  .sm\:max-w-\[14rem\] {
+    max-width: 14rem;
   }
 
   .sm\:max-w-sm {
@@ -5035,6 +5052,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
     gap: 1.5rem;
   }
 
+  .sm\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
   .sm\:text-left {
     text-align: left;
   }
@@ -5050,6 +5072,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     position: static;
   }
 
+  .md\:sticky {
+    position: sticky;
+  }
+
   .md\:col-span-2 {
     grid-column: span 2 / span 2;
   }
@@ -5060,14 +5086,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:-mt-16 {
     margin-top: -4rem;
-  }
-
-  .md\:ml-16 {
-    margin-left: 4rem;
-  }
-
-  .md\:ml-64 {
-    margin-left: 16rem;
   }
 
   .md\:inline-flex {
@@ -5098,8 +5116,16 @@ body.sidebar-mobile-open .sidebar-backdrop {
     width: 16rem;
   }
 
+  .md\:w-auto {
+    width: auto;
+  }
+
   .md\:max-w-3xl {
     max-width: 48rem;
+  }
+
+  .md\:max-w-none {
+    max-width: none;
   }
 
   .md\:translate-x-0 {
@@ -5148,6 +5174,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     padding-bottom: 4rem;
   }
 
+  .md\:pt-0 {
+    padding-top: 0px;
+  }
+
   .md\:text-left {
     text-align: left;
   }
@@ -5170,6 +5200,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   .md\:text-6xl {
     font-size: 3.75rem;
     line-height: 1;
+  }
+
+  .md\:text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 }
 
