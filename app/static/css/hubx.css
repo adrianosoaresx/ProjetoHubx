@@ -51,33 +51,6 @@
   }
 }
 
-.sidebar-panel {
-  transition: transform 0.3s ease, width 0.3s ease;
-  will-change: transform, width;
-}
-
-.sidebar-panel.sidebar-mobile-active {
-  box-shadow: 0 20px 25px -15px rgba(15, 23, 42, 0.45);
-}
-
-.sidebar-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.sidebar-backdrop.is-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-body.sidebar-mobile-open {
-  overflow: hidden;
-}
-
 /* Layout helpers for feed media */
 .feed-video-wrapper {
   display: flex;
