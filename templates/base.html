@@ -40,12 +40,11 @@
 
     @media (max-width: 767px) {
       #sidebar {
-        transform: translateX(-100%);
         transition: transform 0.2s ease-in-out;
       }
 
       #sidebar.mobile-open {
-        transform: translateX(0);
+        --tw-translate-x: 0;
       }
     }
   </style>
@@ -140,10 +139,11 @@
 
       const sidebarToggle = document.getElementById('sidebar-toggle');
       const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+      const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
       const sidebar = document.getElementById('sidebar');
       const sidebarBackdrop = document.getElementById('sidebar-backdrop');
       const content = document.getElementById('content');
-      if ((sidebarToggle || mobileSidebarToggle) && sidebar && content) {
+      if ((sidebarToggle || mobileSidebarToggle || mobileSidebarClose) && sidebar && content) {
         const noop = () => {};
         const mediaQuery = typeof window.matchMedia === 'function'
           ? window.matchMedia('(min-width: 768px)')
@@ -153,6 +153,7 @@
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
         const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const mobileToggleButtons = [mobileSidebarToggle, mobileSidebarClose].filter(Boolean);
         const initialBodyOverflow = document.body.style.overflow;
 
         const getSubmenu = (toggle) => {
@@ -219,11 +220,11 @@
         const updateAria = () => {
           if (mediaQuery.matches) {
             setToggleExpanded(sidebarToggle, !desktopCollapsed);
-            setToggleExpanded(mobileSidebarToggle, !desktopCollapsed);
+            mobileToggleButtons.forEach((toggle) => setToggleExpanded(toggle, !desktopCollapsed));
             sidebar.setAttribute('aria-hidden', 'false');
           } else {
             setToggleExpanded(sidebarToggle, mobileOpen);
-            setToggleExpanded(mobileSidebarToggle, mobileOpen);
+            mobileToggleButtons.forEach((toggle) => setToggleExpanded(toggle, mobileOpen));
             sidebar.setAttribute('aria-hidden', String(!mobileOpen));
           }
         };
@@ -237,7 +238,9 @@
         const updateSidebarLayout = () => {
           const isDesktop = mediaQuery.matches;
           sidebar.classList.toggle('w-64', isDesktop && !desktopCollapsed);
+          sidebar.classList.toggle('md:w-64', isDesktop && !desktopCollapsed);
           sidebar.classList.toggle('w-16', isDesktop && desktopCollapsed);
+          sidebar.classList.toggle('md:w-16', isDesktop && desktopCollapsed);
           sidebar.classList.toggle('sidebar-collapsed', isDesktop && desktopCollapsed);
           content.classList.toggle(expandedMarginClass, isDesktop && !desktopCollapsed);
           content.classList.toggle(collapsedMarginClass, isDesktop && desktopCollapsed);
@@ -326,9 +329,9 @@
           sidebarToggle.addEventListener('click', handleToggleClick);
         }
 
-        if (mobileSidebarToggle) {
-          mobileSidebarToggle.addEventListener('click', handleToggleClick);
-        }
+        mobileToggleButtons.forEach((toggle) => {
+          toggle.addEventListener('click', handleToggleClick);
+        });
 
         if (sidebarBackdrop) {
           sidebarBackdrop.addEventListener('click', () => {
