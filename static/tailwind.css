@@ -2688,6 +2688,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   z-index: 30;
 }
 
+.z-40 {
+  z-index: 40;
+}
+
 .z-50 {
   z-index: 50;
 }
@@ -5104,6 +5108,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     display: none;
   }
 
+  .md\:h-16 {
+    height: 4rem;
+  }
+
   .md\:h-24 {
     height: 6rem;
   }
@@ -5188,6 +5196,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:text-left {
     text-align: left;
+  }
+
+  .md\:text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 
   .md\:text-3xl {
