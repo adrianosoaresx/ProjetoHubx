@@ -139,10 +139,11 @@
       }
 
       const sidebarToggle = document.getElementById('sidebar-toggle');
+      const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
       const sidebar = document.getElementById('sidebar');
       const sidebarBackdrop = document.getElementById('sidebar-backdrop');
       const content = document.getElementById('content');
-      if (sidebarToggle && sidebar && content) {
+      if ((sidebarToggle || mobileSidebarToggle) && sidebar && content) {
         const noop = () => {};
         const mediaQuery = typeof window.matchMedia === 'function'
           ? window.matchMedia('(min-width: 768px)')
@@ -209,12 +210,20 @@
           }
         };
 
+        const setToggleExpanded = (toggle, expanded) => {
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', String(expanded));
+          }
+        };
+
         const updateAria = () => {
           if (mediaQuery.matches) {
-            sidebarToggle.setAttribute('aria-expanded', String(!desktopCollapsed));
+            setToggleExpanded(sidebarToggle, !desktopCollapsed);
+            setToggleExpanded(mobileSidebarToggle, !desktopCollapsed);
             sidebar.setAttribute('aria-hidden', 'false');
           } else {
-            sidebarToggle.setAttribute('aria-expanded', String(mobileOpen));
+            setToggleExpanded(sidebarToggle, mobileOpen);
+            setToggleExpanded(mobileSidebarToggle, mobileOpen);
             sidebar.setAttribute('aria-hidden', String(!mobileOpen));
           }
         };
@@ -305,13 +314,21 @@
 
         updateSidebarLayout();
 
-        sidebarToggle.addEventListener('click', () => {
+        const handleToggleClick = () => {
           if (mediaQuery.matches) {
             setDesktopCollapsed(!desktopCollapsed);
           } else {
             setMobileOpen(!mobileOpen);
           }
-        });
+        };
+
+        if (sidebarToggle) {
+          sidebarToggle.addEventListener('click', handleToggleClick);
+        }
+
+        if (mobileSidebarToggle) {
+          mobileSidebarToggle.addEventListener('click', handleToggleClick);
+        }
 
         if (sidebarBackdrop) {
           sidebarBackdrop.addEventListener('click', () => {
