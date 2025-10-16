@@ -50,9 +50,10 @@
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
   {% if not hide_nav %}
     {% include '_partials/sidebar.html' %}
+    <div id="sidebar-backdrop" class="fixed inset-0 z-10 bg-black/50 hidden md:hidden" aria-hidden="true"></div>
   {% endif %}
 
-  <div id="content" class="flex flex-col flex-1 {% if not hide_nav %}ml-64{% else %}ml-0{% endif %} transition-all">
+  <div id="content" class="flex flex-col flex-1 transition-all ml-0 {% if not hide_nav %}md:ml-64{% endif %}">
     {% include '_partials/header.html' %}
     {% block hero %}{% endblock %}
     <main id="main-content" class="container mx-auto p-6 flex-grow">
@@ -128,9 +129,12 @@
 
       const sidebarToggle = document.getElementById('sidebar-toggle');
       const sidebar = document.getElementById('sidebar');
+      const sidebarBackdrop = document.getElementById('sidebar-backdrop');
       const content = document.getElementById('content');
       if (sidebarToggle && sidebar && content) {
-        const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
+        const mediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 768px)') : { matches: true };
+        const expandedMarginClass = 'md:ml-64';
+        const collapsedMarginClass = 'md:ml-16';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label, #sidebar .sidebar-brand-label'));
         const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
 
@@ -175,17 +179,26 @@
           });
         };
 
+        const updateBackdrop = (collapsed) => {
+          if (!sidebarBackdrop) {
+            return;
+          }
+          const shouldShowBackdrop = !collapsed && !mediaQuery.matches;
+          sidebarBackdrop.classList.toggle('hidden', !shouldShowBackdrop);
+        };
+
         const setSidebarState = (collapsed) => {
           sidebar.classList.toggle('w-64', !collapsed);
           sidebar.classList.toggle('w-16', collapsed);
           sidebar.classList.toggle('sidebar-collapsed', collapsed);
-          content.classList.toggle(baseMargin, !collapsed);
-          content.classList.toggle('ml-16', collapsed);
+          content.classList.toggle(expandedMarginClass, !collapsed);
+          content.classList.toggle(collapsedMarginClass, collapsed);
           sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
           sidebarLabels.forEach((el) => {
             el.classList.toggle('hidden', collapsed);
           });
           syncSubmenus(collapsed);
+          updateBackdrop(collapsed);
         };
 
         const savedCollapsed = localStorage.getItem('sidebar') === 'collapsed';
@@ -197,6 +210,23 @@
           setSidebarState(nextCollapsed);
           localStorage.setItem('sidebar', nextCollapsed ? 'collapsed' : 'expanded');
         });
+
+        if (sidebarBackdrop) {
+          const handleMediaChange = () => {
+            updateBackdrop(sidebar.classList.contains('sidebar-collapsed'));
+          };
+
+          sidebarBackdrop.addEventListener('click', () => {
+            setSidebarState(true);
+            localStorage.setItem('sidebar', 'collapsed');
+          });
+
+          if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', handleMediaChange);
+          } else if (typeof mediaQuery.addListener === 'function') {
+            mediaQuery.addListener(handleMediaChange);
+          }
+        }
       }
       document.body.classList.remove('preload');
     })();
