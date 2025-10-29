@@ -3827,6 +3827,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-left: 1.5rem;
 }
 
+.pr-16 {
+  padding-right: 4rem;
+}
+
 .pt-1 {
   padding-top: 0.25rem;
 }
@@ -5087,16 +5091,22 @@ body.sidebar-mobile-open .sidebar-backdrop {
     gap: 1.5rem;
   }
 
-  .sm\:space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  .sm\:space-y-2 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-y-reverse: 0;
-    margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+    margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
   }
 
   .sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-y-reverse: 0;
     margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
     margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+  }
+
+  .sm\:space-y-5 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
   }
 
   .sm\:space-y-6 > :not([hidden]) ~ :not([hidden]) {
@@ -5115,10 +5125,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .sm\:p-4 {
     padding: 1rem;
-  }
-
-  .sm\:p-6 {
-    padding: 1.5rem;
   }
 
   .sm\:px-4 {
