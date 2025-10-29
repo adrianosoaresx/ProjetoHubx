@@ -34,7 +34,7 @@
       {% endif %}
       {% if filter_cards %}
         <div class="mt-10">
-          <div class="card-grid md:grid-cols-3 gap-4">
+          <div class="card-grid md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {% for card in filter_cards %}
               {% include '_partials/cards/total_card.html' with label=card.label valor=card.valor icon_name=card.icon_name href=card.href card_class=card.card_class body_class='card-body-compact' is_active=card.is_active active_class=card.active_class hx_get=card.hx_get hx_target=card.hx_target hx_push_url=card.hx_push_url %}
             {% endfor %}
@@ -42,7 +42,7 @@
         </div>
       {% elif total_conexoes is not None or total_solicitacoes is not None or total_solicitacoes_enviadas is not None %}
         <div class="mt-10">
-          <div class="card-grid md:grid-cols-3 gap-4">
+          <div class="card-grid md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {% if total_conexoes is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Conexões ativas') valor=total_conexoes icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
             {% endif %}
