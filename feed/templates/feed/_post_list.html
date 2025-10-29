@@ -5,10 +5,10 @@
 {% if request.user.user_type != 'root' %}
 <div class="space-y-6">
   {% for post in posts %}
-    <article class="card">
-      <div class="card-body space-y-6">
+    <article class="card p-0">
+      <div class="card-body space-y-4 sm:space-y-6">
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3 sm:gap-4">
         <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.display_name|default:post.autor.username }}">
           {{ post.autor.username|first|upper }}
         </div>
@@ -28,7 +28,7 @@
 
       {% if post.pdf %}
         <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
-          <a href="{{ post.pdf.url }}" target="_blank" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]" rel="noopener">
+          <a href="{{ post.pdf.url }}" target="_blank" class="flex items-center justify-between gap-3 p-3 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-4 sm:p-4" rel="noopener">
             <span class="flex items-center gap-3">
               <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
                 {% lucide 'file-text' class='h-6 w-6' %}
@@ -68,8 +68,8 @@
       </div>
     </article>
   {% empty %}
-    <div class="card text-center text-[var(--text-secondary)]">
-      <div class="card-body space-y-4 p-10">
+    <div class="card text-center text-[var(--text-secondary)] p-0">
+      <div class="card-body space-y-4 p-6 sm:p-10">
         <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
         <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
         <p class="text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
