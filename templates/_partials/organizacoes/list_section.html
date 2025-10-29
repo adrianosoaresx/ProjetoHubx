@@ -3,12 +3,12 @@
   <div class="card-header">
     <h2 class="text-xl font-semibold">{% trans 'Organizações' %}</h2>
   </div>
-  <div class="card-body space-y-6">
-    <div role="list" class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 items-stretch">
+  <div class="card-body space-y-4 sm:space-y-6">
+    <div role="list" class="card-grid gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-2 sm:gap-6 items-stretch">
       {% for organizacao in object_list %}
         <article role="listitem" class="card flex flex-col">
-          <div class="card-body flex grow flex-col gap-4">
-            <div class="flex items-start gap-3">
+          <div class="card-body flex grow flex-col gap-3 sm:gap-4">
+            <div class="flex items-start gap-2.5 sm:gap-3">
               <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-[var(--bg-tertiary)]"{% if not organizacao.avatar %} role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
                 {% if organizacao.avatar %}
                   <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="h-full w-full object-cover" loading="lazy" />
@@ -17,13 +17,13 @@
                 {% endif %}
               </div>
               <div class="flex-1">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-lg font-semibold text-[var(--text-primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]">{{ organizacao.nome }}</a>
                   {% if organizacao.inativa %}
                     <span class="badge badge-warning">{% trans 'Inativa' %}</span>
                   {% endif %}
                 </div>
-                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--text-secondary)]">
+                <div class="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-[var(--text-secondary)]">
                   {% if organizacao.get_tipo_display %}
                     <span>{% trans 'Tipo:' %} {{ organizacao.get_tipo_display }}</span>
                   {% endif %}
@@ -37,23 +37,23 @@
               </div>
             </div>
             {% if request.user.get_tipo_usuario != 'root' %}
-              <dl class="grid grid-cols-3 gap-3 text-center text-sm text-[var(--text-secondary)]">
-                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+              <dl class="grid grid-cols-3 gap-2 sm:gap-3 text-center text-sm text-[var(--text-secondary)]">
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-2.5 sm:p-3">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Usuários' %}</dt>
                   <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.users_count }}</dd>
                 </div>
-                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-2.5 sm:p-3">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Núcleos' %}</dt>
                   <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.nucleos_count }}</dd>
                 </div>
-                <div class="rounded-lg bg-[var(--bg-tertiary)] p-3">
+                <div class="rounded-lg bg-[var(--bg-tertiary)] p-2.5 sm:p-3">
                   <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{% trans 'Eventos' %}</dt>
                   <dd class="mt-1 text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.events_count }}</dd>
                 </div>
               </dl>
             {% endif %}
           </div>
-          <footer class="card-footer flex flex-wrap justify-center gap-3">
+          <footer class="card-footer flex flex-wrap justify-center gap-2 sm:gap-3">
             <a href="{% url 'organizacoes:detail' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
             {% if perms.organizacoes.change_organizacao %}
               <a href="{% url 'organizacoes:update' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
