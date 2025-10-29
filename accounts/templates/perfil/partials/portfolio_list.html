@@ -7,11 +7,11 @@
       <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
     </div>
   </div>
-  <div class="card-body space-y-4 sm:space-y-6">
+  <div class="card-body space-y-3 sm:space-y-6">
     {% if show_form %}
       <form
         id="formPortfolio"
-        class="space-y-4 sm:space-y-6"
+        class="space-y-3 sm:space-y-6"
         method="post"
         action="{% url 'accounts:perfil_sections_portfolio' %}"
         enctype="multipart/form-data"
@@ -62,15 +62,15 @@
       {% endif %}
 
       {% if filter_form %}
-        <form method="get" class="space-y-3 sm:space-y-4">
+        <form method="get" class="space-y-2 sm:space-y-4">
           {% include '_forms/field.html' with field=filter_form.q %}
         </form>
       {% endif %}
 
-      <div class="card-grid gap-4 sm:gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+      <div class="card-grid gap-3 sm:gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         {% for media in medias %}
           <article class="card p-0">
-            <div class="card-body relative space-y-4 sm:space-y-6">
+            <div class="card-body relative space-y-3 sm:space-y-5">
               {% if is_owner %}
                 <div class="absolute right-4 top-4 z-10 flex gap-2 sm:gap-3">
                   <a
@@ -107,12 +107,12 @@
                 <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
                   <a
                     href="{{ media.file.url }}"
-                    class="flex items-center justify-between gap-3 p-3 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-4 sm:p-4"
+                    class="flex items-center justify-between gap-2 p-3 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-4 sm:p-4"
                     target="_blank"
                     rel="noopener"
                     aria-label="{% trans 'Abrir PDF em uma nova aba' %}"
                   >
-                    <span class="flex items-center gap-3">
+                    <span class="flex items-center gap-2">
                       <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
                         {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
                       </span>
