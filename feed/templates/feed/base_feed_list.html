@@ -11,8 +11,8 @@
   {% if request.user.user_type == 'root' %}
     <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
   {% else %}
-    <article class="card">
-      <div class="card-body space-y-6">
+    <article class="card p-0">
+      <div class="card-body space-y-4 sm:space-y-6">
         {% include "feed/_grid.html" with posts=posts %}
       </div>
     </article>
