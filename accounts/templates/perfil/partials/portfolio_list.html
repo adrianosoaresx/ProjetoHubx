@@ -7,7 +7,7 @@
       <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
     </div>
   </div>
-  <div class="card-body space-y-3 sm:space-y-6">
+  <div class="card-body space-y-4 sm:space-y-6">
     {% if show_form %}
       <form
         id="formPortfolio"
@@ -67,12 +67,12 @@
         </form>
       {% endif %}
 
-      <div class="card-grid gap-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 sm:gap-6">
+      <div class="card-grid gap-4 sm:gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         {% for media in medias %}
           <article class="card p-0">
-            <div class="card-body relative space-y-2 sm:space-y-4">
+            <div class="card-body relative space-y-4 sm:space-y-6">
               {% if is_owner %}
-                <div class="absolute right-0 top-0 z-10 flex gap-2 sm:gap-3">
+                <div class="absolute right-4 top-4 z-10 flex gap-2 sm:gap-3">
                   <a
                     href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
                     class="btn btn-secondary btn-sm"
@@ -98,48 +98,60 @@
                 </div>
               {% endif %}
 
+              <header class="space-y-1.5 sm:space-y-2 pr-16">
+                <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+                <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+              </header>
+
               {% if media.media_type == 'pdf' %}
-                <a
-                  href="{{ media.file.url }}"
-                  class="block"
-                  target="_blank"
-                  rel="noopener"
-                  aria-label="{% trans 'Abrir PDF em uma nova aba' %}"
-                >
-                  <div class="aspect-video overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
-                    <span class="flex h-full w-full items-center justify-center gap-3 text-[var(--text-primary)]">
-                      <span class="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-secondary)]">
-                        {% lucide 'file-text' class='h-8 w-8' aria_hidden='true' %}
+                <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+                  <a
+                    href="{{ media.file.url }}"
+                    class="flex items-center justify-between gap-3 p-3 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-4 sm:p-4"
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="{% trans 'Abrir PDF em uma nova aba' %}"
+                  >
+                    <span class="flex items-center gap-3">
+                      <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+                        {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
                       </span>
-                      <span class="text-sm font-medium">{% trans "Visualizar PDF" %}</span>
+                      <span class="truncate">{% trans "Visualizar PDF" %}</span>
                     </span>
-                  </div>
-                </a>
+                    {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
+                  </a>
+                </div>
               {% else %}
                 <a href="{% url 'accounts:perfil_sections_portfolio_detail' media.pk %}" class="block">
-                  <div class="aspect-video overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
-                    {% if media.media_type == 'image' %}
-                      <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-full w-full object-cover" loading="lazy">
-                    {% elif media.media_type == 'video' %}
-                      <video src="{{ media.file.url }}" class="h-full w-full object-cover" controls></video>
-                    {% else %}
-                      <span class="flex h-full items-center justify-center text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
-                    {% endif %}
-                  </div>
+                  {% if media.media_type == 'image' %}
+                    <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+                      <div class="relative flex max-h-[280px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)] sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]">
+                        <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full max-h-[280px] object-contain sm:max-h-[320px] md:max-h-[360px] lg:max-h-[420px]" loading="lazy">
+                      </div>
+                    </figure>
+                  {% elif media.media_type == 'video' %}
+                    <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black shadow-sm">
+                      <div class="feed-video-wrapper">
+                        <div class="feed-video-frame">
+                          <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
+                        </div>
+                      </div>
+                    </figure>
+                  {% else %}
+                    <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)] shadow-sm">
+                      {{ media.file.name }}
+                    </div>
+                  {% endif %}
                 </a>
               {% endif %}
 
-              <div class="space-y-1.5 sm:space-y-3">
-                <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
-                <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-                {% if media.tags.all %}
-                  <div class="flex flex-wrap gap-1.5 sm:gap-2">
-                    {% for tag in media.tags.all %}
-                      <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              </div>
+              {% if media.tags.all %}
+                <div class="flex flex-wrap gap-1.5 sm:gap-2">
+                  {% for tag in media.tags.all %}
+                    <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
           </article>
         {% empty %}
@@ -147,6 +159,6 @@
         {% endfor %}
       </div>
     {% endif %}
-  
-</article>
-<div id="modal" role="presentation" aria-live="polite"></div>
+
+  </div>
+  <div id="modal" role="presentation" aria-live="polite"></div>
