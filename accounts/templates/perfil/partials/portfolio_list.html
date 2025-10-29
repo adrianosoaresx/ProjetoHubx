@@ -67,12 +67,12 @@
         </form>
       {% endif %}
 
-      <div class="card-grid gap-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 sm:gap-6">
+      <div class="card-grid gap-1.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 sm:gap-6">
         {% for media in medias %}
           <article class="card p-0">
-            <div class="card-body relative space-y-2 sm:space-y-4">
+            <div class="card-body relative space-y-1.5 p-3 sm:space-y-4 sm:p-6">
               {% if is_owner %}
-                <div class="absolute right-0 top-0 z-10 flex gap-2 sm:gap-3">
+                <div class="absolute right-0 top-0 z-10 flex gap-1.5 sm:gap-3">
                   <a
                     href="{% url 'accounts:perfil_sections_portfolio_edit' media.pk %}"
                     class="btn btn-secondary btn-sm"
@@ -133,7 +133,7 @@
                 <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
                 <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
                 {% if media.tags.all %}
-                  <div class="flex flex-wrap gap-1.5 sm:gap-2">
+                  <div class="flex flex-wrap gap-1 sm:gap-2">
                     {% for tag in media.tags.all %}
                       <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
                     {% endfor %}
