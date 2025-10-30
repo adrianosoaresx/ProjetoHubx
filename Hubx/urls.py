@@ -15,6 +15,7 @@ urlpatterns = [
     path("", include(("core.urls", "core"), namespace="core")),
     # Apps de autenticação/usuário
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("portfolio/", include(("portfolio.urls", "portfolio"), namespace="portfolio")),
     path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
     # CRUD de Empresas, Organizações e Núcleos (front‑end)

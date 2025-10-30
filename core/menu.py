@@ -447,7 +447,7 @@ def _get_menu_items() -> List[MenuItem]:
         ),
         MenuItem(
             id="portfolio",
-            path=f"{perfil_url}?section=portfolio",
+            path=reverse("portfolio:index"),
             label="Portfólio",
             icon=ICON_BRIEFCASE,
             permissions=["authenticated"],
@@ -587,6 +587,13 @@ def _mark_active(items: List[MenuItem], current_full_path: str, path_queries) ->
                     q for q in path_queries.get(split.path, set()) if q
                 }
                 is_current = current_query not in other_queries
+        elif (
+            not item_query
+            and split.path
+            and split.path != "/"
+            and current_split.path.startswith(split.path)
+        ):
+            is_current = True
 
         item.is_current = is_current
         item.has_active_child = child_active

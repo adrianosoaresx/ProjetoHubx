@@ -15,7 +15,6 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import (
     Http404,
@@ -26,14 +25,12 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 
-from core.utils import resolve_back_href
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.serializers import UserSerializer
@@ -49,20 +46,15 @@ from core.permissions import (
 from nucleos.models import ConviteNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
-from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, PortfolioFilterForm
+from .forms import EmailLoginForm, InformacoesPessoaisForm
 from .utils import is_htmx_or_ajax, redirect_to_profile_section
-from .models import AccountToken, SecurityEvent, UserMedia, UserType
+from .models import AccountToken, SecurityEvent, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
 
-# Alias for compatibility with newer media query helpers
-Midia = UserMedia
-
-
 PERFIL_DEFAULT_SECTION = "info"
 PERFIL_SECTION_URLS = {
-    "portfolio": "accounts:perfil_portfolio",
     "info": "accounts:perfil_info_partial",
 }
 
@@ -70,56 +62,6 @@ PERFIL_OWNER_SECTION_URLS = {
     **PERFIL_SECTION_URLS,
     "conexoes": "conexoes:perfil_conexoes_partial",
 }
-
-
-def _resolve_back_url(request, default: str | None = None) -> str:
-    """Return a safe back URL for profile partial views."""
-
-    allowed_hosts = {request.get_host()}
-    candidates = [
-        request.headers.get("HX-Current-URL"),
-        request.META.get("HTTP_REFERER"),
-        default,
-    ]
-
-    if default is None:
-        candidates.append(reverse("accounts:perfil"))
-
-    for candidate in candidates:
-        if candidate and url_has_allowed_host_and_scheme(
-            candidate,
-            allowed_hosts=allowed_hosts,
-            require_https=request.is_secure(),
-        ):
-            return candidate
-
-    return reverse("accounts:perfil")
-
-
-def _portfolio_navigation_config(request) -> dict[str, object]:
-    """Return default navigation config for portfolio partial views."""
-
-    fallback_url = reverse("accounts:perfil_sections_portfolio")
-    back_href = resolve_back_href(
-        request,
-        fallback=fallback_url,
-        disallow={request.path},
-    )
-    hx_push_url = "?section=portfolio"
-
-    component_config = {
-        "href": back_href,
-        "fallback_href": fallback_url,
-        "hx_get": fallback_url,
-        "hx_target": "#perfil-content",
-        "hx_push_url": hx_push_url,
-    }
-
-    return {
-        "back_href": back_href,
-        "back_component_config": component_config,
-        "cancel_component_config": component_config,
-    }
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
@@ -137,21 +79,7 @@ def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
     url_args: list[str] = []
 
     if allow_owner_sections:
-        if section == "portfolio":
-            view_mode = params.get("portfolio_view")
-            media_pk = params.get("media")
-            section_views = {
-                "detail": "accounts:perfil_sections_portfolio_detail",
-                "edit": "accounts:perfil_sections_portfolio_edit",
-                "delete": "accounts:perfil_sections_portfolio_delete",
-            }
-            selected_view = section_views.get(view_mode)
-            if selected_view and media_pk:
-                url_name = selected_view
-                url_args = [media_pk]
-                params.pop("portfolio_view", None)
-                params.pop("media", None)
-        elif section == "info" and params.get("info_view") == "edit":
+        if section == "info" and params.get("info_view") == "edit":
             url_name = "accounts:perfil_sections_info"
             params.pop("info_view", None)
         elif section == "conexoes":
@@ -165,23 +93,6 @@ def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
         url = f"{url}?{query_string}"
 
     return section, url
-
-
-def _portfolio_for(profile, viewer, limit: int = 6):
-    """Return up to ``limit`` recent media visible to ``viewer`` for ``profile``.
-
-    Falls back to a simple ownership filter if a custom ``visible_to``
-    manager method is not available.
-    """
-
-    owner_field = "owner" if any(f.name == "owner" for f in Midia._meta.get_fields()) else "user"
-    visible = getattr(Midia.objects, "visible_to", None)
-    if callable(visible):
-        qs = visible(viewer, profile)
-    else:
-        qs = Midia.objects.filter(**{owner_field: profile})
-
-    return list(qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit])
 
 
 def _profile_hero_names(profile):
@@ -289,7 +200,6 @@ def perfil(request):
     if not getattr(target_user, "is_authenticated", False):
         raise PermissionDenied
 
-    portfolio_recent = _portfolio_for(target_user, request.user, limit=6)
     hero_title, hero_subtitle = _profile_hero_names(target_user)
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
@@ -299,10 +209,6 @@ def perfil(request):
         "hero_subtitle": hero_subtitle,
         "profile": target_user,
         "is_owner": is_owner,
-        "portfolio_recent": portfolio_recent,
-        "portfolio_form": MediaForm() if allow_owner_sections else None,
-        "portfolio_show_form": False,
-        "portfolio_q": "",
     }
 
     default_section, default_url = _perfil_default_section_url(
@@ -328,7 +234,6 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     if request.user == perfil:
         return redirect("accounts:perfil")
-    portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
     hero_title, hero_subtitle = _profile_hero_names(perfil)
 
     context = {
@@ -336,10 +241,6 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
-        "portfolio_recent": portfolio_recent,
-        "portfolio_form": None,
-        "portfolio_show_form": False,
-        "portfolio_q": "",
     }
 
     default_section, default_url = _perfil_default_section_url(request)
@@ -368,42 +269,7 @@ def perfil_section(request, section):
     can_manage = _can_manage_profile(viewer, profile) if viewer else False
     context["can_manage"] = can_manage
 
-    if section == "portfolio":
-        filter_form = PortfolioFilterForm(request.GET or None)
-        if filter_form.is_valid():
-            q = filter_form.cleaned_data.get("q", "") or ""
-        else:
-            q = ""
-        medias_qs = (
-            Midia.objects.visible_to(viewer, profile)
-            .select_related("user")
-            .prefetch_related("tags")
-            .order_by("-created_at")
-        )
-        if q:
-            medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
-
-        show_form = is_owner and request.GET.get("adicionar") == "1"
-        form = MediaForm() if is_owner else None
-        if form is not None:
-            allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
-            form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
-            form.fields["file"].help_text = _("Selecione um arquivo")
-            form.fields["descricao"].help_text = _("Breve descrição do portfólio")
-
-        context.update(
-            {
-                "medias": medias_qs,
-                "form": form,
-                "show_form": show_form,
-                "filter_form": filter_form,
-                "q": q,
-                "back_url": _resolve_back_url(request),
-            }
-        )
-        template = "perfil/partials/portfolio.html"
-
-    elif section == "info":
+    if section == "info":
         if can_manage:
             bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
             context.update(
@@ -502,134 +368,6 @@ def perfil_notificacoes(request):
 def check_2fa(request):
     """Return neutral response without revealing 2FA status or email existence."""
     return HttpResponse(status=204)
-
-
-@login_required
-def perfil_portfolio(request):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(request, "portfolio")
-
-    show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
-    filter_form = PortfolioFilterForm(request.GET or None)
-    if filter_form.is_valid():
-        q = filter_form.cleaned_data.get("q", "") or ""
-    else:
-        q = ""
-
-    if request.method == "POST":
-        form = MediaForm(request.POST, request.FILES)
-        if form.is_valid():
-            media = form.save(commit=False)
-            media.user = request.user
-            media.save()
-            form.save_m2m()
-            messages.success(request, "Arquivo enviado com sucesso.")
-            return redirect_to_profile_section(request, "portfolio")
-    else:
-        form = MediaForm()
-
-    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
-    form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
-    form.fields["file"].help_text = _("Selecione um arquivo")
-    form.fields["descricao"].help_text = _("Breve descrição do portfólio")
-
-    medias_qs = request.user.medias.select_related("user").prefetch_related("tags").order_by("-created_at")
-    if q:
-        medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
-
-    medias = medias_qs
-
-    context = {
-        "form": form,
-        "medias": medias,
-        "show_form": show_form,
-        "filter_form": filter_form,
-        "q": q,
-        "is_owner": True,
-        "back_url": _resolve_back_url(request),
-    }
-    context.update(_portfolio_navigation_config(request))
-
-    return render(
-        request,
-        "perfil/partials/portfolio.html",
-        context,
-    )
-
-
-@login_required
-def perfil_portfolio_detail(request, pk):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(
-            request,
-            "portfolio",
-            {"portfolio_view": "detail", "media": str(pk)},
-        )
-
-    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    return render(request, "perfil/partials/portfolio_detail.html", {"media": media})
-
-
-@login_required
-def perfil_portfolio_edit(request, pk):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(
-            request,
-            "portfolio",
-            {"portfolio_view": "edit", "media": str(pk)},
-        )
-
-    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    if request.method == "POST":
-        form = MediaForm(request.POST, request.FILES, instance=media)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Portfólio atualizado com sucesso.")
-            return redirect_to_profile_section(request, "portfolio")
-    else:
-        form = MediaForm(instance=media)
-
-    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
-    form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
-    form.fields["file"].help_text = _("Selecione um arquivo")
-    form.fields["descricao"].help_text = _("Breve descrição do portfólio")
-
-    context = {"form": form, "media": media}
-    context.update(_portfolio_navigation_config(request))
-
-    return render(request, "perfil/partials/portfolio_form.html", context)
-
-
-@login_required
-def perfil_portfolio_delete(request, pk):
-    if request.method in {"GET", "HEAD"} and not is_htmx_or_ajax(request):
-        return redirect_to_profile_section(
-            request,
-            "portfolio",
-            {"portfolio_view": "delete", "media": str(pk)},
-        )
-
-    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    if request.method == "POST":
-        media.delete(soft=False)
-        messages.success(request, "Item do portfólio removido.")
-        return redirect_to_profile_section(request, "portfolio")
-    context = {"media": media}
-    context.update(_portfolio_navigation_config(request))
-    if request.method in {"GET", "HEAD"}:
-        hx_target = request.headers.get("HX-Target", "")
-        if hx_target == "modal":
-            context.update(
-                {
-                    "titulo": _("Remover item do portfólio"),
-                    "mensagem": _("Tem certeza que deseja remover este item do portfólio?"),
-                    "submit_label": _("Remover"),
-                    "form_action": reverse("accounts:portfolio_delete", args=[media.pk]),
-                }
-            )
-            return render(request, "perfil/partials/portfolio_delete_modal.html", context)
-
-    return render(request, "perfil/partials/portfolio_confirm_delete.html", context)
 
 
 # ====================== AUTENTICAÇÃO ======================

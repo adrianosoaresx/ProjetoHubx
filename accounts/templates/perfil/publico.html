@@ -30,27 +30,6 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-body">
-      <section
-        id="perfil-portfolio"
-        class="space-y-6"
-        data-perfil-mode="public"
-        data-perfil-username="{{ perfil.username }}"
-        data-perfil-public-id="{{ perfil.public_id }}"
-        aria-live="polite"
-        aria-busy="true"
-        hx-trigger="load"
-        hx-get="{% url 'accounts:perfil_portfolio' %}"
-        hx-target="#perfil-portfolio"
-        hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
-      >
-        <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
-          {% trans "Carregando conteúdo..." %}
-        </div>
-      </section>
-    </div>
-  </div>
 </div>
 
 {% endblock %}

@@ -19,23 +19,6 @@
         {% trans "Info" %}
       </a>
     </li>
-    <li>
-      <a
-        href="?section=portfolio"
-        class="{{ base_classes }}{% if default_section == 'portfolio' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
-        data-perfil-nav
-        data-perfil-section="portfolio"
-        data-perfil-url="{% url 'accounts:perfil_portfolio' %}"
-        data-perfil-default="{% if default_section == 'portfolio' %}true{% else %}false{% endif %}"
-  hx-get="{% url 'accounts:perfil_portfolio' %}"
-  hx-target="#perfil-content"
-  hx-push-url="?section=portfolio"
-  {% if not is_owner %}hx-vals='{"public_id":"{{ profile.public_id|default:perfil.public_id|escapejs }}","username":"{{ profile.username|default:perfil.username|escapejs }}"}'{% endif %}
-        {% if default_section == 'portfolio' %}aria-current="page"{% endif %}
-      >
-        {% trans "Portfólio" %}
-      </a>
-    </li>
     {% if is_owner %}
     <li>
       <a
