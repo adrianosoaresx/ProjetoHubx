@@ -274,6 +274,7 @@ class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
                 "hero_title": _("Operadores"),
                 "hero_subtitle": _("Gerencie os operadores da sua organização."),
                 "hero_active_tab": "operadores",
+                "tab": "operadores",  # compatibilidade com templates que esperam ``tab``
             }
         )
         return context
@@ -303,6 +304,7 @@ class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
                 "hero_title": _("Adicionar operador"),
                 "hero_subtitle": _("Crie novos operadores para apoiar a gestão."),
                 "hero_active_tab": "operadores",
+                "tab": "operadores",  # compatibilidade com templates legados
             }
         )
         fallback_url = str(self.success_url)
