@@ -24,7 +24,9 @@
           {% endif %}
         </div>
         <nav class="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start" aria-label="{% trans 'Seções de configuração' %}">
+
           {% with button_base_classes='btn flex items-center gap-2 text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]' %}
+
             <a
               href="{% url 'configuracoes:configuracoes_seguranca' %}"
               class="{{ button_base_classes }} {% if active_tab == 'seguranca' %}btn-primary{% else %}btn-secondary{% endif %}"
