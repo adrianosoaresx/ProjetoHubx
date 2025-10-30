@@ -295,29 +295,7 @@ def _get_menu_items() -> List[MenuItem]:
 
     conexoes_children: List[MenuItem] = []
 
-    configuracoes_children = [
-        MenuItem(
-            id="configuracoes_seguranca",
-            path=reverse("configuracoes:configuracoes_seguranca"),
-            label="Segurança",
-            icon=ICON_LOCK,
-            permissions=["authenticated"],
-        ),
-        MenuItem(
-            id="configuracoes_preferencias",
-            path=reverse("configuracoes:configuracoes_preferencias"),
-            label="Preferências",
-            icon=ICON_SETTINGS,
-            permissions=["authenticated"],
-        ),
-        MenuItem(
-            id="configuracoes_operadores",
-            path=reverse("configuracoes:operadores"),
-            label="Operadores",
-            icon=ICON_USERS,
-            permissions=["admin"],
-        ),
-    ]
+    configuracoes_children: List[MenuItem] = []
 
     nucleos_children = []
 

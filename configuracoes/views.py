@@ -175,6 +175,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
             "hero_subtitle": "",
+            "hero_active_tab": section,
         }
         return self.render_response(request, section, context)
 
@@ -218,6 +219,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
             "hero_subtitle": "",
+            "hero_active_tab": section,
         }
         if section == "preferencias" and form.is_valid():
             context["updated_preferences"] = True
@@ -271,6 +273,7 @@ class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
                 "operadores": operadores,
                 "hero_title": _("Operadores"),
                 "hero_subtitle": _("Gerencie os operadores da sua organização."),
+                "hero_active_tab": "operadores",
             }
         )
         return context
@@ -299,6 +302,7 @@ class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
             {
                 "hero_title": _("Adicionar operador"),
                 "hero_subtitle": _("Crie novos operadores para apoiar a gestão."),
+                "hero_active_tab": "operadores",
             }
         )
         fallback_url = str(self.success_url)
