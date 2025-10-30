@@ -120,16 +120,18 @@
       <!-- Rodapé: botões de ação e contagem de comentários abaixo -->
       <footer class="relative z-20 mt-auto">
         <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-secondary)] shadow-inner sm:px-4 sm:py-3">
-          <div class="mt-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {% lucide 'message-circle' class='h-4 w-4' %}
-            <span>
-              {% blocktrans trimmed count comment_count=post.comments.count %}
-                {{ comment_count }} comentário
-              {% plural %}
-                {{ comment_count }} comentários
-              {% endblocktrans %}
-            </span>
+          <div class="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             <div class="flex items-center gap-2">
+              {% lucide 'message-circle' class='h-4 w-4' %}
+              <span>
+                {% blocktrans trimmed count comment_count=post.comments.count %}
+                  {{ comment_count }} comentário
+                {% plural %}
+                  {{ comment_count }} comentários
+                {% endblocktrans %}
+              </span>
+            </div>
+            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
               <div id="like-btn-{{ post.id }}" class="relative z-20">
                 {% include 'feed/_like_button.html' with post=post %}
               </div>
