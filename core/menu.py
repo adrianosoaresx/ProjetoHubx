@@ -393,47 +393,7 @@ def _get_menu_items() -> List[MenuItem]:
         ),
     ]
 
-    feed_children = [
-        MenuItem(
-            id="feed_nova_postagem",
-            path=reverse("feed:nova_postagem"),
-            label="Nova postagem",
-            icon=ICON_PLUS,
-            permissions=[
-                "admin",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
-            id="feed_favoritos",
-            path=reverse("feed:bookmarks"),
-            label="Favoritos",
-            icon=ICON_STAR,
-            permissions=[
-                "admin",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
-            id="feed_mural",
-            path=reverse("feed:meu_mural"),
-            label="Mural",
-            icon=ICON_CHAT,
-            permissions=[
-                "admin",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-    ]
+    feed_children: List[MenuItem] = []
 
     return [
         MenuItem(
