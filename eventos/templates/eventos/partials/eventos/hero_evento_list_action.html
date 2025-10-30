@@ -1,6 +1,23 @@
 {% load i18n %}
-{% if is_admin_org %}
-<a href="{% url 'eventos:evento_novo' %}" class="btn btn-primary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]">
-  {% trans 'Novo evento' %}
-</a>
-{% endif %}
+<div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
+  <a
+    href="{{ calendario_url }}"
+    class="btn btn-secondary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]"
+  >
+    {% trans 'Calendário' %}
+  </a>
+  <a
+    href="{{ calendario_mensal_url }}"
+    class="btn btn-secondary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]"
+  >
+    {% trans 'Calendário mensal' %}
+  </a>
+  {% if is_admin_org %}
+    <a
+      href="{% url 'eventos:evento_novo' %}"
+      class="btn btn-primary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]"
+    >
+      {% trans 'Adicionar evento' %}
+    </a>
+  {% endif %}
+</div>

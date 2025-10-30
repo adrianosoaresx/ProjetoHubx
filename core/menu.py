@@ -277,9 +277,6 @@ def _get_menu_items() -> List[MenuItem]:
     configuracoes_url = reverse("configuracoes:configuracoes")
     nucleos_url = reverse("nucleos:list")
     # URLs de eventos
-    hoje = timezone.localdate()
-    calendario_mes_url = reverse("eventos:calendario_mes", args=[hoje.year, hoje.month])
-    # Link principal deve abrir a lista de eventos
     eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
     eventos_url = reverse("eventos:lista")  # Link principal (menu raiz) abre a lista de eventos
@@ -326,41 +323,7 @@ def _get_menu_items() -> List[MenuItem]:
 
     associados_children = []
 
-    eventos_children = [
-        MenuItem(
-            id="eventos_calendario_30",
-            path=reverse("eventos:calendario"),
-            label="Calendário",
-            icon=ICON_CLOCK,
-            permissions=[
-                "admin",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
-            id="eventos_calendario_mes",
-            path=calendario_mes_url,
-            label="Calendário mensal",
-            icon=ICON_EVENTOS,
-            permissions=[
-                "admin",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
-            id="eventos_novo",
-            path=reverse("eventos:evento_novo"),
-            label="Adicionar evento",
-            icon=ICON_PLUS,
-            permissions=["admin", "operador"],
-        ),
-    ]
+    eventos_children = []
 
     feed_children: List[MenuItem] = []
 
