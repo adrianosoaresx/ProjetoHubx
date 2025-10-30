@@ -1,8 +1,9 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 {% if not show_form %}
   <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
-    <a href="{% url 'portfolio:index' %}?adicionar=1" class="btn btn-primary">
-      {% trans "Adicionar" %}
+    <a href="{% url 'portfolio:index' %}?adicionar=1" class="btn btn-primary inline-flex items-center gap-2">
+      {% lucide 'plus' class='w-4 h-4' aria_hidden='true' %}
+      <span>{% trans "Adicionar mídia" %}</span>
     </a>
   </div>
 {% endif %}
