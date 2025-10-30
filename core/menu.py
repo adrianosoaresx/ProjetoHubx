@@ -322,15 +322,7 @@ def _get_menu_items() -> List[MenuItem]:
         ),
     ]
 
-    nucleos_children = [
-        MenuItem(
-            id="nucleos_novo",
-            path=reverse("nucleos:create"),
-            label="Adicionar núcleo",
-            icon=ICON_PLUS,
-            permissions=["admin"],
-        )
-    ]
+    nucleos_children = []
 
     associados_children = []
 
