@@ -6,7 +6,7 @@
 >
   <div class="sidebar-header layout-header flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
     <a href="/" class="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2" aria-label="{% trans 'Página inicial' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>
-      <img src="{% static 'img/hubx_logo.png' %}" alt="{% trans 'Logo Hubx.Space' %}" class="h-12 w-auto max-w-full" loading="lazy" />
+      <img src="{% static 'img/hubx_logo.png' %}" alt="{% trans 'Logo Hubx.Space' %}" class="h-10 md:h-12 w-auto max-w-full" loading="lazy" />
       <span class="sidebar-brand-label">{% trans 'Hubx' %}</span>
     </a>
     <div class="flex items-center gap-2">
