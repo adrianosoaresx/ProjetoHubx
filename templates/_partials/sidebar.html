@@ -18,7 +18,10 @@
         aria-controls="sidebar"
         aria-expanded="false"
       >
-        {% trans 'Fechar' %}
+        <span class="sr-only">{% trans 'Fechar' %}</span>
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
       <button id="sidebar-toggle" class="hidden md:inline-flex btn btn-secondary btn-sm" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
