@@ -18,42 +18,42 @@
             {% endif %}
           </div>
           {% if action_template %}
-            <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
+            <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
+              {% include action_template %}
+            </div>
           {% endif %}
         </div>
         <nav class="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start" aria-label="{% trans 'Seções de configuração' %}">
-          <a
-            href="{% url 'configuracoes:configuracoes_seguranca' %}"
-            class="btn {% if active_tab == 'seguranca' %}btn-primary{% else %}btn-secondary{% endif %}"
-            aria-current="{% if active_tab == 'seguranca' %}page{% else %}false{% endif %}"
-          >
-            <span class="flex items-center gap-2">
-              {% lucide 'shield-check' class='h-4 w-4' aria_hidden='true' %}
-              {% trans 'Segurança' %}
-            </span>
-          </a>
-          <a
-            href="{% url 'configuracoes:configuracoes_preferencias' %}"
-            class="btn {% if active_tab == 'preferencias' %}btn-primary{% else %}btn-secondary{% endif %}"
-            aria-current="{% if active_tab == 'preferencias' %}page{% else %}false{% endif %}"
-          >
-            <span class="flex items-center gap-2">
-              {% lucide 'sliders-horizontal' class='h-4 w-4' aria_hidden='true' %}
-              {% trans 'Preferências' %}
-            </span>
-          </a>
-          {% if request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
+          {% with
+            button_base_classes='btn flex items-center gap-2 text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]'
+          %}
             <a
-              href="{% url 'configuracoes:operadores' %}"
-              class="btn {% if active_tab == 'operadores' %}btn-primary{% else %}btn-secondary{% endif %}"
-              aria-current="{% if active_tab == 'operadores' %}page{% else %}false{% endif %}"
+              href="{% url 'configuracoes:configuracoes_seguranca' %}"
+              class="{{ button_base_classes }} {% if active_tab == 'seguranca' %}btn-primary{% else %}btn-secondary{% endif %}"
+              aria-current="{% if active_tab == 'seguranca' %}page{% else %}false{% endif %}"
             >
-              <span class="flex items-center gap-2">
-                {% lucide 'users' class='h-4 w-4' aria_hidden='true' %}
-                {% trans 'Operadores' %}
-              </span>
+              {% lucide 'shield-check' class='h-4 w-4' aria_hidden='true' %}
+              <span>{% trans 'Segurança' %}</span>
             </a>
-          {% endif %}
+            <a
+              href="{% url 'configuracoes:configuracoes_preferencias' %}"
+              class="{{ button_base_classes }} {% if active_tab == 'preferencias' %}btn-primary{% else %}btn-secondary{% endif %}"
+              aria-current="{% if active_tab == 'preferencias' %}page{% else %}false{% endif %}"
+            >
+              {% lucide 'sliders-horizontal' class='h-4 w-4' aria_hidden='true' %}
+              <span>{% trans 'Preferências' %}</span>
+            </a>
+            {% if request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
+              <a
+                href="{% url 'configuracoes:operadores' %}"
+                class="{{ button_base_classes }} {% if active_tab == 'operadores' %}btn-primary{% else %}btn-secondary{% endif %}"
+                aria-current="{% if active_tab == 'operadores' %}page{% else %}false{% endif %}"
+              >
+                {% lucide 'users' class='h-4 w-4' aria_hidden='true' %}
+                <span>{% trans 'Operadores' %}</span>
+              </a>
+            {% endif %}
+          {% endwith %}
         </nav>
       {% endwith %}
       {% if helper_text %}
