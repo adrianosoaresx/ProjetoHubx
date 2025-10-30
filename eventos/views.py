@@ -172,6 +172,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["is_ativos_filter_active"] = current_filter == "ativos"
         ctx["is_realizados_filter_active"] = current_filter == "realizados"
         ctx["is_cancelados_filter_active"] = current_filter == "cancelados"
+        ctx["calendario_url"] = reverse("eventos:calendario")
+        hoje = timezone.localdate()
+        ctx["calendario_mensal_url"] = reverse(
+            "eventos:calendario_mes", args=[hoje.year, hoje.month]
+        )
 
         base_qs = self.get_base_queryset()
         qs = self.get_queryset()
