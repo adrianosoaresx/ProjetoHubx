@@ -1821,22 +1821,10 @@ a:focus {
   color: var(--success);
 }
 
-.alert-warning {
-  border-color: var(--warning);
-  background-color: var(--warning-light);
-  color: var(--warning-foreground);
-}
-
 .alert-error {
   border-color: var(--error);
   background-color: var(--error-light);
   color: var(--error);
-}
-
-.alert-info {
-  border-color: var(--primary);
-  background-color: var(--primary-light);
-  color: var(--primary);
 }
 
 .badge {
@@ -2834,10 +2822,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   display: none;
 }
 
-.aspect-video {
-  aspect-ratio: 16 / 9;
-}
-
 .h-1 {
   height: 0.25rem;
 }
@@ -3563,6 +3547,12 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
+.from-purple-50 {
+  --tw-gradient-from: #faf5ff var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(250 245 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
 .from-sky-50 {
   --tw-gradient-from: #f0f9ff var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(240 249 255 / 0) var(--tw-gradient-to-position);
@@ -3825,10 +3815,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pl-6 {
   padding-left: 1.5rem;
-}
-
-.pr-16 {
-  padding-right: 4rem;
 }
 
 .pt-1 {
@@ -5089,24 +5075,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .sm\:gap-6 {
     gap: 1.5rem;
-  }
-
-  .sm\:space-y-2 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-  }
-
-  .sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(1rem * var(--tw-space-y-reverse));
-  }
-
-  .sm\:space-y-5 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
   }
 
   .sm\:space-y-6 > :not([hidden]) ~ :not([hidden]) {
