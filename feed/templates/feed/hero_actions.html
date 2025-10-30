@@ -1,11 +1,19 @@
 {% load i18n lucide_icons %}
 <div class="flex flex-wrap gap-3">
-  
+
   {% if request.user.user_type != 'root' %}
   {# Exceção: abertura em nova aba mantém o formulário de postagem ativo #}
   <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
     {% lucide 'circle-plus' class='w-4 h-4' %}
     {% trans 'Nova postagem' %}
+  </a>
+  <a href="{% url 'feed:bookmarks' %}" class="btn btn-secondary" aria-label="{% trans 'Favoritos' %}">
+    {% lucide 'star' class='w-4 h-4' %}
+    {% trans 'Favoritos' %}
+  </a>
+  <a href="{% url 'feed:meu_mural' %}" class="btn btn-secondary" aria-label="{% trans 'Mural' %}">
+    {% lucide 'messages-square' class='w-4 h-4' %}
+    {% trans 'Mural' %}
   </a>
   {% endif %}
 </div>
