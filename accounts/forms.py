@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
 
-from .models import AREA_ATUACAO_CHOICES, AccountToken, SecurityEvent, UserMedia
+from .models import AREA_ATUACAO_CHOICES, AccountToken, SecurityEvent
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
@@ -291,56 +291,6 @@ class InformacoesPessoaisForm(forms.ModelForm):
                 )
                 send_confirmation_email.delay(token.id)
         return user
-
-
-class PortfolioFilterForm(forms.Form):
-    q = forms.CharField(
-        label=_("Buscar"),
-        required=False,
-        widget=forms.TextInput(
-            attrs={"placeholder": _("Buscar por descrição ou tags...")}
-        ),
-    )
-
-
-class MediaForm(forms.ModelForm):
-    tags_field = forms.CharField(
-        required=False,
-        help_text="Separe as tags por vírgula",
-        label="Tags",
-    )
-
-    class Meta:
-        model = UserMedia
-        fields = ("file", "descricao", "publico", "tags_field")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields["tags_field"].initial = ", ".join(self.instance.tags.values_list("nome", flat=True))
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        if commit:
-            instance.save()
-        tags_field = self.cleaned_data.get("tags_field", "")
-        tags_names: list[str] = []
-        for t in tags_field.split(","):
-            name = t.strip().lower()
-            if name and name not in tags_names:
-                tags_names.append(name)
-        from .models import MediaTag
-
-        tags = []
-        for name in tags_names:
-            tag, _ = MediaTag.objects.get_or_create(nome__iexact=name, defaults={"nome": name})
-            tags.append(tag)
-        if commit:
-            instance.tags.set(tags)
-            self.save_m2m()
-        else:
-            self._save_m2m = lambda: instance.tags.set(tags)
-        return instance
 
 
 class EmailLoginForm(forms.Form):

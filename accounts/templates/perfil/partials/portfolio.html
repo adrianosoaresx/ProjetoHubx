@@ -1,5 +1,0 @@
-{% load i18n %}
-{# Esta seção é carregada via HTMX e já está dentro de um card no layout pai; mantenha esta exceção ao ajustar o markup. #}
-<section id="portfolio" class="perfil-section active">
-  {% include "perfil/partials/portfolio_list.html" with medias=medias is_owner=is_owner form=form show_form=show_form q=q filter_form=filter_form %}
-</section>

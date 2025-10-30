@@ -32,43 +32,11 @@ urlpatterns = [
 
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
     path("perfil/sections/info/", views.perfil_info, name="perfil_sections_info"),
-    path("perfil/sections/portfolio/", views.perfil_portfolio, name="perfil_sections_portfolio"),
-    path(
-        "perfil/sections/portfolio/<int:pk>/",
-        views.perfil_portfolio_detail,
-        name="perfil_sections_portfolio_detail",
-    ),
-    path(
-        "perfil/sections/portfolio/<int:pk>/editar/",
-        views.perfil_portfolio_edit,
-        name="perfil_sections_portfolio_edit",
-    ),
-    path(
-        "perfil/sections/portfolio/<int:pk>/excluir/",
-        views.perfil_portfolio_delete,
-        name="perfil_sections_portfolio_delete",
-    ),
-
-    path(
-        "perfil/partials/portfolio/",
-        views.perfil_section,
-        {"section": "portfolio"},
-        name="perfil_portfolio",
-    ),
     path(
         "perfil/partials/info/",
         views.perfil_section,
         {"section": "info"},
         name="perfil_info_partial",
-    ),
-    # Portfólio
-    path("perfil/portfolio/", views.perfil_portfolio, name="portfolio"),
-    path("perfil/portfolio/<int:pk>/", views.perfil_portfolio_detail, name="portfolio_detail"),
-    path("perfil/portfolio/<int:pk>/editar/", views.perfil_portfolio_edit, name="portfolio_edit"),
-    path(
-        "perfil/portfolio/<int:pk>/excluir/",
-        views.perfil_portfolio_delete,
-        name="portfolio_delete",
     ),
 
     path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),

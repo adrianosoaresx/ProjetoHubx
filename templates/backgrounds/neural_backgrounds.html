@@ -160,6 +160,99 @@
   </svg>
 </div>
 
+  {% elif background == "portfolio" %}
+<!-- Portfólio Background -->
+<div class="neural-bg-base neural-bg-portfolio">
+  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="portfolio-gradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1"/>
+        <stop offset="45%" style="stop-color:#7c3aed;stop-opacity:0.85"/>
+        <stop offset="80%" style="stop-color:#4c1d95;stop-opacity:0.6"/>
+        <stop offset="100%" style="stop-color:#312e81;stop-opacity:0.4"/>
+      </radialGradient>
+      <linearGradient id="portfolio-line" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#c084fc;stop-opacity:0.8"/>
+        <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.5"/>
+      </linearGradient>
+      <filter id="portfolio-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <rect width="800" height="600" fill="#1f2937" opacity="0.35"/>
+
+    <g opacity="0.3">
+      <path d="M0,220 Q200,160 400,220 T800,220" stroke="#a855f7" stroke-width="2" fill="none">
+        <animate attributeName="d"
+          values="M0,220 Q200,160 400,220 T800,220;M0,220 Q200,260 400,220 T800,220;M0,220 Q200,160 400,220 T800,220"
+          dur="10s" repeatCount="indefinite"/>
+      </path>
+      <path d="M0,380 Q200,440 400,380 T800,380" stroke="#c084fc" stroke-width="2" fill="none">
+        <animate attributeName="d"
+          values="M0,380 Q200,440 400,380 T800,380;M0,380 Q200,340 400,380 T800,380;M0,380 Q200,440 400,380 T800,380"
+          dur="12s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <circle cx="400" cy="300" r="60" fill="url(#portfolio-gradient)" filter="url(#portfolio-glow)">
+      <animate attributeName="r" values="60;65;60" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="300" r="28" fill="#c084fc" opacity="0.8">
+      <animate attributeName="r" values="28;32;28" dur="6s" repeatCount="indefinite"/>
+    </circle>
+
+    <g opacity="0.8">
+      <circle cx="260" cy="200" r="18" fill="#c084fc" filter="url(#portfolio-glow)">
+        <animate attributeName="r" values="18;21;18" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="560" cy="190" r="16" fill="#a855f7" filter="url(#portfolio-glow)">
+        <animate attributeName="r" values="16;19;16" dur="4.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="600" cy="410" r="20" fill="#7c3aed" filter="url(#portfolio-glow)">
+        <animate attributeName="r" values="20;24;20" dur="3.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="230" cy="420" r="17" fill="#c4b5fd" filter="url(#portfolio-glow)">
+        <animate attributeName="r" values="17;20;17" dur="4.2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <g stroke="url(#portfolio-line)" stroke-width="3" stroke-linecap="round" opacity="0.6">
+      <path d="M260,200 L400,300">
+        <animate attributeName="stroke-opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M560,190 L400,300">
+        <animate attributeName="stroke-opacity" values="0.4;0.9;0.4" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <path d="M600,410 L400,300">
+        <animate attributeName="stroke-opacity" values="0.4;0.9;0.4" dur="3.2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M230,420 L400,300">
+        <animate attributeName="stroke-opacity" values="0.4;0.9;0.4" dur="2.8s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <g opacity="0.5" fill="#c084fc">
+      <circle cx="150" cy="320" r="10">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="680" cy="260" r="9">
+        <animate attributeName="opacity" values="0.4;0.9;0.4" dur="4.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="500" cy="480" r="11">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="320" cy="470" r="9">
+        <animate attributeName="opacity" values="0.4;0.85;0.4" dur="4.2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </svg>
+</div>
+
   {% elif background == "nucleos" %}
 <!-- Núcleos Background -->
 <div class="neural-bg-base neural-bg-nucleos">
