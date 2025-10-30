@@ -296,15 +296,7 @@ def _get_menu_items() -> List[MenuItem]:
         "consultor",
     ]
 
-    conexoes_children = [
-        MenuItem(
-            id="conexoes_buscar",
-            path=reverse("conexoes:perfil_conexoes_buscar"),
-            label="Adicionar conexão",
-            icon=ICON_LINK,
-            permissions=non_root_authenticated_users,
-        ),
-    ]
+    conexoes_children: List[MenuItem] = []
 
     configuracoes_children = [
         MenuItem(
