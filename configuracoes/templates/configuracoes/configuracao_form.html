@@ -9,24 +9,6 @@
 {% block content %}
 
   <article class="card">
-    <div class="card-header">
-      <nav class="flex flex-wrap items-center gap-3" aria-label="{% trans 'Seções de configuração' %}">
-        <a
-          href="{% url 'configuracoes:configuracoes_seguranca' %}"
-          class="btn {% if tab == 'seguranca' %}btn-primary{% else %}btn-secondary{% endif %}"
-          aria-current="{% if tab == 'seguranca' %}page{% else %}false{% endif %}"
-        >
-          {% trans 'Segurança' %}
-        </a>
-        <a
-          href="{% url 'configuracoes:configuracoes_preferencias' %}"
-          class="btn {% if tab == 'preferencias' %}btn-primary{% else %}btn-secondary{% endif %}"
-          aria-current="{% if tab == 'preferencias' %}page{% else %}false{% endif %}"
-        >
-          {% trans 'Preferências' %}
-        </a>
-      </nav>
-    </div>
     <div class="card-body space-y-6" id="settings-content">
       {% if tab == 'preferencias' %}
         {% include 'configuracoes/_partials/preferencias.html' %}
