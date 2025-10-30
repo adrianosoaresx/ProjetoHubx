@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Eventos') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with title=title subtitle=subtitle total_eventos=total_eventos total_eventos_planejamento=total_eventos_planejamento total_eventos_ativos=total_eventos_ativos total_eventos_concluidos=total_eventos_concluidos total_eventos_cancelados=total_eventos_cancelados planejamento_filter_url=planejamento_filter_url ativos_filter_url=ativos_filter_url realizados_filter_url=realizados_filter_url cancelados_filter_url=cancelados_filter_url todos_filter_url=todos_filter_url is_planejamento_filter_active=is_planejamento_filter_active is_ativos_filter_active=is_ativos_filter_active is_realizados_filter_active=is_realizados_filter_active is_cancelados_filter_active=is_cancelados_filter_active %}{% endblock %}
+{% block hero %}{% include '_components/hero_evento.html' with title=title subtitle=subtitle action_template='eventos/partials/eventos/hero_evento_list_action.html' total_eventos=total_eventos total_eventos_planejamento=total_eventos_planejamento total_eventos_ativos=total_eventos_ativos total_eventos_concluidos=total_eventos_concluidos total_eventos_cancelados=total_eventos_cancelados planejamento_filter_url=planejamento_filter_url ativos_filter_url=ativos_filter_url realizados_filter_url=realizados_filter_url cancelados_filter_url=cancelados_filter_url todos_filter_url=todos_filter_url is_planejamento_filter_active=is_planejamento_filter_active is_ativos_filter_active=is_ativos_filter_active is_realizados_filter_active=is_realizados_filter_active is_cancelados_filter_active=is_cancelados_filter_active %}{% endblock %}
 
 {% block content %}
   
