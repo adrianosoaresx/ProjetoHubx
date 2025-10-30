@@ -120,18 +120,19 @@
       <!-- Rodapé: botões de ação e contagem de comentários abaixo -->
       <footer class="relative z-20 mt-auto">
         <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-secondary)] shadow-inner sm:px-4 sm:py-3">
-          <div class="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            <div class="flex items-center gap-2">
+          <div class="mt-2 flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] sm:gap-3">
+            {% blocktrans trimmed count comment_count=post.comments.count asvar comment_text %}
+              {{ comment_count }} comentário
+            {% plural %}
+              {{ comment_count }} comentários
+            {% endblocktrans %}
+            <div class="flex flex-shrink-0 items-center gap-2">
               {% lucide 'message-circle' class='h-4 w-4' %}
-              <span>
-                {% blocktrans trimmed count comment_count=post.comments.count %}
-                  {{ comment_count }} comentário
-                {% plural %}
-                  {{ comment_count }} comentários
-                {% endblocktrans %}
-              </span>
+              <span class="sr-only">{{ comment_text }}</span>
+              <span aria-hidden="true" class="hidden sm:inline">{{ comment_text }}</span>
+              <span aria-hidden="true" class="sm:hidden">{{ post.comments.count }}</span>
             </div>
-            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
+            <div class="flex flex-shrink-0 items-center gap-2 sm:gap-3">
               <div id="like-btn-{{ post.id }}" class="relative z-20">
                 {% include 'feed/_like_button.html' with post=post %}
               </div>
