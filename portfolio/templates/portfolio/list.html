@@ -2,7 +2,7 @@
 {% load i18n lucide_icons %}
 
 {% block hero %}
-  {% include "_components/hero_portfolio.html" with title=hero_title subtitle=hero_subtitle counts=counts %}
+  {% include "_components/hero_portfolio.html" with title=hero_title subtitle=hero_subtitle counts=counts action_template='portfolio/hero_action.html' %}
 {% endblock %}
 
 {% block content %}
@@ -52,11 +52,6 @@
             </div>
           </form>
         {% else %}
-          <div class="flex justify-end">
-            <a href="{% url 'portfolio:index' %}?adicionar=1" class="btn btn-primary">
-              {% trans "Adicionar" %}
-            </a>
-          </div>
           {% if filter_form %}
             <form method="get" class="space-y-4">
               {% include '_forms/field.html' with field=filter_form.q %}

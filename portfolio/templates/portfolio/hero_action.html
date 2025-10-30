@@ -1,0 +1,8 @@
+{% load i18n %}
+{% if not show_form %}
+  <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
+    <a href="{% url 'portfolio:index' %}?adicionar=1" class="btn btn-primary">
+      {% trans "Adicionar" %}
+    </a>
+  </div>
+{% endif %}

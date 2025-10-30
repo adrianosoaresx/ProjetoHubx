@@ -1,6 +1,6 @@
 {% load i18n lucide_icons %}
 {% trans 'Portfólio' as hero_default_title %}
-{% with hero_title=title|default:hero_default_title hero_subtitle=subtitle hero_counts=counts hero_neural_background=neural_background|default:'portfolio' %}
+{% with hero_title=title|default:hero_default_title hero_subtitle=subtitle hero_counts=counts hero_neural_background=neural_background|default:'portfolio' hero_action_template=action_template %}
 <section class="hero-with-neural bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 text-white">
   <div class="neural-bg-base" aria-hidden="true">
     {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
@@ -13,6 +13,11 @@
           <h1 class="text-4xl md:text-5xl font-bold text-white">{{ hero_title }}</h1>
           {% if hero_subtitle %}<p class="text-lg text-white/90">{{ hero_subtitle }}</p>{% endif %}
         </div>
+        {% if hero_action_template %}
+          <div class="flex justify-center md:justify-end md:self-start">
+            {% include hero_action_template %}
+          </div>
+        {% endif %}
       </div>
       {% if hero_counts.total or hero_counts.images or hero_counts.videos or hero_counts.pdfs or hero_counts.others %}
         {% lucide 'image' class='h-5 w-5' as icon_images %}
