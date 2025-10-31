@@ -115,40 +115,40 @@
 
         layout.paper_bgcolor = "rgba(0,0,0,0)";
         layout.plot_bgcolor = layout.plot_bgcolor || surface;
-        layout.font = Object.assign({ color: textPrimary }, layout.font || {});
+        layout.font = Object.assign({}, layout.font || {}, { color: textPrimary });
 
-        layout.legend = Object.assign(
-          {
-            orientation: "h",
-            x: 0.5,
-            y: -0.18,
-            xanchor: "center",
-            yanchor: "top",
-            bgcolor: surface,
-            bordercolor: border,
-            borderwidth: 1,
-            font: { color: textPrimary, size: 12 },
-          },
-          layout.legend || {},
-        );
-        layout.legend.font = Object.assign({ color: textPrimary }, layout.legend.font || {});
+        const baseLegend = {
+          orientation: "h",
+          x: 0.5,
+          y: -0.18,
+          xanchor: "center",
+          yanchor: "top",
+          bgcolor: surface,
+          bordercolor: border,
+          borderwidth: 1,
+          font: { size: 12 },
+        };
+        layout.legend = Object.assign({}, baseLegend, layout.legend || {});
+        layout.legend.bgcolor = layout.legend.bgcolor ?? surface;
+        layout.legend.bordercolor = layout.legend.bordercolor ?? border;
+        layout.legend.borderwidth = layout.legend.borderwidth ?? 1;
+        layout.legend.font = Object.assign({}, layout.legend.font || {}, { color: textPrimary });
 
-        layout.hoverlabel = Object.assign(
-          {
-            bgcolor: surface,
-            bordercolor: border,
-            font: { color: textPrimary },
-          },
-          layout.hoverlabel || {},
-        );
+        const baseHoverlabel = {
+          bgcolor: surface,
+          bordercolor: border,
+          font: {},
+        };
+        layout.hoverlabel = Object.assign({}, baseHoverlabel, layout.hoverlabel || {});
+        layout.hoverlabel.font = Object.assign({}, layout.hoverlabel.font || {}, { color: textPrimary });
 
         const axisKeys = Object.keys(layout).filter((key) => /^(x|y)axis/.test(key));
         axisKeys.forEach((axisKey) => {
           const axis = Object.assign({}, layout[axisKey]);
-          axis.tickfont = Object.assign({ color: textMuted }, axis.tickfont || {});
-          axis.title = Object.assign({ font: { color: textPrimary } }, axis.title || {});
-          if (axis.title.font) {
-            axis.title.font = Object.assign({ color: textPrimary }, axis.title.font);
+          axis.tickfont = Object.assign({}, axis.tickfont || {}, { color: textPrimary });
+          axis.title = Object.assign({}, axis.title || {});
+          if (axis.title.font || axis.title.text) {
+            axis.title.font = Object.assign({}, axis.title.font || {}, { color: textPrimary });
           }
           axis.gridcolor = axis.gridcolor || border;
           axis.zerolinecolor = axis.zerolinecolor || border;
@@ -159,8 +159,9 @@
           layout.annotations = layout.annotations.map((annotation) => {
             const mapped = Object.assign({}, annotation);
             const baseColor = String(mapped.font?.color || "").toLowerCase();
-            const targetColor = baseColor.includes("6b7280") ? textMuted : textPrimary;
-            mapped.font = Object.assign({ color: targetColor }, mapped.font || {});
+            const wantsMuted = baseColor.includes("6b7280") || baseColor.includes("var(--text-muted");
+            const targetColor = wantsMuted ? textMuted : textPrimary;
+            mapped.font = Object.assign({}, mapped.font || {}, { color: targetColor });
             return mapped;
           });
         }
