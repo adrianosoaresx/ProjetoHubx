@@ -185,7 +185,7 @@ def _base_layout(**extras: Any) -> dict[str, Any]:
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "margin": {"l": 40, "r": 40, "t": 48, "b": 96},
-        "font": {"color": "#0f172a"},
+        "font": {"color": "var(--text-primary, #0f172a)"},
         "legend": {
             "orientation": "h",
             "yanchor": "top",
@@ -201,6 +201,7 @@ def _base_layout(**extras: Any) -> dict[str, Any]:
         "hoverlabel": {
             "bgcolor": "rgba(255,255,255,0.95)",
             "bordercolor": "rgba(148,163,184,0.4)",
+            "font": {"color": "var(--text-primary, #0f172a)"},
         },
     }
     layout.update(extras)
@@ -219,7 +220,7 @@ def _empty_figure(message: str) -> go.Figure:
                     "x": 0.5,
                     "y": 0.5,
                     "showarrow": False,
-                    "font": {"size": 16, "color": "#6b7280"},
+                    "font": {"size": 16, "color": "var(--text-secondary, #6b7280)"},
                 }
             ],
             xaxis={"visible": False},
@@ -300,7 +301,7 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
                     "x": 0.5,
                     "y": 0.5,
                     "showarrow": False,
-                    "font": {"size": 18, "color": "#0f172a"},
+                    "font": {"size": 18, "color": "var(--text-primary, #0f172a)"},
                 }
             ],
         )
@@ -348,14 +349,16 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
                 "title": "",
                 "gridcolor": "#e5e7eb",
                 "zerolinecolor": "#cbd5f5",
+
                 "showticklabels": False,
                 "showgrid": False,
                 "ticks": "",
+
                 "automargin": True,
             },
             yaxis={
                 "title": "",
-                "tickfont": {"size": 12, "color": "#374151"},
+                "tickfont": {"size": 12, "color": "var(--text-secondary, #374151)"},
                 "gridcolor": "#e5e7eb",
                 "rangemode": "tozero",
             },
