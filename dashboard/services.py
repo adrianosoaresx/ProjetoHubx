@@ -147,6 +147,18 @@ def _palette_for_length(length: int) -> list[str]:
     return (CHART_PALETTE * repeats)[:length]
 
 
+VALUE_FONT_SIZE = 12
+LABEL_FONT_SIZE = 12
+AXIS_FONT_SIZE = 11
+EMPTY_STATE_FONT_SIZE = 16
+ANNOTATION_BOX_STYLE = {
+    "boxstyle": "round,pad=0.35",
+    "facecolor": "#ffffff",
+    "edgecolor": "none",
+    "alpha": 0.85,
+}
+
+
 def _render_empty_chart_message(message: str) -> str:
     fig, ax = plt.subplots(figsize=(6, 4))
     fig.patch.set_alpha(0)
@@ -157,7 +169,7 @@ def _render_empty_chart_message(message: str) -> str:
         message,
         ha="center",
         va="center",
-        fontsize=14,
+        fontsize=EMPTY_STATE_FONT_SIZE,
         color="#6b7280",
         wrap=True,
     )
@@ -199,15 +211,17 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
         startangle=140,
         autopct=_autopct,
         wedgeprops={"linewidth": 1, "edgecolor": "white"},
-        textprops={"color": "#111827", "fontsize": 10},
+        textprops={"color": "#111827", "fontsize": LABEL_FONT_SIZE},
     )
 
     outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
     for text in texts:
         text.set_path_effects(outline)
-    plt.setp(autotexts, color="#0f172a", fontsize=9, weight="bold")
+        text.set_bbox(ANNOTATION_BOX_STYLE.copy())
+    plt.setp(autotexts, color="#0f172a", fontsize=VALUE_FONT_SIZE, weight="bold")
     for autotext in autotexts:
         autotext.set_path_effects(outline)
+        autotext.set_bbox(ANNOTATION_BOX_STYLE.copy())
     ax.axis("equal")
     plt.tight_layout()
     data_uri = _figure_to_data_uri(fig)
@@ -230,8 +244,8 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
     bars = ax.barh(positions, series, color=colors, edgecolor="none")
 
     ax.set_yticks(list(positions))
-    ax.set_yticklabels(labels, color="#111827", fontsize=10)
-    ax.tick_params(axis="x", colors="#374151")
+    ax.set_yticklabels(labels, color="#111827", fontsize=LABEL_FONT_SIZE)
+    ax.tick_params(axis="x", colors="#374151", labelsize=AXIS_FONT_SIZE)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(False)
@@ -247,9 +261,10 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
             str(value),
             va="center",
             ha="left",
-            fontsize=9,
+            fontsize=VALUE_FONT_SIZE,
             color="#111827",
             path_effects=outline,
+            bbox=ANNOTATION_BOX_STYLE.copy(),
         )
 
     for label in ax.get_yticklabels():
