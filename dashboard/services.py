@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.utils.translation import gettext
 
 from eventos.models import Evento, InscricaoEvento
 from nucleos.models import ParticipacaoNucleo
@@ -53,6 +55,28 @@ def calculate_event_status_totals(organizacao: Any | None) -> OrderedDict[str, i
     queryset = Evento.objects.filter(organizacao_id=organizacao_id)
     for status in Evento.Status:
         totals[status.label] = queryset.filter(status=status).count()
+    return totals
+
+
+def calculate_events_by_nucleo(organizacao: Any | None) -> OrderedDict[str, int]:
+    """Retorna a quantidade de eventos agrupados por núcleo."""
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    totals: OrderedDict[str, int] = OrderedDict()
+    if not organizacao_id:
+        return totals
+
+    queryset = (
+        Evento.objects.filter(organizacao_id=organizacao_id)
+        .values("nucleo__nome")
+        .annotate(total=Count("id"))
+        .order_by("nucleo__nome")
+    )
+
+    for item in queryset:
+        label = item["nucleo__nome"] or gettext("Sem núcleo")
+        totals[label] = item["total"]
+
     return totals
 
 
