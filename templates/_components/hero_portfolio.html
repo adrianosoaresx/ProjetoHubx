@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 {% trans 'Portfólio' as hero_default_title %}
 {% with hero_title=title|default:hero_default_title hero_subtitle=subtitle hero_counts=counts hero_neural_background=neural_background|default:'portfolio' hero_action_template=action_template %}
-<section class="hero-with-neural bg-gradient-to-br from-[var(--hero-from)] to-[var(--hero-to)] text-white" style="--hero-from: #6b21a8; --hero-to: #7c3aed;{% if style %} {{ style|safe }}{% endif %}">
+<section class="hero-with-neural bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 text-white">
   <div class="hero-neural-background" aria-hidden="true">
     {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
   </div>
