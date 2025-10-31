@@ -317,6 +317,13 @@ def _get_menu_items() -> List[MenuItem]:
 
     return [
         MenuItem(
+            id="admin-dashboard",
+            path=reverse("dashboard:admin_dashboard"),
+            label="Dashboard",
+            icon=ICON_DASHBOARD,
+            permissions=["admin", "root"],
+        ),
+        MenuItem(
             id="perfil",
             path=perfil_url,
             label="Perfil",
@@ -331,13 +338,6 @@ def _get_menu_items() -> List[MenuItem]:
             label="Portfólio",
             icon=ICON_BRIEFCASE,
             permissions=["authenticated"],
-        ),
-        MenuItem(
-            id="admin-dashboard",
-            path=reverse("dashboard:admin_dashboard"),
-            label="Dashboard",
-            icon=ICON_DASHBOARD,
-            permissions=["admin", "root"],
         ),
         MenuItem(
             id="conexoes",
