@@ -4,10 +4,8 @@ from dataclasses import dataclass, replace
 from typing import List
 from urllib.parse import parse_qsl, urlsplit
 
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 from django.utils import timezone
-
-from accounts.models import UserType
 
 
 @dataclass
@@ -278,10 +276,6 @@ def _get_menu_items() -> List[MenuItem]:
     perfil_url = reverse("accounts:perfil")
     configuracoes_url = reverse("configuracoes:configuracoes")
     nucleos_url = reverse("nucleos:list")
-    try:
-        portfolio_url = reverse("portfolio:index")
-    except NoReverseMatch:
-        portfolio_url = "#"
     # URLs de eventos
     eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
@@ -323,17 +317,10 @@ def _get_menu_items() -> List[MenuItem]:
         ),
         MenuItem(
             id="portfolio",
-            path=portfolio_url,
+            path=reverse("portfolio:index"),
             label="Portfólio",
             icon=ICON_BRIEFCASE,
             permissions=["authenticated"],
-        ),
-        MenuItem(
-            id="dashboard",
-            path=reverse("organizacoes:list"),
-            label="Dashboard",
-            icon=ICON_DASHBOARD,
-            permissions=[UserType.ADMIN.value, UserType.ROOT.value],
         ),
         MenuItem(
             id="conexoes",
@@ -492,15 +479,6 @@ def build_menu(request) -> List[MenuItem]:
     items = _get_menu_items()
     user = request.user
     filtered = _filter_items(items, user)
-    dashboard_item = next((item for item in filtered if item.id == "dashboard"), None)
-    if dashboard_item:
-        if getattr(user, "organizacao_id", None):
-            dashboard_item.path = reverse(
-                "organizacoes:dashboard",
-                kwargs={"pk": user.organizacao_id},
-            )
-        elif user.user_type != UserType.ROOT.value:
-            filtered.remove(dashboard_item)
     current_full_path = request.get_full_path()
     path_queries = defaultdict(set)
     _collect_path_queries(filtered, path_queries)

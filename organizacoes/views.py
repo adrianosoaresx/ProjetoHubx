@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Prefetch, Q, Sum
+from django.db.models import Count, Prefetch
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
@@ -19,19 +19,18 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     ListView,
-    TemplateView,
     UpdateView,
 )
 from sentry_sdk import capture_exception
 from typing import Any
 
 from accounts.models import UserType
-from eventos.models import Evento, InscricaoEvento
+from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
 from core.utils import resolve_back_href
-from feed.models import Post, PostView, Reacao
-from nucleos.models import Nucleo, ParticipacaoNucleo
+from feed.models import Post
+from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
 from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
@@ -452,138 +451,3 @@ class OrganizacaoPostsModalView(OrganizacaoModalBaseView):
     section = "posts"
     api_url_name = "organizacoes_api:organizacao-posts-list"
     filter_kwargs = {"deleted": False}
-
-
-class DashboardAdminView(AdminRequiredMixin, TemplateView):
-    template_name = "dashboard/admin.html"
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        org_id = self.kwargs.get("pk")
-        org = get_object_or_404(Organizacao, pk=org_id)
-
-        user = self.request.user
-        if user.user_type != UserType.ROOT and getattr(user, "organizacao_id", None) != org.pk:
-            raise Http404()
-
-        nucleos_count = Nucleo.objects.filter(organizacao=org).count()
-
-        participacoes_qs = ParticipacaoNucleo.objects.filter(nucleo__organizacao=org)
-        membros_ativos_count = participacoes_qs.filter(status="ativo").count()
-
-        participantes_distinct = (
-            participacoes_qs.filter(status="ativo").values("user").distinct().count()
-        )
-
-        User = get_user_model()
-        num_associados = User.objects.filter(
-            organizacao=org,
-            user_type=UserType.ASSOCIADO,
-        ).count()
-
-        taxa_participacao = (
-            (participantes_distinct / num_associados) * 100 if num_associados else 0
-        )
-
-        status_labels = dict(ParticipacaoNucleo.STATUS_CHOICES)
-        membros_por_status_raw = participacoes_qs.values("status").annotate(total=Count("status"))
-        membros_por_status = [
-            {
-                "codigo": item["status"],
-                "status": status_labels.get(item["status"], item["status"]),
-                "total": item["total"],
-            }
-            for item in membros_por_status_raw
-        ]
-        membros_status_data = {
-            entry["status"]: entry["total"] for entry in membros_por_status
-        }
-
-        eventos_qs = Evento.objects.filter(organizacao=org)
-        eventos_total = eventos_qs.count()
-        eventos_planejamento = eventos_qs.filter(status=Evento.Status.PLANEJAMENTO).count()
-        eventos_ativos = eventos_qs.filter(status=Evento.Status.ATIVO).count()
-        eventos_concluidos = eventos_qs.filter(status=Evento.Status.CONCLUIDO).count()
-        eventos_cancelados = eventos_qs.filter(status=Evento.Status.CANCELADO).count()
-        eventos_status_data = {
-            "Planejamento": eventos_planejamento,
-            "Ativos": eventos_ativos,
-            "Concluídos": eventos_concluidos,
-            "Cancelados": eventos_cancelados,
-        }
-
-        inscricoes_confirmadas = InscricaoEvento.objects.filter(
-            evento__organizacao=org,
-            status="confirmada",
-        ).count()
-
-        posts_total = Post.objects.filter(organizacao=org).count()
-        reacoes_total = Reacao.objects.filter(post__organizacao=org).count()
-        visualizacoes_total = PostView.objects.filter(post__organizacao=org).count()
-
-        usuarios_org = User.objects.filter(organizacao=org)
-        social_totals = usuarios_org.annotate(
-            connections_count=Count(
-                "connections",
-                filter=Q(connections__organizacao=org),
-                distinct=True,
-            ),
-            followers_count=Count(
-                "followers",
-                filter=Q(followers__organizacao=org),
-                distinct=True,
-            ),
-            following_count=Count(
-                "following",
-                filter=Q(following__organizacao=org),
-                distinct=True,
-            ),
-        ).aggregate(
-            total_connections=Sum("connections_count"),
-            total_followers=Sum("followers_count"),
-            total_following=Sum("following_count"),
-        )
-
-        total_conexoes = (social_totals.get("total_connections") or 0) // 2
-        solicitacoes_pendentes = social_totals.get("total_followers") or 0
-        solicitacoes_enviadas = social_totals.get("total_following") or 0
-
-        proximos_eventos = (
-            eventos_qs.filter(data_inicio__gte=timezone.now())
-            .order_by("data_inicio")
-            .select_related("nucleo")[:5]
-        )
-        ultimos_posts = (
-            Post.objects.filter(organizacao=org)
-            .select_related("autor")
-            .order_by("-created_at")[:5]
-        )
-
-        context.update(
-            {
-                "organizacao": org,
-                "nucleos_count": nucleos_count,
-                "membros_ativos_count": membros_ativos_count,
-                "taxa_participacao": taxa_participacao,
-                "participantes_distinct": participantes_distinct,
-                "num_associados": num_associados,
-                "membros_por_status": membros_por_status,
-                "eventos_total": eventos_total,
-                "eventos_planejamento": eventos_planejamento,
-                "eventos_ativos": eventos_ativos,
-                "eventos_concluidos": eventos_concluidos,
-                "eventos_cancelados": eventos_cancelados,
-                "inscricoes_confirmadas": inscricoes_confirmadas,
-                "posts_total": posts_total,
-                "reacoes_total": reacoes_total,
-                "visualizacoes_total": visualizacoes_total,
-                "conexoes_total": total_conexoes,
-                "solicitacoes_pendentes": solicitacoes_pendentes,
-                "solicitacoes_enviadas": solicitacoes_enviadas,
-                "eventos_status_data": eventos_status_data,
-                "membros_status_data": membros_status_data,
-                "proximos_eventos": proximos_eventos,
-                "ultimos_posts": ultimos_posts,
-            }
-        )
-        return context
