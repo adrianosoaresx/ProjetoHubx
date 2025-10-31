@@ -4340,10 +4340,16 @@ body.sidebar-mobile-open .sidebar-backdrop {
   }
 }
 
-/* Ensure the main content starts immediately below the fixed header */
+/* Ensure the main content starts immediately below the fixed header on small screens */
 
 .mobile-header-offset {
   padding-top: var(--layout-header-height);
+}
+
+@media (min-width: 768px) {
+  .mobile-header-offset {
+    padding-top: 0;
+  }
 }
 
 /* ========================================
