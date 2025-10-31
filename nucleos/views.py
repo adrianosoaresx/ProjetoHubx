@@ -504,6 +504,11 @@ class NucleoUpdateView(
             qs = qs.filter(participacoes__user=user)
         return qs
 
+    def get_success_url(self):
+        if self.object:
+            return reverse("nucleos:detail", args=[self.object.pk])
+        return super().get_success_url()
+
     def form_valid(self, form):
         messages.success(self.request, _("Núcleo atualizado com sucesso."))
         response = super().form_valid(form)
