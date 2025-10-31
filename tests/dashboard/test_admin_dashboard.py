@@ -63,7 +63,7 @@ def test_admin_dashboard_returns_expected_metrics():
     eventos_por_nucleo = context["eventos_por_nucleo"]
     assert eventos_por_nucleo["labels"] == [nucleo.nome, EVENTOS_PUBLICOS_LABEL]
     assert eventos_por_nucleo["series"] == [3, 1]
-    assert eventos_por_nucleo["image"].startswith("data:image/png;base64,")
+    assert eventos_por_nucleo["figure"]["data"][0]["type"] == "bar"
 
     membros_chart = context["membros_chart"]
     assert membros_chart["labels"] == [
@@ -71,7 +71,7 @@ def test_admin_dashboard_returns_expected_metrics():
         ASSOCIADOS_NAO_NUCLEADOS_LABEL,
     ]
     assert membros_chart["series"] == [1, 1]
-    assert membros_chart["image"].startswith("data:image/png;base64,")
+    assert membros_chart["figure"]["data"][0]["type"] == "pie"
 
 
 @pytest.mark.django_db
