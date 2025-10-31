@@ -194,7 +194,7 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
     if total == 0:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
-    fig = plt.figure(figsize=(6, 4))
+    fig = plt.figure(figsize=(7.5, 5.5))
     fig.patch.set_facecolor("#ffffff")
     fig.patch.set_alpha(1)
     ax = fig.add_subplot(111, projection="3d")
@@ -290,52 +290,48 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
     if total == 0:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
-    fig = plt.figure(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(7.5, 5.5))
     fig.patch.set_facecolor("#ffffff")
     fig.patch.set_alpha(1)
-    ax = fig.add_subplot(111, projection="3d")
     ax.set_facecolor("#ffffff")
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
     values = np.array(series, dtype=float)
     y_positions = np.arange(len(labels))
-    bar_depth = 0.6
-    bar_height = 0.4
-    outline_effect = patheffects.withStroke(linewidth=2, foreground="#f3f4f6")
+    outline_effect = patheffects.withStroke(linewidth=2, foreground="#e5e7eb")
 
-    ax.bar3d(
-        np.zeros(len(series)),
-        y_positions - bar_depth / 2,
-        np.zeros(len(series)),
+    bars = ax.barh(
+        y_positions,
         values,
-        np.full(len(series), bar_depth),
-        np.full(len(series), bar_height),
         color=colors,
-        shade=True,
-        edgecolor="#f3f4f6",
-        linewidth=0.5,
+        edgecolor="#e5e7eb",
+        linewidth=0.75,
     )
 
     ax.set_yticks(y_positions)
-    ax.set_yticklabels(
-        labels,
-        color="#111827",
-        fontsize=LABEL_FONT_SIZE,
-        fontweight="bold",
-    )
-    ax.set_ylabel("")
-    max_value = float(values.max()) if len(values) else 1.0
-    xmax = max_value if max_value > 0 else 1.0
-    ax.set_xlim(0, xmax * 1.1)
-    ax.set_xticks(np.linspace(0, xmax, num=4))
-    ax.set_xlabel("")
-    ax.set_zticks([])
-    ax.view_init(elev=20, azim=-60)
-    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-        axis.pane.set_facecolor((1.0, 1.0, 1.0, 0.0))
-        axis.pane.set_edgecolor((1.0, 1.0, 1.0, 0.0))
+    ax.set_yticklabels(labels, color="#0f172a", fontsize=LABEL_FONT_SIZE, fontweight="bold")
+    ax.tick_params(axis="y", colors="#0f172a", labelsize=LABEL_FONT_SIZE)
     ax.tick_params(axis="x", colors="#374151", labelsize=AXIS_FONT_SIZE)
-    ax.tick_params(axis="y", colors="#111827", labelsize=LABEL_FONT_SIZE)
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#d1d5db")
+    ax.spines["bottom"].set_color("#d1d5db")
+    ax.grid(axis="x", color="#e5e7eb", linestyle="--", linewidth=0.8, alpha=0.8)
+    ax.set_axisbelow(True)
+
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_width() + max(values) * 0.01,
+            bar.get_y() + bar.get_height() / 2,
+            f"{int(value)}",
+            va="center",
+            ha="left",
+            fontsize=VALUE_FONT_SIZE,
+            color="#0f172a",
+            fontweight="bold",
+        )
 
     legend_handles = []
     for label, value, color in zip(labels, values, colors):
@@ -359,7 +355,7 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
             frameon=False,
         )
 
-    fig.subplots_adjust(left=0.08, right=0.78, top=0.95, bottom=0.1)
+    fig.subplots_adjust(left=0.18, right=0.78, top=0.95, bottom=0.15)
     data_uri = _figure_to_data_uri(fig)
     plt.close(fig)
     return data_uri
