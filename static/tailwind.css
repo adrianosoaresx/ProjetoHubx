@@ -4979,6 +4979,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-shadow: var(--tw-shadow-colored);
 }
 
+.dark\:focus-visible\:ring-slate-500\/70:focus-visible:is(.dark *) {
+  --tw-ring-color: rgb(100 116 139 / 0.7);
+}
+
 @media (min-width: 640px) {
   .sm\:col-span-2 {
     grid-column: span 2 / span 2;
@@ -5129,10 +5133,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 }
 
 @media (min-width: 768px) {
-  .md\:static {
-    position: static;
-  }
-
   .md\:sticky {
     position: sticky;
   }
@@ -5147,6 +5147,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:-mt-16 {
     margin-top: -4rem;
+  }
+
+  .md\:ml-64 {
+    margin-left: 16rem;
   }
 
   .md\:inline-flex {
