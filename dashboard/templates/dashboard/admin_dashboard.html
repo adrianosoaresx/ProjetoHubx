@@ -4,14 +4,8 @@
 {% block title %}{% trans "Dashboard administrativo" %}{% endblock %}
 
 {% block hero %}
-  {% include "_components/hero.html" with
-    title=_("Dashboard administrativo")
-    subtitle=_("Acompanhe indicadores-chave da organização e o desempenho dos eventos.")
-    breadcrumb_template="dashboard/partials/admin_dashboard_breadcrumb.html"
-    neural_background="dashboard"
-    section_classes="relative isolate overflow-hidden text-white"
-    container_classes="max-w-7xl mx-auto w-full px-6 py-14 md:py-16"
-  %}
+{% include "_components/hero.html" with title=_("Dashboard administrativo") subtitle=_("Acompanhe indicadores-chave da organização e o desempenho dos eventos.") breadcrumb_template="dashboard/partials/admin_dashboard_breadcrumb.html" neural_background="dashboard" section_classes="relative isolate overflow-hidden text-white" container_classes="max-w-7xl mx-auto w-full px-6 py-14 md:py-16" %}
+
 {% endblock %}
 
 {% block content %}
