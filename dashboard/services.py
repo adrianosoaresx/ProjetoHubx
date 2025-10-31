@@ -11,6 +11,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as patheffects
+import numpy as np
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from matplotlib.patches import Patch
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.translation import gettext
@@ -191,41 +194,92 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
     if total == 0:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig = plt.figure(figsize=(6, 4))
     fig.patch.set_facecolor("#ffffff")
     fig.patch.set_alpha(1)
+    ax = fig.add_subplot(111, projection="3d")
     ax.set_facecolor("#ffffff")
 
     colors = _palette_for_length(len(series)) or ["#0ea5e9"]
+    radius = 1.0
+    height = 0.3
+    start_angle = 0.0
+    outline_effect = patheffects.withStroke(linewidth=2, foreground="#f3f4f6")
+    legend_handles: list[Patch] = []
 
-    def _autopct(pct: float) -> str:
-        absolute = int(round(pct * total / 100))
-        if absolute == 0:
-            return ""
-        return f"{pct:.1f}%\n({absolute})"
+    for label, value, color in zip(labels, series, colors):
+        if value == 0:
+            start_angle += 360 * (value / max(total, 1))
+            continue
 
-    wedges, texts, autotexts = ax.pie(
-        series,
-        labels=labels,
-        colors=colors,
-        startangle=140,
-        autopct=_autopct,
-        wedgeprops={"linewidth": 1, "edgecolor": "white"},
-        textprops={"color": "#111827", "fontsize": LABEL_FONT_SIZE},
-        shadow=True,
-        pctdistance=0.75,
-    )
+        angle = (value / total) * 360
+        theta = np.linspace(np.deg2rad(start_angle), np.deg2rad(start_angle + angle), 40)
+        x = radius * np.cos(theta)
+        y = radius * np.sin(theta)
 
-    outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
-    for text in texts:
-        text.set_path_effects(outline)
-        text.set_bbox(ANNOTATION_BOX_STYLE.copy())
-    plt.setp(autotexts, color="#0f172a", fontsize=VALUE_FONT_SIZE, weight="bold")
-    for autotext in autotexts:
-        autotext.set_path_effects(outline)
-        autotext.set_bbox(ANNOTATION_BOX_STYLE.copy())
-    ax.axis("equal")
-    plt.tight_layout()
+        top_face = [(0.0, 0.0, height)] + list(zip(x, y, np.full_like(x, height)))
+        bottom_face = [(0.0, 0.0, 0.0)] + list(zip(x, y, np.zeros_like(x)))
+
+        for face in (top_face, bottom_face):
+            poly = Poly3DCollection([face], facecolors=color, edgecolors="#ffffff", linewidths=0.5)
+            poly.set_alpha(0.95)
+            ax.add_collection3d(poly)
+
+        for i in range(len(theta) - 1):
+            side_vertices = [
+                (x[i], y[i], 0.0),
+                (x[i + 1], y[i + 1], 0.0),
+                (x[i + 1], y[i + 1], height),
+                (x[i], y[i], height),
+            ]
+            side = Poly3DCollection([side_vertices], facecolors=color, edgecolors="#ffffff", linewidths=0.3)
+            side.set_alpha(0.95)
+            ax.add_collection3d(side)
+
+        radial_start = [
+            (0.0, 0.0, 0.0),
+            (x[0], y[0], 0.0),
+            (x[0], y[0], height),
+            (0.0, 0.0, height),
+        ]
+        radial_end = [
+            (0.0, 0.0, 0.0),
+            (x[-1], y[-1], 0.0),
+            (x[-1], y[-1], height),
+            (0.0, 0.0, height),
+        ]
+        for radial_face in (radial_start, radial_end):
+            radial_poly = Poly3DCollection([radial_face], facecolors=color, edgecolors="#ffffff", linewidths=0.3)
+            radial_poly.set_alpha(0.95)
+            ax.add_collection3d(radial_poly)
+
+        handle = Patch(
+            facecolor=color,
+            edgecolor="#1f2937",
+            label=f"{label} ({value})",
+            linewidth=0.5,
+        )
+        handle.set_path_effects([outline_effect])
+        legend_handles.append(handle)
+
+        start_angle += angle
+
+    ax.view_init(elev=25, azim=135)
+    ax.set_box_aspect((1, 1, 0.35))
+    ax.set_xlim(-1.2, 1.2)
+    ax.set_ylim(-1.2, 1.2)
+    ax.set_zlim(0, height * 2.2)
+    ax.set_axis_off()
+    if legend_handles:
+        ax.legend(
+            handles=legend_handles,
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            fontsize=LABEL_FONT_SIZE,
+            frameon=False,
+        )
+
+    fig.subplots_adjust(left=0.0, right=0.75, top=0.95, bottom=0.05)
     data_uri = _figure_to_data_uri(fig)
     plt.close(fig)
     return data_uri
@@ -236,50 +290,76 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
     if total == 0:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig = plt.figure(figsize=(6, 4))
     fig.patch.set_facecolor("#ffffff")
     fig.patch.set_alpha(1)
+    ax = fig.add_subplot(111, projection="3d")
     ax.set_facecolor("#ffffff")
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
-    positions = range(len(labels))
-    bars = ax.barh(positions, series, color=colors, edgecolor="none")
+    values = np.array(series, dtype=float)
+    y_positions = np.arange(len(labels))
+    bar_depth = 0.6
+    bar_height = 0.4
+    outline_effect = patheffects.withStroke(linewidth=2, foreground="#f3f4f6")
 
-    ax.set_yticks(list(positions))
+    ax.bar3d(
+        np.zeros(len(series)),
+        y_positions - bar_depth / 2,
+        np.zeros(len(series)),
+        values,
+        np.full(len(series), bar_depth),
+        np.full(len(series), bar_height),
+        color=colors,
+        shade=True,
+        edgecolor="#f3f4f6",
+        linewidth=0.5,
+    )
+
+    ax.set_yticks(y_positions)
     ax.set_yticklabels(
         labels,
         color="#111827",
         fontsize=LABEL_FONT_SIZE,
         fontweight="bold",
     )
+    ax.set_ylabel("")
+    max_value = float(values.max()) if len(values) else 1.0
+    xmax = max_value if max_value > 0 else 1.0
+    ax.set_xlim(0, xmax * 1.1)
+    ax.set_xticks(np.linspace(0, xmax, num=4))
+    ax.set_xlabel("")
+    ax.set_zticks([])
+    ax.view_init(elev=20, azim=-60)
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.pane.set_facecolor((1.0, 1.0, 1.0, 0.0))
+        axis.pane.set_edgecolor((1.0, 1.0, 1.0, 0.0))
     ax.tick_params(axis="x", colors="#374151", labelsize=AXIS_FONT_SIZE)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_visible(False)
-    ax.spines["bottom"].set_color("#d1d5db")
-    ax.xaxis.grid(True, color="#e5e7eb", linestyle="--", linewidth=0.7)
-    ax.set_axisbelow(True)
+    ax.tick_params(axis="y", colors="#111827", labelsize=LABEL_FONT_SIZE)
 
-    outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
-    for bar, value in zip(bars, series):
-        ax.text(
-            bar.get_width() + max(total * 0.01, 0.1),
-            bar.get_y() + bar.get_height() / 2,
-            str(value),
-            va="center",
-            ha="left",
-            fontsize=VALUE_FONT_SIZE,
-            color="#111827",
-            fontweight="bold",
-            path_effects=outline,
-            bbox=ANNOTATION_BOX_STYLE.copy(),
+    legend_handles = []
+    for label, value, color in zip(labels, values, colors):
+        if value == 0:
+            continue
+        handle = Patch(
+            facecolor=color,
+            edgecolor="#1f2937",
+            linewidth=0.5,
+            label=f"{label} ({int(value)})",
+        )
+        handle.set_path_effects([outline_effect])
+        legend_handles.append(handle)
+
+    if legend_handles:
+        ax.legend(
+            handles=legend_handles,
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            fontsize=LABEL_FONT_SIZE,
+            frameon=False,
         )
 
-    for label in ax.get_yticklabels():
-        label.set_path_effects(outline)
-        label.set_fontweight("bold")
-
-    plt.tight_layout()
+    fig.subplots_adjust(left=0.08, right=0.78, top=0.95, bottom=0.1)
     data_uri = _figure_to_data_uri(fig)
     plt.close(fig)
     return data_uri
