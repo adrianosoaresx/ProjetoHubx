@@ -25,7 +25,7 @@
         </div>
         <nav class="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start" aria-label="{% trans 'Seções de configuração' %}">
 
-          {% with button_base_classes='btn flex items-center gap-2 text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]' %}
+          {% with button_base_classes='btn flex items-center gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/80 dark:focus-visible:ring-slate-500/70' %}
 
             <a
               href="{% url 'configuracoes:configuracoes_seguranca' %}"
