@@ -1,25 +1,27 @@
 {% load i18n lucide_icons %}
 {% trans 'Portfólio' as hero_default_title %}
-{% with hero_title=title|default:hero_default_title hero_subtitle=subtitle hero_counts=counts hero_neural_background=neural_background|default:'portfolio' hero_action_template=action_template %}
 <section class="hero-with-neural bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 text-white">
   <div class="neural-bg-base" aria-hidden="true">
-    {% include 'backgrounds/neural_backgrounds.html' with bg_type=hero_neural_background only %}
+    {% include 'backgrounds/neural_backgrounds.html' with bg_type=neural_background|default:'portfolio' only %}
   </div>
   <div class="hero-overlay" aria-hidden="true"></div>
   <div class="hero-content w-full">
     <div class="max-w-7xl mx-auto w-full px-4 py-12 text-center md:text-left md:py-16">
+      {% if breadcrumb_template %}
+        <div class="mb-4">{% include breadcrumb_template %}</div>
+      {% endif %}
       <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div class="space-y-3 md:max-w-3xl">
-          <h1 class="text-4xl md:text-5xl font-bold text-white">{{ hero_title }}</h1>
-          {% if hero_subtitle %}<p class="text-lg text-white/90">{{ hero_subtitle }}</p>{% endif %}
+          <h1 class="text-4xl md:text-5xl font-bold text-white">{{ title|default:hero_default_title }}</h1>
+          {% if subtitle %}
+            <p class="text-lg text-white/90">{{ subtitle }}</p>
+          {% endif %}
         </div>
-        {% if hero_action_template %}
-          <div class="flex justify-center md:justify-end md:self-start">
-            {% include hero_action_template %}
-          </div>
+        {% if action_template %}
+          <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
-      {% if hero_counts.total or hero_counts.images or hero_counts.videos or hero_counts.pdfs or hero_counts.others %}
+      {% if counts.total or counts.images or counts.videos or counts.pdfs or counts.others %}
         {% lucide 'image' class='h-5 w-5' as icon_images %}
         {% lucide 'video' class='h-5 w-5' as icon_videos %}
         {% lucide 'file-text' class='h-5 w-5' as icon_pdfs %}
@@ -27,15 +29,14 @@
         {% lucide 'file' class='h-5 w-5' as icon_other %}
         <div class="mt-10 space-y-4 text-left">
           <div class="card-grid">
-            {% include '_partials/cards/total_card.html' with label=_('Total de mídias') valor=hero_counts.total icon_svg=icon_total card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Imagens') valor=hero_counts.images icon_svg=icon_images card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Vídeos') valor=hero_counts.videos icon_svg=icon_videos card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('PDFs') valor=hero_counts.pdfs icon_svg=icon_pdfs card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Outros') valor=hero_counts.others icon_svg=icon_other card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+            {% include '_partials/cards/total_card.html' with label=_('Total de mídias') valor=counts.total icon_svg=icon_total card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+            {% include '_partials/cards/total_card.html' with label=_('Imagens') valor=counts.images icon_svg=icon_images card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+            {% include '_partials/cards/total_card.html' with label=_('Vídeos') valor=counts.videos icon_svg=icon_videos card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+            {% include '_partials/cards/total_card.html' with label=_('PDFs') valor=counts.pdfs icon_svg=icon_pdfs card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
+            {% include '_partials/cards/total_card.html' with label=_('Outros') valor=counts.others icon_svg=icon_other card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
           </div>
         </div>
       {% endif %}
     </div>
   </div>
 </section>
-{% endwith %}
