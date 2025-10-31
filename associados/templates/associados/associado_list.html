@@ -9,61 +9,46 @@
 
 {% block content %}
 
-  <article class="card">
-    <header class="card-header">
-      <h2 class="text-xl font-semibold">{% trans "Associados" %}</h2>
-    </header>
-    <div class="card-body space-y-6">
-      <div id="associados-grid">
-        {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
+  <div class="space-y-6">
+    <details class="card" data-associados-section="sem-nucleo">
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <span class="text-xl font-semibold">{% trans "Associados sem núcleo" %}</span>
+        <span class="badge badge-neutral">{{ associados_sem_nucleo_count }}</span>
+      </summary>
+      <div class="card-body">
+        {% include 'associados/_grid.html' with usuarios=associados_sem_nucleo empty_message=_('Nenhum associado sem núcleo encontrado.') %}
       </div>
+    </details>
 
-      <div class="pt-4 border-t border-[var(--border)]">
-        <div id="associados-loading" class="htmx-indicator text-center text-sm text-[var(--text-secondary)]" role="status" aria-live="polite">
-          {% trans 'Carregando associados...' %}
-        </div>
+    <details class="card" data-associados-section="nucleados">
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <span class="text-xl font-semibold">{% trans "Associados nucleados" %}</span>
+        <span class="badge badge-neutral">{{ associados_nucleados_count }}</span>
+      </summary>
+      <div class="card-body">
+        {% include 'associados/_grid.html' with usuarios=associados_nucleados empty_message=_('Nenhum associado nucleado encontrado.') %}
       </div>
-    </div>
-  </article>
+    </details>
 
-{% endblock %}
+    <details class="card" data-associados-section="consultores">
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <span class="text-xl font-semibold">{% trans "Consultores" %}</span>
+        <span class="badge badge-neutral">{{ associados_consultores_count }}</span>
+      </summary>
+      <div class="card-body">
+        {% include 'associados/_grid.html' with usuarios=associados_consultores empty_message=_('Nenhum consultor encontrado.') %}
+      </div>
+    </details>
 
-{% block scripts %}
-  {{ block.super }}
-  <script>
-    (function() {
-      const stateId = 'associados-filter-state';
+    <details class="card" data-associados-section="coordenadores">
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <span class="text-xl font-semibold">{% trans "Coordenadores" %}</span>
+        <span class="badge badge-neutral">{{ associados_coordenadores_count }}</span>
+      </summary>
+      <div class="card-body">
+        {% include 'associados/_grid.html' with usuarios=associados_coordenadores empty_message=_('Nenhum coordenador encontrado.') %}
+      </div>
+    </details>
+  </div>
 
-      function parseClasses(value) {
-        return value ? value.split(/\s+/).filter(Boolean) : [];
-      }
-
-      function updateFilterButtons() {
-        const stateEl = document.getElementById(stateId);
-        if (!stateEl) {
-          return;
-        }
-        const currentFilter = stateEl.dataset.currentFilter || 'todos';
-        const buttons = document.querySelectorAll('[data-associados-filter-card]');
-
-        buttons.forEach((button) => {
-          const activeClasses = parseClasses(button.dataset.activeClass || '');
-          const isActive = button.dataset.associadosFilterCard === currentFilter;
-          button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-          activeClasses.forEach((cls) => {
-            if (cls) {
-              button.classList.toggle(cls, isActive);
-            }
-          });
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', updateFilterButtons);
-      document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.target && event.target.id === 'associados-grid') {
-          updateFilterButtons();
-        }
-      });
-    })();
-  </script>
 {% endblock %}

@@ -66,35 +66,7 @@ def test_coordenador_list_associados(client):
     assert assoc.username in resp.content.decode()
 
 
-def test_associados_htmx_returns_partial_grid(client):
-    admin = create_user("htmx-admin@example.com", "htmx-admin", UserType.ADMIN)
-    for idx in range(11):
-        create_user(
-            f"assoc-htmx-{idx}@example.com",
-            f"assoc-htmx-{idx}",
-            UserType.ASSOCIADO,
-            is_associado=True,
-        )
-
-    client.force_login(admin)
-    url = reverse("associados:associados_lista")
-    resp = client.get(url, HTTP_HX_REQUEST="true")
-
-    assert resp.status_code == 200
-    template_names = [template.name for template in resp.templates if getattr(template, "name", None)]
-    assert "associados/_grid.html" in template_names
-    assert "associados/associado_list.html" not in template_names
-
-    content = resp.content.decode()
-    assert "card-grid" in content
-    assert "assoc-htmx-0" in content
-    assert 'hx-target="#associados-grid"' in content
-    assert f'hx-get="{url}?page=2' in content
-    assert 'hx-indicator="#associados-loading"' in content
-    assert 'hx-swap-oob="true"' in content
-
-
-def test_associados_filter_actions(client):
+def test_associados_sections_grouping(client):
     org = Organizacao.objects.create(nome="Org Filters", cnpj="11.111.111/1111-11", slug="org-filters")
     nucleo = Nucleo.objects.create(organizacao=org, nome="Núcleo Alpha")
     admin = create_user(
@@ -133,43 +105,39 @@ def test_associados_filter_actions(client):
     )
 
     client.force_login(admin)
-    url = reverse("associados:associados_lista")
+    resp = client.get(reverse("associados:associados_lista"))
 
-    resp = client.get(url)
     assert resp.status_code == 200
     content = resp.content.decode()
-    assert 'data-associados-filter-card="associados"' in content
-    assert 'data-associados-filter-card="nucleados"' in content
-    assert 'data-associados-filter-card="consultores"' in content
-    assert 'data-associados-filter-card="coordenadores"' in content
-    assert resp.context["associados_filter_url"].endswith("?tipo=associados")
-    assert resp.context["nucleados_filter_url"].endswith("?tipo=nucleados")
-    assert resp.context["consultores_filter_url"].endswith("?tipo=consultores")
-    assert resp.context["coordenadores_filter_url"].endswith("?tipo=coordenadores")
-    assert 'id="associados-filter-state"' in content
 
-    resp = client.get(url, {"tipo": "associados"})
-    content = resp.content.decode()
-    assert associado.username in content
-    assert nucleado.username not in content
-    assert "consultor@example.com" not in content
-    assert "coordenador@example.com" not in content
+    def section_content(html: str, section: str) -> str:
+        marker = f'data-associados-section="{section}"'
+        assert marker in html
+        after_marker = html.split(marker, 1)[1]
+        closing_index = after_marker.find("</details>")
+        assert closing_index != -1
+        return after_marker[:closing_index]
 
-    resp = client.get(url, {"tipo": "nucleados"})
-    content = resp.content.decode()
-    assert nucleado.username in content
-    assert associado.username not in content
-    assert "consultor@example.com" not in content
+    sem_nucleo_section = section_content(content, "sem-nucleo")
+    assert associado.username in sem_nucleo_section
+    assert nucleado.username not in sem_nucleo_section
+    assert consultor.username not in sem_nucleo_section
+    assert coordenador.username not in sem_nucleo_section
 
-    resp = client.get(url, {"tipo": "consultores"})
-    content = resp.content.decode()
-    assert "consultor@example.com" in content
-    assert associado.username not in content
-    assert nucleado.username not in content
+    nucleados_section = section_content(content, "nucleados")
+    assert nucleado.username in nucleados_section
+    assert associado.username not in nucleados_section
+    assert consultor.username not in nucleados_section
+    assert coordenador.username not in nucleados_section
 
-    resp = client.get(url, {"tipo": "coordenadores"})
-    content = resp.content.decode()
-    assert "coordenador@example.com" in content
-    assert "consultor@example.com" not in content
-    assert associado.username not in content
-    assert nucleado.username not in content
+    consultores_section = section_content(content, "consultores")
+    assert consultor.username in consultores_section
+    assert associado.username not in consultores_section
+    assert nucleado.username not in consultores_section
+    assert coordenador.username not in consultores_section
+
+    coordenadores_section = section_content(content, "coordenadores")
+    assert coordenador.username in coordenadores_section
+    assert associado.username not in coordenadores_section
+    assert nucleado.username not in coordenadores_section
+    assert consultor.username not in coordenadores_section
