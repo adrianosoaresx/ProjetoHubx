@@ -37,40 +37,40 @@
       </div>
       <div class="grid gap-6 lg:grid-cols-2">
         <figure class="card" aria-labelledby="membros-chart-title">
-          <div class="card-body space-y-4">
-            <div>
+          <div class="card-body space-y-6">
+            <img
+              src="{{ membros_chart.image }}"
+              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
+              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-6"
+              loading="lazy"
+            />
+            <figcaption class="space-y-1">
               <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
                 {% trans "Distribuição de membros" %}
               </h3>
               <p class="text-sm text-[var(--text-muted)]">
                 {% trans "Comparativo entre associados nucleados e não nucleados." %}
               </p>
-            </div>
-            <img
-              src="{{ membros_chart.image }}"
-              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
-              class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
-              loading="lazy"
-            />
+            </figcaption>
           </div>
         </figure>
 
         <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
-          <div class="card-body space-y-4">
-            <div>
+          <div class="card-body space-y-6">
+            <img
+              src="{{ eventos_por_nucleo.image }}"
+              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo e eventos públicos.' %}"
+              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-6"
+              loading="lazy"
+            />
+            <figcaption class="space-y-1">
               <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
                 {% trans "Eventos por núcleo" %}
               </h3>
               <p class="text-sm text-[var(--text-muted)]">
                 {% trans "Quantidade de eventos por núcleo, incluindo iniciativas públicas." %}
               </p>
-            </div>
-            <img
-              src="{{ eventos_por_nucleo.image }}"
-              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo e eventos públicos.' %}"
-              class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
-              loading="lazy"
-            />
+            </figcaption>
           </div>
         </figure>
       </div>
