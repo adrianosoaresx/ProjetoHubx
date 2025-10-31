@@ -1,42 +1,172 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{{ title|default:_('Eventos') }}{% endblock %}
 
 {% block hero %}{% include '_components/hero_evento.html' with title=title subtitle=subtitle action_template='eventos/partials/eventos/hero_evento_list_action.html' total_eventos=total_eventos total_eventos_planejamento=total_eventos_planejamento total_eventos_ativos=total_eventos_ativos total_eventos_concluidos=total_eventos_concluidos total_eventos_cancelados=total_eventos_cancelados planejamento_filter_url=planejamento_filter_url ativos_filter_url=ativos_filter_url realizados_filter_url=realizados_filter_url cancelados_filter_url=cancelados_filter_url todos_filter_url=todos_filter_url is_planejamento_filter_active=is_planejamento_filter_active is_ativos_filter_active=is_ativos_filter_active is_realizados_filter_active=is_realizados_filter_active is_cancelados_filter_active=is_cancelados_filter_active %}{% endblock %}
 
 {% block content %}
-  
-    <article class="card">
-      <div class="card-header">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="text-xl font-semibold">{{ title|default:_('Eventos') }}</h2>
-          <div class="flex flex-wrap items-center gap-3">
-            {% block list_actions %}{% endblock %}
+
+  <div class="space-y-6">
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      {% block list_actions %}{% endblock %}
+    </div>
+
+    {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
+      <details class="card group" data-eventos-section="ativos">
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+              {% lucide 'activity' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <p class="text-xl font-semibold">{% trans "Eventos ativos" %}</p>
+              {% with total=total_eventos_ativos|default_if_none:0 %}
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans count count=total %}
+                    {{ count }} evento ativo
+                  {% plural %}
+                    {{ count }} eventos ativos
+                  {% endblocktrans %}
+                </p>
+              {% endwith %}
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="card-body space-y-6">
-        {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' %}
-        {% with card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
           <div
             role="list"
-            aria-label="{{ list_aria_label|default_if_none:_('Lista de eventos')|default:_('Lista de eventos') }}"
-            class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
+            aria-label="{% trans 'Lista de eventos ativos' %}"
+            class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2"
           >
-            {% for evento in object_list %}
+            {% for evento in eventos_ativos %}
               {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
             {% empty %}
-              <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message|default_if_none:_('Nenhum evento encontrado.')|default:_('Nenhum evento encontrado.') }}</p>
+              <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum evento ativo encontrado." %}</p>
             {% endfor %}
           </div>
-        {% endwith %}
-        {% endwith %}
+        </div>
+      </details>
 
-        {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
+      <details class="card group" data-eventos-section="planejamento">
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
+              {% lucide 'calendar-clock' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <p class="text-xl font-semibold">{% trans "Eventos em planejamento" %}</p>
+              {% with total=total_eventos_planejamento|default_if_none:0 %}
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans count count=total %}
+                    {{ count }} evento em planejamento
+                  {% plural %}
+                    {{ count }} eventos em planejamento
+                  {% endblocktrans %}
+                </p>
+              {% endwith %}
+            </div>
+          </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <div
+            role="list"
+            aria-label="{% trans 'Lista de eventos em planejamento' %}"
+            class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2"
+          >
+            {% for evento in eventos_planejamento %}
+              {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
+            {% empty %}
+              <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum evento em planejamento encontrado." %}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
 
-        {% block list_footer %}{% endblock %}
-      </div>
-    </article>
-  
+      <details class="card group" data-eventos-section="realizados">
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
+              {% lucide 'check' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <p class="text-xl font-semibold">{% trans "Eventos realizados" %}</p>
+              {% with total=total_eventos_concluidos|default_if_none:0 %}
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans count count=total %}
+                    {{ count }} evento realizado
+                  {% plural %}
+                    {{ count }} eventos realizados
+                  {% endblocktrans %}
+                </p>
+              {% endwith %}
+            </div>
+          </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <div
+            role="list"
+            aria-label="{% trans 'Lista de eventos realizados' %}"
+            class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2"
+          >
+            {% for evento in eventos_realizados %}
+              {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
+            {% empty %}
+              <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum evento realizado encontrado." %}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+
+      <details class="card group" data-eventos-section="cancelados">
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-danger-500)]/10 text-[var(--color-danger-500)] shadow-lg shadow-[var(--color-danger-500)]/20">
+              {% lucide 'ban' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <p class="text-xl font-semibold">{% trans "Eventos cancelados" %}</p>
+              {% with total=total_eventos_cancelados|default_if_none:0 %}
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans count count=total %}
+                    {{ count }} evento cancelado
+                  {% plural %}
+                    {{ count }} eventos cancelados
+                  {% endblocktrans %}
+                </p>
+              {% endwith %}
+            </div>
+          </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <div
+            role="list"
+            aria-label="{% trans 'Lista de eventos cancelados' %}"
+            class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2"
+          >
+            {% for evento in eventos_cancelados %}
+              {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
+            {% empty %}
+              <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum evento cancelado encontrado." %}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+    {% endwith %}
+
+    {% block list_footer %}{% endblock %}
+  </div>
+
 {% endblock %}
