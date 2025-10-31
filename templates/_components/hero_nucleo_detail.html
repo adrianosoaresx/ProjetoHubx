@@ -30,19 +30,6 @@
 
       </div>
 
-      {% url 'nucleos:membros_list' nucleo.pk as membros_list_url %}
-      {% if total_membros is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
-        <div class="mt-6 space-y-4 text-left">
-          <div class="card-grid">
-            {% if total_membros is not None %}
-              {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact border border-white/30 bg-white/20 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md transition hover:shadow-xl focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2 dark:border-white/15 dark:bg-slate-950/55 dark:text-white cursor-pointer' body_class='card-body-compact' as_button=True button_type='button' active_class='border border-white/80 bg-white/40 shadow-xl text-white' is_active=is_membros_filter_active hx_get=membros_list_url hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='true' hx_include='#membros-filter-form' hx_vals='{"papel":"todos"}' %}
-            {% endif %}
-            {% if total_coordenadores is not None %}
-              {% include "_partials/cards/total_card.html" with label=_('Coordenadores') valor=total_coordenadores icon_name='user-check' card_class='card-compact border border-white/30 bg-white/20 text-slate-900 shadow-lg shadow-black/20 backdrop-blur-md transition hover:shadow-xl focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2 dark:border-white/15 dark:bg-slate-950/55 dark:text-white cursor-pointer' body_class='card-body-compact' as_button=True button_type='button' active_class='border border-white/80 bg-white/40 shadow-xl text-white' is_active=is_coordenadores_filter_active hx_get=membros_list_url hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='true' hx_include='#membros-filter-form' hx_vals='{"papel":"coordenador"}' %}
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
     </div>
   </div>
 </section>
