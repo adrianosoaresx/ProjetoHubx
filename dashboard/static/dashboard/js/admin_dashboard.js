@@ -70,10 +70,28 @@ const initMembersChart = (chartData) => {
         },
         tooltip: {
           callbacks: {
+            title: (items) => (items?.[0]?.label ? items[0].label : translate("Valor")),
             label: (context) => {
               const value = context.parsed;
-              const label = context.label || translate("Valor");
-              return `${label}: ${value}`;
+              return `${translate("Total")}: ${value}`;
+            },
+            afterLabel: (context) => {
+              const dataset = context.chart?.data?.datasets?.[context.datasetIndex];
+              if (!dataset || !Array.isArray(dataset.data)) {
+                return "";
+              }
+
+              const total = dataset.data.reduce((sum, item) => {
+                const numericValue = typeof item === "number" ? item : Number(item);
+                return Number.isFinite(numericValue) ? sum + numericValue : sum;
+              }, 0);
+
+              if (!total) {
+                return "";
+              }
+
+              const percentage = (context.parsed / total) * 100;
+              return `${translate("Participação")}: ${percentage.toFixed(1)}%`;
             },
           },
         },
