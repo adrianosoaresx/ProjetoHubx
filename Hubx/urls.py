@@ -33,6 +33,10 @@ urlpatterns = [
         "associados/",
         include(("associados.urls", "associados"), namespace="associados"),
     ),
+    path(
+        "dashboard/",
+        include(("dashboard.urls", "dashboard"), namespace="dashboard"),
+    ),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),
     # APIs REST (subcaminhos específicos)
