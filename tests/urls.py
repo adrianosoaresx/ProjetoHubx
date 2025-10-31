@@ -22,6 +22,8 @@ urlpatterns = [
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
+    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("portfolio/", include(("portfolio.urls", "portfolio"), namespace="portfolio")),
     path(
         "associados/",
         include(("associados.urls", "associados"), namespace="associados"),

@@ -323,6 +323,13 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["authenticated"],
         ),
         MenuItem(
+            id="admin-dashboard",
+            path=reverse("dashboard:admin_dashboard"),
+            label="Dashboard",
+            icon=ICON_DASHBOARD,
+            permissions=["admin", "root"],
+        ),
+        MenuItem(
             id="conexoes",
             path=conexoes_dashboard_url,
             label="Conexões",
