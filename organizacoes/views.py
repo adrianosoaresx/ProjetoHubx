@@ -488,17 +488,22 @@ class DashboardAdminView(AdminRequiredMixin, TemplateView):
         status_labels = {
             key: str(value) for key, value in ParticipacaoNucleo.STATUS_CHOICES
         }
+
         membros_por_status_raw = participacoes_qs.values("status").annotate(total=Count("status"))
         membros_por_status = [
             {
                 "codigo": item["status"],
+
                 "status": status_labels.get(item["status"], str(item["status"])),
+
                 "total": item["total"],
             }
             for item in membros_por_status_raw
         ]
         membros_status_data = {
+
             str(entry["status"]): entry["total"] for entry in membros_por_status
+
         }
 
         eventos_qs = Evento.objects.filter(organizacao=org)
