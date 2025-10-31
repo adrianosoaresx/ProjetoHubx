@@ -266,6 +266,7 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     legend_labels = [
         _format_legend_label(label, value) for label, value in zip(labels, series)
     ]
+
     tooltip_labels: list[str] = []
     for original_label, legend_label in zip(labels, legend_labels):
         sanitized = _strip_numeric_suffix(legend_label)
@@ -277,6 +278,7 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
         [tooltip_label, value]
         for tooltip_label, value in zip(tooltip_labels, series)
     ]
+
     fig = go.Figure(
         data=[
             go.Pie(

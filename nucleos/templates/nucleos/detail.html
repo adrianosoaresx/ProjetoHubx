@@ -12,7 +12,7 @@
 {% block content %}
   
     <div class="flex flex-col gap-6">
-      <details class="card group" open>
+      <details class="card group">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
           <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
           <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
@@ -100,7 +100,7 @@
 
       {% with section=current_section|default:"membros" %}
         {% if section == 'membros' %}
-          <details class="card group" open>
+          <details class="card group">
             <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
               <h2
                 id="nucleo-membros-title"
