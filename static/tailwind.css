@@ -4117,6 +4117,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-shadow: var(--tw-shadow-colored);
 }
 
+.outline {
+  outline-style: solid;
+}
+
 .ring {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);
@@ -4991,8 +4995,16 @@ body.sidebar-mobile-open .sidebar-backdrop {
     display: block;
   }
 
+  .sm\:inline {
+    display: inline;
+  }
+
   .sm\:flex {
     display: flex;
+  }
+
+  .sm\:hidden {
+    display: none;
   }
 
   .sm\:max-h-\[320px\] {
@@ -5119,10 +5131,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
     position: static;
   }
 
-  .md\:sticky {
-    position: sticky;
-  }
-
   .md\:col-span-2 {
     grid-column: span 2 / span 2;
   }
@@ -5141,6 +5149,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:hidden {
     display: none;
+  }
+
+  .md\:h-12 {
+    height: 3rem;
   }
 
   .md\:h-24 {
@@ -5200,6 +5212,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     align-items: center;
   }
 
+  .md\:justify-start {
+    justify-content: flex-start;
+  }
+
   .md\:justify-end {
     justify-content: flex-end;
   }
@@ -5223,10 +5239,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   .md\:py-16 {
     padding-top: 4rem;
     padding-bottom: 4rem;
-  }
-
-  .md\:pt-0 {
-    padding-top: 0px;
   }
 
   .md\:text-left {
