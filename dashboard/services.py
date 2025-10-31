@@ -212,6 +212,8 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
         autopct=_autopct,
         wedgeprops={"linewidth": 1, "edgecolor": "white"},
         textprops={"color": "#111827", "fontsize": LABEL_FONT_SIZE},
+        shadow=True,
+        pctdistance=0.75,
     )
 
     outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
@@ -244,7 +246,12 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
     bars = ax.barh(positions, series, color=colors, edgecolor="none")
 
     ax.set_yticks(list(positions))
-    ax.set_yticklabels(labels, color="#111827", fontsize=LABEL_FONT_SIZE)
+    ax.set_yticklabels(
+        labels,
+        color="#111827",
+        fontsize=LABEL_FONT_SIZE,
+        fontweight="bold",
+    )
     ax.tick_params(axis="x", colors="#374151", labelsize=AXIS_FONT_SIZE)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -263,12 +270,14 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
             ha="left",
             fontsize=VALUE_FONT_SIZE,
             color="#111827",
+            fontweight="bold",
             path_effects=outline,
             bbox=ANNOTATION_BOX_STYLE.copy(),
         )
 
     for label in ax.get_yticklabels():
         label.set_path_effects(outline)
+        label.set_fontweight("bold")
 
     plt.tight_layout()
     data_uri = _figure_to_data_uri(fig)
