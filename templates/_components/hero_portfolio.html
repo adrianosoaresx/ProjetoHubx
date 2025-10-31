@@ -21,22 +21,6 @@
           <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
-      {% if counts.total or counts.images or counts.videos or counts.pdfs or counts.others %}
-        {% lucide 'image' class='h-5 w-5' as icon_images %}
-        {% lucide 'video' class='h-5 w-5' as icon_videos %}
-        {% lucide 'file-text' class='h-5 w-5' as icon_pdfs %}
-        {% lucide 'layers' class='h-5 w-5' as icon_total %}
-        {% lucide 'file' class='h-5 w-5' as icon_other %}
-        <div class="mt-10 space-y-4 text-left">
-          <div class="card-grid">
-            {% include '_partials/cards/total_card.html' with label=_('Total de mídias') valor=counts.total icon_svg=icon_total card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Imagens') valor=counts.images icon_svg=icon_images card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Vídeos') valor=counts.videos icon_svg=icon_videos card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('PDFs') valor=counts.pdfs icon_svg=icon_pdfs card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-            {% include '_partials/cards/total_card.html' with label=_('Outros') valor=counts.others icon_svg=icon_other card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm' body_class='card-body-compact' %}
-          </div>
-        </div>
-      {% endif %}
     </div>
   </div>
 </section>
