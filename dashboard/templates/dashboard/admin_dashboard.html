@@ -1,10 +1,93 @@
 {% extends "base.html" %}
+{% load i18n static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}{% trans "Dashboard administrativo" %}{% endblock %}
+
+{% block hero %}
+  {% include "_components/hero.html" with
+    title=_("Dashboard administrativo")
+    subtitle=_("Acompanhe indicadores-chave da organização e o desempenho dos eventos.")
+    breadcrumb_template="dashboard/partials/admin_dashboard_breadcrumb.html"
+  %}
+{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-  <h1 class="text-2xl font-semibold">Dashboard Administrativo</h1>
-  <p class="mt-4 text-gray-600">Bem-vindo ao painel administrativo.</p>
-</div>
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-10">
+    <section aria-labelledby="dashboard-metrics-title" class="space-y-6">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="dashboard-metrics-title" class="text-xl font-semibold text-[var(--text-primary)]">
+          {% trans "Métricas principais" %}
+        </h2>
+        <p class="text-sm text-[var(--text-muted)]">
+          {% trans "Visão geral do crescimento da comunidade e atividades em andamento." %}
+        </p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
+        {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
+        {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
+        {% include "_partials/cards/total_card.html" with label=_("Eventos concluídos") valor=eventos_concluidos icon_name="flag" %}
+        {% include "_partials/cards/total_card.html" with label=_("Eventos em planejamento") valor=eventos_planejamento icon_name="calendar-days" %}
+        {% include "_partials/cards/total_card.html" with label=_("Inscrições confirmadas") valor=inscricoes_confirmadas icon_name="check-circle" %}
+      </div>
+    </section>
+
+    <section aria-labelledby="dashboard-charts-title" class="space-y-6">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="dashboard-charts-title" class="text-xl font-semibold text-[var(--text-primary)]">
+          {% trans "Visualizações" %}
+        </h2>
+        <p class="text-sm text-[var(--text-muted)]">
+          {% trans "Explore a distribuição de membros e a participação dos núcleos nos eventos." %}
+        </p>
+      </div>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <article class="card" role="figure" aria-labelledby="membros-chart-title">
+          <div class="card-body space-y-4">
+            <div>
+              <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
+                {% trans "Distribuição de membros" %}
+              </h3>
+              <p class="text-sm text-[var(--text-muted)]">
+                {% trans "Comparativo entre associados e nucleados ativos." %}
+              </p>
+            </div>
+            <canvas
+              id="membros-chart"
+              class="h-64 w-full"
+              role="img"
+              aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados e nucleados.' %}"
+            ></canvas>
+          </div>
+        </article>
+
+        <article class="card" role="figure" aria-labelledby="eventos-nucleo-chart-title">
+          <div class="card-body space-y-4">
+            <div>
+              <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
+                {% trans "Eventos por núcleo" %}
+              </h3>
+              <p class="text-sm text-[var(--text-muted)]">
+                {% trans "Quantidade de eventos organizados por cada núcleo." %}
+              </p>
+            </div>
+            <canvas
+              id="eventos-nucleo-chart"
+              class="h-64 w-full"
+              role="img"
+              aria-label="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo, incluindo eventos sem núcleo.' %}"
+            ></canvas>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  {{ membros_chart|json_script:"membros-chart-data" }}
+  {{ eventos_por_nucleo|json_script:"eventos-por-nucleo-data" }}
+  <script src="{% static 'js/vendor/chart-4.5.0.min.js' %}" defer></script>
+  <script type="module" src="{% static 'dashboard/js/admin_dashboard.js' %}"></script>
 {% endblock %}
