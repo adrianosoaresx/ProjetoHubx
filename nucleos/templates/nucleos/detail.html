@@ -12,9 +12,19 @@
 {% block content %}
   
     <div class="flex flex-col gap-6">
-      <details class="card group">
+      <details id="nucleo-informacoes-card" class="card group">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
-          <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/15">
+              {% lucide 'info' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+              <p class="text-sm text-[var(--text-secondary)]" id="nucleo-informacoes-subtitle">
+                {% trans "Dados gerais e status do núcleo" %}
+              </p>
+            </div>
+          </div>
           <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
             {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
           </span>
@@ -100,34 +110,55 @@
 
       {% with section=current_section|default:"membros" %}
         {% if section == 'membros' %}
-          <details class="card group">
-            <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
-              <h2
-                id="nucleo-membros-title"
-                class="text-xl font-semibold"
-                data-membros-label="{% trans 'Membros' %}"
-                data-coordenadores-label="{% trans 'Coordenadores' %}"
-              >
-                {% if is_coordenadores_filter_active %}
-                  {% trans "Coordenadores" %}
-                {% else %}
-                  {% trans "Membros" %}
-                {% endif %}
-              </h2>
+          {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+          <details
+            id="nucleo-membros-card"
+            class="card group"
+            {% if not is_coordenadores_filter_active %}open{% endif %}
+          >
+            <summary
+              class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden"
+              hx-get="{{ membros_list_url }}"
+              hx-target="#membros-list"
+              hx-trigger="click"
+              hx-include="#membros-filter-form"
+              hx-indicator="#membros-loading"
+              hx-push-url="true"
+              hx-vals='{"papel":"todos","card":"membros"}'
+            >
+              <div class="flex items-start gap-3">
+                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
+                  {% lucide 'users' class='h-6 w-6' aria_hidden='true' %}
+                </span>
+                <div class="space-y-1">
+                  <h2 class="text-xl font-semibold">{% trans "Membros" %}</h2>
+                  <p class="text-sm text-[var(--text-secondary)]" id="nucleo-membros-subtitle">
+                    {% blocktrans count count=total_membros %}
+                      {{ count }} membro no total
+                    {% plural %}
+                      {{ count }} membros no total
+                    {% endblocktrans %}
+                  </p>
+                </div>
+              </div>
               <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
                 {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
               </span>
             </summary>
             <div class="card-body space-y-6">
               <div id="membros-filter-container">
-                {% include 'nucleos/partials/membros_filter_form.html' %}
+                {% include 'nucleos/partials/membros_filter_form.html' with form_id='membros-filter-form' search_input_id='membros-search' hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='true' default_papel='todos' card_name='membros' search_label=_('Pesquisar membros') search_placeholder=_('Buscar por nome ou email') %}
               </div>
               <section id="nucleo-membros" class="space-y-6">
                 <div id="membros-list">
-                  {% if partial_template %}
-                    {% include partial_template %}
+                  {% if not is_coordenadores_filter_active %}
+                    {% if partial_template %}
+                      {% include partial_template with card='membros' %}
+                    {% else %}
+                      {% include 'nucleos/partials/membros_list.html' with card='membros' %}
+                    {% endif %}
                   {% else %}
-                    {% include 'nucleos/partials/membros_list.html' %}
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Clique para reexibir a lista completa de membros." %}</p>
                   {% endif %}
                 </div>
                 <div
@@ -137,6 +168,68 @@
                   aria-live="polite"
                 >
                   {% trans 'Carregando membros...' %}
+                </div>
+              </section>
+            </div>
+          </details>
+
+          <details
+            id="nucleo-coordenadores-card"
+            class="card group"
+            {% if is_coordenadores_filter_active %}open{% endif %}
+          >
+            <summary
+              class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden"
+              hx-get="{{ membros_list_url }}"
+              hx-target="#coordenadores-list"
+              hx-trigger="click"
+              hx-include="#coordenadores-filter-form"
+              hx-indicator="#coordenadores-loading"
+              hx-push-url="true"
+              hx-vals='{"papel":"coordenador","card":"coordenadores"}'
+            >
+              <div class="flex items-start gap-3">
+                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/20">
+                  {% lucide 'user-check' class='h-6 w-6' aria_hidden='true' %}
+                </span>
+                <div class="space-y-1">
+                  <h2 class="text-xl font-semibold">{% trans "Coordenadores" %}</h2>
+                  <p class="text-sm text-[var(--text-secondary)]" id="nucleo-coordenadores-subtitle">
+                    {% blocktrans count count=total_coordenadores %}
+                      {{ count }} coordenador no total
+                    {% plural %}
+                      {{ count }} coordenadores no total
+                    {% endblocktrans %}
+                  </p>
+                </div>
+              </div>
+              <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+                {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+              </span>
+            </summary>
+            <div class="card-body space-y-6">
+              <div id="coordenadores-filter-container">
+                {% include 'nucleos/partials/membros_filter_form.html' with form_id='coordenadores-filter-form' search_input_id='coordenadores-search' hx_target='#coordenadores-list' hx_indicator='#coordenadores-loading' hx_push_url='true' default_papel='coordenador' card_name='coordenadores' search_label=_('Pesquisar coordenadores') search_placeholder=_('Buscar por nome ou email') %}
+              </div>
+              <section class="space-y-6">
+                <div id="coordenadores-list">
+                  {% if is_coordenadores_filter_active %}
+                    {% if partial_template %}
+                      {% include partial_template with card='coordenadores' %}
+                    {% else %}
+                      {% include 'nucleos/partials/membros_list.html' with card='coordenadores' %}
+                    {% endif %}
+                  {% else %}
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Clique para visualizar apenas os coordenadores do núcleo." %}</p>
+                  {% endif %}
+                </div>
+                <div
+                  id="coordenadores-loading"
+                  class="htmx-indicator text-center text-sm text-[var(--text-secondary)]"
+                  role="status"
+                  aria-live="polite"
+                >
+                  {% trans 'Carregando coordenadores...' %}
                 </div>
               </section>
             </div>
@@ -153,35 +246,33 @@
   {{ block.super }}
   <script>
     (function () {
-      const titleEl = document.getElementById('nucleo-membros-title');
-      if (!titleEl) {
+      const membrosCard = document.getElementById('nucleo-membros-card');
+      const coordenadoresCard = document.getElementById('nucleo-coordenadores-card');
+
+      if (!membrosCard || !coordenadoresCard) {
         return;
       }
 
-      const labels = {
-        membros: titleEl.dataset.membrosLabel || titleEl.textContent.trim(),
-        coordenador: titleEl.dataset.coordenadoresLabel || titleEl.textContent.trim(),
-      };
-
-      function updateTitle(papel) {
-        if (!titleEl) {
-          return;
-        }
-        const key = papel === 'coordenador' ? 'coordenador' : 'membros';
-        const label = labels[key];
-        if (label) {
-          titleEl.textContent = label;
+      function updateCards(papel) {
+        if (papel === 'coordenador') {
+          coordenadoresCard.setAttribute('open', '');
+          membrosCard.removeAttribute('open');
+        } else {
+          membrosCard.setAttribute('open', '');
+          coordenadoresCard.removeAttribute('open');
         }
       }
 
       function handleEvent(event) {
         const detail = event.detail || {};
         const params = detail.parameters || (detail.requestConfig && detail.requestConfig.parameters);
-        if (!params || typeof params.papel === 'undefined') {
+        if (params && typeof params.papel !== 'undefined') {
+          updateCards(params.papel);
           return;
         }
-        updateTitle(params.papel);
       }
+
+      updateCards(coordenadoresCard.hasAttribute('open') ? 'coordenador' : 'membros');
 
       document.body.addEventListener('htmx:beforeRequest', handleEvent);
       document.body.addEventListener('htmx:afterSwap', handleEvent);
