@@ -315,36 +315,45 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
         return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
-    legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
-    customdata = [
-        [label, value] for label, value in zip(labels, series)
+    legend_labels = [
+        _format_legend_label(label, value) for label, value in zip(labels, series)
     ]
-    fig = go.Figure(
-        data=[
+
+    traces: list[go.Bar] = []
+    for index, (label, value, legend_label, color) in enumerate(
+        zip(labels, series, legend_labels, colors)
+    ):
+        traces.append(
             go.Bar(
-                x=legend_labels,
-                y=series,
+                x=[label],
+                y=[value],
                 marker={
-                    "color": colors,
+                    "color": color,
                     "line": {"color": "#e5e7eb", "width": 1},
                 },
-                customdata=customdata,
+                customdata=[[label, value]],
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>"
                     "Total: %{customdata[1]}<extra></extra>"
                 ),
-                name=gettext("Eventos"),
+                name=legend_label,
+                showlegend=True,
+                legendgroup=str(index),
             )
-        ]
-    )
+        )
+
+    fig = go.Figure(data=traces)
     fig.update_layout(
         _base_layout(
             xaxis={
                 "title": "",
                 "gridcolor": "#e5e7eb",
                 "zerolinecolor": "#cbd5f5",
-                "tickfont": {"size": 12, "color": "var(--text-primary, #0f172a)"},
-                "tickangle": -20,
+
+                "showticklabels": False,
+                "showgrid": False,
+                "ticks": "",
+
                 "automargin": True,
             },
             yaxis={
@@ -353,8 +362,12 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
                 "gridcolor": "#e5e7eb",
                 "rangemode": "tozero",
             },
+            legend={
+                "traceorder": "normal",
+            },
             bargap=0.35,
-            margin={"l": 48, "r": 24, "t": 48, "b": 120},
+            margin={"l": 48, "r": 24, "t": 48, "b": 140},
+            barmode="group",
             height=440,
         )
     )
