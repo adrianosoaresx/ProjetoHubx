@@ -21,40 +21,6 @@
           <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
-      {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None or total_consultores is not None or total_coordenadores is not None %}
-        <dl class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-          {% if total_usuarios is not None %}
-            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
-              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Total de usuários' %}</dt>
-              <dd class="mt-2 text-3xl font-semibold">{{ total_usuarios }}</dd>
-            </div>
-          {% endif %}
-          {% if total_associados is not None %}
-            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
-              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Associados sem núcleo' %}</dt>
-              <dd class="mt-2 text-3xl font-semibold">{{ total_associados }}</dd>
-            </div>
-          {% endif %}
-          {% if total_nucleados is not None %}
-            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
-              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Associados nucleados' %}</dt>
-              <dd class="mt-2 text-3xl font-semibold">{{ total_nucleados }}</dd>
-            </div>
-          {% endif %}
-          {% if total_consultores is not None %}
-            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
-              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Consultores' %}</dt>
-              <dd class="mt-2 text-3xl font-semibold">{{ total_consultores }}</dd>
-            </div>
-          {% endif %}
-          {% if total_coordenadores is not None %}
-            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
-              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Coordenadores' %}</dt>
-              <dd class="mt-2 text-3xl font-semibold">{{ total_coordenadores }}</dd>
-            </div>
-          {% endif %}
-        </dl>
-      {% endif %}
     </div>
   </div>
 </section>

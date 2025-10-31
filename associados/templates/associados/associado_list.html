@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
@@ -10,40 +10,104 @@
 {% block content %}
 
   <div class="space-y-6">
-    <details class="card" data-associados-section="sem-nucleo">
+    <details class="card group" data-associados-section="sem-nucleo">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-        <span class="text-xl font-semibold">{% trans "Associados sem núcleo" %}</span>
-        <span class="badge badge-neutral">{{ associados_sem_nucleo_count }}</span>
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]">
+            {% lucide 'user-round-minus' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Associados sem núcleo" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=associados_sem_nucleo_count %}
+                {{ count }} associado no total
+              {% plural %}
+                {{ count }} associados no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
       </summary>
       <div class="card-body">
         {% include 'associados/_grid.html' with usuarios=associados_sem_nucleo empty_message=_('Nenhum associado sem núcleo encontrado.') %}
       </div>
     </details>
 
-    <details class="card" data-associados-section="nucleados">
+    <details class="card group" data-associados-section="nucleados">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-        <span class="text-xl font-semibold">{% trans "Associados nucleados" %}</span>
-        <span class="badge badge-neutral">{{ associados_nucleados_count }}</span>
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-500)]">
+            {% lucide 'user-round-plus' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Associados nucleados" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=associados_nucleados_count %}
+                {{ count }} associado no total
+              {% plural %}
+                {{ count }} associados no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
       </summary>
       <div class="card-body">
         {% include 'associados/_grid.html' with usuarios=associados_nucleados empty_message=_('Nenhum associado nucleado encontrado.') %}
       </div>
     </details>
 
-    <details class="card" data-associados-section="consultores">
+    <details class="card group" data-associados-section="consultores">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-        <span class="text-xl font-semibold">{% trans "Consultores" %}</span>
-        <span class="badge badge-neutral">{{ associados_consultores_count }}</span>
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)]">
+            {% lucide 'user-round-cog' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Consultores" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=associados_consultores_count %}
+                {{ count }} consultor no total
+              {% plural %}
+                {{ count }} consultores no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
       </summary>
       <div class="card-body">
         {% include 'associados/_grid.html' with usuarios=associados_consultores empty_message=_('Nenhum consultor encontrado.') %}
       </div>
     </details>
 
-    <details class="card" data-associados-section="coordenadores">
+    <details class="card group" data-associados-section="coordenadores">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-        <span class="text-xl font-semibold">{% trans "Coordenadores" %}</span>
-        <span class="badge badge-neutral">{{ associados_coordenadores_count }}</span>
+        <div class="flex items-start gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)]">
+            {% lucide 'shield-check' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Coordenadores" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=associados_coordenadores_count %}
+                {{ count }} coordenador no total
+              {% plural %}
+                {{ count }} coordenadores no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
       </summary>
       <div class="card-body">
         {% include 'associados/_grid.html' with usuarios=associados_coordenadores empty_message=_('Nenhum coordenador encontrado.') %}
