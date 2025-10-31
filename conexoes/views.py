@@ -105,59 +105,12 @@ def _build_connections_page_context(
     sent_requests,
     query: str,
     active_filter: str,
-    *,
-    hx_context: dict[str, str | None] | None = None,
 ):
     total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
     search_params = {"q": query} if query else {}
     search_page_url = reverse("conexoes:perfil_conexoes_buscar")
     if search_params:
         search_page_url = f"{search_page_url}?{urlencode(search_params)}"
-
-    base_params = request.GET.copy()
-    base_params = base_params.copy()
-    base_params.pop("tab", None)
-
-    dashboard_url = reverse("conexoes:perfil_sections_conexoes")
-    partial_url = reverse("conexoes:perfil_conexoes_partial")
-
-    hx_context = hx_context or {}
-    hx_target = hx_context.get("hx_target")
-    hx_push_base = hx_context.get("hx_push_base")
-
-    def _build_filter_card(value: str, label: str, icon: str, total: int | None):
-        params = base_params.copy()
-        params["filter"] = value
-        query_string = params.urlencode()
-        href = f"{dashboard_url}?{query_string}" if query_string else dashboard_url
-
-        hx_get = None
-        hx_push_url = None
-        if hx_target:
-            hx_get = f"{partial_url}?{query_string}" if query_string else partial_url
-        if hx_push_base is not None:
-            push_params = params.copy()
-            query_push = urlencode(push_params)
-            hx_push_url = f"{hx_push_base}{'&' if hx_push_base and query_push else ''}{query_push}" if hx_push_base else f"?{query_push}" if query_push else hx_push_base
-
-        return {
-            "label": label,
-            "valor": total,
-            "icon_name": icon,
-            "href": href,
-            "is_active": active_filter == value,
-            "card_class": "card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
-            "active_class": "ring-2 ring-white/80 bg-white/20",
-            "hx_get": hx_get,
-            "hx_target": f"#{hx_target}" if hx_target else None,
-            "hx_push_url": hx_push_url,
-        }
-
-    filter_cards = [
-        _build_filter_card("ativas", _("Conexões ativas"), "users", total_conexoes),
-        _build_filter_card("pendentes", _("Solicitações pendentes"), "user-check", total_solicitacoes),
-        _build_filter_card("enviadas", _("Solicitações enviadas"), "user-plus", total_solicitacoes_enviadas),
-    ]
 
     return {
         "connections": connections,
@@ -176,7 +129,6 @@ def _build_connections_page_context(
         "total_solicitacoes": total_solicitacoes,
         "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
         "connections_filter": active_filter,
-        "connection_filter_cards": filter_cards,
     }
 
 
@@ -337,10 +289,6 @@ def perfil_conexoes_partial(request):
         sent_requests,
         q,
         active_filter,
-        hx_context={
-            "hx_target": "perfil-content",
-            "hx_push_base": "?section=conexoes",
-        },
     )
     context.update(_profile_dashboard_hx_context())
     return render(request, "conexoes/partiais/connections_list_content.html", context)
