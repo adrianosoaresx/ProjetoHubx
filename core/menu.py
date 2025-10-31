@@ -45,6 +45,16 @@ ICON_USERS = """
 </svg>
 """
 
+ICON_NETWORK = """
+<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-5 h-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
+  <circle cx=\"18\" cy=\"5\" r=\"3\" />
+  <circle cx=\"6\" cy=\"12\" r=\"3\" />
+  <circle cx=\"18\" cy=\"19\" r=\"3\" />
+  <path d=\"M8.59 13.51 15.42 17.49\" />
+  <path d=\"M15.41 6.51 8.59 10.49\" />
+</svg>
+"""
+
 ICON_COMPANIES = """
 <svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-5 h-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
   <path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\" />
@@ -349,7 +359,7 @@ def _get_menu_items() -> List[MenuItem]:
             "nucleos",
             nucleos_url,
             "Núcleos",
-            ICON_USERS,
+            ICON_NETWORK,
             [
                 "admin",
                 "coordenador",
