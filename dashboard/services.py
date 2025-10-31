@@ -245,9 +245,7 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     highlight_colors = [_adjust_color_luminance(color, 0.08) for color in colors]
     shadow_colors = [_adjust_color_luminance(color, -0.15) for color in colors]
     legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
-    customdata = [
-        [label, value] for label, value in zip(labels, series)
-    ]
+    customdata = [[label, value] for label, value in zip(labels, series)]
     fig = go.Figure(
         data=[
             go.Pie(
@@ -278,7 +276,7 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
                 },
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>"
-                    "Total: %{customdata[1]}<br>"
+                    "Total: %{value}<br>"
                     "Participação: %{percent}<extra></extra>"
                 ),
                 textinfo="none",

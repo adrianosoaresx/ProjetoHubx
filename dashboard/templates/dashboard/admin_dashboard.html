@@ -139,8 +139,12 @@
           bordercolor: border,
           font: {},
         };
-        layout.hoverlabel = Object.assign({}, baseHoverlabel, layout.hoverlabel || {});
-        layout.hoverlabel.font = Object.assign({}, layout.hoverlabel.font || {}, { color: textPrimary });
+        const mergedHoverlabel = Object.assign({}, layout.hoverlabel || {});
+        const hoverlabel = Object.assign({}, baseHoverlabel, mergedHoverlabel);
+        hoverlabel.bgcolor = surface;
+        hoverlabel.bordercolor = border;
+        hoverlabel.font = Object.assign({}, hoverlabel.font || {}, { color: textPrimary });
+        layout.hoverlabel = hoverlabel;
 
         const axisKeys = Object.keys(layout).filter((key) => /^(x|y)axis/.test(key));
         axisKeys.forEach((axisKey) => {
