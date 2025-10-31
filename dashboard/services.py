@@ -10,6 +10,7 @@ from typing import Any
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as patheffects
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.translation import gettext
@@ -18,6 +19,12 @@ from eventos.models import Evento, InscricaoEvento
 from nucleos.models import ParticipacaoNucleo
 
 User = get_user_model()
+
+
+ASSOCIADOS_NUCLEADOS_LABEL = gettext("Associados nucleados")
+ASSOCIADOS_NAO_NUCLEADOS_LABEL = gettext("Associados não nucleados")
+EVENTOS_PUBLICOS_LABEL = gettext("Eventos públicos")
+SEM_NUCLEO_LABEL = gettext("Sem núcleo")
 
 
 def _extract_organizacao_id(organizacao: Any | None) -> Any | None:
@@ -29,21 +36,36 @@ def _extract_organizacao_id(organizacao: Any | None) -> Any | None:
 
 
 def calculate_membership_totals(organizacao: Any | None) -> OrderedDict[str, int]:
-    """Calcula totais de associados e nucleados para a organização."""
+    """Calcula totais de associados nucleados e não nucleados."""
 
     organizacao_id = _extract_organizacao_id(organizacao)
-    totals = OrderedDict((label, 0) for label in ("Associados", "Nucleados"))
+    totals = OrderedDict(
+        (label, 0)
+        for label in (ASSOCIADOS_NUCLEADOS_LABEL, ASSOCIADOS_NAO_NUCLEADOS_LABEL)
+    )
     if not organizacao_id:
         return totals
 
-    totals["Associados"] = User.objects.filter(
+    associados_qs = User.objects.filter(
         organizacao_id=organizacao_id,
         is_associado=True,
-    ).count()
-    totals["Nucleados"] = ParticipacaoNucleo.objects.filter(
-        status="ativo",
-        nucleo__organizacao_id=organizacao_id,
-    ).count()
+    )
+    total_associados = associados_qs.count()
+
+    total_nucleados = (
+        ParticipacaoNucleo.objects.filter(
+            status="ativo",
+            nucleo__organizacao_id=organizacao_id,
+            user__organizacao_id=organizacao_id,
+        )
+        .values("user_id")
+        .distinct()
+        .count()
+    )
+    total_nao_nucleados = max(total_associados - total_nucleados, 0)
+
+    totals[ASSOCIADOS_NUCLEADOS_LABEL] = total_nucleados
+    totals[ASSOCIADOS_NAO_NUCLEADOS_LABEL] = total_nao_nucleados
     return totals
 
 
@@ -73,14 +95,24 @@ def calculate_events_by_nucleo(organizacao: Any | None) -> OrderedDict[str, int]
 
     queryset = (
         Evento.objects.filter(organizacao_id=organizacao_id)
-        .values("nucleo__nome")
+        .values("nucleo__nome", "publico_alvo")
         .annotate(total=Count("id"))
-        .order_by("nucleo__nome")
+        .order_by("nucleo__nome", "publico_alvo")
     )
 
+    public_total = 0
     for item in queryset:
-        label = item["nucleo__nome"] or gettext("Sem núcleo")
-        totals[label] = item["total"]
+        if item["publico_alvo"] == 0 and not item["nucleo__nome"]:
+            public_total += item["total"]
+            continue
+
+        label = item["nucleo__nome"] or SEM_NUCLEO_LABEL
+        if label not in totals:
+            totals[label] = 0
+        totals[label] += item["total"]
+
+    if public_total:
+        totals[EVENTOS_PUBLICOS_LABEL] = public_total
 
     return totals
 
@@ -148,8 +180,9 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    fig.patch.set_alpha(0)
-    ax.set_facecolor("none")
+    fig.patch.set_facecolor("#ffffff")
+    fig.patch.set_alpha(1)
+    ax.set_facecolor("#ffffff")
 
     colors = _palette_for_length(len(series)) or ["#0ea5e9"]
 
@@ -169,7 +202,12 @@ def _render_pie_chart(labels: list[str], series: list[int]) -> str:
         textprops={"color": "#111827", "fontsize": 10},
     )
 
+    outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
+    for text in texts:
+        text.set_path_effects(outline)
     plt.setp(autotexts, color="#0f172a", fontsize=9, weight="bold")
+    for autotext in autotexts:
+        autotext.set_path_effects(outline)
     ax.axis("equal")
     plt.tight_layout()
     data_uri = _figure_to_data_uri(fig)
@@ -183,7 +221,8 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
         return _render_empty_chart_message(gettext("Sem dados disponíveis"))
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    fig.patch.set_alpha(0)
+    fig.patch.set_facecolor("#ffffff")
+    fig.patch.set_alpha(1)
     ax.set_facecolor("#ffffff")
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
@@ -200,6 +239,7 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
     ax.xaxis.grid(True, color="#e5e7eb", linestyle="--", linewidth=0.7)
     ax.set_axisbelow(True)
 
+    outline = [patheffects.withStroke(linewidth=3, foreground="#f9fafb")]
     for bar, value in zip(bars, series):
         ax.text(
             bar.get_width() + max(total * 0.01, 0.1),
@@ -209,7 +249,11 @@ def _render_bar_chart(labels: list[str], series: list[int]) -> str:
             ha="left",
             fontsize=9,
             color="#111827",
+            path_effects=outline,
         )
+
+    for label in ax.get_yticklabels():
+        label.set_path_effects(outline)
 
     plt.tight_layout()
     data_uri = _figure_to_data_uri(fig)

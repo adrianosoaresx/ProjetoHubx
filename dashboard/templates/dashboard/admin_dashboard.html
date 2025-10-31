@@ -23,9 +23,6 @@
         {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
         {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
         {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
-        {% include "_partials/cards/total_card.html" with label=_("Eventos concluídos") valor=eventos_concluidos icon_name="flag" %}
-        {% include "_partials/cards/total_card.html" with label=_("Eventos em planejamento") valor=eventos_planejamento icon_name="calendar-days" %}
-        {% include "_partials/cards/total_card.html" with label=_("Inscrições confirmadas") valor=inscricoes_confirmadas icon_name="circle-check" %}
       </div>
     </section>
 
@@ -46,12 +43,12 @@
                 {% trans "Distribuição de membros" %}
               </h3>
               <p class="text-sm text-[var(--text-muted)]">
-                {% trans "Comparativo entre associados e nucleados ativos." %}
+                {% trans "Comparativo entre associados nucleados e não nucleados." %}
               </p>
             </div>
             <img
               src="{{ membros_chart.image }}"
-              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados e nucleados.' %}"
+              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
               class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
               loading="lazy"
             />
@@ -65,12 +62,12 @@
                 {% trans "Eventos por núcleo" %}
               </h3>
               <p class="text-sm text-[var(--text-muted)]">
-                {% trans "Quantidade de eventos organizados por cada núcleo." %}
+                {% trans "Quantidade de eventos por núcleo, incluindo iniciativas públicas." %}
               </p>
             </div>
             <img
               src="{{ eventos_por_nucleo.image }}"
-              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo, incluindo eventos sem núcleo.' %}"
+              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo e eventos públicos.' %}"
               class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
               loading="lazy"
             />

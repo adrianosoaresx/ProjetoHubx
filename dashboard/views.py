@@ -8,6 +8,7 @@ from core.permissions import AdminRequiredMixin
 from eventos.models import Evento
 
 from .services import (
+    ASSOCIADOS_NUCLEADOS_LABEL,
     build_chart_payload,
     calculate_event_status_totals,
     calculate_events_by_nucleo,
@@ -37,8 +38,10 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
 
         context.update(
             {
-                "total_associados": membership_totals.get("Associados", 0),
-                "total_nucleados": membership_totals.get("Nucleados", 0),
+                "total_associados": sum(membership_totals.values()),
+                "total_nucleados": membership_totals.get(
+                    ASSOCIADOS_NUCLEADOS_LABEL, 0
+                ),
                 "inscricoes_confirmadas": confirmed_registrations,
                 "eventos_por_status": event_totals,
                 "eventos_ativos": event_totals.get(Evento.Status.ATIVO.label, 0),
