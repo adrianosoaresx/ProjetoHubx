@@ -9,6 +9,11 @@ urlpatterns = [
     path("nova/", views.OrganizacaoCreateView.as_view(), name="create"),
     path("<uuid:pk>/", views.OrganizacaoDetailView.as_view(), name="detail"),
     path(
+        "<uuid:pk>/dashboard/",
+        views.DashboardAdminView.as_view(),
+        name="dashboard",
+    ),
+    path(
         "<uuid:pk>/usuarios/modal/",
         views.OrganizacaoUsuariosModalView.as_view(),
         name="usuarios_modal",
