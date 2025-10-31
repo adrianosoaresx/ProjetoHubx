@@ -236,6 +236,25 @@ def _format_legend_label(label: str, total: int) -> str:
     return template % {"label": label, "total": total}
 
 
+def _is_numeric_suffix(value: str) -> bool:
+    normalized = value.strip()
+    if not normalized:
+        return False
+    normalized = normalized.replace(".", "").replace(",", "")
+    return normalized.isdigit()
+
+
+def _strip_numeric_suffix(label: str) -> str:
+    trimmed = label.strip()
+    separators = (" · ", "·", ",", " - ", " – ", " — ")
+    for separator in separators:
+        if separator in trimmed:
+            head, _, tail = trimmed.partition(separator)
+            if _is_numeric_suffix(tail):
+                return head.strip()
+    return trimmed
+
+
 def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     total = sum(series)
     if total == 0:
@@ -244,8 +263,11 @@ def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     colors = _palette_for_length(len(series)) or ["#0ea5e9"]
     highlight_colors = [_adjust_color_luminance(color, 0.08) for color in colors]
     shadow_colors = [_adjust_color_luminance(color, -0.15) for color in colors]
-    legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
-    customdata = [[label, value] for label, value in zip(labels, series)]
+    legend_labels = [
+        _format_legend_label(label, value) for label, value in zip(labels, series)
+    ]
+    tooltip_labels = [_strip_numeric_suffix(label) for label in legend_labels]
+    customdata = [[tooltip_label, value] for tooltip_label, value in zip(tooltip_labels, series)]
     fig = go.Figure(
         data=[
             go.Pie(
