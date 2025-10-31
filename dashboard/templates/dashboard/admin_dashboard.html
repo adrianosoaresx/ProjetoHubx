@@ -8,6 +8,9 @@
     title=_("Dashboard administrativo")
     subtitle=_("Acompanhe indicadores-chave da organização e o desempenho dos eventos.")
     breadcrumb_template="dashboard/partials/admin_dashboard_breadcrumb.html"
+    neural_background="dashboard"
+    section_classes="relative isolate overflow-hidden text-white"
+    container_classes="max-w-7xl mx-auto w-full px-6 py-14 md:py-16"
   %}
 {% endblock %}
 
@@ -28,7 +31,7 @@
         {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
         {% include "_partials/cards/total_card.html" with label=_("Eventos concluídos") valor=eventos_concluidos icon_name="flag" %}
         {% include "_partials/cards/total_card.html" with label=_("Eventos em planejamento") valor=eventos_planejamento icon_name="calendar-days" %}
-        {% include "_partials/cards/total_card.html" with label=_("Inscrições confirmadas") valor=inscricoes_confirmadas icon_name="check-circle" %}
+        {% include "_partials/cards/total_card.html" with label=_("Inscrições confirmadas") valor=inscricoes_confirmadas icon_name="circle-check" %}
       </div>
     </section>
 
@@ -42,7 +45,7 @@
         </p>
       </div>
       <div class="grid gap-6 lg:grid-cols-2">
-        <article class="card" role="figure" aria-labelledby="membros-chart-title">
+        <figure class="card" aria-labelledby="membros-chart-title">
           <div class="card-body space-y-4">
             <div>
               <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
@@ -52,16 +55,16 @@
                 {% trans "Comparativo entre associados e nucleados ativos." %}
               </p>
             </div>
-            <canvas
-              id="membros-chart"
-              class="h-64 w-full"
-              role="img"
-              aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados e nucleados.' %}"
-            ></canvas>
+            <img
+              src="{{ membros_chart.image }}"
+              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados e nucleados.' %}"
+              class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
+              loading="lazy"
+            />
           </div>
-        </article>
+        </figure>
 
-        <article class="card" role="figure" aria-labelledby="eventos-nucleo-chart-title">
+        <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
           <div class="card-body space-y-4">
             <div>
               <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
@@ -71,23 +74,18 @@
                 {% trans "Quantidade de eventos organizados por cada núcleo." %}
               </p>
             </div>
-            <canvas
-              id="eventos-nucleo-chart"
-              class="h-64 w-full"
-              role="img"
-              aria-label="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo, incluindo eventos sem núcleo.' %}"
-            ></canvas>
+            <img
+              src="{{ eventos_por_nucleo.image }}"
+              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo, incluindo eventos sem núcleo.' %}"
+              class="h-64 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-4"
+              loading="lazy"
+            />
           </div>
-        </article>
+        </figure>
       </div>
     </section>
   </div>
 {% endblock %}
-
 {% block extra_js %}
   {{ block.super }}
-  {{ membros_chart|json_script:"membros-chart-data" }}
-  {{ eventos_por_nucleo|json_script:"eventos-por-nucleo-data" }}
-  <script src="{% static 'js/vendor/chart-4.5.0.min.js' %}" defer></script>
-  <script type="module" src="{% static 'dashboard/js/admin_dashboard.js' %}"></script>
 {% endblock %}

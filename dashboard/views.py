@@ -31,7 +31,9 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         eventos_por_nucleo = calculate_events_by_nucleo(organizacao)
         eventos_chart = build_chart_payload(event_totals)
         membros_chart = build_chart_payload(membership_totals)
-        eventos_por_nucleo_chart = build_chart_payload(eventos_por_nucleo)
+        eventos_por_nucleo_chart = build_chart_payload(
+            eventos_por_nucleo, chart_type="bar"
+        )
 
         context.update(
             {
