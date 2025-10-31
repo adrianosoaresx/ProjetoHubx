@@ -78,6 +78,9 @@ def test_admin_dashboard_returns_expected_metrics():
     ]
     assert membros_chart["series"] == [1, 1]
     assert membros_chart["figure"]["data"][0]["type"] == "pie"
+    tooltip_customdata = membros_chart["figure"]["data"][1]["customdata"]
+    assert tooltip_customdata[0][0] == ASSOCIADOS_NUCLEADOS_LABEL
+    assert tooltip_customdata[1][0] == ASSOCIADOS_NAO_NUCLEADOS_LABEL
 
 
 @pytest.mark.django_db
