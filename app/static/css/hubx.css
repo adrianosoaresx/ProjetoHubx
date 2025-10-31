@@ -89,15 +89,9 @@
   }
 }
 
-/* Ensure the main content starts immediately below the fixed header on small screens */
+/* Ensure the main content starts immediately below the fixed header */
 .mobile-header-offset {
   padding-top: var(--layout-header-height);
-}
-
-@media (min-width: 768px) {
-  .mobile-header-offset {
-    padding-top: 0;
-  }
 }
 
 /* ========================================
