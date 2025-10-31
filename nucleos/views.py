@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import logging
 
+from collections import Counter
+from typing import Iterable, Mapping
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -45,6 +48,62 @@ from .tasks import notify_participacao_aprovada, notify_participacao_recusada
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
+    {
+        "key": Nucleo.Classificacao.CONSTITUIDO.value,
+        "title": _("Núcleos constituídos"),
+        "icon": "building-2",
+        "icon_classes": "flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15",
+        "empty_message": _("Nenhum núcleo constituído encontrado."),
+        "aria_label": _("Lista de núcleos constituídos"),
+    },
+    {
+        "key": Nucleo.Classificacao.PLANEJAMENTO.value,
+        "title": _("Núcleos em planejamento"),
+        "icon": "clipboard-list",
+        "icon_classes": "flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20",
+        "empty_message": _("Nenhum núcleo em planejamento encontrado."),
+        "aria_label": _("Lista de núcleos em planejamento"),
+    },
+    {
+        "key": Nucleo.Classificacao.EM_FORMACAO.value,
+        "title": _("Núcleos em formação"),
+        "icon": "sparkles",
+        "icon_classes": "flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20",
+        "empty_message": _("Nenhum núcleo em formação encontrado."),
+        "aria_label": _("Lista de núcleos em formação"),
+    },
+]
+
+
+def build_nucleo_sections(
+    current_items: Iterable[Nucleo],
+    totals_by_classificacao: Mapping[str, int],
+) -> list[dict[str, object]]:
+    grouped: dict[str, list[Nucleo]] = {
+        config["key"]: [] for config in NUCLEO_SECTION_CONFIG
+    }
+
+    for nucleo in current_items:
+        grouped.setdefault(nucleo.classificacao, []).append(nucleo)
+
+    sections: list[dict[str, object]] = []
+    for config in NUCLEO_SECTION_CONFIG:
+        key = config["key"]
+        items = grouped.get(key, [])
+        total = totals_by_classificacao.get(key)
+        if total is None:
+            total = len(items)
+        section = {
+            **config,
+            "items": items,
+            "total": total,
+        }
+        sections.append(section)
+
+    return sections
 
 
 class NucleoPainelRenderMixin:
@@ -251,6 +310,20 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         ctx["classificacao_filters"] = classificacao_filters
 
+        base_qs_for_totals = getattr(self, "_qs_for_counts", Nucleo.objects.none())
+        classificacao_totals: dict[str, int] = {
+            config["key"]: 0 for config in NUCLEO_SECTION_CONFIG
+        }
+
+        if hasattr(base_qs_for_totals, "values"):
+            for row in base_qs_for_totals.values("classificacao").annotate(total=Count("id", distinct=True)):
+                classificacao_totals[row["classificacao"]] = row["total"]
+
+        ctx["classificacao_totals"] = classificacao_totals
+        ctx["nucleo_sections"] = build_nucleo_sections(
+            list(ctx.get("object_list", [])), classificacao_totals
+        )
+
         return ctx
 
 
@@ -287,9 +360,14 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             )
         )
 
+        if hasattr(self, "_cached_queryset"):
+            return self._cached_queryset
+
         if cached_ids is not None:
             qs = base_qs.filter(pk__in=cached_ids).order_by("nome")
-            return list(qs)
+            result = list(qs)
+            self._cached_queryset = result
+            return result
 
         qs = base_qs.filter(
             deleted=False,
@@ -304,7 +382,9 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
 
-        return list(base_qs.filter(pk__in=ids).order_by("nome"))
+        result = list(base_qs.filter(pk__in=ids).order_by("nome"))
+        self._cached_queryset = result
+        return result
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -326,6 +406,18 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
+        current_items = list(ctx.get("object_list", []))
+        all_items = list(self.get_queryset())
+        counts = Counter(nucleo.classificacao for nucleo in all_items)
+        classificacao_totals = {
+            config["key"]: counts.get(config["key"], 0)
+            for config in NUCLEO_SECTION_CONFIG
+        }
+        ctx["classificacao_totals"] = classificacao_totals
+        ctx["nucleo_sections"] = build_nucleo_sections(
+            current_items, classificacao_totals
+        )
+
         return ctx
 
 
