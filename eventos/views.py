@@ -128,13 +128,17 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         qs = self.get_base_queryset()
         status_filter = self.request.GET.get("status")
         now = timezone.now()
-        status_map = {"ativos": 0, "realizados": 1}
+        planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO) | (
+            Q(status=Evento.Status.ATIVO) & Q(data_inicio__gt=now)
+        )
         if status_filter == "planejamento":
-            qs = qs.filter(status=0, data_inicio__gt=now)
+            qs = qs.filter(planejamento_filter)
         elif status_filter == "cancelados":
-            qs = qs.filter(status=2)
-        elif status_filter in status_map:
-            qs = qs.filter(status=status_map[status_filter])
+            qs = qs.filter(status=Evento.Status.CANCELADO)
+        elif status_filter == "realizados":
+            qs = qs.filter(status=Evento.Status.CONCLUIDO)
+        elif status_filter == "ativos":
+            qs = qs.filter(status=Evento.Status.ATIVO, data_inicio__lte=now)
         return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
 
     # ----- Contexto -----
@@ -181,11 +185,35 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         base_qs = self.get_base_queryset()
         qs = self.get_queryset()
         now = timezone.now()
+        planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO) | (
+            Q(status=Evento.Status.ATIVO) & Q(data_inicio__gt=now)
+        )
         ctx["total_eventos"] = base_qs.count()
-        ctx["total_eventos_planejamento"] = base_qs.filter(status=0, data_inicio__gt=now).count()
-        ctx["total_eventos_ativos"] = base_qs.filter(status=0).count()
-        ctx["total_eventos_concluidos"] = base_qs.filter(status=1).count()
-        ctx["total_eventos_cancelados"] = base_qs.filter(status=2).count()
+        ctx["total_eventos_planejamento"] = base_qs.filter(planejamento_filter).count()
+        ctx["total_eventos_ativos"] = base_qs.filter(
+            status=Evento.Status.ATIVO, data_inicio__lte=now
+        ).count()
+        ctx["total_eventos_concluidos"] = base_qs.filter(
+            status=Evento.Status.CONCLUIDO
+        ).count()
+        ctx["total_eventos_cancelados"] = base_qs.filter(
+            status=Evento.Status.CANCELADO
+        ).count()
+        annotated_base = base_qs.annotate(
+            num_inscritos=Count("inscricoes", distinct=True)
+        )
+        ctx["eventos_planejamento"] = annotated_base.filter(planejamento_filter).order_by(
+            "data_inicio"
+        )
+        ctx["eventos_ativos"] = annotated_base.filter(
+            status=Evento.Status.ATIVO, data_inicio__lte=now
+        ).order_by("-data_inicio")
+        ctx["eventos_realizados"] = annotated_base.filter(
+            status=Evento.Status.CONCLUIDO
+        ).order_by("-data_inicio")
+        ctx["eventos_cancelados"] = annotated_base.filter(
+            status=Evento.Status.CANCELADO
+        ).order_by("-data_inicio")
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
