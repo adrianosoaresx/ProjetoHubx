@@ -314,7 +314,6 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
         return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
-    gradient_colors = [_adjust_color_luminance(color, -0.08) for color in colors]
     legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
     customdata = [
         [label, value] for label, value in zip(labels, series)
@@ -327,7 +326,6 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
                 marker={
                     "color": colors,
                     "line": {"color": "#e5e7eb", "width": 1},
-                    "gradient": {"type": "vertical", "color": gradient_colors[0] if gradient_colors else None},
                 },
                 customdata=customdata,
                 hovertemplate=(
