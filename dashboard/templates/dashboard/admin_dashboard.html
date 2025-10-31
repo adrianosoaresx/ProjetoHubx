@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load i18n static lucide_icons %}
 
 {% block title %}{% trans "Dashboard administrativo" %}{% endblock %}
 
@@ -11,72 +11,63 @@
 {% block content %}
   <div class="mx-auto flex w-full max-w-7xl flex-col gap-10">
     <section aria-labelledby="dashboard-metrics-title" class="space-y-6">
-      <div class="card border border-[var(--border)] bg-[var(--bg-primary)]">
-        <details class="group">
-          <summary
-            class="flex w-full cursor-pointer items-center justify-between gap-4 px-6 py-4 text-left outline-none [&::-webkit-details-marker]:hidden"
-          >
+      <details class="card group">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15"
+            >
+              {% lucide 'trending-up' class='h-6 w-6' aria_hidden='true' %}
+            </span>
             <div class="space-y-1">
               <h2 id="dashboard-metrics-title" class="text-xl font-semibold text-[var(--text-primary)]">
                 {% trans "Métricas principais" %}
               </h2>
-              <p class="text-sm text-[var(--text-muted)]">
+              <p class="text-sm text-[var(--text-secondary)]">
                 {% trans "Visão geral do crescimento da comunidade e atividades em andamento." %}
               </p>
             </div>
-            <svg
-              class="h-5 w-5 text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-            </svg>
-          </summary>
-          <div class="border-t border-[var(--border)] p-6">
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
-              {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
-              {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
-            </div>
           </div>
-        </details>
-      </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
+            {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
+            {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
+          </div>
+        </div>
+      </details>
     </section>
 
     <section aria-labelledby="dashboard-charts-title" class="space-y-6 pt-4 md:pt-6">
-      <div class="card border border-[var(--border)] bg-[var(--bg-primary)]">
-        <details class="group">
-          <summary
-            class="flex w-full cursor-pointer items-center justify-between gap-4 px-6 py-4 text-left outline-none [&::-webkit-details-marker]:hidden"
-          >
+      <details class="card group">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20"
+            >
+              {% lucide 'pie-chart' class='h-6 w-6' aria_hidden='true' %}
+            </span>
             <div class="space-y-1">
               <h2 id="dashboard-charts-title" class="text-xl font-semibold text-[var(--text-primary)]">
                 {% trans "Visualizações" %}
               </h2>
-              <p class="text-sm text-[var(--text-muted)]">
+              <p class="text-sm text-[var(--text-secondary)]">
                 {% trans "Explore a distribuição de membros e a participação dos núcleos nos eventos." %}
               </p>
             </div>
-            <svg
-              class="h-5 w-5 text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-            </svg>
-          </summary>
-          <div class="border-t border-[var(--border)] p-6">
-            <div class="grid gap-6 lg:grid-cols-2">
-              <figure class="card" aria-labelledby="membros-chart-title">
-                <div class="card-body space-y-6">
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <div class="grid gap-6 lg:grid-cols-2">
+            <figure class="card" aria-labelledby="membros-chart-title">
+              <div class="card-body space-y-6">
                   <div
                     id="membros-chart"
                     role="img"
@@ -95,8 +86,8 @@
                 </div>
               </figure>
 
-              <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
-                <div class="card-body space-y-6">
+            <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
+              <div class="card-body space-y-6">
                   <div
                     id="eventos-nucleo-chart"
                     role="img"
@@ -113,11 +104,10 @@
                     </p>
                   </figcaption>
                 </div>
-              </figure>
-            </div>
+            </figure>
           </div>
-        </details>
-      </div>
+        </div>
+      </details>
     </section>
   </div>
 {% endblock %}
