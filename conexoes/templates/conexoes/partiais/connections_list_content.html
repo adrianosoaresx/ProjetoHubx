@@ -1,14 +1,17 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 <div class="space-y-6" id="connections-dashboard">
   {% if connections_filter == 'pendentes' %}
-    <article class="card" aria-labelledby="connections-requests-heading">
-      <div class="card-header">
+    <details class="card group" aria-labelledby="connections-requests-heading">
+      <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
         <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
-      </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
       <div class="card-body space-y-6">
         {% include 'conexoes/partiais/request_list.html' %}
       </div>
-    </article>
+    </details>
   {% elif connections_filter == 'enviadas' %}
     <article class="card" aria-labelledby="connections-sent-heading">
       <div class="card-header">
@@ -19,23 +22,29 @@
       </div>
     </article>
   {% else %}
-    <article class="card" aria-labelledby="connections-list-heading">
-      <div class="card-header">
+    <details class="card group" aria-labelledby="connections-list-heading">
+      <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
         <h2 id="connections-list-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
-      </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
       <div class="card-body space-y-6">
         {% include 'conexoes/partiais/connections_list.html' %}
       </div>
-    </article>
+    </details>
 
-    <article class="card" aria-labelledby="connections-requests-heading">
-      <div class="card-header">
+    <details class="card group" aria-labelledby="connections-requests-heading">
+      <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
         <h2 id="connections-requests-heading" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
-      </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
       <div class="card-body space-y-6">
         {% include 'conexoes/partiais/request_list.html' %}
       </div>
-    </article>
+    </details>
   {% endif %}
 </div>
 <div id="modal" role="presentation" aria-live="polite"></div>
