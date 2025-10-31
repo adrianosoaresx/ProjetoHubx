@@ -52,9 +52,11 @@ def test_admin_dashboard_returns_expected_metrics():
     eventos_por_nucleo = context["eventos_por_nucleo"]
     assert eventos_por_nucleo["labels"] == [nucleo.nome]
     assert eventos_por_nucleo["series"] == [3]
+    assert eventos_por_nucleo["image"].startswith("data:image/png;base64,")
 
     membros_chart = context["membros_chart"]
     assert membros_chart["series"] == [2, 1]
+    assert membros_chart["image"].startswith("data:image/png;base64,")
 
 
 @pytest.mark.django_db
