@@ -38,12 +38,13 @@
       <div class="grid gap-6 lg:grid-cols-2">
         <figure class="card" aria-labelledby="membros-chart-title">
           <div class="card-body space-y-6">
-            <img
-              src="{{ membros_chart.image }}"
-              alt="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
-              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-6"
-              loading="lazy"
-            />
+            <div
+              id="membros-chart"
+              role="img"
+              aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
+              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white"
+            ></div>
+            {{ membros_chart.figure|json_script:"membros-chart-data" }}
             <figcaption class="space-y-1">
               <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
                 {% trans "Distribuição de membros" %}
@@ -57,12 +58,13 @@
 
         <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
           <div class="card-body space-y-6">
-            <img
-              src="{{ eventos_por_nucleo.image }}"
-              alt="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo e eventos públicos.' %}"
-              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white object-contain p-6"
-              loading="lazy"
-            />
+            <div
+              id="eventos-nucleo-chart"
+              role="img"
+              aria-label="{% trans 'Gráfico de barras com a distribuição de eventos por núcleo e eventos públicos.' %}"
+              class="h-80 w-full rounded-md border border-[var(--border-subtle)] bg-white"
+            ></div>
+            {{ eventos_por_nucleo.figure|json_script:"eventos-nucleo-chart-data" }}
             <figcaption class="space-y-1">
               <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
                 {% trans "Eventos por núcleo" %}
@@ -79,4 +81,41 @@
 {% endblock %}
 {% block extra_js %}
   {{ block.super }}
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      function renderPlotlyChart(containerId, dataScriptId) {
+        const container = document.getElementById(containerId);
+        const script = document.getElementById(dataScriptId);
+        if (!container || !script) {
+          return;
+        }
+
+        let figure;
+        try {
+          figure = JSON.parse(script.textContent);
+        } catch (error) {
+          console.error("Não foi possível interpretar os dados do gráfico", error);
+          return;
+        }
+
+        if (typeof Plotly === "undefined") {
+          console.warn("Plotly não está disponível para renderizar o gráfico", containerId);
+          return;
+        }
+
+        const data = figure?.data ?? [];
+        const layout = figure?.layout ?? {};
+        const config = {
+          responsive: true,
+          displayModeBar: false,
+        };
+
+        Plotly.newPlot(container, data, layout, config);
+      }
+
+      renderPlotlyChart("membros-chart", "membros-chart-data");
+      renderPlotlyChart("eventos-nucleo-chart", "eventos-nucleo-chart-data");
+    });
+  </script>
 {% endblock %}

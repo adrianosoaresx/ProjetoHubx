@@ -1,22 +1,14 @@
 """Funções auxiliares para agregações do dashboard administrativo."""
 from __future__ import annotations
 
-import base64
 from collections import OrderedDict
 from collections.abc import Mapping
-from io import BytesIO
 from typing import Any
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.patheffects as patheffects
-import numpy as np
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from matplotlib.patches import Patch
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.utils.translation import gettext
+from plotly import graph_objects as go
 
 from eventos.models import Evento, InscricaoEvento
 from nucleos.models import ParticipacaoNucleo
@@ -150,219 +142,133 @@ def _palette_for_length(length: int) -> list[str]:
     return (CHART_PALETTE * repeats)[:length]
 
 
-VALUE_FONT_SIZE = 12
-LABEL_FONT_SIZE = 12
-AXIS_FONT_SIZE = 11
-EMPTY_STATE_FONT_SIZE = 16
-ANNOTATION_BOX_STYLE = {
-    "boxstyle": "round,pad=0.35",
-    "facecolor": "#ffffff",
-    "edgecolor": "none",
-    "alpha": 0.85,
-}
+def _base_layout(**extras: Any) -> dict[str, Any]:
+    layout: dict[str, Any] = {
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(255,255,255,1)",
+        "margin": {"l": 40, "r": 40, "t": 50, "b": 40},
+        "font": {"color": "#0f172a"},
+        "legend": {
+            "bgcolor": "rgba(255,255,255,0.95)",
+            "bordercolor": "rgba(209,213,219,0.6)",
+            "borderwidth": 1,
+            "font": {"size": 12},
+        },
+    }
+    layout.update(extras)
+    return layout
 
 
-def _render_empty_chart_message(message: str) -> str:
-    fig, ax = plt.subplots(figsize=(6, 4))
-    fig.patch.set_alpha(0)
-    ax.axis("off")
-    ax.text(
-        0.5,
-        0.5,
-        message,
-        ha="center",
-        va="center",
-        fontsize=EMPTY_STATE_FONT_SIZE,
-        color="#6b7280",
-        wrap=True,
+def _empty_figure(message: str) -> go.Figure:
+    fig = go.Figure()
+    fig.update_layout(
+        _base_layout(
+            annotations=[
+                {
+                    "text": message,
+                    "xref": "paper",
+                    "yref": "paper",
+                    "x": 0.5,
+                    "y": 0.5,
+                    "showarrow": False,
+                    "font": {"size": 16, "color": "#6b7280"},
+                }
+            ],
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            height=400,
+        )
     )
-    encoded = _figure_to_data_uri(fig)
-    plt.close(fig)
-    return encoded
+    return fig
 
 
-def _figure_to_data_uri(fig: plt.Figure) -> str:
-    buffer = BytesIO()
-    fig.savefig(buffer, format="png", dpi=150, bbox_inches="tight", transparent=True)
-    buffer.seek(0)
-    encoded = base64.b64encode(buffer.read()).decode("ascii")
-    return f"data:image/png;base64,{encoded}"
-
-
-def _render_pie_chart(labels: list[str], series: list[int]) -> str:
+def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     total = sum(series)
     if total == 0:
-        return _render_empty_chart_message(gettext("Sem dados disponíveis"))
-
-    fig = plt.figure(figsize=(7.5, 5.5))
-    fig.patch.set_facecolor("#ffffff")
-    fig.patch.set_alpha(1)
-    ax = fig.add_subplot(111, projection="3d")
-    ax.set_facecolor("#ffffff")
+        return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#0ea5e9"]
-    radius = 1.0
-    height = 0.3
-    start_angle = 0.0
-    outline_effect = patheffects.withStroke(linewidth=2, foreground="#f3f4f6")
-    legend_handles: list[Patch] = []
-
-    for label, value, color in zip(labels, series, colors):
-        if value == 0:
-            start_angle += 360 * (value / max(total, 1))
-            continue
-
-        angle = (value / total) * 360
-        theta = np.linspace(np.deg2rad(start_angle), np.deg2rad(start_angle + angle), 40)
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta)
-
-        top_face = [(0.0, 0.0, height)] + list(zip(x, y, np.full_like(x, height)))
-        bottom_face = [(0.0, 0.0, 0.0)] + list(zip(x, y, np.zeros_like(x)))
-
-        for face in (top_face, bottom_face):
-            poly = Poly3DCollection([face], facecolors=color, edgecolors="#ffffff", linewidths=0.5)
-            poly.set_alpha(0.95)
-            ax.add_collection3d(poly)
-
-        for i in range(len(theta) - 1):
-            side_vertices = [
-                (x[i], y[i], 0.0),
-                (x[i + 1], y[i + 1], 0.0),
-                (x[i + 1], y[i + 1], height),
-                (x[i], y[i], height),
-            ]
-            side = Poly3DCollection([side_vertices], facecolors=color, edgecolors="#ffffff", linewidths=0.3)
-            side.set_alpha(0.95)
-            ax.add_collection3d(side)
-
-        radial_start = [
-            (0.0, 0.0, 0.0),
-            (x[0], y[0], 0.0),
-            (x[0], y[0], height),
-            (0.0, 0.0, height),
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels,
+                values=series,
+                hole=0.35,
+                marker={
+                    "colors": colors,
+                    "line": {"color": "#ffffff", "width": 2},
+                },
+                hovertemplate="<b>%{label}</b><br>Valor: %{value}<br>%{percent}<extra></extra>",
+                textinfo="label+value",
+                sort=False,
+            )
         ]
-        radial_end = [
-            (0.0, 0.0, 0.0),
-            (x[-1], y[-1], 0.0),
-            (x[-1], y[-1], height),
-            (0.0, 0.0, height),
-        ]
-        for radial_face in (radial_start, radial_end):
-            radial_poly = Poly3DCollection([radial_face], facecolors=color, edgecolors="#ffffff", linewidths=0.3)
-            radial_poly.set_alpha(0.95)
-            ax.add_collection3d(radial_poly)
-
-        handle = Patch(
-            facecolor=color,
-            edgecolor="#1f2937",
-            label=f"{label} ({value})",
-            linewidth=0.5,
+    )
+    fig.update_layout(
+        _base_layout(
+            legend={
+                "orientation": "v",
+                "yanchor": "middle",
+                "xanchor": "left",
+                "x": 1.05,
+                "y": 0.5,
+                "bgcolor": "rgba(255,255,255,0.95)",
+                "bordercolor": "rgba(209,213,219,0.6)",
+                "borderwidth": 1,
+                "font": {"size": 12},
+            },
+            margin={"l": 20, "r": 140, "t": 50, "b": 30},
+            height=420,
         )
-        handle.set_path_effects([outline_effect])
-        legend_handles.append(handle)
-
-        start_angle += angle
-
-    ax.view_init(elev=25, azim=135)
-    ax.set_box_aspect((1, 1, 0.35))
-    ax.set_xlim(-1.2, 1.2)
-    ax.set_ylim(-1.2, 1.2)
-    ax.set_zlim(0, height * 2.2)
-    ax.set_axis_off()
-    if legend_handles:
-        ax.legend(
-            handles=legend_handles,
-            loc="center left",
-            bbox_to_anchor=(1.05, 0.5),
-            fontsize=LABEL_FONT_SIZE,
-            frameon=False,
-        )
-
-    fig.subplots_adjust(left=0.0, right=0.75, top=0.95, bottom=0.05)
-    data_uri = _figure_to_data_uri(fig)
-    plt.close(fig)
-    return data_uri
+    )
+    return fig
 
 
-def _render_bar_chart(labels: list[str], series: list[int]) -> str:
+def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
     total = sum(series)
     if total == 0:
-        return _render_empty_chart_message(gettext("Sem dados disponíveis"))
-
-    fig, ax = plt.subplots(figsize=(7.5, 5.5))
-    fig.patch.set_facecolor("#ffffff")
-    fig.patch.set_alpha(1)
-    ax.set_facecolor("#ffffff")
+        return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
-    values = np.array(series, dtype=float)
-    y_positions = np.arange(len(labels))
-    outline_effect = patheffects.withStroke(linewidth=2, foreground="#e5e7eb")
-
-    bars = ax.barh(
-        y_positions,
-        values,
-        color=colors,
-        edgecolor="#e5e7eb",
-        linewidth=0.75,
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=series,
+                y=labels,
+                orientation="h",
+                marker={
+                    "color": colors,
+                    "line": {"color": "#e5e7eb", "width": 1},
+                },
+                text=[str(value) for value in series],
+                textposition="outside",
+                hovertemplate="<b>%{y}</b><br>Valor: %{x}<extra></extra>",
+            )
+        ]
     )
-
-    ax.set_yticks(y_positions)
-    ax.set_yticklabels(labels, color="#0f172a", fontsize=LABEL_FONT_SIZE, fontweight="bold")
-    ax.tick_params(axis="y", colors="#0f172a", labelsize=LABEL_FONT_SIZE)
-    ax.tick_params(axis="x", colors="#374151", labelsize=AXIS_FONT_SIZE)
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_color("#d1d5db")
-    ax.spines["bottom"].set_color("#d1d5db")
-    ax.grid(axis="x", color="#e5e7eb", linestyle="--", linewidth=0.8, alpha=0.8)
-    ax.set_axisbelow(True)
-
-    for bar, value in zip(bars, values):
-        ax.text(
-            bar.get_width() + max(values) * 0.01,
-            bar.get_y() + bar.get_height() / 2,
-            f"{int(value)}",
-            va="center",
-            ha="left",
-            fontsize=VALUE_FONT_SIZE,
-            color="#0f172a",
-            fontweight="bold",
+    fig.update_layout(
+        _base_layout(
+            xaxis={
+                "title": "",
+                "gridcolor": "#e5e7eb",
+                "zerolinecolor": "#d1d5db",
+                "tickfont": {"size": 12, "color": "#374151"},
+            },
+            yaxis={
+                "title": "",
+                "tickfont": {"size": 12, "color": "#0f172a"},
+                "categoryorder": "total ascending",
+            },
+            bargap=0.25,
+            margin={"l": 140, "r": 40, "t": 50, "b": 40},
+            height=420,
         )
-
-    legend_handles = []
-    for label, value, color in zip(labels, values, colors):
-        if value == 0:
-            continue
-        handle = Patch(
-            facecolor=color,
-            edgecolor="#1f2937",
-            linewidth=0.5,
-            label=f"{label} ({int(value)})",
-        )
-        handle.set_path_effects([outline_effect])
-        legend_handles.append(handle)
-
-    if legend_handles:
-        ax.legend(
-            handles=legend_handles,
-            loc="center left",
-            bbox_to_anchor=(1.05, 0.5),
-            fontsize=LABEL_FONT_SIZE,
-            frameon=False,
-        )
-
-    fig.subplots_adjust(left=0.18, right=0.78, top=0.95, bottom=0.15)
-    data_uri = _figure_to_data_uri(fig)
-    plt.close(fig)
-    return data_uri
+    )
+    return fig
 
 
 def build_chart_payload(counts: Mapping[str, int], *, chart_type: str = "pie") -> dict[str, Any]:
-    """Normaliza contagens em labels, séries, percentuais e gera a imagem do gráfico."""
+    """Normaliza contagens e gera os metadados e figura Plotly correspondente."""
 
     labels = list(counts.keys())
     series = [counts[label] for label in labels]
@@ -373,15 +279,15 @@ def build_chart_payload(counts: Mapping[str, int], *, chart_type: str = "pie") -
         percentages = [0 for _ in series]
 
     if chart_type == "bar":
-        image = _render_bar_chart(labels, series)
+        figure = _bar_chart(labels, series)
     else:
-        image = _render_pie_chart(labels, series)
+        figure = _pie_chart(labels, series)
 
     return {
         "labels": labels,
         "series": series,
         "percentages": percentages,
         "total": total,
-        "image": image,
+        "figure": figure.to_dict(),
         "type": chart_type,
     }
