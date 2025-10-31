@@ -22,25 +22,38 @@
         {% endif %}
       </div>
       {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None or total_consultores is not None or total_coordenadores is not None %}
-        <div class="mt-10 space-y-4">
-          {% with target=filter_target|default:'#associados-grid' indicator=filter_indicator|default:'#associados-loading' %}
-          <div class="card-grid" data-associados-filter-buttons>
-           {% include '_partials/cards/total_card.html' with label=_('Associados') valor=total_associados icon_name='badge-check' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 bg-white/20 shadow-lg text-white' is_active=is_associados_filter_active hx_get=associados_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="associados"' %}
-
-           {% include '_partials/cards/total_card.html' with label=_('Nucleados') valor=total_nucleados icon_name='network' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 bg-white/20 shadow-lg text-white' is_active=is_nucleados_filter_active hx_get=nucleados_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="nucleados"' %}
-
-           {% if total_consultores is not None %}
-            {% include '_partials/cards/total_card.html' with label=_('Consultores') valor=total_consultores icon_name='briefcase' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 bg-white/20 shadow-lg text-white' is_active=is_consultores_filter_active hx_get=consultores_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="consultores"' %}
-           {% endif %}
-
-           {% if total_coordenadores is not None %}
-            {% include '_partials/cards/total_card.html' with label=_('Coordenadores') valor=total_coordenadores icon_name='users' card_class='card-compact border border-white/30 bg-white/10 text-white/90 backdrop-blur-sm cursor-pointer transition hover:shadow-lg focus:outline-none focus-visible:ring focus-visible:ring-white/80 focus-visible:ring-offset-2' body_class='card-body-compact' as_button=True active_class='border border-white/80 bg-white/20 shadow-lg text-white' is_active=is_coordenadores_filter_active hx_get=coordenadores_filter_url hx_target=target hx_push_url='true' hx_indicator=indicator extra_attributes='data-associados-filter-card="coordenadores"' %}
-           {% endif %}
-
-          </div>
-          {% endwith %}
-          <div id="associados-filter-state" class="hidden" data-current-filter="{{ current_filter|default:'todos' }}" aria-hidden="true"></div>
-        </div>
+        <dl class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          {% if total_usuarios is not None %}
+            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
+              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Total de usuários' %}</dt>
+              <dd class="mt-2 text-3xl font-semibold">{{ total_usuarios }}</dd>
+            </div>
+          {% endif %}
+          {% if total_associados is not None %}
+            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
+              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Associados sem núcleo' %}</dt>
+              <dd class="mt-2 text-3xl font-semibold">{{ total_associados }}</dd>
+            </div>
+          {% endif %}
+          {% if total_nucleados is not None %}
+            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
+              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Associados nucleados' %}</dt>
+              <dd class="mt-2 text-3xl font-semibold">{{ total_nucleados }}</dd>
+            </div>
+          {% endif %}
+          {% if total_consultores is not None %}
+            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
+              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Consultores' %}</dt>
+              <dd class="mt-2 text-3xl font-semibold">{{ total_consultores }}</dd>
+            </div>
+          {% endif %}
+          {% if total_coordenadores is not None %}
+            <div class="rounded-xl border border-white/30 bg-white/10 p-4 text-white/90 backdrop-blur-sm">
+              <dt class="text-sm font-medium uppercase tracking-wide text-white/70">{% trans 'Coordenadores' %}</dt>
+              <dd class="mt-2 text-3xl font-semibold">{{ total_coordenadores }}</dd>
+            </div>
+          {% endif %}
+        </dl>
       {% endif %}
     </div>
   </div>

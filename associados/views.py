@@ -140,16 +140,17 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         return super().get_success_url()
 
 
-class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView):
+class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateView):
     template_name = "associados/associado_list.html"
-    context_object_name = "associados"
-    paginate_by = 10
 
-    def get_queryset(self):
+    def get_search_term(self) -> str:
+        return (self.request.GET.get("q") or "").strip()
+
+    def get_filtered_queryset(self):
         User = get_user_model()
-        org = self.request.user.organizacao
-        qs = (
-            User.objects.filter(organizacao=org)
+        organizacao = getattr(self.request.user, "organizacao", None)
+        queryset = (
+            User.objects.filter(organizacao=organizacao)
             .filter(
                 Q(is_associado=True)
                 | Q(
@@ -164,12 +165,27 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView)
             .select_related("organizacao", "nucleo")
             .prefetch_related("participacoes__nucleo", "nucleos_consultoria")
         )
-        # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
-        q = self.request.GET.get("q")
-        if q:
-            qs = qs.filter(Q(username__icontains=q) | Q(contato__icontains=q))
 
-        filtro_tipo = self.request.GET.get("tipo")
+        search_term = self.get_search_term()
+        if search_term:
+            queryset = queryset.filter(
+                Q(username__icontains=search_term) | Q(contato__icontains=search_term)
+            )
+
+        return queryset
+
+    def get_totals(self) -> dict[str, int]:
+        User = get_user_model()
+        organizacao = getattr(self.request.user, "organizacao", None)
+        if organizacao is None:
+            return {
+                "total_usuarios": 0,
+                "total_associados": 0,
+                "total_nucleados": 0,
+                "total_consultores": 0,
+                "total_coordenadores": 0,
+            }
+
         consultor_filter = Q(user_type=UserType.CONSULTOR.value)
         coordenador_filter = (
             Q(user_type=UserType.COORDENADOR.value)
@@ -180,99 +196,69 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, ListView)
                 participacoes__status_suspensao=False,
             )
         )
-        if filtro_tipo == "associados":
-            qs = qs.filter(is_associado=True, nucleo__isnull=True)
-        elif filtro_tipo == "nucleados":
-            qs = qs.filter(is_associado=True, nucleo__isnull=False)
-        elif filtro_tipo == "consultores":
-            qs = qs.filter(consultor_filter)
-        elif filtro_tipo == "coordenadores":
-            qs = qs.filter(coordenador_filter)
 
-        qs = qs.distinct()
-
-        # Ordenação alfabética por username (case-insensitive)
-        qs = qs.annotate(_user=Lower("username"))
-        return qs.order_by("_user")
+        return {
+            "total_usuarios": User.objects.filter(organizacao=organizacao).count(),
+            "total_associados": User.objects.filter(
+                organizacao=organizacao, is_associado=True, nucleo__isnull=True
+            ).count(),
+            "total_nucleados": User.objects.filter(
+                organizacao=organizacao, is_associado=True, nucleo__isnull=False
+            ).count(),
+            "total_consultores": User.objects.filter(organizacao=organizacao)
+            .filter(consultor_filter)
+            .distinct()
+            .count(),
+            "total_coordenadores": User.objects.filter(organizacao=organizacao)
+            .filter(coordenador_filter)
+            .distinct()
+            .count(),
+        }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
-        current_filter = self.request.GET.get("tipo") or ""
-        if current_filter not in valid_filters:
-            current_filter = "todos"
+        base_queryset = self.get_filtered_queryset()
 
-        params = self.request.GET.copy()
-        if "page" in params:
-            params.pop("page")
-
-        def build_url(filter_value: str | None) -> str:
-            query_params = params.copy()
-            if filter_value in valid_filters:
-                query_params["tipo"] = filter_value
-            else:
-                query_params.pop("tipo", None)
-            query_string = query_params.urlencode()
-            return f"{self.request.path}?{query_string}" if query_string else self.request.path
-
-        context["current_filter"] = current_filter
-        context["associados_filter_url"] = build_url("associados")
-        context["nucleados_filter_url"] = build_url("nucleados")
-        context["consultores_filter_url"] = build_url("consultores")
-        context["coordenadores_filter_url"] = build_url("coordenadores")
-        context["todos_filter_url"] = build_url(None)
-        context["is_associados_filter_active"] = current_filter == "associados"
-        context["is_nucleados_filter_active"] = current_filter == "nucleados"
-        context["is_consultores_filter_active"] = current_filter == "consultores"
-        context["is_coordenadores_filter_active"] = current_filter == "coordenadores"
-
-        org = getattr(self.request.user, "organizacao", None)
-        if org:
-            # Totais por organização
-            context["total_usuarios"] = User.objects.filter(organizacao=org).count()
-            # Associados sem vínculo a núcleo
-            context["total_associados"] = User.objects.filter(
-                organizacao=org, is_associado=True, nucleo__isnull=True
-            ).count()
-            # Nucleados (inclui coordenadores vinculados a um núcleo)
-            context["total_nucleados"] = User.objects.filter(
-                organizacao=org, is_associado=True, nucleo__isnull=False
-            ).count()
-            consultor_filter = Q(user_type=UserType.CONSULTOR.value)
-            context["total_consultores"] = (
-                User.objects.filter(organizacao=org).filter(consultor_filter).distinct().count()
+        consultor_filter = Q(user_type=UserType.CONSULTOR.value)
+        coordenador_filter = (
+            Q(user_type=UserType.COORDENADOR.value)
+            | Q(is_coordenador=True)
+            | Q(
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
             )
-            coordenador_filter = (
-                Q(user_type=UserType.COORDENADOR.value)
-                | Q(is_coordenador=True)
-                | Q(
-                    participacoes__papel="coordenador",
-                    participacoes__status="ativo",
-                    participacoes__status_suspensao=False,
-                )
-            )
-            context["total_coordenadores"] = (
-                User.objects.filter(organizacao=org).filter(coordenador_filter).distinct().count()
-            )
-        else:
-            context["total_usuarios"] = 0
-            context["total_associados"] = 0
-            context["total_nucleados"] = 0
-            context["total_consultores"] = 0
-            context["total_coordenadores"] = 0
+        )
+
+        def prepare_queryset(queryset):
+            annotated = queryset.annotate(_order=Lower("username"))
+            return list(annotated.distinct().order_by("_order", "id"))
+
+        associados_sem_nucleo = prepare_queryset(
+            base_queryset.filter(is_associado=True, nucleo__isnull=True)
+        )
+        nucleados = prepare_queryset(
+            base_queryset.filter(is_associado=True, nucleo__isnull=False)
+        )
+        consultores = prepare_queryset(base_queryset.filter(consultor_filter))
+        coordenadores = prepare_queryset(base_queryset.filter(coordenador_filter))
+
+        context.update(
+            {
+                "search_term": self.get_search_term(),
+                "associados_sem_nucleo": associados_sem_nucleo,
+                "associados_sem_nucleo_count": len(associados_sem_nucleo),
+                "associados_nucleados": nucleados,
+                "associados_nucleados_count": len(nucleados),
+                "associados_consultores": consultores,
+                "associados_consultores_count": len(consultores),
+                "associados_coordenadores": coordenadores,
+                "associados_coordenadores_count": len(coordenadores),
+            }
+        )
+
+        context.update(self.get_totals())
         return context
-
-    def render_to_response(self, context, **response_kwargs):
-        if self.request.headers.get("HX-Request"):
-            response_kwargs.setdefault("content_type", self.content_type)
-            return self.response_class(
-                request=self.request,
-                template="associados/_grid.html",
-                context=context,
-                using=self.template_engine,
-                **response_kwargs,
-            )
-        return super().render_to_response(context, **response_kwargs)
 
 
 class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
