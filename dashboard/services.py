@@ -135,6 +135,44 @@ CHART_PALETTE = [
 ]
 
 
+def _clamp(value: float, minimum: float = 0.0, maximum: float = 255.0) -> float:
+    """Limita ``value`` dentro do intervalo informado."""
+
+    return max(minimum, min(value, maximum))
+
+
+def _adjust_color_luminance(color: str, factor: float) -> str:
+    """Ajusta a luminosidade de uma cor hexadecimal.
+
+    ``factor`` deve estar entre ``-1`` (mais escuro) e ``1`` (mais claro).
+    """
+
+    hex_color = color.strip().lstrip("#")
+    if len(hex_color) not in (3, 6):
+        return color
+
+    if len(hex_color) == 3:
+        hex_color = "".join(component * 2 for component in hex_color)
+
+    try:
+        red = int(hex_color[0:2], 16)
+        green = int(hex_color[2:4], 16)
+        blue = int(hex_color[4:6], 16)
+    except ValueError:
+        return color
+
+    if factor >= 0:
+        red = _clamp(red + (255 - red) * factor)
+        green = _clamp(green + (255 - green) * factor)
+        blue = _clamp(blue + (255 - blue) * factor)
+    else:
+        red = _clamp(red * (1 + factor))
+        green = _clamp(green * (1 + factor))
+        blue = _clamp(blue * (1 + factor))
+
+    return f"#{int(red):02x}{int(green):02x}{int(blue):02x}"
+
+
 def _palette_for_length(length: int) -> list[str]:
     if length <= 0:
         return []
@@ -145,14 +183,24 @@ def _palette_for_length(length: int) -> list[str]:
 def _base_layout(**extras: Any) -> dict[str, Any]:
     layout: dict[str, Any] = {
         "paper_bgcolor": "rgba(0,0,0,0)",
-        "plot_bgcolor": "rgba(255,255,255,1)",
-        "margin": {"l": 40, "r": 40, "t": 50, "b": 40},
+        "plot_bgcolor": "rgba(0,0,0,0)",
+        "margin": {"l": 40, "r": 40, "t": 48, "b": 96},
         "font": {"color": "#0f172a"},
         "legend": {
-            "bgcolor": "rgba(255,255,255,0.95)",
-            "bordercolor": "rgba(209,213,219,0.6)",
+            "orientation": "h",
+            "yanchor": "top",
+            "xanchor": "center",
+            "x": 0.5,
+            "y": -0.18,
+            "bgcolor": "rgba(255,255,255,0.0)",
+            "bordercolor": "rgba(148,163,184,0.4)",
             "borderwidth": 1,
             "font": {"size": 12},
+            "itemwidth": 80,
+        },
+        "hoverlabel": {
+            "bgcolor": "rgba(255,255,255,0.95)",
+            "bordercolor": "rgba(148,163,184,0.4)",
         },
     }
     layout.update(extras)
@@ -182,43 +230,79 @@ def _empty_figure(message: str) -> go.Figure:
     return fig
 
 
+def _format_legend_label(label: str, total: int) -> str:
+    template = gettext("%(label)s · %(total)s")
+    return template % {"label": label, "total": total}
+
+
 def _pie_chart(labels: list[str], series: list[int]) -> go.Figure:
     total = sum(series)
     if total == 0:
         return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#0ea5e9"]
+    highlight_colors = [_adjust_color_luminance(color, 0.08) for color in colors]
+    shadow_colors = [_adjust_color_luminance(color, -0.15) for color in colors]
+    legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
+    customdata = [
+        [label, value] for label, value in zip(labels, series)
+    ]
     fig = go.Figure(
         data=[
             go.Pie(
-                labels=labels,
+                labels=legend_labels,
                 values=series,
-                hole=0.35,
+                hole=0.45,
                 marker={
-                    "colors": colors,
+                    "colors": shadow_colors,
+                    "line": {"color": "rgba(15,23,42,0.25)", "width": 1},
+                },
+                hoverinfo="skip",
+                textinfo="none",
+                showlegend=False,
+                sort=False,
+                direction="clockwise",
+                rotation=2,
+                opacity=0.55,
+                pull=0.015,
+            ),
+            go.Pie(
+                labels=legend_labels,
+                values=series,
+                customdata=customdata,
+                hole=0.55,
+                marker={
+                    "colors": highlight_colors,
                     "line": {"color": "#ffffff", "width": 2},
                 },
-                hovertemplate="<b>%{label}</b><br>Valor: %{value}<br>%{percent}<extra></extra>",
-                textinfo="label+value",
+                hovertemplate=(
+                    "<b>%{customdata[0]}</b><br>"
+                    "Total: %{customdata[1]}<br>"
+                    "Participação: %{percent}<extra></extra>"
+                ),
+                textinfo="none",
                 sort=False,
-            )
+            ),
         ]
     )
     fig.update_layout(
         _base_layout(
             legend={
-                "orientation": "v",
-                "yanchor": "middle",
-                "xanchor": "left",
-                "x": 1.05,
-                "y": 0.5,
-                "bgcolor": "rgba(255,255,255,0.95)",
-                "bordercolor": "rgba(209,213,219,0.6)",
-                "borderwidth": 1,
-                "font": {"size": 12},
+                "traceorder": "normal",
             },
-            margin={"l": 20, "r": 140, "t": 50, "b": 30},
-            height=420,
+            margin={"l": 32, "r": 32, "t": 48, "b": 120},
+            height=440,
+            annotations=[
+                {
+                    "text": gettext("Total") + f"<br><b>{total}</b>",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "x": 0.5,
+                    "y": 0.5,
+                    "showarrow": False,
+                    "font": {"size": 18, "color": "#0f172a"},
+                }
+            ],
         )
     )
     return fig
@@ -230,19 +314,27 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
         return _empty_figure(gettext("Sem dados disponíveis"))
 
     colors = _palette_for_length(len(series)) or ["#2563eb"]
+    gradient_colors = [_adjust_color_luminance(color, -0.08) for color in colors]
+    legend_labels = [_format_legend_label(label, value) for label, value in zip(labels, series)]
+    customdata = [
+        [label, value] for label, value in zip(labels, series)
+    ]
     fig = go.Figure(
         data=[
             go.Bar(
-                x=series,
-                y=labels,
-                orientation="h",
+                x=legend_labels,
+                y=series,
                 marker={
                     "color": colors,
                     "line": {"color": "#e5e7eb", "width": 1},
+                    "gradient": {"type": "vertical", "color": gradient_colors[0] if gradient_colors else None},
                 },
-                text=[str(value) for value in series],
-                textposition="outside",
-                hovertemplate="<b>%{y}</b><br>Valor: %{x}<extra></extra>",
+                customdata=customdata,
+                hovertemplate=(
+                    "<b>%{customdata[0]}</b><br>"
+                    "Total: %{customdata[1]}<extra></extra>"
+                ),
+                name=gettext("Eventos"),
             )
         ]
     )
@@ -251,17 +343,20 @@ def _bar_chart(labels: list[str], series: list[int]) -> go.Figure:
             xaxis={
                 "title": "",
                 "gridcolor": "#e5e7eb",
-                "zerolinecolor": "#d1d5db",
-                "tickfont": {"size": 12, "color": "#374151"},
+                "zerolinecolor": "#cbd5f5",
+                "tickfont": {"size": 12, "color": "#0f172a"},
+                "tickangle": -20,
+                "automargin": True,
             },
             yaxis={
                 "title": "",
-                "tickfont": {"size": 12, "color": "#0f172a"},
-                "categoryorder": "total ascending",
+                "tickfont": {"size": 12, "color": "#374151"},
+                "gridcolor": "#e5e7eb",
+                "rangemode": "tozero",
             },
-            bargap=0.25,
-            margin={"l": 140, "r": 40, "t": 50, "b": 40},
-            height=420,
+            bargap=0.35,
+            margin={"l": 48, "r": 24, "t": 48, "b": 120},
+            height=440,
         )
     )
     return fig
