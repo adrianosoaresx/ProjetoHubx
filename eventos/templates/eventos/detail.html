@@ -10,8 +10,16 @@
     <div class="flex flex-col gap-6">
       <article class="card">
         <details class="group">
-          <summary class="card-header flex cursor-pointer items-center justify-between gap-3">
-            <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+          <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/15">
+                {% lucide 'info' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Dados gerais do evento" %}</p>
+              </div>
+            </div>
             <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
               {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
             </span>
@@ -194,8 +202,24 @@
         {% if pode_ver_inscritos %}
           <article class="card">
             <details class="group">
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-3">
-                <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
+              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
+                    {% lucide 'users' class='h-6 w-6' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
+                    {% with total_inscritos=inscricoes_confirmadas|default_if_none:''|length %}
+                      <p class="text-sm text-[var(--text-secondary)]">
+                        {% blocktrans count count=total_inscritos %}
+                          {{ count }} inscrito confirmado
+                        {% plural %}
+                          {{ count }} inscritos confirmados
+                        {% endblocktrans %}
+                      </p>
+                    {% endwith %}
+                  </div>
+                </div>
                 <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
                   {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
                 </span>
