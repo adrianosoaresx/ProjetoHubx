@@ -8,10 +8,7 @@
 {% block content %}
 
   <div class="space-y-6">
-    <div class="flex flex-wrap items-center justify-end gap-3">
-      {% block list_actions %}{% endblock %}
-    </div>
-
+   
     {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
       <details class="card group" data-eventos-section="ativos">
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
