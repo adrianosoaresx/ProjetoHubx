@@ -271,7 +271,15 @@
         }
       }
 
-      updateCards(coordenadoresCard.hasAttribute('open') ? 'coordenador' : 'membros');
+      const initialCard = coordenadoresCard.hasAttribute('open')
+        ? 'coordenador'
+        : membrosCard.hasAttribute('open')
+          ? 'membros'
+          : null;
+
+      if (initialCard) {
+        updateCards(initialCard);
+      }
 
       document.body.addEventListener('htmx:beforeRequest', handleEvent);
       document.body.addEventListener('htmx:afterSwap', handleEvent);
