@@ -216,6 +216,14 @@
                         {% plural %}
                           {{ count }} inscritos confirmados
                         {% endblocktrans %}
+                        {% if vagas_disponiveis is not None %}
+                          ·
+                          {% blocktrans count vagas=vagas_disponiveis %}
+                            {{ vagas }} vaga disponível
+                          {% plural %}
+                            {{ vagas }} vagas disponíveis
+                          {% endblocktrans %}
+                        {% endif %}
                       </p>
                     {% endwith %}
                   </div>
