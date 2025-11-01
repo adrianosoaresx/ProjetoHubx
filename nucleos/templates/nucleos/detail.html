@@ -175,17 +175,17 @@
           <details
             id="nucleo-coordenadores-card"
             class="card group"
+            hx-get="{{ membros_list_url }}"
+            hx-target="#coordenadores-list"
+            hx-trigger="toggle[target.open]"
+            hx-include="#coordenadores-filter-form"
+            hx-indicator="#coordenadores-loading"
+            hx-push-url="true"
+            hx-vals='{"papel":"coordenador","card":"coordenadores"}'
             {% if is_coordenadores_filter_active %}open{% endif %}
           >
             <summary
               class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden"
-              hx-get="{{ membros_list_url }}"
-              hx-target="#coordenadores-list"
-              hx-trigger="click"
-              hx-include="#coordenadores-filter-form"
-              hx-indicator="#coordenadores-loading"
-              hx-push-url="true"
-              hx-vals='{"papel":"coordenador","card":"coordenadores"}'
             >
               <div class="flex items-start gap-3">
                 <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/20">
@@ -243,46 +243,4 @@
 
 {% block scripts %}
   {{ block.super }}
-  <script>
-    (function () {
-      const membrosCard = document.getElementById('nucleo-membros-card');
-      const coordenadoresCard = document.getElementById('nucleo-coordenadores-card');
-
-      if (!membrosCard || !coordenadoresCard) {
-        return;
-      }
-
-      function updateCards(papel) {
-        if (papel === 'coordenador') {
-          coordenadoresCard.setAttribute('open', '');
-          membrosCard.removeAttribute('open');
-        } else {
-          membrosCard.setAttribute('open', '');
-          coordenadoresCard.removeAttribute('open');
-        }
-      }
-
-      function handleEvent(event) {
-        const detail = event.detail || {};
-        const params = detail.parameters || (detail.requestConfig && detail.requestConfig.parameters);
-        if (params && typeof params.papel !== 'undefined') {
-          updateCards(params.papel);
-          return;
-        }
-      }
-
-      const initialCard = coordenadoresCard.hasAttribute('open')
-        ? 'coordenador'
-        : membrosCard.hasAttribute('open')
-          ? 'membros'
-          : null;
-
-      if (initialCard) {
-        updateCards(initialCard);
-      }
-
-      document.body.addEventListener('htmx:beforeRequest', handleEvent);
-      document.body.addEventListener('htmx:afterSwap', handleEvent);
-    })();
-  </script>
 {% endblock %}
