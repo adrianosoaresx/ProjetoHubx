@@ -114,17 +114,16 @@
           <details
             id="nucleo-membros-card"
             class="card group"
-            {% if not is_coordenadores_filter_active %}open{% endif %}
+            hx-get="{{ membros_list_url }}"
+            hx-target="#membros-list"
+            hx-trigger="toggle[target.open]"
+            hx-include="#membros-filter-form"
+            hx-indicator="#membros-loading"
+            hx-push-url="true"
+            hx-vals='{"papel":"todos","card":"membros"}'
           >
             <summary
               class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden"
-              hx-get="{{ membros_list_url }}"
-              hx-target="#membros-list"
-              hx-trigger="click"
-              hx-include="#membros-filter-form"
-              hx-indicator="#membros-loading"
-              hx-push-url="true"
-              hx-vals='{"papel":"todos","card":"membros"}'
             >
               <div class="flex items-start gap-3">
                 <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
