@@ -2,37 +2,33 @@
 {# Conteúdo HTMX exibido dentro de grids; layout flat aprovado pela equipe de UI para atualizações dinâmicas. #}
 
 {% with current_card=card|default:request.GET.card|default:'membros' %}
-  {% if current_card == 'coordenadores' %}
-    {% with
-      filter_container_id='coordenadores-filter-container'
-      form_id='coordenadores-filter-form'
-      search_input_id='coordenadores-search'
-      loading_id='coordenadores-loading'
-      list_target='#coordenadores-list'
-      list_aria_label=_('Lista de coordenadores do núcleo')
-      empty_message_text=_('Sem coordenadores.')
-      search_label=_('Pesquisar coordenadores')
-      search_placeholder=_('Buscar por nome ou email')
-      default_papel_value='coordenador'
-      card_name_value='coordenadores'
-    %}
-      {% include 'nucleos/partials/membros_list_inner.html' %}
-    {% endwith %}
-  {% else %}
-    {% with
-      filter_container_id='membros-filter-container'
-      form_id='membros-filter-form'
-      search_input_id='membros-search'
-      loading_id='membros-loading'
-      list_target='#membros-list'
-      list_aria_label=_('Lista de membros do núcleo')
-      empty_message_text=_('Sem membros.')
-      search_label=_('Pesquisar membros')
-      search_placeholder=_('Buscar por nome ou email')
-      default_papel_value='todos'
-      card_name_value='membros'
-    %}
-      {% include 'nucleos/partials/membros_list_inner.html' %}
-    {% endwith %}
-  {% endif %}
+    {% if current_card == 'coordenadores' %}
+      {% include 'nucleos/partials/membros_list_inner.html' with
+        filter_container_id='coordenadores-filter-container'
+        form_id='coordenadores-filter-form'
+        search_input_id='coordenadores-search'
+        loading_id='coordenadores-loading'
+        list_target='#coordenadores-list'
+        list_aria_label=_('Lista de coordenadores do núcleo')
+        empty_message_text=_('Sem coordenadores.')
+        search_label=_('Pesquisar coordenadores')
+        search_placeholder=_('Buscar por nome ou email')
+        default_papel_value='coordenador'
+        card_name_value='coordenadores'
+      %}
+    {% else %}
+      {% include 'nucleos/partials/membros_list_inner.html' with
+        filter_container_id='membros-filter-container'
+        form_id='membros-filter-form'
+        search_input_id='membros-search'
+        loading_id='membros-loading'
+        list_target='#membros-list'
+        list_aria_label=_('Lista de membros do núcleo')
+        empty_message_text=_('Sem membros.')
+        search_label=_('Pesquisar membros')
+        search_placeholder=_('Buscar por nome ou email')
+        default_papel_value='todos'
+        card_name_value='membros'
+      %}
+    {% endif %}
 {% endwith %}
