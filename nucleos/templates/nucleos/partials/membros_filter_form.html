@@ -1,27 +1,39 @@
 {% load i18n %}
 {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+{% with form_id=form_id|default:'membros-filter-form'
+  search_input_id=search_input_id|default:'membros-search'
+  hx_target=hx_target|default:'#membros-list'
+  hx_indicator=hx_indicator|default:'#membros-loading'
+  hx_push_url=hx_push_url|default:'true'
+  default_papel=default_papel|default:current_papel_filter|default:'todos'
+  card_name=card_name|default:'membros'
+  search_label=search_label|default:_('Pesquisar membros')
+  search_placeholder=search_placeholder|default:_('Buscar por nome ou email')
+  search_value=search_value|default:membros_search_query %}
 <form
-  id="membros-filter-form"
+  id="{{ form_id }}"
   class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
   hx-get="{{ membros_list_url }}"
-  hx-target="#membros-list"
+  hx-target="{{ hx_target }}"
   hx-trigger="input changed delay:500ms, submit"
-  hx-indicator="#membros-loading"
-  hx-push-url="true"
+  hx-indicator="{{ hx_indicator }}"
+  hx-push-url="{{ hx_push_url }}"
 >
   <div class="flex w-full items-center gap-2 sm:max-w-sm">
-    <label for="membros-search" class="sr-only">{% trans "Pesquisar membros" %}</label>
+    <label for="{{ search_input_id }}" class="sr-only">{{ search_label }}</label>
     <input
       type="search"
-      id="membros-search"
+      id="{{ search_input_id }}"
       name="search"
-      value="{{ membros_search_query }}"
-      placeholder="{% trans 'Buscar por nome ou email' %}"
+      value="{{ search_value }}"
+      placeholder="{{ search_placeholder }}"
       class="input input-bordered w-full"
     >
     <button type="submit" class="btn btn-secondary whitespace-nowrap">
       {% trans "Buscar" %}
     </button>
   </div>
-  <input type="hidden" name="papel" value="{{ current_papel_filter|default:'todos' }}">
+  <input type="hidden" name="papel" value="{{ default_papel }}">
+  <input type="hidden" name="card" value="{{ card_name }}">
 </form>
+{% endwith %}

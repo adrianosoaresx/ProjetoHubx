@@ -1,0 +1,62 @@
+{% load i18n %}
+{% if is_htmx %}
+  <div id="nucleo-hero" hx-swap-oob="true">
+    {% include '_components/hero_nucleo_detail.html' with nucleo=object %}
+  </div>
+  <div id="{{ filter_container_id }}" hx-swap-oob="true">
+    {% include 'nucleos/partials/membros_filter_form.html' with form_id=form_id search_input_id=search_input_id hx_target=list_target hx_indicator=loading_id hx_push_url='true' default_papel=default_papel_value card_name=card_name_value search_label=search_label search_placeholder=search_placeholder search_value=membros_search_query %}
+  </div>
+  <p
+    id="nucleo-membros-subtitle"
+    class="text-sm text-[var(--text-secondary)]"
+    hx-swap-oob="true"
+  >
+    {% blocktrans count count=total_membros %}
+      {{ count }} membro no total
+    {% plural %}
+      {{ count }} membros no total
+    {% endblocktrans %}
+  </p>
+  <p
+    id="nucleo-coordenadores-subtitle"
+    class="text-sm text-[var(--text-secondary)]"
+    hx-swap-oob="true"
+  >
+    {% blocktrans count count=total_coordenadores %}
+      {{ count }} coordenador no total
+    {% plural %}
+      {{ count }} coordenadores no total
+    {% endblocktrans %}
+  </p>
+  <div id="nucleo-info-actions" hx-swap-oob="true" class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+    {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'operador' %}
+      <a
+        href="{% url 'nucleos:update' object.pk %}"
+        class="btn btn-secondary"
+      >{% trans "Editar" %}</a>
+    {% endif %}
+    {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'operador' %}
+      <a
+        href="{% url 'nucleos:delete' object.pk %}"
+        hx-get="{% url 'nucleos:delete' object.pk %}"
+        hx-target="#modal"
+        hx-trigger="click"
+        hx-swap="innerHTML"
+        hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+        class="btn btn-danger"
+      >{% trans "Excluir" %}</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{{ list_aria_label }}">
+  {% if page_obj.object_list %}
+    {% for part in page_obj.object_list %}
+      {% include 'nucleos/partials/membro_card.html' with part=part %}
+    {% endfor %}
+  {% else %}
+    <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message_text }}</p>
+  {% endif %}
+</div>
+{% url 'nucleos:membros_list' object.pk as membros_list_url %}
+{% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_get=membros_list_url hx_target=list_target hx_indicator=loading_id hx_push_url='false' %}
