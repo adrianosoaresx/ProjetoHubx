@@ -1,8 +1,8 @@
 {% load i18n %}
 {# Conteúdo HTMX exibido dentro de grids; layout flat aprovado pela equipe de UI para atualizações dinâmicas. #}
 
-{% with current_card=card|default:request.GET.card|default:'membros' %}
-    {% if current_card == 'coordenadores' %}
+{% with active_card=card|default:selected_card|default:'membros' %}
+    {% if active_card == 'coordenadores' %}
       {% include 'nucleos/partials/membros_list_inner.html' with
         filter_container_id='coordenadores-filter-container'
         form_id='coordenadores-filter-form'

@@ -692,6 +692,11 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         ctx["is_membros_filter_active"] = ctx["current_papel_filter"] in {"todos", "membro"}
         ctx["is_coordenadores_filter_active"] = ctx["current_papel_filter"] == "coordenador"
 
+        card = self.request.GET.get("card", "membros")
+        if card not in {"membros", "coordenadores"}:
+            card = "membros"
+        ctx["selected_card"] = card
+
         # Posts do feed do núcleo para a aba "Feed"
         try:
             from django.db.models import OuterRef, Subquery, Exists
