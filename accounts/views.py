@@ -236,11 +236,17 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         return redirect("accounts:perfil")
     hero_title, hero_subtitle = _profile_hero_names(perfil)
 
+    viewer = request.user if request.user.is_authenticated else None
+    portfolio_medias = list(
+        perfil.medias.visible_to(viewer, perfil).select_related("user").order_by("-created_at")
+    )
+
     context = {
         "perfil": perfil,
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
+        "portfolio_medias": portfolio_medias,
     }
 
     default_section, default_url = _perfil_default_section_url(request)
