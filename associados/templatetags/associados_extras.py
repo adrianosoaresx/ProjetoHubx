@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from django import template
 from django.utils.translation import gettext as _
 
@@ -123,3 +125,25 @@ def usuario_badges(user):
         badges.append({"label": _("Associado"), "style": BADGE_STYLES["associado"], "type": "associado"})
 
     return [{"label": badge["label"], "style": badge.get("style", "")} for badge in badges]
+
+
+@register.simple_tag
+def usuario_tipo_label(user) -> str:
+    """Retorna o rótulo legível da tipificação do usuário."""
+
+    tipo = getattr(user, "get_tipo_usuario", "") or ""
+    if not tipo:
+        return ""
+    try:
+        return UserType(tipo).label
+    except ValueError:
+        return str(tipo)
+
+
+@register.filter
+def digits_only(value: str | None) -> str:
+    """Remove todos os caracteres que não sejam dígitos."""
+
+    if not value:
+        return ""
+    return re.sub(r"\D+", "", str(value))

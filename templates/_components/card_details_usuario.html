@@ -1,14 +1,29 @@
-{% load i18n %}
-<p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
-<dl class="mt-3 space-y-2 text-xs text-[var(--text-tertiary)]">
-  <div>
-    <dt class="text-[var(--text-muted)]">{% trans 'Status' %}</dt>
-    <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
-  </div>
-  {% if user.email %}
+{% load i18n associados_extras lucide_icons %}
+{% usuario_tipo_label user as usuario_tipo %}
+{% with nome_fantasia=user.nome_fantasia|default_if_none:'' %}
+  {% if nome_fantasia %}
+    <p class="mt-2 text-sm text-[var(--text-secondary)]">{{ nome_fantasia }}</p>
+  {% endif %}
+{% endwith %}
+<div class="mt-3 space-y-3 text-xs text-[var(--text-tertiary)]">
+  <p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
+  {% if usuario_tipo %}
     <div>
-      <dt class="text-[var(--text-muted)]">{% trans 'E-mail' %}</dt>
-      <dd class="font-medium break-all text-[var(--text-primary)]">{{ user.email }}</dd>
+      <span class="inline-flex items-center gap-1 rounded-full bg-[var(--bg-tertiary)] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--text-secondary)] ring-1 ring-[var(--border-secondary)]">
+        {{ usuario_tipo }}
+      </span>
     </div>
   {% endif %}
-</dl>
+  {% with whatsapp=user.whatsapp|default_if_none:'' %}
+    {% if whatsapp %}
+      <div>
+        <a href="https://wa.me/{{ whatsapp|digits_only }}"
+          class="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-700"
+          target="_blank" rel="noopener">
+          {% lucide 'whatsapp' class='h-5 w-5' aria_hidden='true' %}
+          <span>{% trans 'Conversar no WhatsApp' %}</span>
+        </a>
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
