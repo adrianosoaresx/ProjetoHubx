@@ -19,7 +19,7 @@
       {% endif %}
     {% endwith %}
   </div>
-  {% with redes=user.redes_sociais|default_if_none:{} whatsapp=user.whatsapp|default_if_none:'' %}
+  {% with redes=user.redes_sociais whatsapp=user.whatsapp %}
     {% if redes or whatsapp %}
       <div class="flex shrink-0 flex-wrap justify-end gap-2 text-[var(--text-secondary)]">
         {% if redes %}
