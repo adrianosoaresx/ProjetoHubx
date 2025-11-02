@@ -1,10 +1,10 @@
 {% load i18n associados_extras lucide_icons %}
 {% with nome_fantasia=user.nome_fantasia|default_if_none:'' %}
   {% if nome_fantasia %}
-    <p class="mt-2 text-sm text-[var(--text-secondary)]">{{ nome_fantasia }}</p>
+    <p class="mt-1 text-sm text-[var(--text-secondary)]">{{ nome_fantasia }}</p>
   {% endif %}
 {% endwith %}
-<div class="mt-3 space-y-3 text-xs text-[var(--text-tertiary)]">
+<div class="mt-2 space-y-1 text-xs text-[var(--text-tertiary)]">
   <p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
   {% with details_badges=details_badges|default:None %}
     {% if details_badges %}
@@ -21,10 +21,10 @@
     {% if whatsapp %}
       <div>
         <a href="https://wa.me/{{ whatsapp|digits_only }}"
-          class="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-700"
+          class="inline-flex items-center text-emerald-600 transition-colors hover:text-emerald-700"
           target="_blank" rel="noopener">
-          {% lucide 'whatsapp' class='h-5 w-5' aria_hidden='true' %}
-          <span>{% trans 'Conversar no WhatsApp' %}</span>
+          {% lucide 'whatsapp' class='h-6 w-6' aria_hidden='true' %}
+          <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
         </a>
       </div>
     {% endif %}
