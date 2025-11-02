@@ -81,7 +81,19 @@
             <article class="card p-0">
               <div class="card-body relative space-y-5">
 
-                <header class="space-y-2">
+                <div class="absolute right-4 top-4 z-10 flex gap-2">
+                  <a
+                    href="{{ media.file.url }}"
+                    class="btn btn-secondary btn-sm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="{% trans 'Visualizar' %}"
+                  >
+                    {% lucide 'eye' class='w-4 h-4' aria_hidden='true' %}
+                  </a>
+                </div>
+
+                <header class="space-y-2 pr-16">
                   <p class="text-sm font-medium text-[var(--text-primary)]">
                     {{ media.descricao|default:_('Mídia sem descrição') }}
                   </p>
@@ -144,20 +156,9 @@
                   </div>
                 {% endif %}
 
-                <footer class="space-y-2">
+                {% if media.tags.all %}
 
-
-                  <a
-                    href="{{ media.file.url }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary-600)] transition hover:text-[var(--color-primary-700)]"
-                  >
-                    {% lucide 'external-link' class='h-4 w-4' aria_hidden='true' %}
-                    {% trans "Abrir mídia" %}
-                  </a>
-
-                  {% if media.tags.all %}
+                  <footer class="space-y-2">
 
                     <div class="flex flex-wrap gap-2">
 
@@ -165,8 +166,8 @@
                         <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
                       {% endfor %}
                     </div>
-                  {% endif %}
-                </footer>
+                  </footer>
+                {% endif %}
               </div>
             </article>
           {% endfor %}
