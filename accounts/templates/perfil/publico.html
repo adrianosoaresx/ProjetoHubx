@@ -20,7 +20,7 @@
           <p class="text-xl font-semibold">{% trans "Informações públicas" %}</p>
           <p class="text-sm text-[var(--text-secondary)]">
             {% blocktrans with profile_name=perfil.display_name %}
-              Dados compartilhados por {{ profile_name }} para visitantes.
+              Informações públicas de {{ profile_name }}.
             {% endblocktrans %}
           </p>
         </div>
@@ -63,7 +63,7 @@
           <p class="text-xl font-semibold">{% trans "Portfólio" %}</p>
           <p class="text-sm text-[var(--text-secondary)]">
             {% blocktrans with profile_name=perfil.display_name %}
-              Trabalhos e mídias que {{ profile_name }} compartilha publicamente.
+              Trabalhos e mídias públicos de {{ profile_name }}.
             {% endblocktrans %}
           </p>
         </div>
