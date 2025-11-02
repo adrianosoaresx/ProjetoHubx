@@ -75,10 +75,12 @@
 
     <div class="card-body">
       {% if portfolio_medias %}
+
         <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
           {% for media in portfolio_medias %}
             <article class="card p-0">
               <div class="card-body relative space-y-5">
+
                 <header class="space-y-2">
                   <p class="text-sm font-medium text-[var(--text-primary)]">
                     {{ media.descricao|default:_('Mídia sem descrição') }}
@@ -91,7 +93,9 @@
                 </header>
 
                 {% if media.media_type == 'pdf' %}
+
                   <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+
                     <a
                       href="{{ media.file.url }}"
                       class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]"
@@ -109,7 +113,9 @@
                   </div>
                 {% elif media.media_type == 'image' %}
                   <a href="{{ media.file.url }}" class="block" target="_blank" rel="noopener noreferrer">
+
                     <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+
                       <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
                         <img
                           src="{{ media.file.url }}"
@@ -121,7 +127,9 @@
                     </figure>
                   </a>
                 {% elif media.media_type == 'video' %}
+
                   <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
+
                     <div class="feed-video-wrapper">
                       <div class="feed-video-frame">
                         <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
@@ -129,12 +137,16 @@
                     </div>
                   </figure>
                 {% else %}
+
                   <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
+
                     {{ media.file.name|default:_('Arquivo disponível') }}
                   </div>
                 {% endif %}
 
                 <footer class="space-y-2">
+
+
                   <a
                     href="{{ media.file.url }}"
                     target="_blank"
@@ -146,7 +158,9 @@
                   </a>
 
                   {% if media.tags.all %}
+
                     <div class="flex flex-wrap gap-2">
+
                       {% for tag in media.tags.all %}
                         <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
                       {% endfor %}
