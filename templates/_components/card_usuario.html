@@ -3,5 +3,5 @@
 {% trans 'Ver detalhes do usuário' as sr_label %}
 {% usuario_badges user as user_badges %}
 {% with card_title=user.contact_name|default:user.display_name %}
-  {% include '_partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=card_title details='_components/card_details_usuario.html' sr_label=sr_label details_badges=user_badges %}
+  {% include '_partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=card_title details='_components/card_details_usuario.html' sr_label=sr_label details_badges=user_badges user=user header_actions='_components/card_usuario_header_actions.html' %}
 {% endwith %}

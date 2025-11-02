@@ -30,6 +30,11 @@
           </div>
         {% endif %}
       </div>
+      {% if header_actions %}
+        <div class="absolute right-4 top-4 z-20">
+          {% include header_actions %}
+        </div>
+      {% endif %}
     </header>
     <div class="card-body pt-10{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
