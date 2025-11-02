@@ -1,11 +1,6 @@
 {% load i18n associados_extras lucide_icons %}
 <div class="mt-2 flex items-start justify-between gap-3">
   <div class="flex-1 space-y-2 text-sm text-[var(--text-secondary)]">
-    {% with contato=user.contato|default_if_none:'' %}
-      {% if contato %}
-        <p class="font-medium text-[var(--text-secondary)]">{{ contato }}</p>
-      {% endif %}
-    {% endwith %}
     {% with nome_fantasia=user.nome_fantasia|default_if_none:'' %}
       {% if nome_fantasia %}
         <p class="text-[var(--text-muted)]">{{ nome_fantasia }}</p>
@@ -28,9 +23,9 @@
     {% if whatsapp %}
       <div class="shrink-0">
         <a href="https://wa.me/{{ whatsapp|digits_only }}"
-          class="inline-flex h-12 w-12 items-center justify-center text-emerald-600 transition-colors hover:text-emerald-700"
+          class="inline-flex h-10 w-10 items-center justify-center text-emerald-600 transition-colors hover:text-emerald-700"
           target="_blank" rel="noopener">
-          {% lucide 'whatsapp' class='h-12 w-12' aria_hidden='true' %}
+          {% lucide 'whatsapp' class='h-6 w-6' aria_hidden='true' %}
           <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
         </a>
       </div>
