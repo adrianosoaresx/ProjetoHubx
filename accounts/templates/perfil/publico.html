@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 {% block title %}{{ perfil.display_name }} | Hubx{% endblock %}
 
 {% block hero %}
@@ -8,7 +8,28 @@
 
 {% block content %}
 <div class="space-y-6">
-  <div class="card">
+  <details class="card group" open>
+    <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+      <div class="flex items-start gap-3">
+        <span
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20"
+        >
+          {% lucide 'contact' class='h-6 w-6' aria_hidden='true' %}
+        </span>
+        <div class="space-y-1">
+          <p class="text-xl font-semibold">{% trans "Informações públicas" %}</p>
+          <p class="text-sm text-[var(--text-secondary)]">
+            {% blocktrans with profile_name=perfil.display_name %}
+              Dados compartilhados por {{ profile_name }} para visitantes.
+            {% endblocktrans %}
+          </p>
+        </div>
+      </div>
+      <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+        {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+      </span>
+    </summary>
+
     <div class="card-body">
       <section
         id="perfil-info"
@@ -28,8 +49,7 @@
         </div>
       </section>
     </div>
-  </div>
-
+  </details>
 </div>
 
 {% endblock %}
