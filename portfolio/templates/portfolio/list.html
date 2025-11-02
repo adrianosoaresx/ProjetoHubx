@@ -45,6 +45,7 @@
           id="portfolio-highlight-list"
           class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 hidden"
           aria-live="polite"
+          data-highlight-remove-label="{% trans 'Desflegar' %}"
         ></div>
       </div>
     </div>
@@ -134,7 +135,31 @@
                       aria-pressed="false"
                       aria-label="{% trans 'Marcar como destaque' %}"
                     >
-                      {% lucide 'star' class='w-4 h-4' aria_hidden='true' %}
+                      <svg
+                        data-highlight-icon="off"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      <svg
+                        data-highlight-icon="on"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        class="hidden h-4 w-4 fill-current"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 2.25l2.64 5.35 5.91.86-4.28 4.17 1.01 5.88L12 15.77l-5.28 2.79 1.01-5.88-4.28-4.17 5.91-.86L12 2.25z"
+                        />
+                      </svg>
                     </button>
                     <a href="{% url 'portfolio:edit' media.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
                       {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
@@ -277,11 +302,13 @@
         button.setAttribute('aria-pressed', String(isActive));
         button.setAttribute('aria-label', isActive ? labelOn : labelOff);
         button.title = isActive ? labelOn : labelOff;
-        button.classList.toggle('text-[var(--warning)]', isActive);
+        button.classList.toggle('text-red-500', isActive);
         button.classList.toggle('text-[var(--text-secondary)]', !isActive);
-        const iconEl = button.querySelector('svg');
-        if (iconEl) {
-          iconEl.classList.toggle('fill-current', isActive);
+        const iconOn = button.querySelector('[data-highlight-icon="on"]');
+        const iconOff = button.querySelector('[data-highlight-icon="off"]');
+        if (iconOn && iconOff) {
+          iconOn.classList.toggle('hidden', !isActive);
+          iconOff.classList.toggle('hidden', isActive);
         }
       };
 
@@ -292,7 +319,7 @@
         return value.replace(/([#.;?+*~':"!^$\[\]()=>|/@])/g, '\\$1');
       };
 
-      const refreshHighlights = () => {
+      function refreshHighlights() {
         if (!highlightList || !emptyState) {
           return;
         }
@@ -314,6 +341,19 @@
           if (highlightToggle) {
             highlightToggle.remove();
           }
+          const actionsBar = clone.querySelector('[data-card-actions]');
+          if (actionsBar) {
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className =
+              'btn btn-ghost btn-sm border border-[var(--border)] text-[var(--text-secondary)]';
+            removeButton.dataset.highlightRemove = 'true';
+            removeButton.dataset.mediaId = id;
+            const removeLabel = highlightList.dataset.highlightRemoveLabel || 'Desflegar';
+            removeButton.textContent = removeLabel;
+            removeButton.setAttribute('aria-label', removeLabel);
+            actionsBar.prepend(removeButton);
+          }
           highlightList.appendChild(clone);
         });
 
@@ -325,7 +365,31 @@
         const hasHighlights = highlightedIds.size > 0;
         highlightList.classList.toggle('hidden', !hasHighlights);
         emptyState.classList.toggle('hidden', hasHighlights);
-      };
+        const removeButtons = highlightList.querySelectorAll('[data-highlight-remove]');
+        removeButtons.forEach((removeButton) => {
+          removeButton.addEventListener('click', () => {
+            const mediaId = removeButton.dataset.mediaId;
+            if (!mediaId) {
+              return;
+            }
+            handleHighlightRemoval(mediaId);
+          });
+        });
+      }
+
+      function handleHighlightRemoval(mediaId) {
+        const stringId = String(mediaId);
+        highlightedIds.delete(stringId);
+        persistHighlights();
+        const selectorId = escapeSelector(stringId);
+        const sourceToggle = document.querySelector(
+          `[data-highlight-toggle][data-media-id="${selectorId}"]`,
+        );
+        if (sourceToggle) {
+          setButtonState(sourceToggle, false);
+        }
+        refreshHighlights();
+      }
 
       highlightButtons.forEach((button) => {
         const mediaId = button.dataset.mediaId;
