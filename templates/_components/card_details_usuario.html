@@ -19,15 +19,31 @@
       {% endif %}
     {% endwith %}
   </div>
-  {% with whatsapp=user.whatsapp|default_if_none:'' %}
-    {% if whatsapp %}
-      <div class="shrink-0">
-        <a href="https://wa.me/{{ whatsapp|digits_only }}"
-          class="inline-flex h-10 w-10 items-center justify-center text-emerald-600 transition-colors hover:text-emerald-700"
-          target="_blank" rel="noopener">
-          {% lucide 'whatsapp' class='h-6 w-6' aria_hidden='true' %}
-          <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-        </a>
+  {% with redes=user.redes_sociais|default_if_none:{} whatsapp=user.whatsapp|default_if_none:'' %}
+    {% if redes or whatsapp %}
+      <div class="flex shrink-0 flex-wrap justify-end gap-2 text-[var(--text-secondary)]">
+        {% if redes %}
+          {% for rede, url in redes.items %}
+            {% if url %}
+              {% with rede_label=rede|capfirst %}
+                <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:scale-110 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  aria-label="{{ rede_label }}">
+                  {% lucide rede class='h-5 w-5' aria_hidden='true' %}
+                  <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
+                </a>
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if whatsapp %}
+          <a href="https://wa.me/{{ whatsapp|digits_only }}"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full text-emerald-600 transition hover:scale-110 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
+            target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
+            {% lucide 'whatsapp' class='h-5 w-5' aria_hidden='true' %}
+            <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
+          </a>
+        {% endif %}
       </div>
     {% endif %}
   {% endwith %}
