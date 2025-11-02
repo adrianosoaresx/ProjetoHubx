@@ -1,5 +1,4 @@
 {% load i18n associados_extras lucide_icons %}
-{% usuario_tipo_label user as usuario_tipo %}
 {% with nome_fantasia=user.nome_fantasia|default_if_none:'' %}
   {% if nome_fantasia %}
     <p class="mt-2 text-sm text-[var(--text-secondary)]">{{ nome_fantasia }}</p>
@@ -7,13 +6,17 @@
 {% endwith %}
 <div class="mt-3 space-y-3 text-xs text-[var(--text-tertiary)]">
   <p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
-  {% if usuario_tipo %}
-    <div>
-      <span class="inline-flex items-center gap-1 rounded-full bg-[var(--bg-tertiary)] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--text-secondary)] ring-1 ring-[var(--border-secondary)]">
-        {{ usuario_tipo }}
-      </span>
-    </div>
-  {% endif %}
+  {% with details_badges=details_badges|default:None %}
+    {% if details_badges %}
+      <div class="flex flex-wrap gap-2">
+        {% for badge in details_badges %}
+          <span class="inline-flex max-w-full items-center rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap"{% if badge.style %} style="{{ badge.style }}"{% endif %}>
+            <span class="truncate">{{ badge.label }}</span>
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   {% with whatsapp=user.whatsapp|default_if_none:'' %}
     {% if whatsapp %}
       <div>

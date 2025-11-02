@@ -2,4 +2,4 @@
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
 {% trans 'Ver detalhes do usuário' as sr_label %}
 {% usuario_badges user as user_badges %}
-{% include '_partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=user.display_name details='_components/card_details_usuario.html' sr_label=sr_label badges=user_badges %}
+{% include '_partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=user.display_name details='_components/card_details_usuario.html' sr_label=sr_label details_badges=user_badges %}
