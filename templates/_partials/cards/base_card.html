@@ -3,7 +3,7 @@
   class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
   aria-label="{{ title }}">
   <article class="card overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
-    <header class="relative pb-8">
+    <header class="relative pb-6 sm:pb-8">
       {% if badges %}
         {% include '_partials/cards/badge_list.html' with badges=badges %}
       {% elif badge %}
@@ -76,7 +76,7 @@
         {% endif %}
       </div>
     </header>
-    <div class="card-body pt-14{% if cover %} card-body-overlay{% endif %}">
+    <div class="card-body pt-12 sm:pt-14{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
