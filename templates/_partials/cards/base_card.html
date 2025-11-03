@@ -22,34 +22,6 @@
         {% else %}
           <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
         {% endif %}
-        {% with redes=header_social_links whatsapp=header_whatsapp_number %}
-          {% if redes or whatsapp %}
-            <div class="absolute right-4 top-3 flex items-center gap-2 rounded-full bg-black/50 px-2 py-1 text-white shadow-lg backdrop-blur">
-              {% if redes %}
-                {% for rede, url in redes.items %}
-                  {% if url %}
-                    {% with rede_label=rede|capfirst %}
-                      <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
-                        class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                        aria-label="{{ rede_label }}">
-                        {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                        <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                      </a>
-                    {% endwith %}
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-              {% if whatsapp %}
-                <a href="https://wa.me/{{ whatsapp }}"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full text-emerald-400 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
-                  target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
-                  {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                  <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                </a>
-              {% endif %}
-            </div>
-          {% endif %}
-        {% endwith %}
       </div>
       <div class="absolute left-4 -bottom-8 z-10">
         {% if avatar %}
@@ -60,6 +32,45 @@
           </div>
         {% endif %}
       </div>
+      {% with redes=header_social_links whatsapp=header_whatsapp_number username=header_username handle=header_handle %}
+        {% if redes or whatsapp or username or handle %}
+          <div class="px-4 pb-4 pt-3">
+            <div class="flex w-full flex-wrap items-center gap-3 pl-24 sm:pl-28">
+              {% if username %}
+                <p class="text-xs font-medium text-[var(--text-tertiary)]">@{{ username }}</p>
+              {% elif handle %}
+                <p class="text-xs font-medium text-[var(--text-tertiary)]">{{ handle }}</p>
+              {% endif %}
+              {% if redes or whatsapp %}
+                <div class="ml-auto flex items-center gap-2">
+                  {% if redes %}
+                    {% for rede, url in redes.items %}
+                      {% if url %}
+                        {% with rede_label=rede|capfirst %}
+                          <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 text-black transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:text-white"
+                            aria-label="{{ rede_label }}">
+                            {% lucide rede class='h-4 w-4' aria_hidden='true' %}
+                            <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
+                          </a>
+                        {% endwith %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  {% if whatsapp %}
+                    <a href="https://wa.me/{{ whatsapp }}"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full text-emerald-400 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+                      target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
+                      {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
+                      <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endwith %}
     </header>
     <div class="card-body pt-14{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
