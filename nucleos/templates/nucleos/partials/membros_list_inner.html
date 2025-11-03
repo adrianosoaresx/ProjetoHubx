@@ -49,7 +49,7 @@
   </div>
 {% endif %}
 
-<div class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{{ list_aria_label }}">
+<div class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" role="list" aria-label="{{ list_aria_label }}">
   {% if page_obj.object_list %}
     {% for part in page_obj.object_list %}
       {% include 'nucleos/partials/membro_card.html' with part=part %}

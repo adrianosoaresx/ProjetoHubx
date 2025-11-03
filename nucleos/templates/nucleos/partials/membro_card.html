@@ -7,22 +7,29 @@
     <header class="relative">
       {% if part.user.cover %}
         <img src="{{ part.user.cover.url }}" alt="{% trans 'Capa do membro' %}"
-             class="h-24 w-full object-cover" loading="lazy" />
+             class="h-28 w-full object-cover object-center" loading="lazy" />
       {% else %}
-        <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
+        <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
       {% endif %}
-      <div class="absolute -bottom-8 left-4">
-        {% if part.user.avatar %}
-          <img src="{{ part.user.avatar.url }}" alt="{{ part.user.display_name|default:part.user.username }}"
-               class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy" />
-        {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ part.user.display_name|default:part.user.username }}">
-            {{ part.user.username|first|upper }}
-          </div>
-        {% endif %}
-      </div>
     </header>
-    <div class="card-body space-y-3 pt-10">
+
+    <div class="relative px-4 sm:px-6">
+      <div class="flex flex-col sm:flex-row items-center sm:items-end sm:justify-between -mt-10 sm:-mt-12 gap-4">
+        <div class="relative flex-shrink-0">
+          {% if part.user.avatar %}
+            <img src="{{ part.user.avatar.url }}" alt="{{ part.user.display_name|default:part.user.username }}"
+                 class="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg ring-1 ring-black/5 dark:border-[var(--bg-secondary)] dark:ring-white/10" loading="lazy" />
+          {% else %}
+            <div class="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg ring-1 ring-black/5 dark:border-[var(--bg-secondary)] dark:ring-white/10" role="img" aria-label="{{ part.user.display_name|default:part.user.username }}">
+              {{ part.user.username|first|upper }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="flex-1"></div>
+      </div>
+    </div>
+
+    <div class="card-body space-y-3 pt-8 sm:pt-10 text-center sm:text-left">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">
         {{ part.user.display_name }}
       </h3>
