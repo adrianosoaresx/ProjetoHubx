@@ -1,88 +1,75 @@
 {% load i18n lucide_icons %}
-<a href="{{ url }}"
-  class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
-  aria-label="{{ title }}">
+<a href="{{ url }}" class="group block focus:outline-none focus:ring-2 focus:ring-primary/40" aria-label="{{ title }}">
   <article class="card overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
-    <header class="relative pb-10 sm:pb-12">
-      {% if badges %}
-        {% include '_partials/cards/badge_list.html' with badges=badges %}
-      {% elif badge %}
-        <div class="px-4 pt-4 pb-3">
-          <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap"{% if badge_style %} style="{{ badge_style }}"{% endif %}>
-            <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M17.707 9.293 10.414 2H4a2 2 0 0 0-2 2v6.414l7.293 7.293a1 1 0 0 0 1.414 0l7-7a1 1 0 0 0 0-1.414ZM5.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
-            </svg>
-            <span class="truncate">{{ badge }}</span>
-          </span>
-        </div>
+    <header class="relative">
+      {% if cover %}
+        <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-28 w-full object-cover object-center" loading="lazy" />
+      {% else %}
+        <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
       {% endif %}
-      <div class="relative">
-        {% if cover %}
-          <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-28 w-full object-cover" loading="lazy" />
-        {% else %}
-          <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
-        {% endif %}
-      </div>
-      {% with redes=header_social_links whatsapp=header_whatsapp_number username=header_username handle=header_handle %}
-        {% if redes or whatsapp or username or handle or avatar %}
-          <div class="absolute inset-x-0 bottom-0 translate-y-1/2 px-4 sm:px-6">
-            <div class="flex w-full items-center gap-4 rounded-3xl border border-black/5 bg-[var(--bg-primary)]/95 px-4 py-3 shadow-xl ring-1 ring-black/5 backdrop-blur-sm transition group-hover:border-primary/30 group-hover:shadow-2xl dark:border-white/10 dark:bg-[var(--bg-secondary)]/95 dark:ring-white/10 sm:px-5">
-              <div class="-ml-1 flex shrink-0 items-center justify-center">
-                {% if avatar %}
-                  <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-20 w-20 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg ring-1 ring-black/5 transition group-hover:-translate-y-0.5 group-hover:shadow-xl dark:border-[var(--bg-secondary)] dark:ring-white/10" loading="lazy" />
-                {% else %}
-                  <div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg ring-1 ring-black/5 transition group-hover:-translate-y-0.5 group-hover:shadow-xl dark:border-[var(--bg-secondary)] dark:ring-white/10" role="img" aria-label="{{ title }}">
-                    {{ title|first|upper }}
-                  </div>
-                {% endif %}
+    </header>
+
+    {% with redes=header_social_links whatsapp=header_whatsapp_number %}
+      <div class="relative px-4 sm:px-6">
+        <div class="flex flex-col sm:flex-row items-center sm:items-end sm:justify-between -mt-10 sm:-mt-12 gap-4">
+          
+          <!-- Avatar sobreposto à capa -->
+          <div class="relative flex-shrink-0">
+            {% if avatar %}
+              <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" 
+                   class="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg ring-1 ring-black/5 
+                          dark:border-[var(--bg-secondary)] dark:ring-white/10" loading="lazy" />
+            {% else %}
+              <div class="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] 
+                          bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg ring-1 ring-black/5 
+                          dark:border-[var(--bg-secondary)] dark:ring-white/10" role="img" aria-label="{{ title }}">
+                {{ title|first|upper }}
               </div>
-              <div class="min-w-0 flex-1">
-                {% if username or handle %}
-                  <p class="truncate text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    {% if username %}
-                      @{{ username }}
-                    {% else %}
-                      {{ handle }}
-                    {% endif %}
-                  </p>
-                {% endif %}
-              </div>
-              {% if redes or whatsapp %}
-                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-                  {% if redes %}
-                    {% for rede, url in redes.items %}
-                      {% if url %}
-                        {% with rede_label=rede|capfirst %}
-                          <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
-                            aria-label="{{ rede_label }}">
-                            {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                            <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                          </a>
-                        {% endwith %}
-                      {% endif %}
-                    {% endfor %}
+            {% endif %}
+          </div>
+
+          <!-- Ícones de redes sociais (mantém alinhamento na mesma linha e responsivo) -->
+          {% if redes or whatsapp %}
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
+              {% if redes %}
+                {% for rede, url in redes.items %}
+                  {% if url %}
+                    {% with rede_label=rede|capfirst %}
+                      <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+                         class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm 
+                                transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none 
+                                focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
+                         aria-label="{{ rede_label }}">
+                        {% lucide rede class='h-4 w-4' aria_hidden='true' %}
+                        <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
+                      </a>
+                    {% endwith %}
                   {% endif %}
-                  {% if whatsapp %}
-                    <a href="https://wa.me/{{ whatsapp }}"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
-                      target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
-                      {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                      <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                    </a>
-                  {% endif %}
-                </div>
+                {% endfor %}
+              {% endif %}
+              {% if whatsapp %}
+                <a href="https://wa.me/{{ whatsapp }}"
+                   class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm 
+                          transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none 
+                          focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 
+                          dark:bg-emerald-500/10 dark:text-emerald-300"
+                   target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
+                  {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
+                  <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
+                </a>
               {% endif %}
             </div>
-          </div>
-        {% endif %}
-      {% endwith %}
-    </header>
-    <div class="card-body pt-16 sm:pt-20{% if cover %} card-body-overlay{% endif %}">
+          {% endif %}
+        </div>
+      </div>
+    {% endwith %}
+
+    <div class="card-body pt-8 sm:pt-10 text-center sm:text-left">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
   </article>
+
   {% if sr_label %}
     <span class="sr-only">{{ sr_label }}</span>
   {% endif %}
