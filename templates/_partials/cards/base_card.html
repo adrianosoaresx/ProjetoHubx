@@ -51,7 +51,7 @@
           </div>
         {% endif %}
       {% endwith %}
-      <div class="absolute -bottom-8 left-4 z-10">
+      <div class="absolute {{ avatar_position_class|default:'-bottom-8' }} left-4 z-10">
         {% if avatar %}
           <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy" />
         {% else %}
@@ -61,7 +61,7 @@
         {% endif %}
       </div>
     </header>
-    <div class="card-body pt-10{% if cover %} card-body-overlay{% endif %}">
+    <div class="card-body {{ body_padding_top_class|default:'pt-10' }}{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
