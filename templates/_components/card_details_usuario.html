@@ -7,16 +7,16 @@
   {% endwith %}
   {% with razao_social=user.razao_social|default_if_none:'' %}
     {% if razao_social %}
-      <p class="text-[var(--text-muted)]">{{ razao_social }}</p>
+      <p class="text-[var(--text-muted)]">Razão social: {{ razao_social }}</p>
     {% endif %}
   {% endwith %}
   {% with cnpj=user.cnpj|default_if_none:'' %}
     {% if cnpj %}
-      <p class="text-[var(--text-muted)]">{{ cnpj }}</p>
+      <p class="text-[var(--text-muted)]">Cnpj: {{ cnpj }}</p>
     {% else %}
       {% with cpf=user.cpf|default_if_none:'' %}
         {% if cpf %}
-          <p class="text-[var(--text-muted)]">{{ cpf }}</p>
+          <p class="text-[var(--text-muted)]">Cpf: {{ cpf }}</p>
         {% endif %}
       {% endwith %}
     {% endif %}
