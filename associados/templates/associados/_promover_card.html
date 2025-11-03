@@ -10,7 +10,7 @@
       {% else %}
         <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
       {% endif %}
-      <div class="absolute -bottom-4 left-6">
+      <div class="absolute -bottom-8 left-6">
         {% if user.avatar %}
           <img src="{{ user.avatar.url|default:user.avatar }}" alt="{{ user.display_name|default:user.username }}" class="h-16 w-16 rounded-full object-cover ring-4 ring-[var(--bg-primary)]" loading="lazy" />
         {% else %}
@@ -21,7 +21,7 @@
       </div>
     </div>
   </header>
-  <div class="card-body space-y-4 pt-8 flex-1">
+  <div class="card-body space-y-4 pt-10 flex-1">
     <h3 class="text-base font-semibold text-[var(--text-primary)]">
       <a href="{{ profile_url }}" class="rounded focus:outline-none focus-visible:ring focus-visible:ring-primary/40 hover:underline">{{ user.display_name|default:user.username }}</a>
     </h3>
