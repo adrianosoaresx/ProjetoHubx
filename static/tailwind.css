@@ -2639,6 +2639,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   bottom: -2rem;
 }
 
+.bottom-0 {
+  bottom: 0px;
+}
+
 .left-0 {
   left: 0px;
 }
@@ -2661,10 +2665,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .top-0 {
   top: 0px;
-}
-
-.top-3 {
-  top: 0.75rem;
 }
 
 .top-4 {
@@ -3426,6 +3426,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   background-color: var(--bg-tertiary);
 }
 
+.bg-\[var\(--card-social-overlay-bg\)\] {
+  background-color: var(--card-social-overlay-bg);
+}
+
 .bg-\[var\(--error\)\] {
   background-color: var(--error);
 }
@@ -3469,10 +3473,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .bg-black\/45 {
   background-color: rgb(0 0 0 / 0.45);
-}
-
-.bg-black\/50 {
-  background-color: rgb(0 0 0 / 0.5);
 }
 
 .bg-black\/60 {
@@ -3813,6 +3813,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-bottom: 1.5rem;
 }
 
+.pl-24 {
+  padding-left: 6rem;
+}
+
 .pl-6 {
   padding-left: 1.5rem;
 }
@@ -3963,6 +3967,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .text-\[inherit\] {
   color: inherit;
+}
+
+.text-\[var\(--card-social-icon\)\] {
+  color: var(--card-social-icon);
 }
 
 .text-\[var\(--color-danger-500\)\] {
@@ -4520,8 +4528,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --transition-slow: 350ms ease-in-out;
   /* Overlays */
   --overlay-backdrop: color-mix(in srgb, var(--color-neutral-900) 65%, transparent);
-  --card-social-overlay-bg: rgba(255, 255, 255, 0.88);
-  --card-social-icon: var(--color-neutral-900);
   /* Light Theme (Default) */
   --bg-primary: #ffffff;
   --bg-secondary: var(--color-neutral-50);
@@ -4598,8 +4604,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --card-medium: 0 4px 6px -1px var(--card-color);
   --card-heavy: 0 10px 15px -3px var(--card-color);
   --overlay-backdrop: color-mix(in srgb, var(--color-neutral-900) 75%, transparent);
-  --card-social-overlay-bg: rgba(15, 23, 42, 0.78);
-  --card-social-icon: var(--color-neutral-100);
 }
 
 /* Shared utilities */
