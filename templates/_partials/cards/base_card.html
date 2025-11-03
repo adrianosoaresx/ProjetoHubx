@@ -16,59 +16,52 @@
           </span>
         </div>
       {% endif %}
-      {% if cover %}
-        <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-24 w-full object-cover" loading="lazy" />
-      {% else %}
-        <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
-      {% endif %}
-      {% with redes=header_social_links whatsapp=header_whatsapp_number handle=header_handle %}
-        {% if redes or whatsapp or handle %}
-          <div class="px-4 pt-3 pb-6">
-            <div class="flex flex-wrap items-center justify-between gap-3 text-[var(--text-secondary)]">
-              {% if handle %}
-                <p class="text-sm font-medium text-[var(--text-primary)] truncate">{{ handle }}</p>
+      <div class="relative">
+        {% if cover %}
+          <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-28 w-full object-cover" loading="lazy" />
+        {% else %}
+          <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
+        {% endif %}
+        {% with redes=header_social_links whatsapp=header_whatsapp_number %}
+          {% if redes or whatsapp %}
+            <div class="absolute right-4 top-3 flex items-center gap-2 rounded-full bg-black/50 px-2 py-1 text-white shadow-lg backdrop-blur">
+              {% if redes %}
+                {% for rede, url in redes.items %}
+                  {% if url %}
+                    {% with rede_label=rede|capfirst %}
+                      <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                        aria-label="{{ rede_label }}">
+                        {% lucide rede class='h-4 w-4' aria_hidden='true' %}
+                        <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
+                      </a>
+                    {% endwith %}
+                  {% endif %}
+                {% endfor %}
               {% endif %}
-              {% if redes or whatsapp %}
-                <div class="ml-auto flex flex-wrap justify-end gap-2">
-                  {% if redes %}
-                    {% for rede, url in redes.items %}
-                      {% if url %}
-                        {% with rede_label=rede|capfirst %}
-                          <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:scale-110 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            aria-label="{{ rede_label }}">
-                            {% lucide rede class='h-5 w-5' aria_hidden='true' %}
-                            <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                          </a>
-                        {% endwith %}
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
-                  {% if whatsapp %}
-                    <a href="https://wa.me/{{ whatsapp }}"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-full text-emerald-600 transition hover:scale-110 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
-                      target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
-                      {% lucide 'whatsapp' class='h-5 w-5' aria_hidden='true' %}
-                      <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                    </a>
-                  {% endif %}
-                </div>
+              {% if whatsapp %}
+                <a href="https://wa.me/{{ whatsapp }}"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-full text-emerald-400 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+                  target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
+                  {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
+                  <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
+                </a>
               {% endif %}
             </div>
-          </div>
-        {% endif %}
-      {% endwith %}
-      <div class="absolute left-4 top-1/2 z-10 -translate-y-1/2">
+          {% endif %}
+        {% endwith %}
+      </div>
+      <div class="absolute left-4 -bottom-8 z-10">
         {% if avatar %}
-          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy" />
+          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-20 w-20 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg" loading="lazy" />
         {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ title }}">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg" role="img" aria-label="{{ title }}">
             {{ title|first|upper }}
           </div>
         {% endif %}
       </div>
     </header>
-    <div class="card-body pt-10{% if cover %} card-body-overlay{% endif %}">
+    <div class="card-body pt-14{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
