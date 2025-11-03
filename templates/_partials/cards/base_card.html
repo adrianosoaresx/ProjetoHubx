@@ -3,7 +3,7 @@
   class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
   aria-label="{{ title }}">
   <article class="card overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
-    <header class="relative pb-6 sm:pb-8">
+    <header class="relative pb-10 sm:pb-12">
       {% if badges %}
         {% include '_partials/cards/badge_list.html' with badges=badges %}
       {% elif badge %}
@@ -24,26 +24,37 @@
         {% endif %}
       </div>
       {% with redes=header_social_links whatsapp=header_whatsapp_number username=header_username handle=header_handle %}
-        {% if redes or whatsapp or username or handle %}
+        {% if redes or whatsapp or username or handle or avatar %}
           <div class="absolute inset-x-0 bottom-0 translate-y-1/2 px-4 sm:px-6">
-            <div class="flex w-full items-center gap-3 rounded-full bg-[var(--bg-primary)] px-5 py-3 pl-28 shadow-card-sm ring-1 ring-black/5 dark:bg-[var(--bg-secondary)] dark:ring-white/10 sm:pl-32">
-              {% if username or handle %}
-                <p class="truncate text-sm font-semibold text-[var(--text-muted)]">
-                  {% if username %}
-                    @{{ username }}
-                  {% else %}
-                    {{ handle }}
-                  {% endif %}
-                </p>
-              {% endif %}
+            <div class="flex w-full items-center gap-4 rounded-3xl border border-black/5 bg-[var(--bg-primary)]/95 px-4 py-3 shadow-xl ring-1 ring-black/5 backdrop-blur-sm transition group-hover:border-primary/30 group-hover:shadow-2xl dark:border-white/10 dark:bg-[var(--bg-secondary)]/95 dark:ring-white/10 sm:px-5">
+              <div class="-ml-1 flex shrink-0 items-center justify-center">
+                {% if avatar %}
+                  <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-20 w-20 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg ring-1 ring-black/5 transition group-hover:-translate-y-0.5 group-hover:shadow-xl dark:border-[var(--bg-secondary)] dark:ring-white/10" loading="lazy" />
+                {% else %}
+                  <div class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg ring-1 ring-black/5 transition group-hover:-translate-y-0.5 group-hover:shadow-xl dark:border-[var(--bg-secondary)] dark:ring-white/10" role="img" aria-label="{{ title }}">
+                    {{ title|first|upper }}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="min-w-0 flex-1">
+                {% if username or handle %}
+                  <p class="truncate text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    {% if username %}
+                      @{{ username }}
+                    {% else %}
+                      {{ handle }}
+                    {% endif %}
+                  </p>
+                {% endif %}
+              </div>
               {% if redes or whatsapp %}
-                <div class="flex flex-wrap items-center gap-2 sm:ml-auto sm:gap-3">
+                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
                   {% if redes %}
                     {% for rede, url in redes.items %}
                       {% if url %}
                         {% with rede_label=rede|capfirst %}
                           <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
                             aria-label="{{ rede_label }}">
                             {% lucide rede class='h-4 w-4' aria_hidden='true' %}
                             <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
@@ -66,17 +77,8 @@
           </div>
         {% endif %}
       {% endwith %}
-      <div class="absolute left-4 bottom-0 z-20 translate-y-1/2">
-        {% if avatar %}
-          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-24 w-24 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-2xl ring-1 ring-black/5" loading="lazy" />
-        {% else %}
-          <div class="flex h-24 w-24 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-xl font-semibold text-[var(--text-primary)] shadow-2xl ring-1 ring-black/5" role="img" aria-label="{{ title }}">
-            {{ title|first|upper }}
-          </div>
-        {% endif %}
-      </div>
     </header>
-    <div class="card-body pt-12 sm:pt-14{% if cover %} card-body-overlay{% endif %}">
+    <div class="card-body pt-16 sm:pt-20{% if cover %} card-body-overlay{% endif %}">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
