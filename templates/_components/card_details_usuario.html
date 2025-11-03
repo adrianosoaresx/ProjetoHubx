@@ -5,6 +5,22 @@
       <p class="text-[var(--text-muted)]">{{ nome_fantasia }}</p>
     {% endif %}
   {% endwith %}
+  {% with razao_social=user.razao_social|default_if_none:'' %}
+    {% if razao_social %}
+      <p class="text-[var(--text-muted)]">{{ razao_social }}</p>
+    {% endif %}
+  {% endwith %}
+  {% with cnpj=user.cnpj|default_if_none:'' %}
+    {% if cnpj %}
+      <p class="text-[var(--text-muted)]">{{ cnpj }}</p>
+    {% else %}
+      {% with cpf=user.cpf|default_if_none:'' %}
+        {% if cpf %}
+          <p class="text-[var(--text-muted)]">{{ cpf }}</p>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  {% endwith %}
   {% with details_badges=details_badges|default:None %}
     {% if details_badges %}
       <div class="flex flex-wrap gap-2 pt-1">
