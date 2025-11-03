@@ -4520,6 +4520,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --transition-slow: 350ms ease-in-out;
   /* Overlays */
   --overlay-backdrop: color-mix(in srgb, var(--color-neutral-900) 65%, transparent);
+  --card-social-overlay-bg: rgba(255, 255, 255, 0.88);
+  --card-social-icon: var(--color-neutral-900);
   /* Light Theme (Default) */
   --bg-primary: #ffffff;
   --bg-secondary: var(--color-neutral-50);
@@ -4596,6 +4598,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --card-medium: 0 4px 6px -1px var(--card-color);
   --card-heavy: 0 10px 15px -3px var(--card-color);
   --overlay-backdrop: color-mix(in srgb, var(--color-neutral-900) 75%, transparent);
+  --card-social-overlay-bg: rgba(15, 23, 42, 0.78);
+  --card-social-icon: var(--color-neutral-100);
 }
 
 /* Shared utilities */
