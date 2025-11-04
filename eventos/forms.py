@@ -14,6 +14,36 @@ class PDFClearableFileInput(ClearableFileInput):
     template_name = "eventos/widgets/pdf_clearable_file_input.html"
 
 
+class ComprovanteFileInput(ClearableFileInput):
+    template_name = "eventos/widgets/comprovante_file_input.html"
+
+    def __init__(self, *args, **kwargs):
+        attrs = kwargs.setdefault("attrs", {})
+        existing_classes = attrs.get("class", "")
+        attrs["class"] = f"{existing_classes} sr-only".strip()
+        super().__init__(*args, **kwargs)
+
+    def get_context(self, name, value, attrs):
+        attrs = (attrs or {}).copy()
+        existing_classes = attrs.get("class", "")
+        if "sr-only" not in existing_classes.split():
+            attrs["class"] = f"{existing_classes} sr-only".strip()
+        attrs["data-payment-proof-input"] = "true"
+        context = super().get_context(name, value, attrs)
+        initial_name = ""
+        initial_url = ""
+        if value:
+            if hasattr(value, "name"):
+                initial_name = value.name or ""
+            else:
+                initial_name = str(value)
+            if hasattr(value, "url"):
+                initial_url = getattr(value, "url", "") or ""
+        context["widget"]["initial_name"] = initial_name
+        context["widget"]["initial_url"] = initial_url
+        return context
+
+
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
@@ -166,6 +196,10 @@ class InscricaoEventoForm(forms.ModelForm):
             valor_field.disabled = True
             valor_field.widget.attrs.setdefault("readonly", "readonly")
 
+        comprovante_field = self.fields.get("comprovante_pagamento")
+        if comprovante_field:
+            comprovante_field.label = _("Comprovante do pagamento")
+
     def _get_evento_valor(self):
         if self.evento is not None:
             return getattr(self.evento, "valor", None)
@@ -183,6 +217,11 @@ class InscricaoEventoForm(forms.ModelForm):
             "comprovante_pagamento",
             "observacao",
         ]
+        widgets = {
+            "comprovante_pagamento": ComprovanteFileInput(
+                attrs={"accept": ".jpg,.jpeg,.png,.pdf"}
+            ),
+        }
 
     def clean_valor_pago(self):
         valor_evento = self._get_evento_valor()

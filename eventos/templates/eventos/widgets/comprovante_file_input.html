@@ -1,0 +1,18 @@
+{% load i18n %}
+<div
+  class="sr-only"
+  data-payment-proof-input-wrapper
+  {% if widget.initial_name %}data-initial-name="{{ widget.initial_name|escape }}"{% endif %}
+  {% if widget.initial_url %}data-initial-url="{{ widget.initial_url|escape }}"{% endif %}
+>
+  {% if widget.is_initial and not widget.required %}
+    <input
+      type="checkbox"
+      name="{{ widget.clear_checkbox_name }}"
+      id="{{ widget.clear_checkbox_id }}"
+      class="sr-only"
+      data-payment-proof-clear="true"
+    />
+  {% endif %}
+  <input type="{{ widget.type }}" name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %} />
+</div>

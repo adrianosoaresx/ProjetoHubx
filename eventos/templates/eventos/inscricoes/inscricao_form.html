@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{{ title|default:_('Inscrição') }}{% endblock %}
 
@@ -26,7 +26,66 @@
                 {% if field_name == 'metodo_pagamento' %}
                   {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
                 {% elif field_name == 'comprovante_pagamento' %}
-                  {% include '_forms/field.html' with field=field|attr:'accept:.jpg,.jpeg,.png,.pdf' %}
+                  {% with field_value=field.value %}
+                    <div class="space-y-1" data-payment-proof-field>
+                      <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                        {{ field.label }}{% if field.field.required %} *{% endif %}
+                      </label>
+                      <div class="flex flex-wrap items-center gap-3">
+                        <label
+                          for="{{ field.id_for_label }}"
+                          class="btn btn-secondary"
+                          data-payment-proof-trigger
+                        >
+                          {% trans "Enviar comprovante" %}
+                        </label>
+                        <span
+                          class="text-sm text-[var(--text-secondary)]"
+                          data-payment-proof-text
+                          data-default-text="{% trans 'Nenhum comprovante enviado' %|escape %}"
+                          {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
+                        >
+                          {% if field_value %}
+                            {{ field_value.name|default:field_value }}
+                          {% else %}
+                            {% trans "Nenhum comprovante enviado" %}
+                          {% endif %}
+                        </span>
+                        <button
+                          type="button"
+                          class="text-sm font-medium text-primary-500 hover:underline {% if not field_value %}hidden{% endif %}"
+                          data-payment-proof-remove
+                        >
+                          {% trans "Remover comprovante" %}
+                        </button>
+                        {% if field_value and field_value.url %}
+                          <a
+                            href="{{ field_value.url|escape }}"
+                            class="text-sm font-medium text-primary-500 hover:underline"
+                            target="_blank"
+                            rel="noopener"
+                            data-payment-proof-preview
+                            data-initial-url="{{ field_value.url|escape }}"
+                          >
+                            {% trans "Ver comprovante atual" %}
+                          </a>
+                        {% else %}
+                          <span class="hidden" data-payment-proof-preview></span>
+                        {% endif %}
+                      </div>
+                      {% if field.errors %}
+                        <ul class="errorlist">
+                          {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                      {% if field.help_text %}
+                        <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                      {% endif %}
+                      {% render_field field %}
+                    </div>
+                  {% endwith %}
                 {% else %}
                   {% include '_forms/field.html' with field=field %}
                 {% endif %}
@@ -40,5 +99,144 @@
         </form>
       </div>
     </article>
-  
+
+    <script>
+      (() => {
+        const initializedProofs = new WeakSet();
+
+        function updateDisplay(container) {
+          if (!container) {
+            return;
+          }
+
+          const text = container.querySelector('[data-payment-proof-text]');
+          const defaultText = text?.dataset.defaultText || '';
+          const initialText = text?.dataset.initialText || '';
+          const preview = container.querySelector('[data-payment-proof-preview]');
+          const initialUrl = preview?.dataset.initialUrl || '';
+          const removeButton = container.querySelector('[data-payment-proof-remove]');
+          const input = container.querySelector('[data-payment-proof-input]');
+          const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+
+          const files = input?.files;
+          const hasFiles = !!(files && files.length > 0);
+          const clearActive = !!(clearCheckbox && clearCheckbox.checked);
+          const shouldShowInitial = !!(initialText && !hasFiles && !clearActive);
+
+          if (text) {
+            if (hasFiles) {
+              const names = Array.from(files)
+                .map((file) => file.name)
+                .join(', ');
+              text.textContent = names;
+            } else if (shouldShowInitial) {
+              text.textContent = initialText;
+            } else {
+              text.textContent = defaultText;
+            }
+          }
+
+          if (preview) {
+            if (shouldShowInitial && initialUrl) {
+              preview.classList.remove('hidden');
+              if (preview.tagName === 'A') {
+                preview.setAttribute('href', initialUrl);
+              }
+            } else {
+              preview.classList.add('hidden');
+            }
+          }
+
+          if (removeButton) {
+            const shouldShowRemove = hasFiles || shouldShowInitial;
+            removeButton.classList.toggle('hidden', !shouldShowRemove);
+          }
+        }
+
+        function clearSelection(container, { preserveInitial = false } = {}) {
+          const input = container.querySelector('[data-payment-proof-input]');
+          const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+          const text = container.querySelector('[data-payment-proof-text]');
+          const hasInitial = !!(text && text.dataset.initialText);
+
+          if (input) {
+            input.value = '';
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
+          if (clearCheckbox) {
+            if (preserveInitial) {
+              clearCheckbox.checked = false;
+            } else {
+              clearCheckbox.checked = hasInitial;
+            }
+          }
+
+          updateDisplay(container);
+        }
+
+        function initPaymentProof(container) {
+          if (!container || initializedProofs.has(container)) {
+            return;
+          }
+
+          const input = container.querySelector('[data-payment-proof-input]');
+          const removeButton = container.querySelector('[data-payment-proof-remove]');
+          const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+
+          if (input) {
+            input.addEventListener('change', () => {
+              if (clearCheckbox) {
+                clearCheckbox.checked = false;
+              }
+              updateDisplay(container);
+            });
+          }
+
+          if (removeButton) {
+            removeButton.addEventListener('click', () => {
+              clearSelection(container);
+            });
+          }
+
+          if (clearCheckbox) {
+            clearCheckbox.addEventListener('change', () => {
+              updateDisplay(container);
+            });
+          }
+
+          updateDisplay(container);
+
+          initializedProofs.add(container);
+        }
+
+        function initAll(root) {
+          const containers = (root || document).querySelectorAll('[data-payment-proof-field]');
+          containers.forEach((container) => initPaymentProof(container));
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => initAll(document));
+        } else {
+          initAll(document);
+        }
+
+        document.addEventListener('htmx:afterSwap', (event) => {
+          initAll(event.target);
+        });
+
+        document.addEventListener('payment-proof-visibility-change', (event) => {
+          const container = event.detail?.container;
+          if (!container) {
+            return;
+          }
+          if (event.detail.hidden) {
+            clearSelection(container, { preserveInitial: true });
+          } else {
+            updateDisplay(container);
+          }
+        });
+      })();
+    </script>
+
 {% endblock %}
