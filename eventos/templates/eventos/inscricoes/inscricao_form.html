@@ -9,7 +9,9 @@
   
     <article class="card">
       <div class="card-header">
-        <h2 class="text-xl font-semibold">{{ title|default:_('Inscrição') }}</h2>
+        <h2 class="text-xl font-semibold">
+          {% blocktrans with event_title=evento.titulo %}Inscrição {{ event_title }}{% endblocktrans %}
+        </h2>
       </div>
       <div class="card-body">
         {% url 'eventos:evento_detalhe' evento.pk as event_detail_url %}

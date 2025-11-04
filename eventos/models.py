@@ -77,7 +77,6 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
     )
-    observacao = models.TextField(blank=True)
     data_confirmacao = models.DateTimeField(null=True, blank=True)
     qrcode_url = models.URLField(null=True, blank=True)
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
