@@ -1,16 +1,23 @@
 {% load i18n lucide_icons %}
-<a href="{{ url }}" class="group block focus:outline-none focus:ring-2 focus:ring-primary/40" aria-label="{{ title }}">
-  <article class="card overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
-    <!-- Capa -->
-    <header class="relative">
-      {% if cover %}
-        <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}"
-             class="h-28 w-full object-cover object-center" loading="lazy" />
-      {% else %}
-        <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
-             {% if style %}style="{{ style }}"{% endif %}></div>
-      {% endif %}
-    </header>
+<article class="card group relative overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
+  <a
+    href="{{ url }}"
+    class="absolute inset-0 z-10 rounded-[inherit] focus:outline-none focus:ring-2 focus:ring-primary/40"
+    aria-label="{% if sr_label %}{{ sr_label }}{% else %}{{ title }}{% endif %}"
+  >
+    <span class="sr-only">{% if sr_label %}{{ sr_label }}{% else %}{{ title }}{% endif %}</span>
+  </a>
+
+  <!-- Capa -->
+  <header class="relative">
+    {% if cover %}
+      <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}"
+           class="h-28 w-full object-cover object-center" loading="lazy" />
+    {% else %}
+      <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
+           {% if style %}style="{{ style }}"{% endif %}></div>
+    {% endif %}
+  </header>
 
     {% with redes=header_social_links whatsapp=header_whatsapp_number %}
       <div class="relative px-4 sm:px-6">
@@ -30,7 +37,7 @@
 
           <!-- Ícones: abaixo da capa, com respiro extra -->
           {% if redes or whatsapp %}
-            <div class="mt-5 sm:mt-5 flex flex-nowrap items-center justify-end gap-2 sm:gap-3">
+            <div class="mt-5 sm:mt-5 flex flex-nowrap items-center justify-end gap-2 sm:gap-3 relative z-20">
               {% if redes %}
                 {% for rede, url in redes.items %}
                   {% if url %}
@@ -64,14 +71,9 @@
       </div>
     {% endwith %}
 
-    <!-- Conteúdo -->
-    <div class="card-body pt-8 sm:pt-10">
-      <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
-      {% include details %}
-    </div>
-  </article>
-
-  {% if sr_label %}
-    <span class="sr-only">{{ sr_label }}</span>
-  {% endif %}
-</a>
+  <!-- Conteúdo -->
+  <div class="card-body pt-8 sm:pt-10">
+    <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
+    {% include details %}
+  </div>
+</article>
