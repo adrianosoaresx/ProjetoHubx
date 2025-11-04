@@ -186,6 +186,11 @@ class InscricaoEventoForm(forms.ModelForm):
     def __init__(self, *args, evento=None, **kwargs):
         self.evento = evento
         super().__init__(*args, **kwargs)
+
+        if self.evento is None and self.instance and getattr(
+            self.instance, "evento", None
+        ) is not None:
+            self.evento = self.instance.evento
         valor_field = self.fields.get("valor_pago")
         if valor_field:
             valor_inicial = self._get_evento_valor()
@@ -200,6 +205,10 @@ class InscricaoEventoForm(forms.ModelForm):
         comprovante_field = self.fields.get("comprovante_pagamento")
         if comprovante_field:
             comprovante_field.label = _("Comprovante do pagamento")
+
+        metodo_field = self.fields.get("metodo_pagamento")
+        if metodo_field:
+            metodo_field.required = not self._is_evento_gratuito()
 
     def _get_evento_valor(self):
         if self.evento is not None:
@@ -223,6 +232,13 @@ class InscricaoEventoForm(forms.ModelForm):
             ),
         }
 
+    def _is_evento_gratuito(self):
+        if self.evento is not None:
+            return getattr(self.evento, "gratuito", False)
+        if self.instance and getattr(self.instance, "evento", None) is not None:
+            return getattr(self.instance.evento, "gratuito", False)
+        return False
+
     def clean_valor_pago(self):
         valor_evento = self._get_evento_valor()
         if valor_evento is not None:
@@ -239,6 +255,12 @@ class InscricaoEventoForm(forms.ModelForm):
             return arquivo
         validate_uploaded_file(arquivo)
         return arquivo
+
+    def clean_metodo_pagamento(self):
+        metodo = self.cleaned_data.get("metodo_pagamento")
+        if not self._is_evento_gratuito() and not metodo:
+            raise forms.ValidationError(_("Selecione uma forma de pagamento."))
+        return metodo
 
 
 class FeedbackForm(forms.ModelForm):

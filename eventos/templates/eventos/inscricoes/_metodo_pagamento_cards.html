@@ -12,6 +12,7 @@
     class="grid gap-3 sm:grid-cols-3"
     role="radiogroup"
     aria-labelledby="{{ field.auto_id|default:field.html_name }}_legend"
+    {% if field.field.required %}aria-required="true"{% endif %}
   >
     {% with selected=field.value base_id=field.auto_id|default:field.html_name disabled=field.field.disabled %}
       <label
@@ -28,6 +29,7 @@
           {% if selected == "pix" %}checked{% endif %}
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
+          {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
@@ -63,6 +65,7 @@
           {% if selected == "boleto" %}checked{% endif %}
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
+          {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
@@ -98,6 +101,7 @@
           {% if selected == "faturar" %}checked{% endif %}
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
+          {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
