@@ -1,0 +1,88 @@
+{% load i18n lucide_icons %}
+
+<div class="space-y-2">
+  <p class="text-sm font-medium text-[var(--text-primary)]">
+    {{ field.label }}{% if field.field.required %} *{% endif %}
+  </p>
+  <div class="grid gap-3 sm:grid-cols-3">
+    {% with selected=field.value base_id=field.auto_id|default:field.html_name disabled=field.field.disabled %}
+      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_pix">
+        <input
+          type="radio"
+          name="{{ field.html_name }}"
+          value="pix"
+          class="sr-only peer"
+          id="{{ base_id }}_pix"
+          {% if selected == "pix" %}checked{% endif %}
+          {% if disabled %}disabled{% endif %}
+          {% if field.errors %}aria-invalid="true"{% endif %}
+        />
+        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+          <div class="flex items-center gap-2 text-[var(--text-primary)]">
+            {% lucide 'qr-code' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+            <span class="text-base font-semibold">{% trans "Pix" %}</span>
+          </div>
+          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+            {% trans "Pague instantaneamente via Pix." %}
+          </p>
+        </div>
+      </label>
+
+      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_boleto">
+        <input
+          type="radio"
+          name="{{ field.html_name }}"
+          value="boleto"
+          class="sr-only peer"
+          id="{{ base_id }}_boleto"
+          {% if selected == "boleto" %}checked{% endif %}
+          {% if disabled %}disabled{% endif %}
+          {% if field.errors %}aria-invalid="true"{% endif %}
+        />
+        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+          <div class="flex items-center gap-2 text-[var(--text-primary)]">
+            {% lucide 'barcode' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+            <span class="text-base font-semibold">{% trans "Boleto" %}</span>
+          </div>
+          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+            {% trans "Receba um boleto para pagamento." %}
+          </p>
+        </div>
+      </label>
+
+      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_faturar">
+        <input
+          type="radio"
+          name="{{ field.html_name }}"
+          value="faturar"
+          class="sr-only peer"
+          id="{{ base_id }}_faturar"
+          {% if selected == "faturar" %}checked{% endif %}
+          {% if disabled %}disabled{% endif %}
+          {% if field.errors %}aria-invalid="true"{% endif %}
+        />
+        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+          <div class="flex items-center gap-2 text-[var(--text-primary)]">
+            {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+            <span class="text-base font-semibold">{% trans "Faturar" %}</span>
+          </div>
+          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+            {% trans "Pagar na fatura." %}
+          </p>
+        </div>
+      </label>
+    {% endwith %}
+  </div>
+
+  {% if field.errors %}
+    <ul class="errorlist">
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if field.help_text %}
+    <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+  {% endif %}
+</div>
