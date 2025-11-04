@@ -127,18 +127,14 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     def get_queryset(self):
         qs = self.get_base_queryset()
         status_filter = self.request.GET.get("status")
-        now = timezone.now()
-        planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO) | (
-            Q(status=Evento.Status.ATIVO) & Q(data_inicio__gt=now)
-        )
         if status_filter == "planejamento":
-            qs = qs.filter(planejamento_filter)
+            qs = qs.filter(status=Evento.Status.PLANEJAMENTO)
         elif status_filter == "cancelados":
             qs = qs.filter(status=Evento.Status.CANCELADO)
         elif status_filter == "realizados":
             qs = qs.filter(status=Evento.Status.CONCLUIDO)
         elif status_filter == "ativos":
-            qs = qs.filter(status=Evento.Status.ATIVO, data_inicio__lte=now)
+            qs = qs.filter(status=Evento.Status.ATIVO)
         return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
 
     # ----- Contexto -----
@@ -185,13 +181,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         base_qs = self.get_base_queryset()
         qs = self.get_queryset()
         now = timezone.now()
-        planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO) | (
-            Q(status=Evento.Status.ATIVO) & Q(data_inicio__gt=now)
-        )
+        planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO)
         ctx["total_eventos"] = base_qs.count()
         ctx["total_eventos_planejamento"] = base_qs.filter(planejamento_filter).count()
         ctx["total_eventos_ativos"] = base_qs.filter(
-            status=Evento.Status.ATIVO, data_inicio__lte=now
+            status=Evento.Status.ATIVO
         ).count()
         ctx["total_eventos_concluidos"] = base_qs.filter(
             status=Evento.Status.CONCLUIDO
@@ -206,7 +200,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             "data_inicio"
         )
         ctx["eventos_ativos"] = annotated_base.filter(
-            status=Evento.Status.ATIVO, data_inicio__lte=now
+            status=Evento.Status.ATIVO
         ).order_by("-data_inicio")
         ctx["eventos_realizados"] = annotated_base.filter(
             status=Evento.Status.CONCLUIDO
