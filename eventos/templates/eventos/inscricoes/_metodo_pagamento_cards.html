@@ -1,12 +1,19 @@
 {% load i18n lucide_icons %}
 
 <div class="space-y-2">
-  <p class="text-sm font-medium text-[var(--text-primary)]">
+  <p class="text-sm font-medium text-[var(--text-primary)]" id="{{ field.auto_id|default:field.html_name }}_legend">
     {{ field.label }}{% if field.field.required %} *{% endif %}
   </p>
-  <div class="grid gap-3 sm:grid-cols-3">
+  <div
+    class="grid gap-3 sm:grid-cols-3"
+    role="radiogroup"
+    aria-labelledby="{{ field.auto_id|default:field.html_name }}_legend"
+  >
     {% with selected=field.value base_id=field.auto_id|default:field.html_name disabled=field.field.disabled %}
-      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_pix">
+      <label
+        class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+        for="{{ base_id }}_pix"
+      >
         <input
           type="radio"
           name="{{ field.html_name }}"
@@ -17,7 +24,15 @@
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
         />
-        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+        <div
+          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+        >
+          <span
+            class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+            aria-hidden="true"
+          >
+            {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+          </span>
           <div class="flex items-center gap-2 text-[var(--text-primary)]">
             {% lucide 'qr-code' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
             <span class="text-base font-semibold">{% trans "Pix" %}</span>
@@ -28,7 +43,10 @@
         </div>
       </label>
 
-      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_boleto">
+      <label
+        class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+        for="{{ base_id }}_boleto"
+      >
         <input
           type="radio"
           name="{{ field.html_name }}"
@@ -39,7 +57,15 @@
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
         />
-        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+        <div
+          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+        >
+          <span
+            class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+            aria-hidden="true"
+          >
+            {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+          </span>
           <div class="flex items-center gap-2 text-[var(--text-primary)]">
             {% lucide 'barcode' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
             <span class="text-base font-semibold">{% trans "Boleto" %}</span>
@@ -50,7 +76,10 @@
         </div>
       </label>
 
-      <label class="block {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}" for="{{ base_id }}_faturar">
+      <label
+        class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+        for="{{ base_id }}_faturar"
+      >
         <input
           type="radio"
           name="{{ field.html_name }}"
@@ -61,7 +90,15 @@
           {% if disabled %}disabled{% endif %}
           {% if field.errors %}aria-invalid="true"{% endif %}
         />
-        <div class="h-full rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 transition shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}">
+        <div
+          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+        >
+          <span
+            class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+            aria-hidden="true"
+          >
+            {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+          </span>
           <div class="flex items-center gap-2 text-[var(--text-primary)]">
             {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
             <span class="text-base font-semibold">{% trans "Faturar" %}</span>
