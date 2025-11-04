@@ -22,7 +22,7 @@ def add_nucleos_property():
 
 @pytest.fixture
 def organizacao(db):
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-01", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-01")
 
 
 @pytest.fixture

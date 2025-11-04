@@ -197,7 +197,7 @@ msgid "Gerencie as organizações cadastradas"
 msgstr ""
 
 #: templates/organizacoes/list.html:25
-msgid "Buscar por nome ou slug"
+msgid "Buscar por nome"
 msgstr ""
 
 #: templates/organizacoes/list.html:33

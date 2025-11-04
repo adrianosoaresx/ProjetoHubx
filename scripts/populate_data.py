@@ -95,14 +95,12 @@ def main() -> None:
         ]
         organizacoes: list = []
         for nome, cidade, estado, cnpj, admin in organizacoes_data:
-            slug = slugify(nome)
             org, _ = Organizacao.objects.get_or_create(
                 cnpj=cnpj,
                 defaults={
                     "nome": nome,
                     "cidade": cidade,
                     "estado": estado,
-                    "slug": slug,
                     "tipo": "ong",
                     "created_by": admin,
                 },

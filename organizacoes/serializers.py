@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
-from django.utils.text import slugify
-from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from .models import (
@@ -27,7 +25,6 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "nome",
             "cnpj",
             "descricao",
-            "slug",
             "tipo",
             "rua",
             "cidade",
@@ -38,31 +35,15 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "chave_pix",
             "avatar",
             "cover",
-            "rate_limit_multiplier",
             "inativa",
             "inativada_em",
             "created_by",
         ]
         read_only_fields = ["created_by", "inativada_em"]
-        extra_kwargs = {"slug": {"required": False}}
-
-    def validate_rate_limit_multiplier(self, value: float) -> float:
-        if value <= 0:
-            raise serializers.ValidationError(_("Deve ser maior que zero."))
-        return value
 
     def create(self, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
         user = getattr(request, "user", None)
-        slug = validated_data.get("slug")
-        nome = validated_data.get("nome")
-        slug = slugify(slug or nome)
-        base = slug
-        counter = 2
-        while Organizacao.objects.filter(slug=slug).exists():
-            slug = f"{base}-{counter}"
-            counter += 1
-        validated_data["slug"] = slug
         if validated_data.get("inativa"):
             validated_data["inativada_em"] = timezone.now()
         try:
@@ -85,27 +66,15 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if "cnpj" in validated_data:
             validated_data["cnpj"] = validate_cnpj(validated_data["cnpj"])
-        if "slug" in validated_data or "nome" in validated_data:
-            slug = validated_data.get("slug")
-            nome = validated_data.get("nome", instance.nome)
-            slug = slugify(slug or nome)
-            base = slug
-            counter = 2
-            while Organizacao.objects.exclude(pk=instance.pk).filter(slug=slug).exists():
-                slug = f"{base}-{counter}"
-                counter += 1
-            validated_data["slug"] = slug
         if "inativa" in validated_data:
             validated_data["inativada_em"] = timezone.now() if validated_data["inativa"] else None
         campos_relevantes = [
             "nome",
             "tipo",
-            "slug",
             "cnpj",
             "contato_nome",
             "contato_email",
             "inativa",
-            "rate_limit_multiplier",
             "chave_pix",
         ]
         for campo in campos_relevantes:

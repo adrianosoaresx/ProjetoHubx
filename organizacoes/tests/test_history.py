@@ -41,7 +41,6 @@ def create_org(faker):
     return Organizacao.objects.create(
         nome="Org",
         cnpj=faker.cnpj(),
-        slug="org",
     )
 
 

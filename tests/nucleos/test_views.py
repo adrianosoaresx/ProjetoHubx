@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
 
 
 @pytest.fixture
@@ -217,7 +217,7 @@ def test_toggle_active(client, admin_user, organizacao):
 
 
 def test_toggle_active_admin_other_org(client, organizacao, admin_user):
-    other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/1111-11", slug="org2")
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/1111-11")
     nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     User = get_user_model()
     other_admin = User.objects.create_user(
@@ -318,7 +318,7 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
 
 
 def test_nucleo_list_filtra_para_associado(client, organizacao):
-    other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11")
     Nucleo.objects.create(nome="N1", organizacao=organizacao)
     Nucleo.objects.create(nome="N2", organizacao=other_org)
     User = get_user_model()
@@ -338,7 +338,7 @@ def test_nucleo_list_filtra_para_associado(client, organizacao):
 
 
 def test_nucleo_list_filtra_para_nucleado(client, organizacao):
-    other_org = Organizacao.objects.create(nome="Org2", cnpj="22.222.222/0002-22", slug="org22")
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="22.222.222/0002-22")
     Nucleo.objects.create(nome="N1", organizacao=organizacao)
     Nucleo.objects.create(nome="N2", organizacao=other_org)
     User = get_user_model()
@@ -358,7 +358,7 @@ def test_nucleo_list_filtra_para_nucleado(client, organizacao):
 
 
 def test_nucleo_list_filtra_para_admin(client, organizacao, admin_user):
-    other_org = Organizacao.objects.create(nome="Org2", cnpj="33.333.333/0003-33", slug="org3")
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="33.333.333/0003-33")
     Nucleo.objects.create(nome="N1", organizacao=organizacao)
     Nucleo.objects.create(nome="N2", organizacao=other_org)
     client.force_login(admin_user)
@@ -370,7 +370,7 @@ def test_nucleo_list_filtra_para_admin(client, organizacao, admin_user):
 
 
 def test_nucleo_list_filtra_para_coordenador(client, organizacao):
-    other_org = Organizacao.objects.create(nome="Org2", cnpj="44.444.444/0004-44", slug="org4")
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="44.444.444/0004-44")
     n1 = Nucleo.objects.create(nome="N1", organizacao=organizacao)
     Nucleo.objects.create(nome="N2", organizacao=organizacao)
     Nucleo.objects.create(nome="N3", organizacao=other_org)

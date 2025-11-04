@@ -22,7 +22,7 @@ def media_root(tmp_path, settings):
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
 
 
 @pytest.fixture
@@ -95,7 +95,7 @@ def test_suplente_ativo(organizacao, usuario):
 
 
 def test_nome_unico_por_organizacao(organizacao):
-    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11")
     Nucleo.objects.create(nome="Igual", organizacao=organizacao)
     Nucleo.objects.create(nome="Igual", organizacao=outra)
     with pytest.raises(IntegrityError):

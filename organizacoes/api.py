@@ -85,7 +85,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             return queryset
 
         filters = {
-            "search": lambda q, v: q.filter(Q(nome__icontains=v) | Q(slug__icontains=v)),
+            "search": lambda q, v: q.filter(Q(nome__icontains=v)),
             "tipo": lambda q, v: q.filter(tipo=v),
             "cidade": lambda q, v: q.filter(cidade=v),
             "estado": lambda q, v: q.filter(estado=v),

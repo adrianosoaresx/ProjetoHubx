@@ -18,7 +18,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)
-    slug = models.SlugField(unique=True)
     tipo = models.CharField(
         _("Tipo"),
         max_length=20,
@@ -40,7 +39,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
-    rate_limit_multiplier = models.FloatField(default=1)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

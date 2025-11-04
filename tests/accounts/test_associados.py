@@ -46,7 +46,7 @@ def test_search_associados(client):
 
 
 def test_coordenador_list_associados(client):
-    org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
     coord = create_user(
         "coord@example.com",
         "coord",
@@ -67,7 +67,7 @@ def test_coordenador_list_associados(client):
 
 
 def test_associados_sections_grouping(client):
-    org = Organizacao.objects.create(nome="Org Filters", cnpj="11.111.111/1111-11", slug="org-filters")
+    org = Organizacao.objects.create(nome="Org Filters", cnpj="11.111.111/1111-11")
     nucleo = Nucleo.objects.create(organizacao=org, nome="Núcleo Alpha")
     admin = create_user(
         "filters-admin@example.com",

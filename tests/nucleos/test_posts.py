@@ -18,7 +18,7 @@ def api_client():
 def organizacao():
     from organizacoes.models import Organizacao
 
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
 
 
 @pytest.fixture

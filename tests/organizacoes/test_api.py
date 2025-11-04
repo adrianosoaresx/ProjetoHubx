@@ -49,20 +49,9 @@ def _no_celery(monkeypatch):
     monkeypatch.setattr("organizacoes.tasks.enviar_email_membros.delay", lambda *a, **k: None)
 
 
-def test_create_slug_auto_increment(api_client, root_user, faker_ptbr):
-    auth(api_client, root_user)
-    url = reverse("organizacoes_api:organizacao-list")
-    data = {"nome": "Org", "cnpj": faker_ptbr.cnpj()}
-    resp1 = api_client.post(url, data)
-    assert resp1.status_code == status.HTTP_201_CREATED
-    resp2 = api_client.post(url, {"nome": "Org", "cnpj": faker_ptbr.cnpj()})
-    assert resp2.status_code == status.HTTP_201_CREATED
-    assert resp2.data["slug"] == "org-2"
-
-
 def test_inativar_reativar(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="o")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     url_inativar = reverse("organizacoes_api:organizacao-inativar", args=[org.pk])
     resp = api_client.patch(url_inativar)
     assert resp.status_code == status.HTTP_200_OK
@@ -77,37 +66,24 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     assert OrganizacaoAtividadeLog.all_objects.filter(organizacao=org, acao="inactivated").exists()
 
 
-def test_patch_inativa_e_rate_limit(api_client, root_user, faker_ptbr):
+def test_patch_inativa(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="p")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
-    resp = api_client.patch(
-        url,
-        {"inativa": True, "rate_limit_multiplier": 2},
-        format="json",
-    )
+    resp = api_client.patch(url, {"inativa": True}, format="json")
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
     assert org.inativa is True and org.inativada_em
-    assert org.rate_limit_multiplier == 2
     resp = api_client.patch(url, {"inativa": False}, format="json")
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
     assert org.inativa is False and org.inativada_em is None
 
 
-def test_rate_limit_validation(api_client, root_user, faker_ptbr):
-    auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="r")
-    url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
-    resp = api_client.patch(url, {"rate_limit_multiplier": -1}, format="json")
-    assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-
 def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    org1 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="a")
-    org2 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b", inativa=True)
+    org1 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj())
+    org2 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), inativa=True)
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.get(url)
     ids = [o["id"] for o in resp.data]
@@ -116,8 +92,8 @@ def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
 
 def test_list_filter_inativa_tokens(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    active = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="aa")
-    inactive = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="bb", inativa=True)
+    active = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj())
+    inactive = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), inativa=True)
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.get(url + "?inativa=yes")
     ids = [o["id"] for o in resp.data]
@@ -128,7 +104,7 @@ def test_list_filter_inativa_tokens(api_client, root_user, faker_ptbr):
 
 
 def test_list_permissions(api_client, faker_ptbr, root_user):
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     user_common = User.objects.create_user(
         username="u",
         email="u@example.com",
@@ -154,7 +130,7 @@ def test_list_permissions(api_client, faker_ptbr, root_user):
 
 
 def test_history_requires_root(api_client, root_user, faker_ptbr):
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="l")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     admin_user = User.objects.create_user(
         username="adm",
         email="adm@example.com",
@@ -172,7 +148,7 @@ def test_history_requires_root(api_client, root_user, faker_ptbr):
 
 def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="c")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
     assert resp.status_code == status.HTTP_200_OK
@@ -181,8 +157,8 @@ def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
 
 def test_search_and_ordering(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    o1 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b", cidade="X")
-    o2 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="a", cidade="Y")
+    o1 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), cidade="X")
+    o2 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), cidade="Y")
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.get(url + "?search=a")
     ids = [o["id"] for o in resp.data]
@@ -196,7 +172,6 @@ def test_filter_tipo_cidade_estado(api_client, root_user, faker_ptbr):
     o1 = Organizacao.objects.create(
         nome="Org1",
         cnpj=faker_ptbr.cnpj(),
-        slug="org1",
         tipo="ong",
         cidade="Cidade1",
         estado="SP",
@@ -204,7 +179,6 @@ def test_filter_tipo_cidade_estado(api_client, root_user, faker_ptbr):
     o2 = Organizacao.objects.create(
         nome="Org2",
         cnpj=faker_ptbr.cnpj(),
-        slug="org2",
         tipo="empresa",
         cidade="Cidade2",
         estado="RJ",
@@ -226,7 +200,6 @@ def test_combined_filters(api_client, root_user, faker_ptbr):
     o1 = Organizacao.objects.create(
         nome="Org1",
         cnpj=faker_ptbr.cnpj(),
-        slug="org1",
         tipo="ong",
         cidade="Cidade1",
         estado="SP",
@@ -234,7 +207,6 @@ def test_combined_filters(api_client, root_user, faker_ptbr):
     o2 = Organizacao.objects.create(
         nome="Org2",
         cnpj=faker_ptbr.cnpj(),
-        slug="org2",
         tipo="ong",
         cidade="Cidade1",
         estado="SP",
@@ -243,7 +215,6 @@ def test_combined_filters(api_client, root_user, faker_ptbr):
     Organizacao.objects.create(
         nome="Org3",
         cnpj=faker_ptbr.cnpj(),
-        slug="org3",
         tipo="empresa",
         cidade="Cidade2",
         estado="RJ",
