@@ -35,6 +35,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     contato_nome = models.CharField(_("Contato principal"), max_length=255, blank=True)
     contato_email = models.EmailField(_("Email do contato"), blank=True)
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
+    chave_pix = models.CharField(_("Chave Pix"), max_length=255, blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     inativa = models.BooleanField(default=False)

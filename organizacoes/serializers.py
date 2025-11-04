@@ -35,6 +35,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_nome",
             "contato_email",
             "contato_telefone",
+            "chave_pix",
             "avatar",
             "cover",
             "rate_limit_multiplier",
@@ -105,6 +106,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_email",
             "inativa",
             "rate_limit_multiplier",
+            "chave_pix",
         ]
         for campo in campos_relevantes:
             if campo in validated_data:

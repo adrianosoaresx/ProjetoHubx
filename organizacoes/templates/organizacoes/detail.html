@@ -64,6 +64,9 @@
               <p>{{ object.contato_nome }}</p>
               <p>{{ object.contato_email }}</p>
               <p>{{ object.contato_telefone }}</p>
+              {% if object.chave_pix %}
+                <p>{% trans 'Chave Pix:' %} {{ object.chave_pix }}</p>
+              {% endif %}
             </dd>
           </div>
           <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
