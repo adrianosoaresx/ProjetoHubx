@@ -42,7 +42,7 @@
                         <span
                           class="text-sm text-[var(--text-secondary)]"
                           data-payment-proof-text
-                          data-default-text="{% trans 'Nenhum comprovante enviado' %|escape %}"
+                          data-default-text="{{ _('Nenhum comprovante enviado')|escape }}"
                           {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
                         >
                           {% if field_value %}
