@@ -182,14 +182,12 @@ def test_admin_pode_editar_inscricao(evento, usuario_logado, client, organizacao
         {
             "valor_pago": "123.45",
             "metodo_pagamento": "pix",
-            "observacao": "Atualizado",
         },
     )
     assert response_post.status_code == 302
     inscricao.refresh_from_db()
     assert inscricao.valor_pago == evento.valor
     assert inscricao.metodo_pagamento == "pix"
-    assert inscricao.observacao == "Atualizado"
 
 
 def test_admin_ve_acoes_de_inscricao_no_detalhe(evento, usuario_logado, client, organizacao):

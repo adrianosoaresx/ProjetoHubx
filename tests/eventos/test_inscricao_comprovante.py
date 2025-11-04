@@ -48,7 +48,7 @@ def api_client():
 
 
 def _form_data():
-    return {"valor_pago": "10.00", "metodo_pagamento": "pix", "observacao": ""}
+    return {"valor_pago": "10.00", "metodo_pagamento": "pix"}
 
 
 def test_inscricao_form_rejeita_mime_divergente(admin_user):
