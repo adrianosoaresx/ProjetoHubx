@@ -230,7 +230,9 @@
                     {% lucide 'ticket' class='h-6 w-6' aria_hidden='true' %}
                   </span>
                   <div class="space-y-1">
-                    <h2 class="text-xl font-semibold">{% trans "Inscrição" %}</h2>
+                    <h2 class="text-xl font-semibold">
+                      {% blocktrans with event_title=object.titulo %}Inscrição {{ event_title }}{% endblocktrans %}
+                    </h2>
                     <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie sua participação no evento" %}</p>
                   </div>
                 </div>
