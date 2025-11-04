@@ -30,6 +30,7 @@ class EventoForm(forms.ModelForm):
             "publico_alvo",
             "nucleo",
             "participantes_maximo",
+            "gratuito",
             "valor",
             "cronograma",
             "informacoes_adicionais",
@@ -113,6 +114,9 @@ class EventoForm(forms.ModelForm):
             cleaned_data["nucleo"] = None
 
         participantes_maximo = cleaned_data.get("participantes_maximo")
+
+        if cleaned_data.get("gratuito"):
+            cleaned_data["valor"] = None
 
         return cleaned_data
 

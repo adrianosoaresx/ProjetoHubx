@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 <div class="space-y-6">
-  <div class="grid gap-6 md:grid-cols-5">
+  <div class="grid gap-6 md:grid-cols-6">
     <div>
       {% include '_forms/field.html' with field=form.status %}
     </div>
@@ -11,6 +11,9 @@
       {% include '_forms/field.html' with field=form.participantes_maximo %}
     </div>
     <div>
+      {% include '_forms/field.html' with field=form.gratuito %}
+    </div>
+    <div id="valor-field-container" {% if form.gratuito.value %}class="hidden"{% endif %}>
       {% include '_forms/field.html' with field=form.valor %}
     </div>
     <div id="nucleo-field-container">
@@ -83,3 +86,23 @@
     </div>
   </div>
 </div>
+<script>
+  (function () {
+    const gratuitoField = document.querySelector('#id_gratuito');
+    const valorContainer = document.querySelector('#valor-field-container');
+    if (!gratuitoField || !valorContainer) {
+      return;
+    }
+
+    const toggleValor = () => {
+      if (gratuitoField.checked) {
+        valorContainer.classList.add('hidden');
+      } else {
+        valorContainer.classList.remove('hidden');
+      }
+    };
+
+    gratuitoField.addEventListener('change', toggleValor);
+    toggleValor();
+  })();
+</script>
