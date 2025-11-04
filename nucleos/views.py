@@ -588,11 +588,16 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
     def get_participacoes_queryset(self):
         nucleo = self.object
-        return nucleo.participacoes.filter(
-            status="ativo",
-            status_suspensao=False,
-            user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
-        ).select_related("user").order_by("-created_at")
+        return (
+            nucleo.participacoes.filter(
+                status="ativo",
+                status_suspensao=False,
+                user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
+                user__deleted=False,
+            )
+            .select_related("user")
+            .order_by("-created_at")
+        )
 
     def get_membros_queryset(self):
         qs = self.get_participacoes_queryset()
@@ -652,7 +657,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         page_obj = paginator.get_page(page_number)
         ctx["page_obj"] = page_obj
         ctx["membros_ativos"] = page_obj.object_list
-        ctx["coordenadores"] = nucleo.participacoes.filter(status="ativo", papel="coordenador")
+        ctx["coordenadores"] = self.get_participacoes_queryset().filter(papel="coordenador")
         # Pendentes e suplentes (somente leitura)
         ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
         ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
