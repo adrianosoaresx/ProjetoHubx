@@ -195,6 +195,7 @@ class InscricaoEventoForm(forms.ModelForm):
                 valor_field.initial = valor_inicial
             valor_field.disabled = True
             valor_field.widget.attrs.setdefault("readonly", "readonly")
+            valor_field.label = _("Valor da inscrição")
 
         comprovante_field = self.fields.get("comprovante_pagamento")
         if comprovante_field:
@@ -215,7 +216,6 @@ class InscricaoEventoForm(forms.ModelForm):
             "valor_pago",
             "metodo_pagamento",
             "comprovante_pagamento",
-            "observacao",
         ]
         widgets = {
             "comprovante_pagamento": ComprovanteFileInput(

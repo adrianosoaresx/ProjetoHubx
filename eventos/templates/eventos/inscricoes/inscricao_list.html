@@ -29,10 +29,9 @@
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Evento" %}</th>
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Status" %}</th>
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Presente" %}</th>
-                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Valor Pago" %}</th>
+                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Valor da inscrição" %}</th>
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Método de Pagamento" %}</th>
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Comprovante" %}</th>
-                <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Observação" %}</th>
                 <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Ações" %}</th>
               </tr>
             </thead>
@@ -52,7 +51,6 @@
                       &mdash;
                     {% endif %}
                   </td>
-                  <td class="px-4 py-2">{{ inscricao.observacao|default:"-" }}</td>
                   <td class="px-4 py-2">
                     <a href="{% url 'eventos:evento_detalhe' inscricao.evento.pk %}" class="text-primary hover:underline">{% trans "Ver" %}</a>
                     <span class="text-[var(--text-muted)]">|</span>
@@ -61,7 +59,7 @@
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="9" class="px-4 py-4 text-center text-[var(--text-muted)]">{% trans "Nenhuma inscrição encontrada." %}</td>
+                  <td colspan="8" class="px-4 py-4 text-center text-[var(--text-muted)]">{% trans "Nenhuma inscrição encontrada." %}</td>
                 </tr>
               {% endfor %}
             </tbody>
