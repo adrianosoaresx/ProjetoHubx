@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
 
 
 @pytest.fixture

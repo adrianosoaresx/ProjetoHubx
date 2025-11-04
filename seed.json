@@ -5,7 +5,6 @@
     "fields": {
       "nome": "CDL FLORIANOPOLIS",
       "cnpj": "00.000.000/0001-91",
-      "slug": "cdl-florianopolis",
       "tipo": "ong",
       "cidade": "Florianópolis",
       "estado": "SC",
@@ -18,7 +17,6 @@
     "fields": {
       "nome": "CDL BLUMENAU",
       "cnpj": "00.000.000/0002-72",
-      "slug": "cdl-blumenau",
       "tipo": "ong",
       "cidade": "Blumenau",
       "estado": "SC",

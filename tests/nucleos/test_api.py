@@ -29,7 +29,7 @@ def api_client():
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
 
 
 @pytest.fixture
@@ -180,7 +180,7 @@ def test_permission_denied(api_client, outro_user, organizacao):
 
 
 def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):
-    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11")
     nucleo = Nucleo.objects.create(nome="Nextra", organizacao=outra)
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
@@ -189,7 +189,7 @@ def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):
 
 
 def test_aceitar_convite_outro_nucleo(api_client, outro_user, organizacao):
-    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11")
     nucleo = Nucleo.objects.create(nome="Nextra", organizacao=outra)
     convite = ConviteNucleo.objects.create(email=outro_user.email, papel="membro", nucleo=nucleo)
     _auth(api_client, outro_user)
@@ -199,7 +199,7 @@ def test_aceitar_convite_outro_nucleo(api_client, outro_user, organizacao):
 
 
 def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_model):
-    outra = Organizacao.objects.create(nome="OrgX", cnpj="11.111.111/0001-11", slug="orgx")
+    outra = Organizacao.objects.create(nome="OrgX", cnpj="11.111.111/0001-11")
     outsider = django_user_model.objects.create_user(
         username="outsider",
         email="o@example.com",
@@ -214,7 +214,7 @@ def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_mo
 
 
 def test_list_forbidden_organizacao(api_client, organizacao, django_user_model):
-    outra = Organizacao.objects.create(nome="OrgY", cnpj="22.222.222/0001-22", slug="orgy")
+    outra = Organizacao.objects.create(nome="OrgY", cnpj="22.222.222/0001-22")
     outsider = django_user_model.objects.create_user(
         username="outsider2",
         email="o2@example.com",

@@ -38,7 +38,7 @@ def faker_ptbr():
 
 def test_crud_plugin(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     url = reverse("organizacoes_api:organizacao-plugins-list", args=[org.pk])
     data = {"module_path": "feed.tests.sample_plugin.DummyPlugin", "frequency": 1}
     resp = api_client.post(url, data, format="json")

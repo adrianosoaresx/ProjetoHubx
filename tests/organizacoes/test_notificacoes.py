@@ -52,7 +52,7 @@ def test_notifica_criacao(api_client, root_user, faker_ptbr, monkeypatch):
 
 def test_notifica_atualizacao(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="upd")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     delay = MagicMock()
     from organizacoes import tasks
 
@@ -65,7 +65,7 @@ def test_notifica_atualizacao(api_client, root_user, faker_ptbr, monkeypatch):
 
 def test_notifica_inativacao(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="inact")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     delay = MagicMock()
     from organizacoes import tasks
 
@@ -78,7 +78,7 @@ def test_notifica_inativacao(api_client, root_user, faker_ptbr, monkeypatch):
 
 def test_notifica_exclusao(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="del")
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj())
     delay = MagicMock()
     from organizacoes import tasks
 

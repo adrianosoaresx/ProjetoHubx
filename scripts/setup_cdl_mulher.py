@@ -196,22 +196,6 @@ def ensure_exact_username(user, desired: str) -> None:
         user.save(update_fields=["username"])
 
 
-def ensure_unique_slug(model, base_slug: str, instance=None) -> str:
-    slug = base_slug or "organizacao"
-    if hasattr(model, "all_objects"):
-        queryset = model.all_objects
-    else:
-        queryset = model.objects
-
-    pk = getattr(instance, "pk", None)
-    final_slug = slug
-    counter = 1
-    while queryset.filter(slug=final_slug).exclude(pk=pk).exists():
-        counter += 1
-        final_slug = f"{slug}-{counter}"
-    return final_slug
-
-
 def upsert_user(
     *,
     email: str,
@@ -294,8 +278,6 @@ def upsert_participacao(user, nucleo):
 
 
 def setup_domain_objects(member_password: str) -> None:
-    from django.utils.text import slugify
-
     from accounts.models import UserType
     from nucleos.models import ParticipacaoNucleo, Nucleo
     from organizacoes.models import Organizacao
@@ -304,21 +286,14 @@ def setup_domain_objects(member_password: str) -> None:
     org_cnpj = "05.078.251/0001-02"
     nucleo_name = "Núcleo da Mulher"
 
-    base_slug = slugify(org_name)
-
     organizacao = Organizacao.all_objects.filter(cnpj=org_cnpj).first()
     if organizacao is None:
-        slug = ensure_unique_slug(Organizacao, base_slug)
-        organizacao = Organizacao(cnpj=org_cnpj, nome=org_name, slug=slug, inativa=False)
+        organizacao = Organizacao(cnpj=org_cnpj, nome=org_name, inativa=False)
         organizacao.save()
     else:
         changed = False
         if organizacao.nome != org_name:
             organizacao.nome = org_name
-            changed = True
-        desired_slug = ensure_unique_slug(Organizacao, base_slug, instance=organizacao)
-        if organizacao.slug != desired_slug:
-            organizacao.slug = desired_slug
             changed = True
         if organizacao.inativa:
             organizacao.inativa = False

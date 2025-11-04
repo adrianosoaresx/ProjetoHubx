@@ -209,13 +209,13 @@ def _rate_with_multiplier(base: str, multiplier: float) -> str:
 
 
 def _post_rate(group, request) -> str:  # pragma: no cover - simples
-    mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
+    mult = 1
     base = getattr(settings, "FEED_RATE_LIMIT_POST", DEFAULT_POST_RATE_LIMIT)
     return _rate_with_multiplier(base, mult)
 
 
 def _read_rate(group, request) -> str:  # pragma: no cover - simples
-    mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
+    mult = 1
     base = getattr(settings, "FEED_RATE_LIMIT_READ", DEFAULT_READ_RATE_LIMIT)
     return _rate_with_multiplier(base, mult)
 

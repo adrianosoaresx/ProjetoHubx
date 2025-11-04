@@ -36,7 +36,6 @@ def organizacao() -> Organizacao:
     return Organizacao.objects.create(
         nome="Org Root",
         cnpj="00000000000191",
-        slug="org-root",
     )
 
 

@@ -3,8 +3,6 @@ import os
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
-from django.utils.text import slugify
-
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -27,27 +25,8 @@ def test_str_representation(faker_ptbr):
     org = Organizacao.objects.create(
         nome="ONG Alpha",
         cnpj=faker_ptbr.cnpj(),
-        slug="ong-alpha",
     )
     assert str(org) == "ONG Alpha"
-
-
-def test_slug_uniqueness_and_slugified(faker_ptbr):
-    name1 = faker_ptbr.company()
-    name2 = faker_ptbr.company()
-    org1 = Organizacao.objects.create(
-        nome=name1,
-        cnpj=faker_ptbr.cnpj(),
-        slug=slugify(name1),
-    )
-    org2 = Organizacao.objects.create(
-        nome=name2,
-        cnpj=faker_ptbr.cnpj(),
-        slug=slugify(name2),
-    )
-    assert org1.slug == slugify(name1)
-    assert org2.slug == slugify(name2)
-    assert org1.slug != org2.slug
 
 
 def test_cnpj_unique_constraint(faker_ptbr):
@@ -55,13 +34,11 @@ def test_cnpj_unique_constraint(faker_ptbr):
     Organizacao.objects.create(
         nome=faker_ptbr.company(),
         cnpj=cnpj,
-        slug="org-1",
     )
     with pytest.raises(IntegrityError):
         Organizacao.objects.create(
             nome=faker_ptbr.company(),
             cnpj=cnpj,
-            slug="org-2",
         )
 
 
@@ -71,7 +48,6 @@ def test_file_upload_and_cleanup(media_root, faker_ptbr):
     org = Organizacao.objects.create(
         nome=faker_ptbr.company(),
         cnpj=faker_ptbr.cnpj(),
-        slug="org-files",
         avatar=avatar,
         cover=cover,
     )
@@ -86,6 +62,6 @@ def test_file_upload_and_cleanup(media_root, faker_ptbr):
 
 
 def test_ordering_by_nome(faker_ptbr):
-    Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b")
-    org_a = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="a")
+    Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj())
+    org_a = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj())
     assert list(Organizacao.objects.all())[0] == org_a

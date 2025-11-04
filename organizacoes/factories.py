@@ -11,7 +11,6 @@ class OrganizacaoFactory(DjangoModelFactory):
     nome = factory.Faker("company", locale="pt_BR")
     descricao = factory.Faker("catch_phrase", locale="pt_BR")
     cnpj = factory.Faker("bothify", text="##.###.###/####-##", locale="pt_BR")
-    slug = factory.Sequence(lambda n: f"org-{n}")
     tipo = factory.Iterator(["ong", "empresa", "coletivo"])
     rua = factory.Faker("street_name", locale="pt_BR")
     cidade = factory.Faker("city", locale="pt_BR")

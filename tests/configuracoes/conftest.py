@@ -9,7 +9,7 @@ User = get_user_model()
 
 @pytest.fixture
 def organizacao(db):
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-99", slug="org")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-99")
 
 
 @pytest.fixture

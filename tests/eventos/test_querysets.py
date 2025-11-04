@@ -16,7 +16,6 @@ def test_admin_with_nucleo_membership_sees_all_org_events():
         nome="Org",
         cnpj="00000000000191",
         descricao="Org Teste",
-        slug="org",
     )
     nucleo = Nucleo.objects.create(organizacao=organizacao, nome="Núcleo A")
     outro_nucleo = Nucleo.objects.create(organizacao=organizacao, nome="Núcleo B")

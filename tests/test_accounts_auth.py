@@ -27,8 +27,8 @@ class AuthTests(TestCase):
         self.assertEqual(resp.url, "/accounts/perfil/")
 
     def test_username_duplicates_different_org(self):
-        org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00", slug="org1")
-        org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00", slug="org2")
+        org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00")
+        org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00")
         User.objects.create_user(
             email="user1@example.com",
             username="dup",

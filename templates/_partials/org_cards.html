@@ -1,6 +1,6 @@
 {% load i18n %}
 {% for org in organizacoes %}
-<div class="card" data-org="{{ org.slug }}">
+<div class="card" data-org="{{ org.id }}">
   <div class="card-body">
     <h3 class="text-lg font-semibold mb-2">{{ org.nome }}</h3>
     <p class="text-sm">{% trans "Usuários" %}: {{ org.num_users }}</p>

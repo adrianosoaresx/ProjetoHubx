@@ -11,7 +11,7 @@ from feed import api as feed_api
 @override_settings(ROOT_URLCONF="Hubx.urls")
 class RateLimitTest(TestCase):
     def setUp(self):
-        self.org = OrganizacaoFactory(rate_limit_multiplier=1)
+        self.org = OrganizacaoFactory()
         self.user = UserFactory(organizacao=self.org)
         self.client = APIClient()
         self.client.force_authenticate(self.user)
@@ -24,20 +24,6 @@ class RateLimitTest(TestCase):
 
         req = APIRequestFactory().post("/api/feed/posts/")
         req.user = self.user
-        self.assertEqual(feed_api._post_rate(None, req), "2/m")
-
-    @override_settings(FEED_RATE_LIMIT_POST="1/m", FEED_RATE_LIMIT_READ="1/m")
-    def test_multiplier(self):
-        org2 = OrganizacaoFactory(rate_limit_multiplier=2)
-        user2 = UserFactory(organizacao=org2)
-        client2 = APIClient()
-        client2.force_authenticate(user2)
-        res1 = client2.post("/api/feed/posts/", {"conteudo": "a", "tipo_feed": "global"})
-        self.assertEqual(res1.status_code, 201)
-        res2 = client2.post("/api/feed/posts/", {"conteudo": "b", "tipo_feed": "global"})
-        self.assertEqual(res2.status_code, 201)
-        req = APIRequestFactory().post("/api/feed/posts/")
-        req.user = user2
         self.assertEqual(feed_api._post_rate(None, req), "2/m")
 
     @override_settings()

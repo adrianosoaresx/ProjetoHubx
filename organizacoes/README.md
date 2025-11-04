@@ -6,7 +6,7 @@ Todas as entidades utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`, ga
 
 ## Funcionalidades principais
 
-- **Listagem e busca**: campo único que aceita nome ou *slug*. Resultados paginados (10 por página) e filtrados para ocultar itens excluídos ou inativos.
+- **Listagem e busca**: campo único que aceita nome. Resultados paginados (10 por página) e filtrados para ocultar itens excluídos ou inativos.
 - **Criação e edição**: formulário inclui avatar e capa. O usuário autenticado é registrado como `created_by`. Slug é normalizado e validado para garantir unicidade.
 - **Exclusão lógica**: remover uma organização marca `deleted=True` e registra `deleted_at`; nenhuma linha é removida do banco.
 - **Inativar/Reativar**: superadmin pode alternar o status `inativa`. A ação é registrada com `OrganizacaoAtividadeLog`.
