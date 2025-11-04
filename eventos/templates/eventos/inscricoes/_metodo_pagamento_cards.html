@@ -145,6 +145,65 @@
 
     const initializedGroups = new WeakSet();
 
+    function updatePaymentProofVisibility(group, { emitEvent = true } = {}) {
+      if (!group) {
+        return;
+      }
+
+      const form = group.closest('form');
+      if (!form) {
+        return;
+      }
+
+      const proofField = form.querySelector('[data-payment-proof-field]');
+      if (!proofField) {
+        return;
+      }
+
+      const selectedInput = group.querySelector('input[type="radio"]:checked');
+      const shouldHide = !!(selectedInput && selectedInput.value === 'faturar');
+
+      proofField.classList.toggle('hidden', shouldHide);
+      if (shouldHide) {
+        proofField.setAttribute('aria-hidden', 'true');
+      } else {
+        proofField.removeAttribute('aria-hidden');
+      }
+
+      const fileInput = proofField.querySelector('[data-payment-proof-input]');
+      const clearCheckbox = proofField.querySelector('[data-payment-proof-clear]');
+      if (fileInput) {
+        if (fileInput.dataset.originalRequired === undefined) {
+          fileInput.dataset.originalRequired = fileInput.hasAttribute('required') ? 'true' : 'false';
+        }
+
+        if (shouldHide) {
+          fileInput.removeAttribute('required');
+          fileInput.value = '';
+          if (clearCheckbox) {
+            clearCheckbox.checked = false;
+          }
+          fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (fileInput.dataset.originalRequired === 'true') {
+          fileInput.setAttribute('required', 'required');
+        }
+      }
+
+      const detail = {
+        value: selectedInput ? selectedInput.value : null,
+        hidden: shouldHide,
+        container: proofField,
+      };
+
+      document.dispatchEvent(
+        new CustomEvent('payment-proof-visibility-change', { detail })
+      );
+
+      if (emitEvent) {
+        document.dispatchEvent(new CustomEvent('payment-method-change', { detail }));
+      }
+    }
+
     function updateCardState(card) {
       const input = card.querySelector('input[type="radio"]');
       const body = card.querySelector('[data-payment-card-body]');
@@ -200,10 +259,13 @@
           }
           clearOtherSelections(cards, input);
           updateCardState(card);
+          updatePaymentProofVisibility(group);
         });
 
         updateCardState(card);
       });
+
+      updatePaymentProofVisibility(group, { emitEvent: false });
 
       initializedGroups.add(group);
     }
