@@ -186,7 +186,18 @@
                 {% elif not inscricao and inscricao_permitida %}
                   <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}" class="flex">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</button>
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      aria-label="{% if vagas_disponiveis == 0 %}{% trans 'Inscrições esgotadas' %}{% else %}{% trans 'Inscrever-se' %}{% endif %}"
+                      {% if vagas_disponiveis == 0 %}disabled aria-disabled="true"{% endif %}
+                    >
+                      {% if vagas_disponiveis == 0 %}
+                        {% trans 'Inscrições esgotadas' %}
+                      {% else %}
+                        {% trans 'Inscrever-se' %}
+                      {% endif %}
+                    </button>
                   </form>
                 {% elif inscricao %}
                   <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrição confirmada' %}</p>
