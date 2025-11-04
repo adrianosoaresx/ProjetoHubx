@@ -1,90 +1,13 @@
-{% load i18n lucide_icons associados_extras %}
-{# Card de Membro do Núcleo, inspirado nos cards de associados #}
-<a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}"
-   class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
-   aria-label="{{ part.user.display_name|default:part.user.username }}">
-  <article class="card overflow-hidden" role="article">
-    <header class="relative">
-      {% if part.user.cover %}
-        <img src="{{ part.user.cover.url }}" alt="{% trans 'Capa do membro' %}"
-             class="h-28 w-full object-cover object-center" loading="lazy" />
-      {% else %}
-        <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
-      {% endif %}
-    </header>
-
-    <div class="relative px-4 sm:px-6">
-      {% with redes=part.user.redes_sociais whatsapp=part.user.whatsapp|digits_only %}
-        <div class="flex flex-col sm:flex-row items-center sm:items-end sm:justify-between -mt-10 sm:-mt-12 gap-4">
-          <div class="relative flex-shrink-0">
-            {% if part.user.avatar %}
-              <img src="{{ part.user.avatar.url }}" alt="{{ part.user.display_name|default:part.user.username }}"
-                   class="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow-lg ring-1 ring-black/5 dark:border-[var(--bg-secondary)] dark:ring-white/10" loading="lazy" />
-            {% else %}
-              <div class="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-full border-4 border-[var(--bg-primary)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] shadow-lg ring-1 ring-black/5 dark:border-[var(--bg-secondary)] dark:ring-white/10" role="img" aria-label="{{ part.user.display_name|default:part.user.username }}">
-                {{ part.user.username|first|upper }}
-              </div>
-            {% endif %}
-          </div>
-
-          {% if redes or whatsapp %}
-            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-              {% if redes %}
-                {% for rede, url in redes.items %}
-                  {% if url %}
-                    {% with rede_label=rede|capfirst %}
-                      <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
-                         class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
-                         aria-label="{{ rede_label }}">
-                        {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                        <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                      </a>
-                    {% endwith %}
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-              {% if whatsapp %}
-                <a href="https://wa.me/{{ whatsapp }}"
-                   class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
-                   target="_blank" rel="noopener" aria-label="{% trans 'WhatsApp' %}">
-                  {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                  <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                </a>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="flex-1"></div>
-          {% endif %}
-        </div>
-      {% endwith %}
-    </div>
-
-    <div class="card-body space-y-3 pt-8 sm:pt-10 text-center sm:text-left">
-      <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">
-        {{ part.user.display_name }}
-      </h3>
-      <p class="text-sm text-[var(--text-muted)]">@{{ part.user.username }}</p>
-      <dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-[var(--text-tertiary)]">
-        <div>
-          <dt class="text-[var(--text-muted)]">{% trans 'Papel' %}</dt>
-          <dd class="font-medium">
-            {% if part.papel == 'coordenador' %}
-              {% if part.papel_coordenador %}
-                {{ part.get_papel_coordenador_display }}
-              {% else %}
-                {% trans 'Coordenador' %}
-              {% endif %}
-            {% else %}
-              {% trans 'Membro' %}
-            {% endif %}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-[var(--text-muted)]">{% trans 'Usuário' %}</dt>
-          <dd class="font-medium">{% trans 'Nucleado' %}</dd>
-        </div>
-      </dl>
-    </div>
-  </article>
-  <span class="sr-only">{% trans 'Ver perfil do membro' %}</span>
-</a>
+{% load i18n associados_extras %}
+{% url 'accounts:perfil_publico_uuid' part.user.public_id as profile_url %}
+{% include '_partials/cards/base_card.html' with
+    url=profile_url
+    cover=part.user.cover
+    avatar=part.user.avatar
+    title=part.user.display_name|default:part.user.username
+    details='nucleos/partials/membro_card_details.html'
+    sr_label=_('Ver perfil do membro')
+    header_social_links=part.user.redes_sociais
+    header_whatsapp_number=part.user.whatsapp|digits_only
+    part=part
+%}
