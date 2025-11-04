@@ -17,11 +17,13 @@
           {% csrf_token %}
           {{ form.non_field_errors }}
           {% for field in form %}
-            {% with is_payment_field=field.name == 'valor_pago' or field.name == 'metodo_pagamento' %}
-              {% if evento.gratuito and is_payment_field %}
-                {# Campos omitidos para eventos gratuitos #}
+            {% with field_name=field.name %}
+              {% if evento.gratuito and field_name == 'valor_pago' %}
+                {# Campo de valor omitido para eventos gratuitos #}
+              {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
+                {# Campo de método de pagamento omitido para eventos gratuitos #}
               {% else %}
-                {% if field.name == 'comprovante_pagamento' %}
+                {% if field_name == 'comprovante_pagamento' %}
                   {% include '_forms/field.html' with field=field|attr:'accept:.jpg,.jpeg,.png,.pdf' %}
                 {% else %}
                   {% include '_forms/field.html' with field=field %}
