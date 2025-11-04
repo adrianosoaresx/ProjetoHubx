@@ -23,7 +23,9 @@
               {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
                 {# Campo de método de pagamento omitido para eventos gratuitos #}
               {% else %}
-                {% if field_name == 'comprovante_pagamento' %}
+                {% if field_name == 'metodo_pagamento' %}
+                  {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
+                {% elif field_name == 'comprovante_pagamento' %}
                   {% include '_forms/field.html' with field=field|attr:'accept:.jpg,.jpeg,.png,.pdf' %}
                 {% else %}
                   {% include '_forms/field.html' with field=field %}

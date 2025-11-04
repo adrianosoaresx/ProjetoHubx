@@ -42,7 +42,6 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         ("pix", "Pix"),
         ("boleto", "Boleto"),
         ("faturar", "Faturar"),
-        ("outro", "Outro"),
     ]
 
     user = models.ForeignKey(
