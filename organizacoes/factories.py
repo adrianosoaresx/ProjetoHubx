@@ -19,3 +19,4 @@ class OrganizacaoFactory(DjangoModelFactory):
     contato_nome = factory.Faker("name", locale="pt_BR")
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_telefone = factory.Faker("phone_number", locale="pt_BR")
+    chave_pix = factory.Faker("bothify", text="###############")

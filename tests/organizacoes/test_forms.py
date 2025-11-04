@@ -29,8 +29,10 @@ def test_form_fields():
         "contato_nome",
         "contato_email",
         "contato_telefone",
+        "chave_pix",
         "avatar",
         "cover",
+        "rate_limit_multiplier",
     ]
 
 

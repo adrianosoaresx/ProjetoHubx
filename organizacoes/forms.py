@@ -21,6 +21,7 @@ class OrganizacaoForm(forms.ModelForm):
             "contato_nome",
             "contato_email",
             "contato_telefone",
+            "chave_pix",
             "avatar",
             "cover",
             "rate_limit_multiplier",
@@ -36,6 +37,7 @@ class OrganizacaoForm(forms.ModelForm):
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
         self.fields["slug"].required = False
+        self.fields["rate_limit_multiplier"].required = False
 
     def clean_rate_limit_multiplier(self):
         mult = self.cleaned_data.get("rate_limit_multiplier")
