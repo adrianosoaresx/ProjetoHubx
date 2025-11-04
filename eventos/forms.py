@@ -30,6 +30,7 @@ class EventoForm(forms.ModelForm):
             "publico_alvo",
             "nucleo",
             "participantes_maximo",
+            "valor",
             "cronograma",
             "informacoes_adicionais",
             "briefing",
@@ -148,6 +149,28 @@ class EventoSearchForm(forms.Form):
 
 
 class InscricaoEventoForm(forms.ModelForm):
+    def __init__(self, *args, evento=None, **kwargs):
+        self.evento = evento
+        super().__init__(*args, **kwargs)
+        valor_field = self.fields.get("valor_pago")
+        if valor_field:
+            valor_inicial = self._get_evento_valor()
+            if valor_inicial is None and self.instance and self.instance.valor_pago is not None:
+                valor_inicial = self.instance.valor_pago
+            if valor_inicial is not None:
+                valor_field.initial = valor_inicial
+            valor_field.disabled = True
+            valor_field.widget.attrs.setdefault("readonly", "readonly")
+
+    def _get_evento_valor(self):
+        if self.evento is not None:
+            return getattr(self.evento, "valor", None)
+        if self.instance and getattr(self.instance, "evento_id", None):
+            evento = getattr(self.instance, "evento", None)
+            if evento is not None:
+                return getattr(evento, "valor", None)
+        return None
+
     class Meta:
         model = InscricaoEvento
         fields = [
@@ -158,7 +181,11 @@ class InscricaoEventoForm(forms.ModelForm):
         ]
 
     def clean_valor_pago(self):
-        valor = self.cleaned_data.get("valor_pago")
+        valor_evento = self._get_evento_valor()
+        if valor_evento is not None:
+            valor = valor_evento
+        else:
+            valor = self.cleaned_data.get("valor_pago")
         if valor is not None and valor <= 0:
             raise forms.ValidationError(_("O valor pago deve ser positivo."))
         return valor

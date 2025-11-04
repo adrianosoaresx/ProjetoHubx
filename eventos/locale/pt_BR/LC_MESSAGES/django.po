@@ -180,6 +180,10 @@ msgstr ""
 msgid "Máximo de participantes"
 msgstr "Máximo de participantes"
 
+#: eventos/templates/eventos/detail.html:91
+msgid "Valor"
+msgstr "Valor"
+
 #: eventos/templates/eventos/partials/eventos/detail.html:30
 msgid "Lista de espera"
 msgstr ""
