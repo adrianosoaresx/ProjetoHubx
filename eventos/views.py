@@ -94,6 +94,33 @@ def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
     return _usuario_tem_acesso_restrito_evento(user, evento)
 
 
+def _get_nucleos_coordenacao_consultoria_ids(user) -> set[int]:
+    """Retorna os IDs de núcleos em que o usuário atua como coordenador ou consultor."""
+
+    nucleo_ids: set[int] = set()
+
+    # Núcleo principal vinculado ao usuário (campo ``nucleo``)
+    nucleo_id = getattr(user, "nucleo_id", None)
+    if nucleo_id:
+        nucleo_ids.add(nucleo_id)
+
+    participacoes = getattr(user, "participacoes", None)
+    if participacoes is not None:
+        coordenacoes = participacoes.filter(
+            papel="coordenador",
+            status="ativo",
+            status_suspensao=False,
+        ).values_list("nucleo_id", flat=True)
+        nucleo_ids.update(pk for pk in coordenacoes if pk)
+
+    nucleos_consultoria = getattr(user, "nucleos_consultoria", None)
+    if nucleos_consultoria is not None:
+        consultoria_ids = nucleos_consultoria.values_list("id", flat=True)
+        nucleo_ids.update(pk for pk in consultoria_ids if pk)
+
+    return nucleo_ids
+
+
 # ---------------------------------------------------------------------------
 # List / Calendário
 # ---------------------------------------------------------------------------
@@ -178,35 +205,57 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             "eventos:calendario_mes", args=[hoje.year, hoje.month]
         )
 
+        tipo_usuario = _get_tipo_usuario(user)
+        can_view_planejamento_cancelados = tipo_usuario != UserType.ASSOCIADO.value
+        ctx["can_view_planejamento_cancelados"] = can_view_planejamento_cancelados
+
+        nucleo_ids_limit: set[int] | None = None
+        if can_view_planejamento_cancelados and tipo_usuario in {
+            UserType.COORDENADOR.value,
+            UserType.CONSULTOR.value,
+        }:
+            nucleo_ids_limit = _get_nucleos_coordenacao_consultoria_ids(user)
+
+        def restringe_planejamento_cancelados(qs):
+            if not can_view_planejamento_cancelados:
+                return qs.none()
+            if nucleo_ids_limit is None:
+                return qs
+            if not nucleo_ids_limit:
+                return qs.none()
+            return qs.filter(nucleo_id__in=nucleo_ids_limit)
+
         base_qs = self.get_base_queryset()
         qs = self.get_queryset()
-        now = timezone.now()
         planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO)
+        cancelados_filter = Q(status=Evento.Status.CANCELADO)
         ctx["total_eventos"] = base_qs.count()
-        ctx["total_eventos_planejamento"] = base_qs.filter(planejamento_filter).count()
+        ctx["total_eventos_planejamento"] = restringe_planejamento_cancelados(
+            base_qs.filter(planejamento_filter)
+        ).count()
         ctx["total_eventos_ativos"] = base_qs.filter(
             status=Evento.Status.ATIVO
         ).count()
         ctx["total_eventos_concluidos"] = base_qs.filter(
             status=Evento.Status.CONCLUIDO
         ).count()
-        ctx["total_eventos_cancelados"] = base_qs.filter(
-            status=Evento.Status.CANCELADO
+        ctx["total_eventos_cancelados"] = restringe_planejamento_cancelados(
+            base_qs.filter(cancelados_filter)
         ).count()
         annotated_base = base_qs.annotate(
             num_inscritos=Count("inscricoes", distinct=True)
         )
-        ctx["eventos_planejamento"] = annotated_base.filter(planejamento_filter).order_by(
-            "data_inicio"
-        )
+        ctx["eventos_planejamento"] = restringe_planejamento_cancelados(
+            annotated_base.filter(planejamento_filter)
+        ).order_by("data_inicio")
         ctx["eventos_ativos"] = annotated_base.filter(
             status=Evento.Status.ATIVO
         ).order_by("-data_inicio")
         ctx["eventos_realizados"] = annotated_base.filter(
             status=Evento.Status.CONCLUIDO
         ).order_by("-data_inicio")
-        ctx["eventos_cancelados"] = annotated_base.filter(
-            status=Evento.Status.CANCELADO
+        ctx["eventos_cancelados"] = restringe_planejamento_cancelados(
+            annotated_base.filter(cancelados_filter)
         ).order_by("-data_inicio")
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()

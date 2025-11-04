@@ -427,6 +427,103 @@ def test_evento_list_filters_by_cancelados(usuario_logado, organizacao, client):
     assert response.context["total_eventos_cancelados"] == 1
 
 
+def test_evento_list_consultor_restringe_planejamento_cancelados(organizacao, client):
+    consultor = User.objects.create_user(
+        username="consultor",
+        email="consultor@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.CONSULTOR,
+    )
+    nucleo_consultoria = Nucleo.objects.create(
+        organizacao=organizacao,
+        nome="Núcleo Consultoria",
+        consultor=consultor,
+    )
+    outro_nucleo = Nucleo.objects.create(
+        organizacao=organizacao,
+        nome="Outro Núcleo",
+    )
+
+    evento_planejamento_visivel = Evento.objects.create(
+        titulo="Planejado visível",
+        descricao="Evento do meu núcleo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=5)),
+        data_fim=make_aware(datetime.now() + timedelta(days=6)),
+        local="Rua Principal, 123",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=nucleo_consultoria,
+        status=Evento.Status.PLANEJAMENTO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+    Evento.objects.create(
+        titulo="Planejado oculto",
+        descricao="Evento de outro núcleo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=7)),
+        data_fim=make_aware(datetime.now() + timedelta(days=8)),
+        local="Rua Secundária, 456",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=outro_nucleo,
+        status=Evento.Status.PLANEJAMENTO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+
+    evento_cancelado_visivel = Evento.objects.create(
+        titulo="Cancelado visível",
+        descricao="Cancelado do meu núcleo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua Cancelada, 789",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=nucleo_consultoria,
+        status=Evento.Status.CANCELADO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+    evento_cancelado_oculto = Evento.objects.create(
+        titulo="Cancelado oculto",
+        descricao="Cancelado de outro núcleo",
+        data_inicio=make_aware(datetime.now() + timedelta(days=3)),
+        data_fim=make_aware(datetime.now() + timedelta(days=4)),
+        local="Rua Oculta, 321",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        nucleo=outro_nucleo,
+        status=Evento.Status.CANCELADO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+
+    client.force_login(consultor)
+    response = client.get(reverse("eventos:lista"))
+
+    assert response.status_code == 200
+    planejamento_qs = list(response.context["eventos_planejamento"])
+    cancelados_qs = list(response.context["eventos_cancelados"])
+
+    assert response.context["can_view_planejamento_cancelados"] is True
+    assert evento_planejamento_visivel in planejamento_qs
+    assert all(evento.nucleo_id == nucleo_consultoria.id for evento in planejamento_qs)
+    assert evento_cancelado_visivel in cancelados_qs
+    assert evento_cancelado_oculto not in cancelados_qs
+    assert all(evento.nucleo_id == nucleo_consultoria.id for evento in cancelados_qs)
+    assert response.context["total_eventos_planejamento"] == 1
+    assert response.context["total_eventos_cancelados"] == 1
+
+
 def test_evento_create_view_post_invalido(usuario_logado, client):
     url = reverse("eventos:evento_novo")
     response = client.post(url, data={"titulo": ""})  # inválido
