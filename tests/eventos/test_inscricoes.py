@@ -46,6 +46,7 @@ def evento(organizacao, usuario_logado):
         publico_alvo=0,
         numero_presentes=0,
         participantes_maximo=100,
+        valor=Decimal("99.90"),
     )
 
 
@@ -115,7 +116,9 @@ def test_usuario_pode_inscrever_e_cancelar(evento, usuario_comum, client):
     # Inscreve
     resp1 = client.post(subscribe_url)
     assert resp1.status_code == 302
-    assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
+    inscricao = InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").first()
+    assert inscricao is not None
+    assert inscricao.valor_pago == evento.valor
 
     # Cancela
     resp2 = client.post(cancel_url)
@@ -184,7 +187,7 @@ def test_admin_pode_editar_inscricao(evento, usuario_logado, client, organizacao
     )
     assert response_post.status_code == 302
     inscricao.refresh_from_db()
-    assert inscricao.valor_pago == Decimal("123.45")
+    assert inscricao.valor_pago == evento.valor
     assert inscricao.metodo_pagamento == "pix"
     assert inscricao.observacao == "Atualizado"
 

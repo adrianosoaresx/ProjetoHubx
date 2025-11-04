@@ -96,6 +96,12 @@
                     <dd class="font-medium text-[var(--text-primary)]">{{ object.participantes_maximo }}</dd>
                   </div>
                 {% endif %}
+                {% if object.valor %}
+                  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                    <dt class="text-[var(--text-secondary)]">{% trans "Valor" %}</dt>
+                    <dd class="font-medium text-[var(--text-primary)]">{{ object.valor }}</dd>
+                  </div>
+                {% endif %}
                 {% if object.orcamento_estimado %}
                   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                     <dt class="text-[var(--text-secondary)]">{% trans "Orçamento estimado" %}</dt>

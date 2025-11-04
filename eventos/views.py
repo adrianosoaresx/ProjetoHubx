@@ -888,6 +888,11 @@ class InscricaoEventoUpdateView(
             .filter(evento__in=eventos_qs)
         )
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["evento"] = getattr(self.object, "evento", None)
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         evento = self.object.evento
@@ -903,6 +908,7 @@ class InscricaoEventoUpdateView(
         return context
 
     def form_valid(self, form):
+        form.instance.valor_pago = form.instance.evento.valor
         messages.success(self.request, _("Inscrição atualizada com sucesso."))
         return super().form_valid(form)
 
@@ -1014,9 +1020,15 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         context["back_href"] = resolve_back_href(self.request, fallback=fallback)
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["evento"] = self.evento
+        return kwargs
+
     def form_valid(self, form):
         form.instance.user = self.request.user
         form.instance.evento = self.evento
+        form.instance.valor_pago = self.evento.valor
         response = super().form_valid(form)
         self.object.confirmar_inscricao()
         messages.success(self.request, _("Inscrição realizada."))

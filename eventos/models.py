@@ -96,18 +96,21 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                 confirmados = evento.inscricoes.filter(status="confirmada").count()
                 if confirmados >= evento.participantes_maximo:
                     raise ValueError(_("Evento lotado."))
+            update_fields = [
+                "status",
+                "data_confirmacao",
+                "qrcode_url",
+                "updated_at",
+            ]
             self.status = "confirmada"
             self.data_confirmacao = timezone.now()
+            valor_evento = getattr(evento, "valor", None)
+            if self.valor_pago != valor_evento:
+                self.valor_pago = valor_evento
+                update_fields.append("valor_pago")
             if not self.qrcode_url:
                 self.gerar_qrcode()
-            self.save(
-                update_fields=[
-                    "status",
-                    "data_confirmacao",
-                    "qrcode_url",
-                    "updated_at",
-                ]
-            )
+            self.save(update_fields=update_fields)
             EventoLog.objects.create(
                 evento=self.evento,
                 usuario=self.user,
@@ -203,6 +206,7 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     publico_alvo = models.PositiveSmallIntegerField(
         choices=[(0, "Público"), (1, "Nucleados"), (2, "Associados")]
     )
+    valor = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_presentes = models.PositiveIntegerField(default=0, editable=False)
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

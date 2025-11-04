@@ -29,6 +29,7 @@ class EventoFactory(DjangoModelFactory):
     numero_presentes = factory.LazyAttribute(
         lambda o: (o.participantes_maximo or 0) // 2
     )
+    valor = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
     briefing = FileField(
