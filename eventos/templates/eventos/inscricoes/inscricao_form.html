@@ -17,15 +17,17 @@
           {% csrf_token %}
           {{ form.non_field_errors }}
           {% for field in form %}
-            {% if evento.gratuito and (field.name == 'valor_pago' or field.name == 'metodo_pagamento') %}
-              {# Campos omitidos para eventos gratuitos #}
-            {% else %}
-              {% if field.name == 'comprovante_pagamento' %}
-                {% include '_forms/field.html' with field=field|attr:'accept:.jpg,.jpeg,.png,.pdf' %}
+            {% with is_payment_field=field.name == 'valor_pago' or field.name == 'metodo_pagamento' %}
+              {% if evento.gratuito and is_payment_field %}
+                {# Campos omitidos para eventos gratuitos #}
               {% else %}
-                {% include '_forms/field.html' with field=field %}
+                {% if field.name == 'comprovante_pagamento' %}
+                  {% include '_forms/field.html' with field=field|attr:'accept:.jpg,.jpeg,.png,.pdf' %}
+                {% else %}
+                  {% include '_forms/field.html' with field=field %}
+                {% endif %}
               {% endif %}
-            {% endif %}
+            {% endwith %}
           {% endfor %}
           <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
             {% include '_components/back_button.html' with href=back_href fallback_href=event_detail_url|default:None %}
