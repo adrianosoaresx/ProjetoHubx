@@ -4,6 +4,7 @@ import pyotp
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.forms import ClearableFileInput
 from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
@@ -18,6 +19,42 @@ from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
 
 User = get_user_model()
+
+
+class ProfileImageFileInput(ClearableFileInput):
+    template_name = "accounts/widgets/profile_image_file_input.html"
+
+    def __init__(self, *, button_label: str, empty_label: str, attrs=None):
+        default_attrs = {"accept": "image/*"}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+        self.button_label = button_label
+        self.empty_label = empty_label
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        widget = context["widget"]
+        widget["button_label"] = self.button_label
+        widget["empty_label"] = self.empty_label
+
+        final_attrs = widget.get("attrs", {})
+        classes = final_attrs.get("class", "").split()
+        if "sr-only" not in classes:
+            classes.append("sr-only")
+        final_attrs["class"] = " ".join(filter(None, classes))
+        final_attrs.setdefault("data-profile-file-input", "true")
+        final_attrs["data-empty-text"] = self.empty_label
+        widget["attrs"] = final_attrs
+
+        value_name = ""
+        if value:
+            if hasattr(value, "name"):
+                value_name = value.name or ""
+            else:
+                value_name = str(value)
+        widget["value_name"] = value_name
+        return context
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -191,6 +228,20 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "area_atuacao",
             "descricao_atividade",
         )
+        labels = {
+            "avatar": _("Foto do perfil"),
+            "cover": _("Imagem da capa"),
+        }
+        widgets = {
+            "avatar": ProfileImageFileInput(
+                button_label=_("Enviar foto"),
+                empty_label=_("Nenhuma foto selecionada"),
+            ),
+            "cover": ProfileImageFileInput(
+                button_label=_("Enviar imagem"),
+                empty_label=_("Nenhuma imagem selecionada"),
+            ),
+        }
 
     field_order = (
         "username",

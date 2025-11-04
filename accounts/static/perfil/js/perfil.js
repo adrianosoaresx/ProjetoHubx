@@ -246,3 +246,89 @@ function initConnectionReturn() {
         }
     })
 }
+
+function setupProfileFileInputs(root = document) {
+    const inputs = Array.from(root.querySelectorAll('[data-profile-file-input]'))
+    inputs.forEach(input => {
+        if (!(input instanceof HTMLInputElement)) return
+        if (input.dataset.profileFileBound === 'true') return
+
+        const wrapper = input.closest('[data-profile-file]')
+        const status = wrapper ? wrapper.querySelector('[data-profile-file-name]') : null
+        const emptyText = input.dataset.emptyText || ''
+        const clearCheckbox = wrapper ? wrapper.querySelector('[data-profile-file-clear]') : null
+
+        const updateStatus = () => {
+            if (!(status instanceof HTMLElement)) return
+            const { files } = input
+            if (files && files.length) {
+                const names = Array.from(files)
+                    .map(file => (file && file.name ? file.name : ''))
+                    .filter(Boolean)
+                status.textContent = names.length ? names.join(', ') : emptyText
+            } else {
+                status.textContent = emptyText
+            }
+        }
+
+        updateStatus()
+
+        input.addEventListener('change', () => {
+            if (clearCheckbox instanceof HTMLInputElement) {
+                const hasFiles = input.files && input.files.length > 0
+                if (hasFiles) {
+                    clearCheckbox.checked = false
+                }
+            }
+            updateStatus()
+        })
+
+        input.dataset.profileFileBound = 'true'
+    })
+
+    const clears = Array.from(root.querySelectorAll('[data-profile-file-clear]'))
+    clears.forEach(checkbox => {
+        if (!(checkbox instanceof HTMLInputElement)) return
+        if (checkbox.dataset.profileFileClearBound === 'true') return
+
+        const wrapper = checkbox.closest('[data-profile-file]')
+        const input = wrapper ? wrapper.querySelector('[data-profile-file-input]') : null
+        const status = wrapper ? wrapper.querySelector('[data-profile-file-name]') : null
+        const emptyText =
+            checkbox.dataset.emptyText ||
+            (input instanceof HTMLInputElement ? input.dataset.emptyText || '' : '')
+
+        checkbox.addEventListener('change', () => {
+            if (!(input instanceof HTMLInputElement)) return
+            if (checkbox.checked) {
+                input.value = ''
+                const changeEvent = new Event('change')
+                input.dispatchEvent(changeEvent)
+                if (status instanceof HTMLElement) {
+                    status.textContent = emptyText
+                }
+            }
+        })
+
+        checkbox.dataset.profileFileClearBound = 'true'
+    })
+}
+
+function initAvatarUpload() {
+    setupProfileFileInputs(document)
+
+    if (initAvatarUpload._bound) {
+        return
+    }
+
+    initAvatarUpload._bound = true
+
+    document.addEventListener('htmx:afterSwap', event => {
+        const target = event.detail && event.detail.target
+        if (target instanceof Element) {
+            setupProfileFileInputs(target)
+        }
+    })
+}
+
+globalThis.initAvatarUpload = initAvatarUpload
