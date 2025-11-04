@@ -19,6 +19,7 @@
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_pix"
         data-payment-card
+        data-payment-card-value="pix"
       >
         <input
           type="radio"
@@ -32,7 +33,7 @@
           {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
-          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
           data-payment-card-body
         >
           <span
@@ -48,6 +49,65 @@
           <p class="mt-2 text-sm text-[var(--text-secondary)]">
             {% trans "Pague instantaneamente via Pix." %}
           </p>
+          <div
+            class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+            data-payment-card-accordion
+            data-payment-accordion-value="pix"
+            data-pix-section
+            data-pix-key="{{ evento.organizacao.chave_pix|default:''|escapejs }}"
+            data-pix-amount="{{ evento.valor|default:0 }}"
+            data-pix-event-title="{{ evento.titulo|default:''|escapejs }}"
+            data-copy-success-text="{% trans 'Chave Pix copiada para a área de transferência.' %}"
+            data-copy-error-text="{% trans 'Não foi possível copiar a chave Pix. Tente novamente.' %}"
+            data-copy-missing-text="{% trans 'Nenhuma chave Pix disponível no momento.' %}"
+            data-qr-error-text="{% trans 'Não foi possível gerar o QR Code Pix.' %}"
+          >
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% trans "Escolha uma opção para finalizar o pagamento via Pix." %}
+            </p>
+            <div
+              class="mt-3 grid gap-2 sm:grid-cols-2"
+              role="group"
+              aria-label="{% trans 'Opções de pagamento via Pix' %}"
+            >
+              <button
+                type="button"
+                class="flex h-full w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                data-pix-copy-button
+                {% if not evento.organizacao.chave_pix %}disabled{% endif %}
+              >
+                <span class="flex items-center gap-2 text-[var(--text-primary)]">
+                  {% lucide 'copy' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
+                  <span class="text-sm font-semibold">{% trans "Copiar chave Pix" %}</span>
+                </span>
+                <span class="mt-2 text-xs text-[var(--text-secondary)]">
+                  {% if evento.organizacao.chave_pix %}
+                    {% blocktrans trimmed %}Copie a chave Pix da organização para pagar no seu banco.{% endblocktrans %}
+                  {% else %}
+                    {% trans "Nenhuma chave Pix cadastrada pela organização." %}
+                  {% endif %}
+                </span>
+              </button>
+              <button
+                type="button"
+                class="flex h-full w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                data-pix-qrcode-button
+              >
+                <span class="flex items-center gap-2 text-[var(--text-primary)]">
+                  {% lucide 'qr-code' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
+                  <span class="text-sm font-semibold">{% trans "Exibir QR Code" %}</span>
+                </span>
+                <span class="mt-2 text-xs text-[var(--text-secondary)]">
+                  {% blocktrans trimmed %}Visualize um QR Code com o valor do evento para pagamento imediato.{% endblocktrans %}
+                </span>
+              </button>
+            </div>
+            <p
+              class="mt-2 hidden text-xs font-medium text-primary-600"
+              data-pix-feedback
+              role="status"
+            ></p>
+          </div>
         </div>
       </label>
 
@@ -55,6 +115,7 @@
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_boleto"
         data-payment-card
+        data-payment-card-value="boleto"
       >
         <input
           type="radio"
@@ -68,7 +129,7 @@
           {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
-          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
           data-payment-card-body
         >
           <span
@@ -84,6 +145,15 @@
           <p class="mt-2 text-sm text-[var(--text-secondary)]">
             {% trans "Receba um boleto para pagamento." %}
           </p>
+          <div
+            class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+            data-payment-card-accordion
+            data-payment-accordion-value="boleto"
+          >
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans trimmed %}Após confirmar a inscrição enviaremos o boleto e instruções para o e-mail informado.{% endblocktrans %}
+            </p>
+          </div>
         </div>
       </label>
 
@@ -91,6 +161,7 @@
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_faturar"
         data-payment-card
+        data-payment-card-value="faturar"
       >
         <input
           type="radio"
@@ -104,7 +175,7 @@
           {% if field.field.required and not disabled %}required{% endif %}
         />
         <div
-          class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
           data-payment-card-body
         >
           <span
@@ -120,6 +191,15 @@
           <p class="mt-2 text-sm text-[var(--text-secondary)]">
             {% trans "Pagar na fatura." %}
           </p>
+          <div
+            class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+            data-payment-card-accordion
+            data-payment-accordion-value="faturar"
+          >
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans trimmed %}O valor será incluído na próxima fatura conforme acordo com a organização.{% endblocktrans %}
+            </p>
+          </div>
         </div>
       </label>
     {% endwith %}
@@ -138,6 +218,54 @@
   {% endif %}
 </div>
 
+<div
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+  data-pix-modal
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="pix-modal-title"
+  aria-hidden="true"
+>
+  <div class="w-full max-w-sm rounded-xl bg-[var(--surface-primary)] p-6 shadow-xl">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h3 id="pix-modal-title" class="text-lg font-semibold text-[var(--text-primary)]">
+          {% trans "QR Code Pix" %}
+        </h3>
+        <p class="mt-1 text-sm text-[var(--text-secondary)]">
+          {% trans "Use o aplicativo do seu banco para escanear o código." %}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="rounded-full bg-[var(--surface-secondary)] p-2 text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        data-pix-modal-close
+        aria-label="{% trans 'Fechar modal do QR Code Pix' %}"
+      >
+        {% lucide 'x' class='h-4 w-4' aria_hidden='true' %}
+      </button>
+    </div>
+    <div class="mt-5 flex justify-center">
+      <div
+        class="rounded-lg bg-white p-3"
+        data-pix-qr-container
+        aria-live="polite"
+        aria-busy="false"
+      ></div>
+    </div>
+    <dl class="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
+      <div class="flex justify-between gap-4">
+        <dt class="font-medium text-[var(--text-primary)]">{% trans "Valor" %}</dt>
+        <dd data-pix-modal-amount class="text-right text-[var(--text-primary)]"></dd>
+      </div>
+      <div class="flex justify-between gap-4">
+        <dt class="font-medium text-[var(--text-primary)]">{% trans "Chave" %}</dt>
+        <dd data-pix-modal-key class="text-right break-all"></dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
 <script>
   (() => {
     const SELECTED_CLASSES = [
@@ -148,6 +276,30 @@
     ];
 
     const initializedGroups = new WeakSet();
+    const initializedPixSections = new WeakSet();
+    const ACCORDION_HIDDEN_CLASS = "hidden";
+
+    const pixModal = document.querySelector('[data-pix-modal]');
+    const pixModalCloseButton = pixModal ? pixModal.querySelector('[data-pix-modal-close]') : null;
+    const pixModalAmount = pixModal ? pixModal.querySelector('[data-pix-modal-amount]') : null;
+    const pixModalKey = pixModal ? pixModal.querySelector('[data-pix-modal-key]') : null;
+    const pixModalQrContainer = pixModal ? pixModal.querySelector('[data-pix-qr-container]') : null;
+
+    let pixModalLastFocus = null;
+    let qrLibraryPromise = null;
+
+    function toggleAccordion(card, open) {
+      const accordion = card.querySelector('[data-payment-card-accordion]');
+      if (!accordion) {
+        return;
+      }
+      accordion.classList.toggle(ACCORDION_HIDDEN_CLASS, !open);
+      if (open) {
+        accordion.removeAttribute('aria-hidden');
+      } else {
+        accordion.setAttribute('aria-hidden', 'true');
+      }
+    }
 
     function updatePaymentProofVisibility(group, { emitEvent = true } = {}) {
       if (!group) {
@@ -219,6 +371,7 @@
       SELECTED_CLASSES.forEach((className) => {
         body.classList.toggle(className, isChecked);
       });
+      toggleAccordion(card, isChecked);
     }
 
     function clearOtherSelections(cards, currentInput) {
@@ -228,6 +381,248 @@
           input.checked = false;
           updateCardState(card);
         }
+      });
+    }
+
+    function formatCurrency(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+        return '-';
+      }
+      try {
+        return new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(value);
+      } catch (err) {
+        return value.toFixed(2);
+      }
+    }
+
+    function createPixPayload({ key, amount, description }) {
+      const parts = ['PIX'];
+      const cleanedKey = (key || '').toString().trim();
+      if (cleanedKey) {
+        parts.push(`chave=${cleanedKey}`);
+      }
+      if (typeof amount === 'number' && Number.isFinite(amount) && amount > 0) {
+        parts.push(`valor=${amount.toFixed(2)}`);
+      }
+      const cleanedDescription = (description || '').toString().trim();
+      if (cleanedDescription) {
+        parts.push(`descricao=${cleanedDescription}`);
+      }
+      return parts.join('|');
+    }
+
+    function ensureQRCodeLibrary() {
+      if (window.QRCode) {
+        return Promise.resolve(window.QRCode);
+      }
+      if (!qrLibraryPromise) {
+        qrLibraryPromise = new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+          script.async = true;
+          script.onload = () => {
+            if (window.QRCode) {
+              resolve(window.QRCode);
+            } else {
+              reject(new Error('QRCode library did not expose QRCode constructor.'));
+            }
+          };
+          script.onerror = () => reject(new Error('Failed to load QRCode library.'));
+          document.head.appendChild(script);
+        });
+      }
+      return qrLibraryPromise;
+    }
+
+    function closePixModal() {
+      if (!pixModal) {
+        return;
+      }
+      pixModal.classList.add('hidden');
+      pixModal.setAttribute('aria-hidden', 'true');
+      pixModal.dataset.open = 'false';
+      if (pixModalQrContainer) {
+        pixModalQrContainer.innerHTML = '';
+        pixModalQrContainer.setAttribute('aria-busy', 'false');
+      }
+      if (pixModalLastFocus && typeof pixModalLastFocus.focus === 'function') {
+        pixModalLastFocus.focus();
+      }
+      pixModalLastFocus = null;
+      if (document.body && document.body.classList) {
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    function ensurePixModalListeners() {
+      if (!pixModal || pixModal.dataset.initialized === 'true') {
+        return;
+      }
+      pixModal.dataset.initialized = 'true';
+      pixModal.addEventListener('click', (event) => {
+        if (event.target === pixModal) {
+          closePixModal();
+        }
+      });
+      if (pixModalCloseButton) {
+        pixModalCloseButton.addEventListener('click', () => {
+          closePixModal();
+        });
+      }
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && pixModal && pixModal.dataset.open === 'true') {
+          closePixModal();
+        }
+      });
+    }
+
+    function openPixModal(section) {
+      if (!pixModal) {
+        return;
+      }
+      ensurePixModalListeners();
+
+      const rawAmount = parseFloat(section.dataset.pixAmount || '0');
+      const amount = Number.isFinite(rawAmount) ? rawAmount : 0;
+      const pixKey = (section.dataset.pixKey || '').trim();
+      const description = section.dataset.pixEventTitle || '';
+      const fallbackMessage = section.dataset.copyMissingText || '';
+      const qrErrorMessage = section.dataset.qrErrorText || fallbackMessage || '';
+
+      if (pixModalAmount) {
+        pixModalAmount.textContent = formatCurrency(amount);
+      }
+      if (pixModalKey) {
+        pixModalKey.textContent = pixKey || '-';
+      }
+
+      if (pixModalQrContainer) {
+        pixModalQrContainer.innerHTML = '';
+        pixModalQrContainer.setAttribute('aria-busy', 'true');
+      }
+
+      pixModal.classList.remove('hidden');
+      pixModal.setAttribute('aria-hidden', 'false');
+      pixModal.dataset.open = 'true';
+      if (document.body && document.body.classList) {
+        document.body.classList.add('overflow-hidden');
+      }
+      pixModalLastFocus = document.activeElement;
+
+      const focusTarget = pixModalCloseButton || pixModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        requestAnimationFrame(() => focusTarget.focus());
+      }
+
+      if (!pixModalQrContainer) {
+        return;
+      }
+
+      if (!pixKey) {
+        pixModalQrContainer.textContent = fallbackMessage || '';
+        pixModalQrContainer.setAttribute('aria-busy', 'false');
+        return;
+      }
+
+      const payload = createPixPayload({ key: pixKey, amount, description });
+      ensureQRCodeLibrary()
+        .then((QRCodeClass) => {
+          if (!QRCodeClass) {
+            throw new Error('QRCode constructor unavailable.');
+          }
+          pixModalQrContainer.innerHTML = '';
+          const qrOptions = {
+            text: payload,
+            width: 192,
+            height: 192,
+          };
+          if (QRCodeClass.CorrectLevel && QRCodeClass.CorrectLevel.M) {
+            qrOptions.correctLevel = QRCodeClass.CorrectLevel.M;
+          }
+          new QRCodeClass(pixModalQrContainer, qrOptions);
+        })
+        .catch(() => {
+          pixModalQrContainer.textContent = qrErrorMessage || '';
+        })
+        .finally(() => {
+          pixModalQrContainer.setAttribute('aria-busy', 'false');
+        });
+    }
+
+    function showPixFeedback(section, message, { isError = false } = {}) {
+      const feedback = section.querySelector('[data-pix-feedback]');
+      if (!feedback) {
+        return;
+      }
+      feedback.textContent = message || '';
+      feedback.classList.remove('hidden');
+      if (isError) {
+        feedback.classList.add('text-red-500');
+        feedback.classList.remove('text-primary-600');
+      } else {
+        feedback.classList.add('text-primary-600');
+        feedback.classList.remove('text-red-500');
+      }
+      setTimeout(() => {
+        feedback.classList.add('hidden');
+      }, 4000);
+    }
+
+    async function copyPixKey(section) {
+      const pixKey = (section.dataset.pixKey || '').trim();
+      const successMessage = section.dataset.copySuccessText || '';
+      const errorMessage = section.dataset.copyErrorText || '';
+      const missingMessage = section.dataset.copyMissingText || '';
+
+      if (!pixKey) {
+        showPixFeedback(section, missingMessage, { isError: true });
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(pixKey);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = pixKey;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'absolute';
+          textarea.style.left = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        }
+        showPixFeedback(section, successMessage, { isError: false });
+      } catch (err) {
+        showPixFeedback(section, errorMessage || missingMessage, { isError: true });
+      }
+    }
+
+    function initPixSection(root) {
+      const sections = (root || document).querySelectorAll('[data-pix-section]');
+      sections.forEach((section) => {
+        if (initializedPixSections.has(section)) {
+          return;
+        }
+        const copyButton = section.querySelector('[data-pix-copy-button]');
+        if (copyButton) {
+          copyButton.addEventListener('click', () => {
+            copyPixKey(section);
+          });
+        }
+        const qrButton = section.querySelector('[data-pix-qrcode-button]');
+        if (qrButton) {
+          qrButton.addEventListener('click', () => {
+            openPixModal(section);
+          });
+        }
+        initializedPixSections.add(section);
       });
     }
 
@@ -270,6 +665,7 @@
       });
 
       updatePaymentProofVisibility(group, { emitEvent: false });
+      initPixSection(group);
 
       initializedGroups.add(group);
     }
@@ -277,6 +673,7 @@
     function initAll(root) {
       const groups = (root || document).querySelectorAll('[data-payment-method-cards]');
       groups.forEach((group) => initPaymentGroup(group));
+      initPixSection(root || document);
     }
 
     if (document.readyState === 'loading') {
