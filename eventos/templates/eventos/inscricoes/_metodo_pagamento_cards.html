@@ -1,6 +1,10 @@
 {% load i18n lucide_icons %}
 
-<div class="space-y-2">
+<div
+  class="space-y-2"
+  data-payment-method-cards
+  data-payment-field-name="{{ field.html_name }}"
+>
   <p class="text-sm font-medium text-[var(--text-primary)]" id="{{ field.auto_id|default:field.html_name }}_legend">
     {{ field.label }}{% if field.field.required %} *{% endif %}
   </p>
@@ -13,6 +17,7 @@
       <label
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_pix"
+        data-payment-card
       >
         <input
           type="radio"
@@ -26,6 +31,7 @@
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          data-payment-card-body
         >
           <span
             class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
@@ -46,6 +52,7 @@
       <label
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_boleto"
+        data-payment-card
       >
         <input
           type="radio"
@@ -59,6 +66,7 @@
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          data-payment-card-body
         >
           <span
             class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
@@ -79,6 +87,7 @@
       <label
         class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
         for="{{ base_id }}_faturar"
+        data-payment-card
       >
         <input
           type="radio"
@@ -92,6 +101,7 @@
         />
         <div
           class="relative flex h-full flex-col justify-between rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+          data-payment-card-body
         >
           <span
             class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
@@ -123,3 +133,94 @@
     <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
   {% endif %}
 </div>
+
+<script>
+  (() => {
+    const SELECTED_CLASSES = [
+      "border-primary-500",
+      "bg-primary-500/10",
+      "ring-2",
+      "ring-primary-500/60",
+    ];
+
+    const initializedGroups = new WeakSet();
+
+    function updateCardState(card) {
+      const input = card.querySelector('input[type="radio"]');
+      const body = card.querySelector('[data-payment-card-body]');
+      if (!body || !input) {
+        return;
+      }
+
+      const isChecked = input.checked;
+      SELECTED_CLASSES.forEach((className) => {
+        body.classList.toggle(className, isChecked);
+      });
+    }
+
+    function clearOtherSelections(cards, currentInput) {
+      cards.forEach((card) => {
+        const input = card.querySelector('input[type="radio"]');
+        if (input && input !== currentInput) {
+          input.checked = false;
+          updateCardState(card);
+        }
+      });
+    }
+
+    function initPaymentGroup(group) {
+      if (!group || initializedGroups.has(group)) {
+        return;
+      }
+
+      const cards = Array.from(group.querySelectorAll('[data-payment-card]'));
+      if (!cards.length) {
+        return;
+      }
+
+      cards.forEach((card) => {
+        const input = card.querySelector('input[type="radio"]');
+        if (!input) {
+          return;
+        }
+
+        card.addEventListener('click', () => {
+          if (input.disabled) {
+            return;
+          }
+          if (!input.checked) {
+            input.checked = true;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+
+        input.addEventListener('change', () => {
+          if (!input.checked) {
+            return;
+          }
+          clearOtherSelections(cards, input);
+          updateCardState(card);
+        });
+
+        updateCardState(card);
+      });
+
+      initializedGroups.add(group);
+    }
+
+    function initAll(root) {
+      const groups = (root || document).querySelectorAll('[data-payment-method-cards]');
+      groups.forEach((group) => initPaymentGroup(group));
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => initAll(document));
+    } else {
+      initAll(document);
+    }
+
+    document.addEventListener('htmx:afterSwap', (event) => {
+      initAll(event.target);
+    });
+  })();
+</script>
