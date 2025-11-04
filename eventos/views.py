@@ -1026,9 +1026,39 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         return kwargs
 
     def form_valid(self, form):
+        existing_inscricao = InscricaoEvento.all_objects.filter(
+            user=self.request.user,
+            evento=self.evento,
+        ).first()
+
+        if existing_inscricao and not existing_inscricao.deleted:
+            messages.info(
+                self.request,
+                _("Você já está inscrito neste evento."),
+            )
+            return redirect(self.get_success_url())
+
         form.instance.user = self.request.user
         form.instance.evento = self.evento
         form.instance.valor_pago = self.evento.valor
+
+        if existing_inscricao and existing_inscricao.deleted:
+            # Reaproveita a inscrição cancelada, removendo o soft delete
+            existing_inscricao.deleted = False
+            existing_inscricao.deleted_at = None
+            existing_inscricao.status = "pendente"
+            existing_inscricao.presente = False
+            existing_inscricao.valor_pago = form.cleaned_data.get("valor_pago")
+            existing_inscricao.metodo_pagamento = form.cleaned_data.get("metodo_pagamento")
+            comprovante = form.cleaned_data.get("comprovante_pagamento")
+            if comprovante:
+                existing_inscricao.comprovante_pagamento = comprovante
+            existing_inscricao.save()
+            self.object = existing_inscricao
+            self.object.confirmar_inscricao()
+            messages.success(self.request, _("Inscrição realizada."))
+            return redirect(self.get_success_url())
+
         response = super().form_valid(form)
         self.object.confirmar_inscricao()
         messages.success(self.request, _("Inscrição realizada."))
