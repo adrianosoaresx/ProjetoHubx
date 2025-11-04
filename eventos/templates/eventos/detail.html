@@ -200,13 +200,13 @@
                     <button
                       type="submit"
                       class="btn btn-primary"
-                      aria-label="{% if vagas_disponiveis == 0 %}{% trans 'Inscrições esgotadas' %}{% else %}{% trans 'Inscrever-se' %}{% endif %}"
+                      aria-label="{% if vagas_disponiveis == 0 %}{% trans 'Inscrições esgotadas' %}{% else %}{% trans 'Quero me inscrever' %}{% endif %}"
                       {% if vagas_disponiveis == 0 %}disabled aria-disabled="true"{% endif %}
                     >
                       {% if vagas_disponiveis == 0 %}
                         {% trans 'Inscrições esgotadas' %}
                       {% else %}
-                        {% trans 'Inscrever-se' %}
+                        {% trans 'Quero me inscrever' %}
                       {% endif %}
                     </button>
                   </form>
@@ -268,9 +268,9 @@
                       href="{% url 'eventos:inscricao_criar' object.pk %}"
                       class="btn btn-primary"
                       role="button"
-                      aria-label="{% trans 'Inscrever-se' %}"
+                      aria-label="{% trans 'Quero me inscrever' %}"
                     >
-                      {% trans 'Inscrever-se' %}
+                      {% trans 'Quero me inscrever' %}
                     </a>
                   {% endif %}
                 {% elif inscricao %}
