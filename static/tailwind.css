@@ -2694,10 +2694,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   margin-bottom: 2rem;
 }
 
-.-mt-10 {
-  margin-top: -2.5rem;
-}
-
 .-mt-12 {
   margin-top: -3rem;
 }
@@ -5130,10 +5126,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
     height: 6rem;
   }
 
-  .sm\:h-28 {
-    height: 7rem;
-  }
-
   .sm\:max-h-\[320px\] {
     max-height: 320px;
   }
@@ -5144,10 +5136,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .sm\:w-24 {
     width: 6rem;
-  }
-
-  .sm\:w-28 {
-    width: 7rem;
   }
 
   .sm\:w-auto {
