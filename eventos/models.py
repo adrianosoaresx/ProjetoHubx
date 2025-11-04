@@ -41,7 +41,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     METODO_PAGAMENTO_CHOICES = [
         ("pix", "Pix"),
         ("boleto", "Boleto"),
-        ("gratuito", "Gratuito"),
+        ("faturar", "Faturar"),
         ("outro", "Outro"),
     ]
 
