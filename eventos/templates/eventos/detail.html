@@ -283,110 +283,6 @@
           </article>
         {% endif %}
 
-        {% if pode_ver_financeiro %}
-          <article class="card">
-            <details class="group" {% if total_pagamentos_pendentes %}open{% endif %}>
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
-                    {% lucide 'wallet' class='h-6 w-6' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h2 class="text-xl font-semibold">{% trans "Financeiro" %}</h2>
-                    <p class="text-sm text-[var(--text-secondary)]">
-                      {% trans "Acompanhe as confirmações de pagamento das inscrições" %}
-                    </p>
-                  </div>
-                </div>
-                <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
-                  {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-                </span>
-              </summary>
-              <div class="card-body space-y-5">
-                <div class="flex flex-wrap gap-2">
-                  <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                    {% lucide 'shield-check' class='h-3.5 w-3.5 text-[var(--color-success-600)]' aria_hidden='true' %}
-                    <span class="text-[var(--text-primary)]">{{ total_pagamentos_validados }}</span>
-                    <span class="uppercase tracking-wide">{% trans "validados" %}</span>
-                  </span>
-                  <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                    {% lucide 'timer' class='h-3.5 w-3.5 text-[var(--color-warning-600)]' aria_hidden='true' %}
-                    <span class="text-[var(--text-primary)]">{{ total_pagamentos_pendentes }}</span>
-                    <span class="uppercase tracking-wide">{% trans "pendentes" %}</span>
-                  </span>
-                  {% if valor_total_pagamentos_validados %}
-                    <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
-                      {% lucide 'banknote' class='h-3.5 w-3.5 text-[var(--color-primary-600)]' aria_hidden='true' %}
-                      <span class="text-[var(--text-primary)]">{{ valor_total_pagamentos_validados|localize }}</span>
-                      <span class="uppercase tracking-wide">{% trans "em receitas validadas" %}</span>
-                    </span>
-                  {% endif %}
-                </div>
-                <div class="overflow-x-auto">
-                  {% if inscricoes_financeiro %}
-                    <table class="min-w-full table-auto text-sm">
-                      <thead class="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
-                        <tr>
-                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Contato" %}</th>
-                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Razão social" %}</th>
-                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Forma de pagamento" %}</th>
-                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Valor" %}</th>
-                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Validação" %}</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-[var(--border)] text-[var(--text-primary)]">
-                        {% for inscricao in inscricoes_financeiro %}
-                          <tr class="align-middle">
-                            <td class="px-4 py-3">
-                              <div class="flex flex-col">
-                                <span class="font-medium">{{ inscricao.user.contato|default:inscricao.user.display_name|default:inscricao.user.get_full_name|default:inscricao.user.username }}</span>
-                                <span class="text-xs text-[var(--text-secondary)]">@{{ inscricao.user.username }}</span>
-                              </div>
-                            </td>
-                            <td class="px-4 py-3">
-                              {% if inscricao.user.razao_social %}
-                                <span class="font-medium">{{ inscricao.user.razao_social }}</span>
-                              {% else %}
-                                <span class="text-[var(--text-secondary)]">&mdash;</span>
-                              {% endif %}
-                            </td>
-                            <td class="px-4 py-3">
-                              {% if inscricao.metodo_pagamento %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs uppercase tracking-wide">
-                                  {% lucide 'credit-card' class='h-3.5 w-3.5 text-[var(--color-primary-600)]' aria_hidden='true' %}
-                                  {{ inscricao.get_metodo_pagamento_display }}
-                                </span>
-                              {% else %}
-                                <span class="text-[var(--text-secondary)]">{% trans "Não informado" %}</span>
-                              {% endif %}
-                            </td>
-                            <td class="px-4 py-3">
-                              {% if inscricao.valor_pago %}
-                                <span class="font-medium">{{ inscricao.valor_pago|localize }}</span>
-                              {% elif inscricao.evento.valor %}
-                                <span class="font-medium">{{ inscricao.evento.valor|localize }}</span>
-                              {% else %}
-                                <span class="text-[var(--text-secondary)]">&mdash;</span>
-                              {% endif %}
-                            </td>
-                            <td class="px-4 py-3">
-                              <div class="inline-flex" id="financeiro-validacao-{{ inscricao.pk }}">
-                                {% include 'eventos/partials/financeiro_validacao_button.html' with inscricao=inscricao %}
-                              </div>
-                            </td>
-                          </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  {% else %}
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhuma inscrição para exibir neste momento." %}</p>
-                  {% endif %}
-                </div>
-              </div>
-            </details>
-          </article>
-        {% endif %}
-
         {% if pode_ver_inscritos %}
           <article class="card">
             <details class="group">
@@ -492,6 +388,110 @@
             </details>
           </article>
       {% endif %}
+        {% if pode_ver_financeiro %}
+          <article class="card">
+            <details class="group" {% if total_pagamentos_pendentes %}open{% endif %}>
+              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+                    {% lucide 'wallet' class='h-6 w-6' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h2 class="text-xl font-semibold">{% trans "Financeiro" %}</h2>
+                    <p class="text-sm text-[var(--text-secondary)]">
+                      {% trans "Acompanhe as confirmações de pagamento das inscrições" %}
+                    </p>
+                  </div>
+                </div>
+                <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+                  {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+                </span>
+              </summary>
+              <div class="card-body space-y-5">
+                <div class="flex flex-wrap gap-2">
+                  <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                    {% lucide 'shield-check' class='h-3.5 w-3.5 text-[var(--color-success-600)]' aria_hidden='true' %}
+                    <span class="text-[var(--text-primary)]">{{ total_pagamentos_validados }}</span>
+                    <span class="uppercase tracking-wide">{% trans "validados" %}</span>
+                  </span>
+                  <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                    {% lucide 'timer' class='h-3.5 w-3.5 text-[var(--color-warning-600)]' aria_hidden='true' %}
+                    <span class="text-[var(--text-primary)]">{{ total_pagamentos_pendentes }}</span>
+                    <span class="uppercase tracking-wide">{% trans "pendentes" %}</span>
+                  </span>
+                  {% if valor_total_pagamentos_validados %}
+                    <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
+                      {% lucide 'banknote' class='h-3.5 w-3.5 text-[var(--color-primary-600)]' aria_hidden='true' %}
+                      <span class="text-[var(--text-primary)]">{{ valor_total_pagamentos_validados|localize }}</span>
+                      <span class="uppercase tracking-wide">{% trans "em receitas validadas" %}</span>
+                    </span>
+                  {% endif %}
+                </div>
+                <div class="overflow-x-auto">
+                  {% if inscricoes_financeiro %}
+                    <table class="min-w-full table-auto text-sm">
+                      <thead class="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
+                        <tr>
+                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Contato" %}</th>
+                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Razão social" %}</th>
+                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Forma de pagamento" %}</th>
+                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Valor" %}</th>
+                          <th scope="col" class="px-4 py-2 text-left font-semibold">{% trans "Validação" %}</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-[var(--border)] text-[var(--text-primary)]">
+                        {% for inscricao in inscricoes_financeiro %}
+                          <tr class="align-middle">
+                            <td class="px-4 py-3">
+                              <div class="flex flex-col">
+                                <span class="font-medium">{{ inscricao.user.contato|default:inscricao.user.display_name|default:inscricao.user.get_full_name|default:inscricao.user.username }}</span>
+                                <span class="text-xs text-[var(--text-secondary)]">@{{ inscricao.user.username }}</span>
+                              </div>
+                            </td>
+                            <td class="px-4 py-3">
+                              {% if inscricao.user.razao_social %}
+                                <span class="font-medium">{{ inscricao.user.razao_social }}</span>
+                              {% else %}
+                                <span class="text-[var(--text-secondary)]">&mdash;</span>
+                              {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                              {% if inscricao.metodo_pagamento %}
+                                <span class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs uppercase tracking-wide">
+                                  {% lucide 'credit-card' class='h-3.5 w-3.5 text-[var(--color-primary-600)]' aria_hidden='true' %}
+                                  {{ inscricao.get_metodo_pagamento_display }}
+                                </span>
+                              {% else %}
+                                <span class="text-[var(--text-secondary)]">{% trans "Não informado" %}</span>
+                              {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                              {% if inscricao.valor_pago %}
+                                <span class="font-medium">{{ inscricao.valor_pago|localize }}</span>
+                              {% elif inscricao.evento.valor %}
+                                <span class="font-medium">{{ inscricao.evento.valor|localize }}</span>
+                              {% else %}
+                                <span class="text-[var(--text-secondary)]">&mdash;</span>
+                              {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                              <div class="inline-flex" id="financeiro-validacao-{{ inscricao.pk }}">
+                                {% include 'eventos/partials/financeiro_validacao_button.html' with inscricao=inscricao %}
+                              </div>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  {% else %}
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhuma inscrição para exibir neste momento." %}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </details>
+          </article>
+        {% endif %}
+
     </div>
 
     <div id="modal" role="presentation" aria-live="polite"></div>
