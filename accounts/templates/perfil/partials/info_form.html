@@ -1,12 +1,12 @@
 {% load widget_tweaks i18n %}
-<div class="mx-auto max-w-4xl" id="perfil-info-card">
+<div id="perfil-info-card">
   <div class="card">
-    <div class="card-header space-y-1">
+    <div class="card-header">
       <h3 class="text-xl font-semibold">{% trans "Informações do perfil" %}</h3>
       <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
     </div>
 
-    <div class="card-body space-y-8">
+    <div class="card-body space-y-6">
       {% if not is_self %}
         <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
           {% blocktrans with nome=target_user.get_full_name %}
