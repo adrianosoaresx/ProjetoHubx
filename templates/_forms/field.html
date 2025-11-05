@@ -1,5 +1,6 @@
 
 {% load widget_tweaks %}
+{% with hide_label=hide_label|default:False %}
 <div class="space-y-1">
   {% if field %}
     {% if field|widget_type == 'checkboxinput' %}
@@ -14,7 +15,7 @@
       </label>
     </div>
     {% else %}
-    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+    <label for="{{ field.id_for_label }}" class="{% if hide_label %}sr-only{% else %}block text-sm font-medium text-[var(--text-primary)]{% endif %}">
       {{ field.label }}{% if field.field.required %} *{% endif %}
     </label>
     {% if field|widget_type == 'select' %}
@@ -59,7 +60,7 @@
     {% endif %}
   {% else %}
     {% with input_id=id|default:name input_name=name|default:id input_type=type|default:'text' %}
-    <label for="{{ input_id }}" class="block text-sm font-medium text-[var(--text-primary)]">
+    <label for="{{ input_id }}" class="{% if hide_label %}sr-only{% else %}block text-sm font-medium text-[var(--text-primary)]{% endif %}">
       {{ label }}{% if required %} *{% endif %}
     </label>
     {% if input_type == 'textarea' %}
@@ -110,3 +111,4 @@
   {% endif %}
 
 </div>
+{% endwith %}

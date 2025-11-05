@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 <div class="space-y-6">
-  <div class="grid gap-6 md:grid-cols-6">
+  <div class="grid gap-6 md:grid-cols-4">
     <div>
       {% include '_forms/field.html' with field=form.status %}
     </div>
@@ -10,11 +10,14 @@
     <div>
       {% include '_forms/field.html' with field=form.participantes_maximo %}
     </div>
-    <div>
-      {% include '_forms/field.html' with field=form.gratuito %}
-    </div>
     <div id="valor-field-container" {% if form.gratuito.value %}class="hidden"{% endif %}>
       {% include '_forms/field.html' with field=form.valor %}
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <div>
+      {% include '_forms/field.html' with field=form.gratuito %}
     </div>
     <div id="nucleo-field-container">
       {% include '_forms/field.html' with field=form.nucleo %}
@@ -29,9 +32,40 @@
     {% include '_forms/field.html' with field=form.descricao %}
   </div>
 
-  <div>
-    {% include '_forms/field.html' with field=form.cronograma %}
+  {% with cronograma_has_errors=form.cronograma.errors %}
+  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      data-accordion-toggle
+      aria-expanded="{{ cronograma_has_errors|yesno:'true,false' }}"
+      aria-controls="evento-cronograma-panel"
+    >
+      <span class="text-sm font-medium text-[var(--text-primary)]">{{ form.cronograma.label }}</span>
+      <svg
+        class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div
+      id="evento-cronograma-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not cronograma_has_errors %}hidden{% endif %}"
+      data-accordion-panel
+    >
+      {% include '_forms/field.html' with field=form.cronograma hide_label=True %}
+    </div>
   </div>
+  {% endwith %}
 
   <div class="grid gap-6 md:grid-cols-2">
     <div>
@@ -67,21 +101,46 @@
     </div>
   </div>
 
-  <div>
-    {% include '_forms/field.html' with field=form.informacoes_adicionais %}
+  {% with info_has_errors=form.informacoes_adicionais.errors %}
+  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      data-accordion-toggle
+      aria-expanded="{{ info_has_errors|yesno:'true,false' }}"
+      aria-controls="evento-informacoes-panel"
+    >
+      <span class="text-sm font-medium text-[var(--text-primary)]">{{ form.informacoes_adicionais.label }}</span>
+      <svg
+        class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div
+      id="evento-informacoes-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not info_has_errors %}hidden{% endif %}"
+      data-accordion-panel
+    >
+      {% include '_forms/field.html' with field=form.informacoes_adicionais hide_label=True %}
+    </div>
   </div>
+  {% endwith %}
 
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="space-y-6">
     <div>
-      {% if avatar_preview %}
-        <img src="{{ avatar_preview.url }}" alt="{{ form.avatar.label }}" class="w-32 h-32 object-cover mb-2" loading="lazy">
-      {% endif %}
       {% include '_forms/field.html' with field=form.avatar %}
     </div>
     <div>
-      {% if cover_preview %}
-        <img src="{{ cover_preview.url }}" alt="{{ form.cover.label }}" class="w-48 h-32 object-cover mb-2 rounded" loading="lazy">
-      {% endif %}
       {% include '_forms/field.html' with field=form.cover %}
     </div>
   </div>
@@ -90,19 +149,122 @@
   (function () {
     const gratuitoField = document.querySelector('#id_gratuito');
     const valorContainer = document.querySelector('#valor-field-container');
-    if (!gratuitoField || !valorContainer) {
-      return;
-    }
 
     const toggleValor = () => {
-      if (gratuitoField.checked) {
+      if (!valorContainer) {
+        return;
+      }
+      if (gratuitoField && gratuitoField.checked) {
         valorContainer.classList.add('hidden');
       } else {
         valorContainer.classList.remove('hidden');
       }
     };
 
-    gratuitoField.addEventListener('change', toggleValor);
+    if (gratuitoField) {
+      gratuitoField.addEventListener('change', toggleValor);
+    }
     toggleValor();
+
+    const accordions = document.querySelectorAll('[data-accordion]');
+    accordions.forEach((accordion) => {
+      const toggle = accordion.querySelector('[data-accordion-toggle]');
+      const panel = accordion.querySelector('[data-accordion-panel]');
+      const icon = accordion.querySelector('[data-accordion-icon]');
+      if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+        return;
+      }
+
+      const setExpanded = (expanded) => {
+        toggle.setAttribute('aria-expanded', String(expanded));
+        panel.classList.toggle('hidden', !expanded);
+        if (icon instanceof HTMLElement) {
+          icon.classList.toggle('rotate-180', expanded);
+        }
+      };
+
+      const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      setExpanded(initialExpanded);
+
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        setExpanded(!expanded);
+      });
+    });
+
+    const setupFileInput = (input) => {
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+      if (input.dataset.customFileBound === 'true') {
+        return;
+      }
+
+      const wrapper = input.closest('[data-profile-file], [data-file-upload]');
+      const status = wrapper
+        ? wrapper.querySelector('[data-profile-file-name], [data-file-upload-name]')
+        : null;
+      const clearControl = wrapper
+        ? wrapper.querySelector('[data-profile-file-clear], [data-file-upload-clear]')
+        : null;
+      const emptyText = input.dataset.emptyText || (status && status.dataset.emptyText) || '';
+
+      if (status instanceof HTMLElement) {
+        status.dataset.emptyText = status.dataset.emptyText || emptyText;
+        status.dataset.originalText = status.dataset.originalText || status.textContent || '';
+      }
+
+      const updateStatus = () => {
+        if (!(status instanceof HTMLElement)) {
+          return;
+        }
+        const files = input.files;
+        if (files && files.length) {
+          const names = Array.from(files)
+            .map((file) => (file && file.name ? file.name : ''))
+            .filter(Boolean);
+          status.textContent = names.length ? names.join(', ') : emptyText;
+          return;
+        }
+
+        if (clearControl instanceof HTMLInputElement && clearControl.checked) {
+          status.textContent = emptyText;
+          return;
+        }
+
+        const originalText = status.dataset.originalText || '';
+        status.textContent = originalText || emptyText;
+      };
+
+      updateStatus();
+
+      input.addEventListener('change', () => {
+        if (clearControl instanceof HTMLInputElement && input.files && input.files.length) {
+          clearControl.checked = false;
+        }
+        updateStatus();
+      });
+
+      if (clearControl instanceof HTMLInputElement) {
+        clearControl.addEventListener('change', () => {
+          if (clearControl.checked) {
+            input.value = '';
+            const event = new Event('change');
+            input.dispatchEvent(event);
+            if (status instanceof HTMLElement) {
+              status.textContent = emptyText;
+            }
+          } else if (status instanceof HTMLElement) {
+            const originalText = status.dataset.originalText || '';
+            status.textContent = originalText || emptyText;
+          }
+        });
+      }
+
+      input.dataset.customFileBound = 'true';
+    };
+
+    const fileInputs = document.querySelectorAll('[data-profile-file-input], [data-file-upload-input]');
+    fileInputs.forEach((input) => setupFileInput(input));
   })();
 </script>
