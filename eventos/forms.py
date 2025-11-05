@@ -16,6 +16,37 @@ from .models import Evento, EventoMidia, FeedbackNota, InscricaoEvento
 class PDFClearableFileInput(ClearableFileInput):
     template_name = "eventos/widgets/pdf_clearable_file_input.html"
 
+    def __init__(self, attrs=None, *, button_label=None, empty_label=None):
+        self.button_label = button_label or _("Enviar PDF")
+        self.empty_label = empty_label or _("Nenhum arquivo selecionado")
+        attrs = (attrs or {}).copy()
+        existing_classes = attrs.get("class", "").split()
+        if "sr-only" not in existing_classes:
+            existing_classes.append("sr-only")
+        attrs["class"] = " ".join(filter(None, existing_classes))
+        attrs.setdefault("data-file-upload-input", "true")
+        attrs.setdefault("data-empty-text", self.empty_label)
+        super().__init__(attrs=attrs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        widget = context["widget"]
+        widget["button_label"] = self.button_label
+        widget["empty_label"] = self.empty_label
+        final_attrs = widget.get("attrs", {})
+        final_attrs.setdefault("data-file-upload-input", "true")
+        final_attrs.setdefault("data-empty-text", self.empty_label)
+        widget["attrs"] = final_attrs
+
+        value_name = ""
+        if value:
+            if hasattr(value, "name"):
+                value_name = value.name or ""
+            else:
+                value_name = str(value)
+        widget["value_name"] = value_name
+        return context
+
 
 class ComprovanteFileInput(ClearableFileInput):
     template_name = "eventos/widgets/comprovante_file_input.html"
