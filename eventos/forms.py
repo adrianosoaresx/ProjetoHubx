@@ -6,8 +6,10 @@ from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from nucleos.models import Nucleo
 
+from accounts.models import MediaTag
+
 from .validators import validate_uploaded_file
-from .models import Evento, FeedbackNota, InscricaoEvento
+from .models import Evento, EventoMidia, FeedbackNota, InscricaoEvento
 
 
 class PDFClearableFileInput(ClearableFileInput):
@@ -277,4 +279,62 @@ class FeedbackForm(forms.ModelForm):
         widgets = {
             "comentario": forms.Textarea(attrs={"rows": 4}),
         }
+
+
+class EventoPortfolioFilterForm(forms.Form):
+    q = forms.CharField(
+        label=_("Buscar"),
+        required=False,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("Buscar por descrição ou tags...")}
+        ),
+    )
+
+
+class EventoMediaForm(forms.ModelForm):
+    tags_field = forms.CharField(
+        required=False,
+        help_text="Separe as tags por vírgula",
+        label="Tags",
+    )
+
+    class Meta:
+        model = EventoMidia
+        fields = ("file", "descricao", "tags_field")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["tags_field"].initial = ", ".join(
+                self.instance.tags.values_list("nome", flat=True)
+            )
+
+    def save(self, commit: bool = True, *, evento: Evento | None = None) -> EventoMidia:
+        instance = super().save(commit=False)
+        if evento is not None:
+            instance.evento = evento
+        if commit:
+            instance.save()
+
+        tags_field = self.cleaned_data.get("tags_field", "")
+        tags_names: list[str] = []
+        for tag_name in tags_field.split(","):
+            name = tag_name.strip().lower()
+            if name and name not in tags_names:
+                tags_names.append(name)
+
+        tags: list[MediaTag] = []
+        for name in tags_names:
+            tag, _ = MediaTag.objects.get_or_create(
+                nome__iexact=name, defaults={"nome": name}
+            )
+            tags.append(tag)
+
+        if commit:
+            instance.tags.set(tags)
+            self.save_m2m()
+        else:
+            self._save_m2m = lambda: instance.tags.set(tags)
+
+        return instance
 

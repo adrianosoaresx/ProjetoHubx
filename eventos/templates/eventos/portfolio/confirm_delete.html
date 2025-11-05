@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Remover item do portfólio' %}{% endblock %}
+
+{% block hero %}{% include '_components/hero_evento_detail.html' with evento=media.evento %}{% endblock %}
+
+{% block content %}
+  <div class="flex flex-col gap-6">
+    <article class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="text-xl font-semibold">{% trans "Confirmar remoção" %}</h2>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Esta ação removerá a mídia do portfólio do evento." %}</p>
+        </div>
+      </div>
+      <div class="card-body space-y-6">
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item?" %}</p>
+        <form method="post" class="flex items-center justify-end gap-3">
+          {% csrf_token %}
+          <a href="{{ back_href|default:request.META.HTTP_REFERER|default:request.path }}" class="btn btn-ghost">{% trans "Cancelar" %}</a>
+          <button type="submit" class="btn btn-danger">{% trans "Remover" %}</button>
+        </form>
+      </div>
+    </article>
+  </div>
+{% endblock %}

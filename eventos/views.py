@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -42,8 +43,14 @@ from core.permissions import (
 )
 from core.utils import resolve_back_href
 
-from .forms import EventoForm, FeedbackForm, InscricaoEventoForm
-from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento
+from .forms import (
+    EventoForm,
+    EventoMediaForm,
+    EventoPortfolioFilterForm,
+    FeedbackForm,
+    InscricaoEventoForm,
+)
+from .models import Evento, EventoLog, EventoMidia, FeedbackNota, InscricaoEvento
 from .querysets import filter_eventos_por_usuario
 
 User = get_user_model()
@@ -65,6 +72,30 @@ def _get_tipo_usuario(user) -> str | None:
     if hasattr(tipo, "value"):
         return tipo.value  # pragma: no cover - compatibilidade defensiva
     return tipo
+
+
+def _portfolio_counts(medias) -> dict[str, int]:
+    medias_list = list(medias)
+    counter = Counter(media.media_type for media in medias_list)
+    total = len(medias_list)
+    return {
+        "total": total,
+        "images": counter.get("image", 0),
+        "videos": counter.get("video", 0),
+        "pdfs": counter.get("pdf", 0),
+        "others": counter.get("other", 0),
+    }
+
+
+def _configure_portfolio_form_fields(form: EventoMediaForm) -> None:
+    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+    file_field = form.fields.get("file")
+    if file_field is not None:
+        file_field.widget.attrs["accept"] = ",".join(allowed_exts)
+        file_field.help_text = _("Selecione um arquivo")
+    descricao_field = form.fields.get("descricao")
+    if descricao_field is not None:
+        descricao_field.help_text = _("Breve descrição do portfólio")
 
 
 def _usuario_eh_coordenador_do_evento(user, evento: Evento) -> bool:
@@ -89,6 +120,17 @@ def _usuario_tem_acesso_restrito_evento(user, evento: Evento) -> bool:
     if tipo_usuario != UserType.COORDENADOR.value:
         return False
     return _usuario_eh_coordenador_do_evento(user, evento)
+
+
+def _usuario_pode_gerenciar_portfolio(user, evento: Evento) -> bool:
+    tipo_usuario = _get_tipo_usuario(user)
+    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return True
+    if user.has_perm("eventos.change_evento"):
+        return True
+    if tipo_usuario == UserType.COORDENADOR.value and _usuario_eh_coordenador_do_evento(user, evento):
+        return True
+    return False
 
 
 def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
@@ -562,7 +604,10 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     template_name = "eventos/detail.html"
 
     def get_queryset(self):
-        base = Evento.objects.select_related("organizacao").prefetch_related("inscricoes", "feedbacks")
+        base = (
+            Evento.objects.select_related("organizacao")
+            .prefetch_related("inscricoes", "feedbacks", "midias__tags")
+        )
         return filter_eventos_por_usuario(base, self.request.user)
 
     def get_context_data(self, **kwargs):
@@ -655,6 +700,51 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
             pode_editar_evento = True
             pode_excluir_evento = True
+
+        pode_gerenciar_portfolio = _usuario_pode_gerenciar_portfolio(user, evento)
+
+        portfolio_filter_form = EventoPortfolioFilterForm(self.request.GET or None)
+        portfolio_query = ""
+        if portfolio_filter_form.is_valid():
+            portfolio_query = portfolio_filter_form.cleaned_data.get("q", "") or ""
+
+        base_portfolio_qs = evento.midias.prefetch_related("tags").order_by("-created_at")
+        all_portfolio_medias = list(base_portfolio_qs)
+        portfolio_counts = _portfolio_counts(all_portfolio_medias)
+
+        if portfolio_query:
+            filtered_qs = base_portfolio_qs.filter(
+                Q(descricao__icontains=portfolio_query)
+                | Q(tags__nome__icontains=portfolio_query)
+            ).distinct()
+            portfolio_medias = list(filtered_qs)
+        else:
+            portfolio_medias = all_portfolio_medias
+
+        portfolio_form = getattr(self, "_portfolio_form", None)
+        portfolio_show_form = False
+        if pode_gerenciar_portfolio:
+            if portfolio_form is None:
+                portfolio_form = EventoMediaForm()
+            _configure_portfolio_form_fields(portfolio_form)
+            portfolio_show_form = self.request.GET.get("portfolio_adicionar") == "1"
+            if getattr(self, "_portfolio_show_form", False):
+                portfolio_show_form = True
+        else:
+            portfolio_form = None
+
+        context.update(
+            {
+                "pode_gerenciar_portfolio": pode_gerenciar_portfolio,
+                "portfolio_medias": portfolio_medias,
+                "portfolio_counts": portfolio_counts,
+                "portfolio_filter_form": portfolio_filter_form,
+                "portfolio_query": portfolio_query,
+                "portfolio_form": portfolio_form,
+                "portfolio_show_form": portfolio_show_form,
+            }
+        )
+
         context.update(
             {
                 "local": evento.local,
@@ -690,6 +780,26 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         context["pode_ver_inscritos"] = _usuario_pode_ver_inscritos(user, evento)
         return context
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.POST.get("form_name") == "evento_portfolio":
+            return self._handle_portfolio_post(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
+
+    def _handle_portfolio_post(self, request, *args, **kwargs):
+        if not _usuario_pode_gerenciar_portfolio(request.user, self.object):
+            raise PermissionDenied
+
+        form = EventoMediaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(evento=self.object)
+            messages.success(request, _("Arquivo enviado com sucesso."))
+            return redirect("eventos:evento_detalhe", pk=self.object.pk)
+
+        self._portfolio_form = form
+        self._portfolio_show_form = True
+        return self.get(request, *args, **kwargs)
+
     def _resolve_back_href(self) -> str:
         request = self.request
         fallback = reverse("eventos:calendario")
@@ -710,6 +820,74 @@ class EventoInscricaoActionMixin:
             return response
         return redirect(redirect_url)
 
+
+class EventoMidiaBaseMixin(LoginRequiredMixin, NoSuperadminMixin):
+    model = EventoMidia
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if not _usuario_pode_gerenciar_portfolio(self.request.user, obj.evento):
+            raise PermissionDenied
+        return obj
+
+    def get_success_url(self):
+        return reverse("eventos:evento_detalhe", args=[self.object.evento.pk])
+
+
+class EventoPortfolioUpdateView(EventoMidiaBaseMixin, UpdateView):
+    form_class = EventoMediaForm
+    template_name = "eventos/portfolio/form.html"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        _configure_portfolio_form_fields(form)
+        return form
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Portfólio do evento atualizado."))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["evento"] = self.object.evento
+        context["title"] = _("Editar portfólio do evento")
+        context["subtitle"] = self.object.descricao or ""
+        context["back_href"] = reverse("eventos:evento_detalhe", args=[self.object.evento.pk])
+        return context
+
+
+class EventoPortfolioDeleteView(EventoMidiaBaseMixin, DeleteView):
+    template_name = "eventos/portfolio/confirm_delete.html"
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.headers.get("HX-Target") == "modal":
+            context = {
+                "media": self.object,
+                "titulo": _("Remover item do portfólio"),
+                "mensagem": _("Tem certeza que deseja remover este item do portfólio do evento?"),
+                "submit_label": _("Remover"),
+                "form_action": reverse("eventos:evento_portfolio_delete", args=[self.object.pk]),
+            }
+            return TemplateResponse(request, "eventos/portfolio/delete_modal.html", context)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["back_href"] = reverse("eventos:evento_detalhe", args=[self.object.evento.pk])
+        context["evento"] = self.object.evento
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        messages.success(request, _("Item do portfólio removido."))
+        response = super().delete(request, *args, **kwargs)
+        if bool(request.headers.get("HX-Request")):
+            hx_response = HttpResponse(status=204)
+            hx_response["HX-Redirect"] = self.get_success_url()
+            return hx_response
+        return response
 
 class EventoSubscribeView(EventoInscricaoActionMixin, LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
