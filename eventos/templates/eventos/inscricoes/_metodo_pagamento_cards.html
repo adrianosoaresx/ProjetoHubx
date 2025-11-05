@@ -70,24 +70,61 @@
               role="group"
               aria-label="{% trans 'Opções de pagamento via Pix' %}"
             >
-              <button
-                type="button"
-                class="flex w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                data-pix-copy-button
-                {% if not evento.organizacao.chave_pix %}disabled{% endif %}
+              <div
+                class="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
               >
-                <span class="flex items-center gap-2 text-[var(--text-primary)]">
-                  {% lucide 'copy' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
-                  <span class="text-sm font-semibold">{% trans "Copiar chave Pix" %}</span>
-                </span>
-                <span class="mt-2 text-xs text-[var(--text-secondary)]">
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-2 text-left text-[var(--text-primary)] transition hover:text-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  data-pix-key-button
+                  aria-expanded="false"
+                  aria-controls="{{ base_id }}_pix_key_panel"
+                >
+                  <span class="flex items-center gap-2">
+                    {% lucide 'copy' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
+                    <span class="text-sm font-semibold">{% trans "Copiar chave Pix" %}</span>
+                  </span>
+                  {% lucide 'chevron-down' class='w-4 h-4 text-[var(--text-secondary)] transition data-[state=open]:rotate-180' aria_hidden='true' data_state_indicator='true' data_state='closed' %}
+                </button>
+                <p class="mt-2 text-xs text-[var(--text-secondary)]">
                   {% if evento.organizacao.chave_pix %}
                     {% blocktrans trimmed %}Copie a chave Pix da organização para pagar no seu banco.{% endblocktrans %}
                   {% else %}
                     {% trans "Nenhuma chave Pix cadastrada pela organização." %}
                   {% endif %}
-                </span>
-              </button>
+                </p>
+                <div
+                  id="{{ base_id }}_pix_key_panel"
+                  class="mt-3 hidden rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-primary)] p-3"
+                  data-pix-key-panel
+                  aria-hidden="true"
+                >
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-xs font-medium text-[var(--text-secondary)]">{% trans "Chave Pix" %}</p>
+                      <p
+                        class="mt-1 break-all font-mono text-sm text-[var(--text-primary)]"
+                        data-pix-key-display
+                      >
+                        {% if evento.organizacao.chave_pix %}
+                          {{ evento.organizacao.chave_pix }}
+                        {% else %}
+                          {% trans "Nenhuma chave Pix cadastrada pela organização." %}
+                        {% endif %}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-md bg-primary-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                      data-pix-copy-button
+                      {% if not evento.organizacao.chave_pix %}disabled{% endif %}
+                    >
+                      {% lucide 'copy' class='w-4 h-4' aria_hidden='true' %}
+                      <span>{% trans "Copiar chave" %}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div
                 class="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
                 data-pix-qrcode-card
@@ -288,6 +325,19 @@
         if (pixButton) {
           pixButton.setAttribute('aria-expanded', 'false');
           const indicator = pixButton.querySelector('[data-state-indicator]');
+          if (indicator) {
+            indicator.setAttribute('data-state', 'closed');
+          }
+        }
+        const pixKeyPanel = accordion.querySelector('[data-pix-key-panel]');
+        if (pixKeyPanel) {
+          pixKeyPanel.classList.add(ACCORDION_HIDDEN_CLASS);
+          pixKeyPanel.setAttribute('aria-hidden', 'true');
+        }
+        const pixKeyButton = accordion.querySelector('[data-pix-key-button]');
+        if (pixKeyButton) {
+          pixKeyButton.setAttribute('aria-expanded', 'false');
+          const indicator = pixKeyButton.querySelector('[data-state-indicator]');
           if (indicator) {
             indicator.setAttribute('data-state', 'closed');
           }
@@ -516,6 +566,48 @@
       }
     }
 
+    function togglePixKeyPanel(section) {
+      const keyButton = section.querySelector('[data-pix-key-button]');
+      const keyPanel = section.querySelector('[data-pix-key-panel]');
+      if (!keyButton || !keyPanel) {
+        return;
+      }
+
+      const indicator = keyButton.querySelector('[data-state-indicator]');
+      const keyDisplay = keyPanel.querySelector('[data-pix-key-display]');
+      const fallbackMessage = section.dataset.copyMissingText || '';
+
+      function updateKeyDisplay() {
+        if (!keyDisplay) {
+          return;
+        }
+        const pixKey = decodeUnicodeEscapes(section.dataset.pixKey || '').trim();
+        keyDisplay.textContent = pixKey || fallbackMessage || '-';
+      }
+
+      function setKeyPanelState(isOpen) {
+        keyButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        keyPanel.classList.toggle(ACCORDION_HIDDEN_CLASS, !isOpen);
+        if (isOpen) {
+          keyPanel.removeAttribute('aria-hidden');
+          updateKeyDisplay();
+        } else {
+          keyPanel.setAttribute('aria-hidden', 'true');
+        }
+        if (indicator) {
+          indicator.setAttribute('data-state', isOpen ? 'open' : 'closed');
+        }
+      }
+
+      updateKeyDisplay();
+      setKeyPanelState(false);
+
+      keyButton.addEventListener('click', () => {
+        const isExpanded = keyButton.getAttribute('aria-expanded') === 'true';
+        setKeyPanelState(!isExpanded);
+      });
+    }
+
     function togglePixQrPanel(section) {
       const qrButton = section.querySelector('[data-pix-qrcode-button]');
       const panel = section.querySelector('[data-pix-qrcode-panel]');
@@ -607,6 +699,7 @@
             copyPixKey(section);
           });
         }
+        togglePixKeyPanel(section);
         togglePixQrPanel(section);
         initializedPixSections.add(section);
       });
