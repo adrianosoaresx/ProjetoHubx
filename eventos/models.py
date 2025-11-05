@@ -68,6 +68,10 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
     )
+    pagamento_validado = models.BooleanField(
+        default=False,
+        help_text=_("Indica se o pagamento informado foi validado pela equipe."),
+    )
     metodo_pagamento = models.CharField(
         max_length=20,
         choices=METODO_PAGAMENTO_CHOICES,
