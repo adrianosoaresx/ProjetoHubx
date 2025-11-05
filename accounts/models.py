@@ -12,6 +12,7 @@ from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
@@ -149,7 +150,6 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         max_length=14,  # 000.000.000-00
         blank=True,
         null=True,
-        unique=True,
         validators=[cpf_validator],
     )
     cnpj = models.CharField(
@@ -361,13 +361,13 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
-        # Removida a constraint temporariamente para evitar erro
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=["username", "organizacao"],
-        #         name="accounts_user_username_org_uniq",
-        #     )
-        # ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["cpf"],
+                condition=Q(cnpj__isnull=True) | Q(cnpj=""),
+                name="accounts_user_unique_cpf_without_cnpj",
+            ),
+        ]
 
     # Representação legível
     def __str__(self):

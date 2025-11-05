@@ -31,19 +31,24 @@
         <p class="text-[var(--text-secondary)]">{% trans "Precisamos para validar sua identidade e segurança" %}</p>
       </div>
 
-      <form id="cpfForm" method="post" action="{% url 'accounts:cpf' %}" class="space-y-6">
-        {% csrf_token %}
-        <div>
-          {% include "_forms/field.html" with id="cpf" name="cpf" label=_("CPF") placeholder=_("CPF") maxlength="14" required=True autofocus=True describedby="cpf_help cpf_validation" %}
-          <div class="text-sm text-[var(--error)]" id="cpf_validation"></div>
-          <small id="cpf_help" class="text-sm text-[var(--text-secondary)]">{% trans "Formato 000.000.000-00" %}</small>
-        </div>
+        <form id="cpfForm" method="post" action="{% url 'accounts:cpf' %}" class="space-y-6">
+          {% csrf_token %}
+          <div>
+            {% include "_forms/field.html" with id="cpf" name="cpf" label=_("CPF") placeholder=_("CPF") maxlength="14" required=True autofocus=True describedby="cpf_help cpf_validation" value=request.session.cpf %}
+            <div class="text-sm text-[var(--error)]" id="cpf_validation"></div>
+            <small id="cpf_help" class="text-sm text-[var(--text-secondary)]">{% trans "Formato 000.000.000-00" %}</small>
+          </div>
 
-        <div class="flex gap-4">
-          <a href="{% url 'accounts:nome' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-          <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
-        </div>
-      </form>
+          <div>
+            {% include "_forms/field.html" with id="cnpj" name="cnpj" label=_("CNPJ") placeholder=_("CNPJ") maxlength="18" value=request.session.cnpj %}
+            <small class="text-sm text-[var(--text-secondary)]">{% trans "Informe apenas se possuir empresa (formato 00.000.000/0000-00)." %}</small>
+          </div>
+
+          <div class="flex gap-4">
+            <a href="{% url 'accounts:nome' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+            <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+          </div>
+        </form>
     </div>
   </div>
 </div>

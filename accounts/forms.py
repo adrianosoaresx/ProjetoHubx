@@ -7,6 +7,7 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.forms import ClearableFileInput
 from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -19,6 +20,38 @@ from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
 
 User = get_user_model()
+
+
+CPF_REUSE_ERROR = _("Para reutilizar este CPF, informe também um CNPJ válido.")
+IDENTIFIER_REQUIRED_ERROR = _("Informe CPF ou CNPJ.")
+
+
+def _get_field_value(form: forms.BaseForm, field_name: str) -> str:
+    """Return the raw or cleaned value for ``field_name`` respecting prefixes."""
+
+    value = form.cleaned_data.get(field_name)
+    if value not in (None, ""):
+        return value
+    prefixed_name = form.add_prefix(field_name)
+    return form.data.get(prefixed_name, form.data.get(field_name, ""))
+
+
+def _validate_cpf_reuse(form: forms.BaseForm, cpf: str, *, exclude_pk=None) -> None:
+    """Ensure CPF reuse obeys the CNPJ requirements."""
+
+    if not cpf:
+        return
+    qs = User.objects.all()
+    if exclude_pk:
+        qs = qs.exclude(pk=exclude_pk)
+    matches = qs.filter(cpf=cpf)
+    if not matches.exists():
+        return
+    cnpj_value = (_get_field_value(form, "cnpj") or "").strip()
+    if not cnpj_value:
+        raise forms.ValidationError(CPF_REUSE_ERROR)
+    if matches.filter(Q(cnpj__isnull=True) | Q(cnpj="")).exists():
+        raise forms.ValidationError(CPF_REUSE_ERROR)
 
 
 class ProfileImageFileInput(ClearableFileInput):
@@ -97,6 +130,7 @@ class CustomUserCreationForm(UserCreationForm):
         if not cpf:
             return cpf
         cpf_validator(cpf)
+        _validate_cpf_reuse(self, cpf)
         return cpf
 
     def clean_cnpj(self):
@@ -110,6 +144,16 @@ class CustomUserCreationForm(UserCreationForm):
         if User.objects.filter(cnpj=cnpj).exists():
             raise forms.ValidationError(_("CNPJ já cadastrado."))
         return cnpj
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cpf_raw = (_get_field_value(self, "cpf") or "").strip()
+        cnpj_raw = (_get_field_value(self, "cnpj") or "").strip()
+        if not cpf_raw and not cnpj_raw:
+            self.add_error("cpf", IDENTIFIER_REQUIRED_ERROR)
+            self.add_error("cnpj", IDENTIFIER_REQUIRED_ERROR)
+            raise forms.ValidationError(IDENTIFIER_REQUIRED_ERROR)
+        return cleaned_data
 
     def clean_whatsapp(self):
         whatsapp = self.cleaned_data.get("whatsapp")
@@ -162,6 +206,14 @@ class CustomUserChangeForm(UserChangeForm):
             "birth_date": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"})
         }
 
+    def clean_cpf(self):
+        cpf = self.cleaned_data.get("cpf")
+        if not cpf:
+            return cpf
+        cpf_validator(cpf)
+        _validate_cpf_reuse(self, cpf, exclude_pk=self.instance.pk)
+        return cpf
+
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
         if not cnpj:
@@ -176,6 +228,16 @@ class CustomUserChangeForm(UserChangeForm):
         if qs.filter(cnpj=cnpj).exists():
             raise forms.ValidationError(_("CNPJ já cadastrado."))
         return cnpj
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cpf_raw = (_get_field_value(self, "cpf") or "").strip()
+        cnpj_raw = (_get_field_value(self, "cnpj") or "").strip()
+        if not cpf_raw and not cnpj_raw:
+            self.add_error("cpf", IDENTIFIER_REQUIRED_ERROR)
+            self.add_error("cnpj", IDENTIFIER_REQUIRED_ERROR)
+            raise forms.ValidationError(IDENTIFIER_REQUIRED_ERROR)
+        return cleaned_data
 
 
 class InformacoesPessoaisForm(forms.ModelForm):
@@ -291,8 +353,9 @@ class InformacoesPessoaisForm(forms.ModelForm):
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
-        if cpf and User.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
-            raise forms.ValidationError(_("CPF já cadastrado."))
+        if not cpf:
+            return cpf
+        _validate_cpf_reuse(self, cpf, exclude_pk=self.instance.pk)
         return cpf
 
     def clean_cnpj(self):
@@ -306,6 +369,16 @@ class InformacoesPessoaisForm(forms.ModelForm):
         if User.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError(_("CNPJ já cadastrado."))
         return cnpj
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cpf_raw = (_get_field_value(self, "cpf") or "").strip()
+        cnpj_raw = (_get_field_value(self, "cnpj") or "").strip()
+        if not cpf_raw and not cnpj_raw:
+            self.add_error("cpf", IDENTIFIER_REQUIRED_ERROR)
+            self.add_error("cnpj", IDENTIFIER_REQUIRED_ERROR)
+            raise forms.ValidationError(IDENTIFIER_REQUIRED_ERROR)
+        return cleaned_data
 
     def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
