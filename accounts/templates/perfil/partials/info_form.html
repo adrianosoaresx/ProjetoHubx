@@ -119,53 +119,51 @@
           </div>
         </div>
 
-        {% with local_has_errors=form.endereco.errors or form.cidade.errors or form.estado.errors or form.cep.errors %}
-          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
-            <button
-              type="button"
-              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-              data-accordion-toggle
-              aria-expanded="{{ local_has_errors|yesno:'true,true' }}"
-              aria-controls="perfil-local-panel"
+        <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            data-accordion-toggle
+            aria-expanded="{% if form.endereco.errors or form.cidade.errors or form.estado.errors or form.cep.errors %}true{% else %}false{% endif %}"
+            aria-controls="perfil-local-panel"
+          >
+            <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Local" %}</span>
+            <svg
+              class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
             >
-              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Local" %}</span>
-              <svg
-                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
-                data-accordion-icon
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div
-              id="perfil-local-panel"
-              class="border-t border-[var(--border)] px-4 py-4 space-y-6"
-              data-accordion-panel
-            >
-              <div>
-                {% include '_forms/field.html' with field=form.endereco %}
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div
+            id="perfil-local-panel"
+            class="border-t border-[var(--border)] px-4 py-4 space-y-6"
+            data-accordion-panel
+          >
+            <div>
+              {% include '_forms/field.html' with field=form.endereco %}
+            </div>
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div class="md:col-span-2 lg:col-span-2">
+                {% include '_forms/field.html' with field=form.cidade %}
               </div>
-              <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <div class="md:col-span-2 lg:col-span-2">
-                  {% include '_forms/field.html' with field=form.cidade %}
-                </div>
-                <div>
-                  {% include '_forms/field.html' with field=form.estado %}
-                </div>
-                <div class="md:col-span-1 lg:col-span-1">
-                  {% include '_forms/field.html' with field=form.cep %}
-                </div>
+              <div>
+                {% include '_forms/field.html' with field=form.estado %}
+              </div>
+              <div class="md:col-span-1 lg:col-span-1">
+                {% include '_forms/field.html' with field=form.cep %}
               </div>
             </div>
           </div>
-        {% endwith %}
+        </div>
 
         <div class="grid gap-6 md:grid-cols-2">
           <div>
