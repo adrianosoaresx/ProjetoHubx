@@ -76,13 +76,13 @@
       {% if avatar_preview %}
         <img src="{{ avatar_preview.url }}" alt="{{ form.avatar.label }}" class="w-32 h-32 object-cover mb-2" loading="lazy">
       {% endif %}
-      {% include '_forms/field.html' with field=form.avatar|attr:'accept:image/*' %}
+      {% include '_forms/field.html' with field=form.avatar %}
     </div>
     <div>
       {% if cover_preview %}
         <img src="{{ cover_preview.url }}" alt="{{ form.cover.label }}" class="w-48 h-32 object-cover mb-2 rounded" loading="lazy">
       {% endif %}
-      {% include '_forms/field.html' with field=form.cover|attr:'accept:image/*' %}
+      {% include '_forms/field.html' with field=form.cover %}
     </div>
   </div>
 </div>
