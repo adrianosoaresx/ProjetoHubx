@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 from io import BytesIO
+from pathlib import Path
 
 import qrcode
 from django.conf import settings
@@ -22,6 +23,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
+from accounts.models import MediaTag
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -324,6 +326,56 @@ class FeedbackNota(TimeStampedModel, SoftDeleteModel):
         verbose_name = "Feedback de Nota"
         verbose_name_plural = "Feedbacks de Notas"
         unique_together = ("usuario", "evento")
+
+
+class EventoMidia(TimeStampedModel, SoftDeleteModel):
+    """Arquivos de mídia associados a um evento."""
+
+    evento = models.ForeignKey(
+        Evento,
+        on_delete=models.CASCADE,
+        related_name="midias",
+    )
+    file = models.FileField(upload_to="eventos/portfolio/")
+    descricao = models.CharField("Descrição", max_length=255, blank=True)
+    tags = models.ManyToManyField(MediaTag, related_name="evento_midias", blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        verbose_name = "Mídia do Evento"
+        verbose_name_plural = "Portfólio do Evento"
+
+    @property
+    def media_type(self) -> str:
+        ext = Path(self.file.name).suffix.lower()
+        if ext in {".jpg", ".jpeg", ".png", ".gif"}:
+            return "image"
+        if ext in {".mp4", ".webm"}:
+            return "video"
+        if ext == ".pdf":
+            return "pdf"
+        return "other"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.file:
+            validate_uploaded_file(self.file)
+
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+        *,
+        soft: bool = True,
+    ) -> None:  # type: ignore[override]
+        if not soft and self.file:
+            self.file.delete(save=False)
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
+
+    def __str__(self) -> str:  # pragma: no cover - representação simples
+        return f"{self.evento.titulo} - {self.file.name}"
 
 
 class EventoLog(TimeStampedModel, SoftDeleteModel):

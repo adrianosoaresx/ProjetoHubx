@@ -9,6 +9,8 @@ from .views import (
     EventoDetailView,
     EventoFeedbackView,
     EventoRemoverInscritoModalView,
+    EventoPortfolioDeleteView,
+    EventoPortfolioUpdateView,
     EventoRemoveInscritoView,
     EventoSubscribeView,
     EventoUpdateView,
@@ -75,6 +77,16 @@ urlpatterns = [
         "evento/<uuid:pk>/feedback/",
         EventoFeedbackView.as_view(),
         name="evento_feedback",
+    ),
+    path(
+        "evento/portfolio/<int:pk>/editar/",
+        EventoPortfolioUpdateView.as_view(),
+        name="evento_portfolio_edit",
+    ),
+    path(
+        "evento/portfolio/<int:pk>/excluir/",
+        EventoPortfolioDeleteView.as_view(),
+        name="evento_portfolio_delete",
     ),
     path("checkin/<int:pk>/", views.checkin_form, name="inscricao_checkin_form"),
     path(
