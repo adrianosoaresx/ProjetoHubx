@@ -3,7 +3,7 @@
   class="card"
   data-portfolio-root
   data-nucleo-id="{{ nucleo.pk }}"
-  data-portfolio-force-open="{% if portfolio_show_form %}true{% else %}false{% endif %}"
+  data-portfolio-force-open="{% if portfolio_force_open %}true{% else %}false{% endif %}"
 >
   <details class="group">
     <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
@@ -52,12 +52,15 @@
       {% endif %}
 
       {% if not portfolio_show_form %}
-        {% if portfolio_filter_form %}
-          <form method="get" class="space-y-4">
-            {% include '_forms/field.html' with field=portfolio_filter_form.q %}
-          </form>
-        {% endif %}
-        <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" data-portfolio-list>
+        {% if portfolio_show_detail and portfolio_selected_media %}
+          {% include 'nucleos/portfolio/detail.html' with media=portfolio_selected_media back_url=portfolio_detail_back_url pode_gerenciar_portfolio=pode_gerenciar_portfolio %}
+        {% else %}
+          {% if portfolio_filter_form %}
+            <form method="get" class="space-y-4">
+              {% include '_forms/field.html' with field=portfolio_filter_form.q %}
+            </form>
+          {% endif %}
+          <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" data-portfolio-list>
           {% for media in portfolio_medias %}
             <article class="card p-0" data-media-card data-media-id="{{ media.pk }}" data-created-at="{{ media.created_at|date:'c' }}">
               <div class="card-body relative space-y-5">
@@ -118,41 +121,43 @@
                   <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
                   <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
                 </header>
-                {% if media.media_type == 'pdf' %}
-                  <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
-                    <a href="{{ media.file.url }}" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]" target="_blank" rel="noopener">
+                {% with base=portfolio_query_base %}
+                  {% if media.media_type == 'pdf' %}
+                    <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+                      <a href="{{ request.path }}?{% if base %}{{ base }}&{% endif %}portfolio_midia={{ media.pk }}" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]">
                       <span class="flex items-center gap-3">
                         <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
                           {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
                         </span>
                         <span class="truncate">{% trans "Visualizar PDF" %}</span>
                       </span>
-                      {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
+                        {% lucide 'eye' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
                     </a>
                   </div>
-                {% else %}
-                  <a href="{{ media.file.url }}" class="block" target="_blank" rel="noopener">
-                    {% if media.media_type == 'image' %}
-                      <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
-                        <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
-                          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full max-h-[320px] object-contain" loading="lazy" />
-                        </div>
-                      </figure>
-                    {% elif media.media_type == 'video' %}
-                      <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
-                        <div class="feed-video-wrapper">
-                          <div class="feed-video-frame">
-                            <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
+                  {% else %}
+                    <a href="{{ request.path }}?{% if base %}{{ base }}&{% endif %}portfolio_midia={{ media.pk }}" class="block">
+                      {% if media.media_type == 'image' %}
+                        <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+                          <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
+                            <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full max-h-[320px] object-contain" loading="lazy" />
                           </div>
+                        </figure>
+                      {% elif media.media_type == 'video' %}
+                        <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
+                          <div class="feed-video-wrapper">
+                            <div class="feed-video-frame">
+                              <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
+                            </div>
+                          </div>
+                        </figure>
+                      {% else %}
+                        <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
+                          {{ media.file.name }}
                         </div>
-                      </figure>
-                    {% else %}
-                      <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
-                        {{ media.file.name }}
-                      </div>
-                    {% endif %}
-                  </a>
-                {% endif %}
+                      {% endif %}
+                    </a>
+                  {% endif %}
+                {% endwith %}
                 {% if media.tags.all %}
                   <div class="flex flex-wrap gap-2">
                     {% for tag in media.tags.all %}
@@ -166,6 +171,7 @@
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhuma mídia cadastrada para este núcleo." %}</p>
           {% endfor %}
         </div>
+        {% endif %}
       {% endif %}
     </div>
   </details>

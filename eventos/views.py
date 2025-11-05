@@ -733,6 +733,32 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         else:
             portfolio_form = None
 
+        portfolio_selected_media: EventoMidia | None = None
+        portfolio_show_detail = False
+        portfolio_force_open = portfolio_show_form
+        portfolio_media_id = self.request.GET.get("portfolio_midia")
+        if portfolio_media_id:
+            portfolio_selected_media = next(
+                (
+                    media
+                    for media in all_portfolio_medias
+                    if str(media.pk) == str(portfolio_media_id)
+                ),
+                None,
+            )
+            if portfolio_selected_media is not None:
+                portfolio_show_detail = True
+                portfolio_show_form = False
+                portfolio_force_open = True
+
+        params_without_detail = self.request.GET.copy()
+        params_without_detail.pop("portfolio_midia", None)
+        params_without_detail.pop("portfolio_adicionar", None)
+        portfolio_query_base = params_without_detail.urlencode()
+        portfolio_detail_back_url = self.request.path
+        if portfolio_query_base:
+            portfolio_detail_back_url = f"{self.request.path}?{portfolio_query_base}"
+
         context.update(
             {
                 "pode_gerenciar_portfolio": pode_gerenciar_portfolio,
@@ -742,6 +768,11 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "portfolio_query": portfolio_query,
                 "portfolio_form": portfolio_form,
                 "portfolio_show_form": portfolio_show_form,
+                "portfolio_selected_media": portfolio_selected_media,
+                "portfolio_show_detail": portfolio_show_detail,
+                "portfolio_force_open": portfolio_force_open,
+                "portfolio_query_base": portfolio_query_base,
+                "portfolio_detail_back_url": portfolio_detail_back_url,
             }
         )
 

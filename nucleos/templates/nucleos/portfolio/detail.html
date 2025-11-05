@@ -1,0 +1,73 @@
+{% load i18n lucide_icons %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Detalhes do portfólio" %}</h3>
+      {% if media.descricao %}
+        <p class="text-sm text-[var(--text-secondary)]">{{ media.descricao }}</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card-body space-y-6">
+    <div class="mx-auto w-full max-w-3xl space-y-4">
+      {% if media.media_type == 'image' %}
+        <div class="aspect-video overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
+          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-full w-full object-contain" loading="lazy" />
+        </div>
+      {% elif media.media_type == 'video' %}
+        <div class="aspect-video overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
+          <video src="{{ media.file.url }}" class="h-full w-full" controls aria-label="{{ media.descricao }}">
+            {% trans "Seu navegador não suporta o elemento de vídeo." %}
+          </video>
+        </div>
+      {% elif media.media_type == 'pdf' %}
+        <div class="overflow-hidden rounded-lg bg-[var(--bg-tertiary)]">
+          <div class="flex flex-col items-center justify-center gap-6 py-16">
+            <span class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-primary)]">
+              {% lucide 'file-text' class='h-10 w-10' aria_hidden='true' %}
+            </span>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+              <a href="{{ media.file.url }}" class="btn btn-primary" target="_blank" rel="noopener" aria-label="{% trans 'Abrir PDF em uma nova aba' %}">
+                {% lucide 'external-link' class='w-4 h-4' aria_hidden='true' %}
+                {% trans "Abrir PDF" %}
+              </a>
+              <a href="{{ media.file.url }}" class="btn btn-secondary" download aria-label="{% trans 'Baixar PDF' %}">
+                {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}
+                {% trans "Baixar PDF" %}
+              </a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="flex justify-center">
+          <a href="{{ media.file.url }}" class="btn btn-secondary" download>
+            {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}
+            {{ media.file.name }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    {% if media.tags.all %}
+      <div class="flex flex-wrap gap-2">
+        {% for tag in media.tags.all %}
+          <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="flex items-center justify-between gap-4 pt-4 border-t border-[var(--border)] flex-wrap">
+      <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+      <div class="flex flex-wrap justify-end gap-3">
+        <a href="{{ back_url }}" class="btn btn-secondary inline-flex items-center gap-2">
+          {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
+          {% trans "Voltar" %}
+        </a>
+        {% if pode_gerenciar_portfolio %}
+          <a href="{% url 'nucleos:portfolio_edit' media.pk %}" class="btn btn-primary inline-flex items-center gap-2">
+            {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+            {% trans "Editar" %}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
