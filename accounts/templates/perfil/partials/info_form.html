@@ -1,66 +1,233 @@
 {% load widget_tweaks i18n %}
-<div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">{% trans "Informações do perfil" %}</h3>
-  <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
+<div class="card max-w-4xl mx-auto" id="perfil-info-card">
+  <div class="card-header space-y-1">
+    <h3 class="text-xl font-semibold">{% trans "Informações do perfil" %}</h3>
+    <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
+  </div>
 
-  {% if not is_self %}
-    <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-      {% blocktrans with nome=target_user.get_full_name %}
-        Você está editando o perfil de {{ nome }}.
-      {% endblocktrans %}
-    </div>
-  {% endif %}
-
-  <form
-    method="post"
-    action="{% url 'accounts:perfil_sections_info' %}"
-    enctype="multipart/form-data"
-    class="space-y-6"
-    hx-post="{% url 'accounts:perfil_sections_info' %}"
-    hx-target="#perfil-content"
-    hx-swap="innerHTML"
-    hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
-  >
-    {% csrf_token %}
+  <div class="card-body space-y-6">
     {% if not is_self %}
-      <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
-      <input type="hidden" name="username" value="{{ target_user.username }}" />
+      <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+        {% blocktrans with nome=target_user.get_full_name %}
+          Você está editando o perfil de {{ nome }}.
+        {% endblocktrans %}
+      </div>
     {% endif %}
-    {% for field in form %}
-      {% if field.name != "area_atuacao" and field.name != "descricao_atividade" %}
-        {% include '_forms/field.html' with field=field %}
-        {% if field.name == "cnpj" %}
-          <div class="grid gap-4 md:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">
-                {{ form.area_atuacao.label }}
-              </label>
-              {{ form.area_atuacao }}
-              {% if form.area_atuacao.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.area_atuacao.errors.0 }}</p>
-              {% endif %}
-            </div>
 
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700">
-                {{ form.descricao_atividade.label }}
-              </label>
-              {{ form.descricao_atividade }}
-              {% if form.descricao_atividade.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ form.descricao_atividade.errors.0 }}</p>
-              {% endif %}
+    <form
+      method="post"
+      action="{% url 'accounts:perfil_sections_info' %}"
+      enctype="multipart/form-data"
+      class="space-y-8"
+      hx-post="{% url 'accounts:perfil_sections_info' %}"
+      hx-target="#perfil-content"
+      hx-swap="innerHTML"
+      hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
+      id="perfil-info-form"
+    >
+      {% csrf_token %}
+      {% if not is_self %}
+        <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
+        <input type="hidden" name="username" value="{{ target_user.username }}" />
+      {% endif %}
+
+      <div class="space-y-8">
+        <div>
+          {% include '_forms/field.html' with field=form.username %}
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.razao_social %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.nome_fantasia %}
+          </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.cnpj %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.cpf %}
+          </div>
+        </div>
+
+        <div>
+          {% include '_forms/field.html' with field=form.area_atuacao %}
+        </div>
+
+        <div>
+          {% include '_forms/field.html' with field=form.descricao_atividade %}
+        </div>
+
+        {% with biografia_has_errors=form.biografia.errors %}
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              data-accordion-toggle
+              aria-expanded="{{ biografia_has_errors|yesno:'true,false' }}"
+              aria-controls="perfil-biografia-panel"
+            >
+              <span class="text-sm font-medium text-[var(--text-primary)]">{{ form.biografia.label }}</span>
+              <svg
+                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div
+              id="perfil-biografia-panel"
+              class="border-t border-[var(--border)] px-4 py-4 {% if not biografia_has_errors %}hidden{% endif %}"
+              data-accordion-panel
+            >
+              {% include '_forms/field.html' with field=form.biografia hide_label=True %}
             </div>
           </div>
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-    <div class="pt-4">
-      <button type="submit" class="btn btn-primary">
-        {% trans "Salvar alterações" %}
-      </button>
-      <div class="mt-6 text-center">
-        <a href="{% url 'accounts:perfil' %}" class="link">← {% trans "Voltar" %}</a>
+        {% endwith %}
+
+        <div>
+          {% include '_forms/field.html' with field=form.contato %}
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.phone_number %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.whatsapp %}
+          </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.birth_date %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.email %}
+          </div>
+        </div>
+
+        <div>
+          {% include '_forms/field.html' with field=form.endereco %}
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            {% include '_forms/field.html' with field=form.cidade %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.estado %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.cep %}
+          </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.avatar %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.cover %}
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            data-accordion-toggle
+            aria-expanded="{% if form.facebook.errors or form.twitter.errors or form.instagram.errors or form.linkedin.errors %}true{% else %}false{% endif %}"
+            aria-controls="perfil-redes-panel"
+          >
+            <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Redes sociais" %}</span>
+            <svg
+              class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div
+            id="perfil-redes-panel"
+            class="border-t border-[var(--border)] px-4 py-4 {% if not form.facebook.errors and not form.twitter.errors and not form.instagram.errors and not form.linkedin.errors %}hidden{% endif %}"
+            data-accordion-panel
+          >
+            <div class="grid gap-6 md:grid-cols-2">
+              <div>
+                {% include '_forms/field.html' with field=form.facebook %}
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.twitter %}
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.instagram %}
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.linkedin %}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </form>
+
+      <div class="flex flex-col gap-4 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <a href="{% url 'accounts:perfil' %}" class="link">← {% trans "Voltar" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Salvar alterações" %}</button>
+      </div>
+    </form>
+  </div>
 </div>
+<script>
+  (function () {
+    const container = document.getElementById('perfil-info-card');
+    if (!container) {
+      return;
+    }
+    const accordions = container.querySelectorAll('[data-accordion]');
+    accordions.forEach((accordion) => {
+      const toggle = accordion.querySelector('[data-accordion-toggle]');
+      const panel = accordion.querySelector('[data-accordion-panel]');
+      const icon = accordion.querySelector('[data-accordion-icon]');
+      if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+        return;
+      }
+
+      const setExpanded = (expanded) => {
+        toggle.setAttribute('aria-expanded', String(expanded));
+        panel.classList.toggle('hidden', !expanded);
+        if (icon instanceof HTMLElement) {
+          icon.classList.toggle('rotate-180', expanded);
+        }
+      };
+
+      const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      setExpanded(initialExpanded);
+
+      toggle.addEventListener('click', () => {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isExpanded);
+      });
+    });
+  })();
+</script>
