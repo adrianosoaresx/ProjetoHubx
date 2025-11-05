@@ -103,7 +103,7 @@
                     {% lucide 'qr-code' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
                     <span class="text-sm font-semibold">{% trans "Exibir QR Code" %}</span>
                   </span>
-                  {% lucide 'chevron-down' class='w-4 h-4 text-[var(--text-secondary)] transition data-[state=open]:rotate-180' aria_hidden='true' data-state-indicator data_state='closed' %}
+                  {% lucide 'chevron-down' class='w-4 h-4 text-[var(--text-secondary)] transition data-[state=open]:rotate-180' aria_hidden='true' data_state_indicator='true' data_state='closed' %}
                 </button>
                 <p class="mt-2 text-xs text-[var(--text-secondary)]">
                   {% blocktrans trimmed %}Visualize um QR Code com o valor do evento para pagamento imediato.{% endblocktrans %}
