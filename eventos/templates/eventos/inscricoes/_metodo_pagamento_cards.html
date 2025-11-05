@@ -230,51 +230,145 @@
         </div>
       </label>
 
-      <label
-        class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
-        for="{{ base_id }}_faturar"
-        data-payment-card
-        data-payment-card-value="faturar"
-      >
-        <input
-          type="radio"
-          name="{{ field.html_name }}"
-          value="faturar"
-          class="sr-only peer"
-          id="{{ base_id }}_faturar"
-          {% if selected == "faturar" %}checked{% endif %}
-          {% if disabled %}disabled{% endif %}
-          {% if field.errors %}aria-invalid="true"{% endif %}
-          {% if field.field.required and not disabled %}required{% endif %}
-        />
-        <div
-          class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
-          data-payment-card-body
+      <div class="grid gap-4 md:grid-cols-3">
+        <label
+          class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+          for="{{ base_id }}_faturar_avista"
+          data-payment-card
+          data-payment-card-value="faturar_avista"
         >
-          <span
-            class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
-            aria-hidden="true"
-          >
-            {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
-          </span>
-          <div class="flex items-center gap-2 text-[var(--text-primary)]">
-            {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
-            <span class="text-base font-semibold">{% trans "Faturar" %}</span>
-          </div>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
-            {% trans "Pagar na fatura." %}
-          </p>
+          <input
+            type="radio"
+            name="{{ field.html_name }}"
+            value="faturar_avista"
+            class="sr-only peer"
+            id="{{ base_id }}_faturar_avista"
+            {% if selected == "faturar_avista" %}checked{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if field.errors %}aria-invalid="true"{% endif %}
+            {% if field.field.required and not disabled %}required{% endif %}
+          />
           <div
-            class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
-            data-payment-card-accordion
-            data-payment-accordion-value="faturar"
+            class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+            data-payment-card-body
           >
-            <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans trimmed %}O valor será incluído na próxima fatura conforme acordo com a organização.{% endblocktrans %}
+            <span
+              class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+              aria-hidden="true"
+            >
+              {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+            </span>
+            <div class="flex items-center gap-2 text-[var(--text-primary)]">
+              {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+              <span class="text-base font-semibold">{% trans "Faturar à vista" %}</span>
+            </div>
+            <p class="mt-2 text-sm text-[var(--text-secondary)]">
+              {% trans "Pague o valor integral na próxima fatura." %}
             </p>
+            <div
+              class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+              data-payment-card-accordion
+              data-payment-accordion-value="faturar_avista"
+            >
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans trimmed %}O valor será incluído integralmente na próxima fatura conforme acordo com a organização.{% endblocktrans %}
+              </p>
+            </div>
           </div>
-        </div>
-      </label>
+        </label>
+
+        <label
+          class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+          for="{{ base_id }}_faturar_2x"
+          data-payment-card
+          data-payment-card-value="faturar_2x"
+        >
+          <input
+            type="radio"
+            name="{{ field.html_name }}"
+            value="faturar_2x"
+            class="sr-only peer"
+            id="{{ base_id }}_faturar_2x"
+            {% if selected == "faturar_2x" %}checked{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if field.errors %}aria-invalid="true"{% endif %}
+            {% if field.field.required and not disabled %}required{% endif %}
+          />
+          <div
+            class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+            data-payment-card-body
+          >
+            <span
+              class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+              aria-hidden="true"
+            >
+              {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+            </span>
+            <div class="flex items-center gap-2 text-[var(--text-primary)]">
+              {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+              <span class="text-base font-semibold">{% trans "Faturar em 2x" %}</span>
+            </div>
+            <p class="mt-2 text-sm text-[var(--text-secondary)]">
+              {% trans "Divida o valor em duas faturas consecutivas." %}
+            </p>
+            <div
+              class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+              data-payment-card-accordion
+              data-payment-accordion-value="faturar_2x"
+            >
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans trimmed %}O valor será faturado em duas parcelas conforme acordo com a organização.{% endblocktrans %}
+              </p>
+            </div>
+          </div>
+        </label>
+
+        <label
+          class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
+          for="{{ base_id }}_faturar_3x"
+          data-payment-card
+          data-payment-card-value="faturar_3x"
+        >
+          <input
+            type="radio"
+            name="{{ field.html_name }}"
+            value="faturar_3x"
+            class="sr-only peer"
+            id="{{ base_id }}_faturar_3x"
+            {% if selected == "faturar_3x" %}checked{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if field.errors %}aria-invalid="true"{% endif %}
+            {% if field.field.required and not disabled %}required{% endif %}
+          />
+          <div
+            class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
+            data-payment-card-body
+          >
+            <span
+              class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
+              aria-hidden="true"
+            >
+              {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+            </span>
+            <div class="flex items-center gap-2 text-[var(--text-primary)]">
+              {% lucide 'file-text' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
+              <span class="text-base font-semibold">{% trans "Faturar em 3x" %}</span>
+            </div>
+            <p class="mt-2 text-sm text-[var(--text-secondary)]">
+              {% trans "Divida o valor em três faturas consecutivas." %}
+            </p>
+            <div
+              class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
+              data-payment-card-accordion
+              data-payment-accordion-value="faturar_3x"
+            >
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans trimmed %}O valor será faturado em três parcelas conforme acordo com a organização.{% endblocktrans %}
+              </p>
+            </div>
+          </div>
+        </label>
+      </div>
     {% endwith %}
   </div>
 
@@ -361,7 +455,11 @@
       }
 
       const selectedInput = group.querySelector('input[type="radio"]:checked');
-      const shouldHide = !!(selectedInput && selectedInput.value === 'faturar');
+      const shouldHide = !!(
+        selectedInput &&
+        typeof selectedInput.value === 'string' &&
+        selectedInput.value.startsWith('faturar')
+      );
 
       proofField.classList.toggle('hidden', shouldHide);
       if (shouldHide) {

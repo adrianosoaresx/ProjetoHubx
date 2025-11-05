@@ -190,6 +190,36 @@ def test_admin_pode_editar_inscricao(evento, usuario_logado, client, organizacao
     assert inscricao.metodo_pagamento == "pix"
 
 
+def test_admin_pode_definir_faturamento_parcelado(
+    evento, usuario_logado, client, organizacao
+):
+    outro_usuario = User.objects.create_user(
+        username="participante-faturar",
+        email="participante-faturar@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=outro_usuario,
+        status="confirmada",
+    )
+    url = reverse("eventos:inscricao_editar", args=[inscricao.pk])
+
+    response_post = client.post(
+        url,
+        {
+            "valor_pago": f"{evento.valor:.2f}",
+            "metodo_pagamento": "faturar_2x",
+        },
+    )
+
+    assert response_post.status_code == 302
+    inscricao.refresh_from_db()
+    assert inscricao.metodo_pagamento == "faturar_2x"
+
+
 def test_admin_ve_acoes_de_inscricao_no_detalhe(evento, usuario_logado, client, organizacao):
     participante = User.objects.create_user(
         username="inscrito",
