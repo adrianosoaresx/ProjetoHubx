@@ -1,0 +1,37 @@
+{% load i18n lucide_icons %}
+<form
+  method="post"
+  action="{% url 'eventos:inscricao_toggle_validacao' inscricao.pk %}"
+  class="inline-flex"
+  hx-post="{% url 'eventos:inscricao_toggle_validacao' inscricao.pk %}"
+  hx-target="closest form"
+  hx-swap="outerHTML"
+  hx-disabled-elt="button"
+>
+  {% csrf_token %}
+  {% if inscricao.pagamento_validado %}
+    <button
+      type="submit"
+      class="btn btn-success btn-sm flex items-center gap-2"
+      aria-pressed="true"
+      title="{% trans 'Reverter validação do pagamento' %}"
+    >
+      <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
+        {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
+      </span>
+      <span>{% trans "Validado" %}</span>
+    </button>
+  {% else %}
+    <button
+      type="submit"
+      class="btn btn-secondary btn-sm flex items-center gap-2"
+      aria-pressed="false"
+      title="{% trans 'Validar pagamento informado' %}"
+    >
+      <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
+        {% lucide 'badge-check' class='h-3.5 w-3.5' aria_hidden='true' %}
+      </span>
+      <span>{% trans "Validar" %}</span>
+    </button>
+  {% endif %}
+</form>

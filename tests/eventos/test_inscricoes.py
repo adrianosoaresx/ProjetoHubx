@@ -220,6 +220,105 @@ def test_admin_pode_definir_faturamento_parcelado(
     assert inscricao.metodo_pagamento == "faturar_2x"
 
 
+def test_admin_pode_validar_pagamento(evento, usuario_logado, client, organizacao):
+    participante = User.objects.create_user(
+        username="participante-validacao",
+        email="participante-validacao@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=participante,
+        status="confirmada",
+        metodo_pagamento="pix",
+    )
+
+    url = reverse("eventos:inscricao_toggle_validacao", args=[inscricao.pk])
+    response = client.post(url)
+
+    assert response.status_code == 302
+    inscricao.refresh_from_db()
+    assert inscricao.pagamento_validado is True
+
+
+def test_validacao_pagamento_htmx(evento, usuario_logado, client, organizacao):
+    participante = User.objects.create_user(
+        username="participante-htmx",
+        email="participante-htmx@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=participante,
+        status="confirmada",
+        metodo_pagamento="pix",
+    )
+
+    url = reverse("eventos:inscricao_toggle_validacao", args=[inscricao.pk])
+    response = client.post(url, HTTP_HX_REQUEST="true")
+
+    assert response.status_code == 200
+    assert b"Validado" in response.content
+
+
+def test_nao_permite_validacao_de_outra_organizacao(evento, usuario_logado, client):
+    outra_org = Organizacao.objects.create(nome="Outra Org", cnpj="12345678000199")
+    outro_evento = Evento.objects.create(
+        titulo="Outro Evento",
+        descricao="Outro",
+        data_inicio=make_aware(datetime.now() + timedelta(days=3)),
+        data_fim=make_aware(datetime.now() + timedelta(days=4)),
+        local="Rua B",
+        cidade="Cidade B",
+        estado="ST",
+        cep="00000-000",
+        organizacao=outra_org,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_presentes=0,
+        participantes_maximo=10,
+        valor=Decimal("50.00"),
+    )
+    participante = User.objects.create_user(
+        username="externo",
+        email="externo@example.com",
+        password="12345",
+        user_type=UserType.ASSOCIADO,
+        organizacao=outra_org,
+    )
+    inscricao = InscricaoEvento.objects.create(
+        evento=outro_evento,
+        user=participante,
+        status="confirmada",
+    )
+
+    url = reverse("eventos:inscricao_toggle_validacao", args=[inscricao.pk])
+    response = client.post(url)
+
+    assert response.status_code == 403
+    inscricao.refresh_from_db()
+    assert inscricao.pagamento_validado is False
+
+
+def test_usuario_sem_permissao_nao_valida(evento, usuario_comum, client):
+    inscricao = InscricaoEvento.objects.create(
+        evento=evento,
+        user=usuario_comum,
+        status="confirmada",
+    )
+
+    url = reverse("eventos:inscricao_toggle_validacao", args=[inscricao.pk])
+    response = client.post(url)
+
+    assert response.status_code == 403
+    inscricao.refresh_from_db()
+    assert inscricao.pagamento_validado is False
+
+
 def test_admin_ve_acoes_de_inscricao_no_detalhe(evento, usuario_logado, client, organizacao):
     participante = User.objects.create_user(
         username="inscrito",

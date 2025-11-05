@@ -14,6 +14,7 @@ from .views import (
     EventoUpdateView,
     InscricaoEventoCreateView,
     InscricaoEventoUpdateView,
+    InscricaoTogglePagamentoValidacaoView,
     InscricaoEventoListView,
 )
 
@@ -39,6 +40,11 @@ urlpatterns = [
         "inscricoes/<int:pk>/editar/",
         InscricaoEventoUpdateView.as_view(),
         name="inscricao_editar",
+    ),
+    path(
+        "inscricoes/<int:pk>/validacao/",
+        InscricaoTogglePagamentoValidacaoView.as_view(),
+        name="inscricao_toggle_validacao",
     ),
     path(
         "evento/<uuid:pk>/inscrever/",

@@ -1,5 +1,6 @@
 import calendar
 from collections import Counter
+from decimal import Decimal
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
@@ -598,6 +599,18 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             .select_related("user")
         )
         inscricoes_confirmadas = [inscricao for inscricao in inscricoes if inscricao.status == "confirmada"]
+        inscricoes_financeiro = [
+            inscricao for inscricao in inscricoes if inscricao.status != "cancelada"
+        ]
+        inscricoes_financeiro.sort(
+            key=lambda ins: (
+                getattr(ins.user, "contato", None)
+                or getattr(ins.user, "display_name", None)
+                or ins.user.get_full_name()
+                or ins.user.username
+                or ""
+            ).lower()
+        )
         status_counts = Counter(inscricao.status for inscricao in inscricoes)
         total_confirmadas = status_counts.get("confirmada", 0)
         total_pendentes = status_counts.get("pendente", 0)
@@ -618,6 +631,27 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             UserType.OPERADOR.value,
             UserType.COORDENADOR.value,
         }
+        pode_ver_financeiro = tipo_usuario in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+        }
+        total_pagamentos_validados = sum(
+            1 for inscricao in inscricoes_financeiro if inscricao.pagamento_validado
+        )
+        total_pagamentos_pendentes = max(
+            len(inscricoes_financeiro) - total_pagamentos_validados,
+            0,
+        )
+        valor_total_pagamentos_validados = Decimal("0.00")
+        for inscricao in inscricoes_financeiro:
+            if not inscricao.pagamento_validado:
+                continue
+            valor_referencia = inscricao.valor_pago
+            if valor_referencia is None:
+                valor_referencia = getattr(inscricao.evento, "valor", None)
+            if valor_referencia is None:
+                continue
+            valor_total_pagamentos_validados += Decimal(valor_referencia)
         if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
             pode_editar_evento = True
             pode_excluir_evento = True
@@ -640,9 +674,14 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "media_feedback": media_feedback,
                 "total_feedbacks": total_feedbacks,
                 "inscricoes_confirmadas": inscricoes_confirmadas,
+                "inscricoes_financeiro": inscricoes_financeiro,
                 "pode_editar_evento": pode_editar_evento,
                 "pode_excluir_evento": pode_excluir_evento,
                 "pode_gerenciar_inscricoes": pode_gerenciar_inscricoes,
+                "pode_ver_financeiro": pode_ver_financeiro,
+                "total_pagamentos_validados": total_pagamentos_validados,
+                "total_pagamentos_pendentes": total_pagamentos_pendentes,
+                "valor_total_pagamentos_validados": valor_total_pagamentos_validados,
                 "pode_ver_campos_restritos": _usuario_tem_acesso_restrito_evento(user, evento),
             }
         )
@@ -916,6 +955,44 @@ class InscricaoEventoUpdateView(
         return reverse_lazy(
             "eventos:evento_detalhe", kwargs={"pk": self.object.evento.pk}
         )
+
+
+class InscricaoTogglePagamentoValidacaoView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOrOperatorRequiredMixin,
+    View,
+):
+    template_name = "eventos/partials/financeiro_validacao_button.html"
+
+    def post(self, request, pk):
+        inscricao = get_object_or_404(
+            InscricaoEvento.objects.select_related("evento", "user"),
+            pk=pk,
+            deleted=False,
+        )
+        tipo_usuario = _get_tipo_usuario(request.user)
+        if tipo_usuario not in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+            raise PermissionDenied
+        if (
+            getattr(request.user, "organizacao_id", None)
+            != getattr(inscricao.evento, "organizacao_id", None)
+        ):
+            raise PermissionDenied
+
+        inscricao.pagamento_validado = not inscricao.pagamento_validado
+        inscricao.save(update_fields=["pagamento_validado", "updated_at"])
+
+        if request.headers.get("HX-Request"):
+            context = {"inscricao": inscricao}
+            return TemplateResponse(request, self.template_name, context)
+
+        if inscricao.pagamento_validado:
+            messages.success(request, _("Pagamento validado com sucesso."))
+        else:
+            messages.info(request, _("Validação de pagamento revertida."))
+
+        return redirect("eventos:evento_detalhe", inscricao.evento.pk)
 
 
 class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
