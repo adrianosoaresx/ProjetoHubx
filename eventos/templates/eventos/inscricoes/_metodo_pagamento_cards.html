@@ -88,19 +88,55 @@
                   {% endif %}
                 </span>
               </button>
-              <button
-                type="button"
-                class="flex h-full w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
-                data-pix-qrcode-button
+              <div
+                class="flex h-full w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
+                data-pix-qrcode-card
               >
-                <span class="flex items-center gap-2 text-[var(--text-primary)]">
-                  {% lucide 'qr-code' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
-                  <span class="text-sm font-semibold">{% trans "Exibir QR Code" %}</span>
-                </span>
-                <span class="mt-2 text-xs text-[var(--text-secondary)]">
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-2 text-left text-[var(--text-primary)] transition hover:text-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  data-pix-qrcode-button
+                  aria-expanded="false"
+                  aria-controls="{{ base_id }}_pix_qrcode_panel"
+                >
+                  <span class="flex items-center gap-2">
+                    {% lucide 'qr-code' class='w-4 h-4 text-primary-500' aria_hidden='true' %}
+                    <span class="text-sm font-semibold">{% trans "Exibir QR Code" %}</span>
+                  </span>
+                  {% lucide 'chevron-down' class='w-4 h-4 text-[var(--text-secondary)] transition data-[state=open]:rotate-180' aria_hidden='true' data-state-indicator data_state='closed' %}
+                </button>
+                <p class="mt-2 text-xs text-[var(--text-secondary)]">
                   {% blocktrans trimmed %}Visualize um QR Code com o valor do evento para pagamento imediato.{% endblocktrans %}
-                </span>
-              </button>
+                </p>
+                <div
+                  id="{{ base_id }}_pix_qrcode_panel"
+                  class="mt-3 hidden rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-primary)] p-3"
+                  data-pix-qrcode-panel
+                  aria-hidden="true"
+                >
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% trans "Use o aplicativo do seu banco para escanear o código." %}
+                  </p>
+                  <div class="mt-3 flex justify-center">
+                    <div
+                      class="rounded-lg bg-white p-3"
+                      data-pix-qr-container
+                      aria-live="polite"
+                      aria-busy="false"
+                    ></div>
+                  </div>
+                  <dl class="mt-4 space-y-2 text-xs text-[var(--text-secondary)]">
+                    <div class="flex justify-between gap-4">
+                      <dt class="font-medium text-[var(--text-primary)]">{% trans "Valor" %}</dt>
+                      <dd data-pix-qrcode-amount class="text-right text-[var(--text-primary)]"></dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                      <dt class="font-medium text-[var(--text-primary)]">{% trans "Chave" %}</dt>
+                      <dd data-pix-qrcode-key class="text-right break-all text-[var(--text-primary)]"></dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
             </div>
             <p
               class="mt-2 hidden text-xs font-medium text-primary-600"
@@ -218,54 +254,6 @@
   {% endif %}
 </div>
 
-<div
-  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
-  data-pix-modal
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="pix-modal-title"
-  aria-hidden="true"
->
-  <div class="w-full max-w-sm rounded-xl bg-[var(--surface-primary)] p-6 shadow-xl">
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <h3 id="pix-modal-title" class="text-lg font-semibold text-[var(--text-primary)]">
-          {% trans "QR Code Pix" %}
-        </h3>
-        <p class="mt-1 text-sm text-[var(--text-secondary)]">
-          {% trans "Use o aplicativo do seu banco para escanear o código." %}
-        </p>
-      </div>
-      <button
-        type="button"
-        class="rounded-full bg-[var(--surface-secondary)] p-2 text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
-        data-pix-modal-close
-        aria-label="{% trans 'Fechar modal do QR Code Pix' %}"
-      >
-        {% lucide 'x' class='h-4 w-4' aria_hidden='true' %}
-      </button>
-    </div>
-    <div class="mt-5 flex justify-center">
-      <div
-        class="rounded-lg bg-white p-3"
-        data-pix-qr-container
-        aria-live="polite"
-        aria-busy="false"
-      ></div>
-    </div>
-    <dl class="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
-      <div class="flex justify-between gap-4">
-        <dt class="font-medium text-[var(--text-primary)]">{% trans "Valor" %}</dt>
-        <dd data-pix-modal-amount class="text-right text-[var(--text-primary)]"></dd>
-      </div>
-      <div class="flex justify-between gap-4">
-        <dt class="font-medium text-[var(--text-primary)]">{% trans "Chave" %}</dt>
-        <dd data-pix-modal-key class="text-right break-all"></dd>
-      </div>
-    </dl>
-  </div>
-</div>
-
 <script>
   (() => {
     const SELECTED_CLASSES = [
@@ -279,13 +267,6 @@
     const initializedPixSections = new WeakSet();
     const ACCORDION_HIDDEN_CLASS = "hidden";
 
-    const pixModal = document.querySelector('[data-pix-modal]');
-    const pixModalCloseButton = pixModal ? pixModal.querySelector('[data-pix-modal-close]') : null;
-    const pixModalAmount = pixModal ? pixModal.querySelector('[data-pix-modal-amount]') : null;
-    const pixModalKey = pixModal ? pixModal.querySelector('[data-pix-modal-key]') : null;
-    const pixModalQrContainer = pixModal ? pixModal.querySelector('[data-pix-qr-container]') : null;
-
-    let pixModalLastFocus = null;
     let qrLibraryPromise = null;
 
     function toggleAccordion(card, open) {
@@ -298,6 +279,19 @@
         accordion.removeAttribute('aria-hidden');
       } else {
         accordion.setAttribute('aria-hidden', 'true');
+        const pixPanel = accordion.querySelector('[data-pix-qrcode-panel]');
+        if (pixPanel) {
+          pixPanel.classList.add(ACCORDION_HIDDEN_CLASS);
+          pixPanel.setAttribute('aria-hidden', 'true');
+        }
+        const pixButton = accordion.querySelector('[data-pix-qrcode-button]');
+        if (pixButton) {
+          pixButton.setAttribute('aria-expanded', 'false');
+          const indicator = pixButton.querySelector('[data-state-indicator]');
+          if (indicator) {
+            indicator.setAttribute('data-state', 'closed');
+          }
+        }
       }
     }
 
@@ -439,119 +433,116 @@
       return qrLibraryPromise;
     }
 
-    function closePixModal() {
-      if (!pixModal) {
-        return;
+    function decodeUnicodeEscapes(value) {
+      if (typeof value !== 'string') {
+        return value;
       }
-      pixModal.classList.add('hidden');
-      pixModal.setAttribute('aria-hidden', 'true');
-      pixModal.dataset.open = 'false';
-      if (pixModalQrContainer) {
-        pixModalQrContainer.innerHTML = '';
-        pixModalQrContainer.setAttribute('aria-busy', 'false');
-      }
-      if (pixModalLastFocus && typeof pixModalLastFocus.focus === 'function') {
-        pixModalLastFocus.focus();
-      }
-      pixModalLastFocus = null;
-      if (document.body && document.body.classList) {
-        document.body.classList.remove('overflow-hidden');
-      }
-    }
-
-    function ensurePixModalListeners() {
-      if (!pixModal || pixModal.dataset.initialized === 'true') {
-        return;
-      }
-      pixModal.dataset.initialized = 'true';
-      pixModal.addEventListener('click', (event) => {
-        if (event.target === pixModal) {
-          closePixModal();
+      return value.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+        const code = parseInt(hex, 16);
+        if (Number.isNaN(code)) {
+          return _;
         }
-      });
-      if (pixModalCloseButton) {
-        pixModalCloseButton.addEventListener('click', () => {
-          closePixModal();
-        });
-      }
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && pixModal && pixModal.dataset.open === 'true') {
-          closePixModal();
-        }
+        return String.fromCharCode(code);
       });
     }
 
-    function openPixModal(section) {
-      if (!pixModal) {
+    async function renderPixQrCode(section) {
+      const panel = section.querySelector('[data-pix-qrcode-panel]');
+      if (!panel) {
         return;
       }
-      ensurePixModalListeners();
+      const qrContainer = panel.querySelector('[data-pix-qr-container]');
+      const amountContainer = panel.querySelector('[data-pix-qrcode-amount]');
+      const keyContainer = panel.querySelector('[data-pix-qrcode-key]');
 
       const rawAmount = parseFloat(section.dataset.pixAmount || '0');
       const amount = Number.isFinite(rawAmount) ? rawAmount : 0;
-      const pixKey = (section.dataset.pixKey || '').trim();
-      const description = section.dataset.pixEventTitle || '';
+      const pixKey = decodeUnicodeEscapes(section.dataset.pixKey || '').trim();
+      const description = decodeUnicodeEscapes(section.dataset.pixEventTitle || '');
       const fallbackMessage = section.dataset.copyMissingText || '';
       const qrErrorMessage = section.dataset.qrErrorText || fallbackMessage || '';
 
-      if (pixModalAmount) {
-        pixModalAmount.textContent = formatCurrency(amount);
+      if (amountContainer) {
+        amountContainer.textContent = formatCurrency(amount);
       }
-      if (pixModalKey) {
-        pixModalKey.textContent = pixKey || '-';
-      }
-
-      if (pixModalQrContainer) {
-        pixModalQrContainer.innerHTML = '';
-        pixModalQrContainer.setAttribute('aria-busy', 'true');
+      if (keyContainer) {
+        keyContainer.textContent = pixKey || '-';
       }
 
-      pixModal.classList.remove('hidden');
-      pixModal.setAttribute('aria-hidden', 'false');
-      pixModal.dataset.open = 'true';
-      if (document.body && document.body.classList) {
-        document.body.classList.add('overflow-hidden');
-      }
-      pixModalLastFocus = document.activeElement;
-
-      const focusTarget = pixModalCloseButton || pixModal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-      if (focusTarget && typeof focusTarget.focus === 'function') {
-        requestAnimationFrame(() => focusTarget.focus());
-      }
-
-      if (!pixModalQrContainer) {
+      if (!qrContainer) {
         return;
       }
+
+      qrContainer.innerHTML = '';
+      qrContainer.setAttribute('aria-busy', 'true');
 
       if (!pixKey) {
-        pixModalQrContainer.textContent = fallbackMessage || '';
-        pixModalQrContainer.setAttribute('aria-busy', 'false');
+        if (fallbackMessage) {
+          const message = document.createElement('p');
+          message.className = 'text-sm text-[var(--text-secondary)]';
+          message.textContent = fallbackMessage;
+          qrContainer.appendChild(message);
+        }
+        qrContainer.setAttribute('aria-busy', 'false');
         return;
       }
 
-      const payload = createPixPayload({ key: pixKey, amount, description });
-      ensureQRCodeLibrary()
-        .then((QRCodeClass) => {
-          if (!QRCodeClass) {
-            throw new Error('QRCode constructor unavailable.');
+      try {
+        const QRCodeClass = await ensureQRCodeLibrary();
+        if (!QRCodeClass) {
+          throw new Error('QRCode constructor unavailable.');
+        }
+
+        const payload = createPixPayload({ key: pixKey, amount, description });
+        const qrOptions = {
+          text: payload,
+          width: 192,
+          height: 192,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+        };
+        if (QRCodeClass.CorrectLevel && QRCodeClass.CorrectLevel.M) {
+          qrOptions.correctLevel = QRCodeClass.CorrectLevel.M;
+        }
+
+        new QRCodeClass(qrContainer, qrOptions);
+        qrContainer.setAttribute('aria-busy', 'false');
+      } catch (err) {
+        qrContainer.setAttribute('aria-busy', 'false');
+        const errorElement = document.createElement('p');
+        errorElement.className = 'text-sm text-red-500';
+        errorElement.textContent = qrErrorMessage || '';
+        qrContainer.appendChild(errorElement);
+      }
+    }
+
+    function togglePixQrPanel(section) {
+      const qrButton = section.querySelector('[data-pix-qrcode-button]');
+      const panel = section.querySelector('[data-pix-qrcode-panel]');
+      if (!qrButton || !panel) {
+        return;
+      }
+
+      qrButton.addEventListener('click', async () => {
+        const isHidden = panel.classList.contains(ACCORDION_HIDDEN_CLASS);
+        const indicator = qrButton.querySelector('[data-state-indicator]');
+        if (isHidden) {
+          panel.classList.remove(ACCORDION_HIDDEN_CLASS);
+          panel.removeAttribute('aria-hidden');
+          qrButton.setAttribute('aria-expanded', 'true');
+          if (indicator) {
+            indicator.setAttribute('data-state', 'open');
           }
-          pixModalQrContainer.innerHTML = '';
-          const qrOptions = {
-            text: payload,
-            width: 192,
-            height: 192,
-          };
-          if (QRCodeClass.CorrectLevel && QRCodeClass.CorrectLevel.M) {
-            qrOptions.correctLevel = QRCodeClass.CorrectLevel.M;
+          await renderPixQrCode(section);
+        } else {
+          panel.classList.add(ACCORDION_HIDDEN_CLASS);
+          panel.setAttribute('aria-hidden', 'true');
+          qrButton.setAttribute('aria-expanded', 'false');
+          if (indicator) {
+            indicator.setAttribute('data-state', 'closed');
           }
-          new QRCodeClass(pixModalQrContainer, qrOptions);
-        })
-        .catch(() => {
-          pixModalQrContainer.textContent = qrErrorMessage || '';
-        })
-        .finally(() => {
-          pixModalQrContainer.setAttribute('aria-busy', 'false');
-        });
+        }
+      });
     }
 
     function showPixFeedback(section, message, { isError = false } = {}) {
@@ -574,7 +565,7 @@
     }
 
     async function copyPixKey(section) {
-      const pixKey = (section.dataset.pixKey || '').trim();
+      const pixKey = decodeUnicodeEscapes(section.dataset.pixKey || '').trim();
       const successMessage = section.dataset.copySuccessText || '';
       const errorMessage = section.dataset.copyErrorText || '';
       const missingMessage = section.dataset.copyMissingText || '';
@@ -616,12 +607,7 @@
             copyPixKey(section);
           });
         }
-        const qrButton = section.querySelector('[data-pix-qrcode-button]');
-        if (qrButton) {
-          qrButton.addEventListener('click', () => {
-            openPixModal(section);
-          });
-        }
+        togglePixQrPanel(section);
         initializedPixSections.add(section);
       });
     }
