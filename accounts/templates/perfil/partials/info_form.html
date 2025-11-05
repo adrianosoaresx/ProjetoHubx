@@ -1,11 +1,11 @@
 {% load widget_tweaks i18n %}
-<div class="card max-w-4xl mx-auto" id="perfil-info-card">
-  <div class="card-header space-y-1">
+<div class="max-w-4xl space-y-6 mx-auto" id="perfil-info-card">
+  <div class="space-y-1">
     <h3 class="text-xl font-semibold">{% trans "Informações do perfil" %}</h3>
     <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
   </div>
 
-  <div class="card-body space-y-6">
+  <div class="space-y-6">
     {% if not is_self %}
       <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
         {% blocktrans with nome=target_user.get_full_name %}
@@ -32,11 +32,11 @@
       {% endif %}
 
       <div class="space-y-8">
-        <div>
+        <div class="md:w-1/2">
           {% include '_forms/field.html' with field=form.username %}
         </div>
 
-        <div class="grid gap-6 md:grid-cols-2">
+        <div class="space-y-6">
           <div>
             {% include '_forms/field.html' with field=form.razao_social %}
           </div>
@@ -119,21 +119,53 @@
           </div>
         </div>
 
-        <div>
-          {% include '_forms/field.html' with field=form.endereco %}
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-3">
-          <div>
-            {% include '_forms/field.html' with field=form.cidade %}
+        {% with local_has_errors=form.endereco.errors or form.cidade.errors or form.estado.errors or form.cep.errors %}
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              data-accordion-toggle
+              aria-expanded="{{ local_has_errors|yesno:'true,true' }}"
+              aria-controls="perfil-local-panel"
+            >
+              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Local" %}</span>
+              <svg
+                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div
+              id="perfil-local-panel"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6"
+              data-accordion-panel
+            >
+              <div>
+                {% include '_forms/field.html' with field=form.endereco %}
+              </div>
+              <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div class="md:col-span-2 lg:col-span-2">
+                  {% include '_forms/field.html' with field=form.cidade %}
+                </div>
+                <div>
+                  {% include '_forms/field.html' with field=form.estado %}
+                </div>
+                <div class="md:col-span-1 lg:col-span-1">
+                  {% include '_forms/field.html' with field=form.cep %}
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            {% include '_forms/field.html' with field=form.estado %}
-          </div>
-          <div>
-            {% include '_forms/field.html' with field=form.cep %}
-          </div>
-        </div>
+        {% endwith %}
 
         <div class="grid gap-6 md:grid-cols-2">
           <div>
@@ -191,8 +223,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-4 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <a href="{% url 'accounts:perfil' %}" class="link">← {% trans "Voltar" %}</a>
+      <div class="flex justify-end border-t border-[var(--border)] pt-4">
         <button type="submit" class="btn btn-primary">{% trans "Salvar alterações" %}</button>
       </div>
     </form>
