@@ -1,5 +1,5 @@
 {% load i18n lucide_icons %}
-<article class="card" data-portfolio-root data-event-id="{{ evento.pk }}">
+<article class="card" data-portfolio-root data-event-id="{{ evento.pk }}" data-portfolio-force-open="{% if portfolio_show_form %}true{% else %}false{% endif %}">
   <details class="group">
     <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
       <div class="flex items-start gap-3">

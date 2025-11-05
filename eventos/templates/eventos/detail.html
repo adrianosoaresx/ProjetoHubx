@@ -507,13 +507,50 @@
       const portfolioRoots = document.querySelectorAll('[data-portfolio-root]');
       portfolioRoots.forEach((root) => {
         const eventId = root.getAttribute('data-event-id') || 'evento';
-        const storageKey = `eventPortfolioHighlights:${eventId}`;
+        const highlightStorageKey = `eventPortfolioHighlights:${eventId}`;
+        const accordionStorageKey = `eventPortfolioAccordion:${eventId}`;
         const list = root.querySelector('[data-portfolio-list]');
         const buttons = root.querySelectorAll('[data-highlight-toggle]');
+        const details = root.querySelector('details');
+        const shouldForceOpen = root.dataset.portfolioForceOpen === 'true';
+
+        if (details) {
+          const readAccordionState = () => {
+            try {
+              const stored = localStorage.getItem(accordionStorageKey);
+              if (stored === 'open' || stored === 'closed') {
+                return stored;
+              }
+            } catch (error) {
+              console.warn('Não foi possível ler o estado do portfólio do evento.', error);
+            }
+            return null;
+          };
+
+          const persistAccordionState = (isOpen) => {
+            try {
+              localStorage.setItem(accordionStorageKey, isOpen ? 'open' : 'closed');
+            } catch (error) {
+              console.warn('Não foi possível salvar o estado do portfólio do evento.', error);
+            }
+          };
+
+          const storedAccordionState = readAccordionState();
+          if (shouldForceOpen) {
+            details.open = true;
+            persistAccordionState(true);
+          } else if (storedAccordionState === 'open') {
+            details.open = true;
+          }
+
+          details.addEventListener('toggle', () => {
+            persistAccordionState(details.open);
+          });
+        }
 
         const readStored = () => {
           try {
-            const stored = localStorage.getItem(storageKey);
+            const stored = localStorage.getItem(highlightStorageKey);
             if (!stored) {
               return new Set();
             }
@@ -531,7 +568,7 @@
 
         const persist = () => {
           try {
-            localStorage.setItem(storageKey, JSON.stringify(Array.from(highlightedIds)));
+            localStorage.setItem(highlightStorageKey, JSON.stringify(Array.from(highlightedIds)));
           } catch (error) {
             console.warn('Não foi possível salvar os destaques do evento.', error);
           }
