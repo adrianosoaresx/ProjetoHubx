@@ -15,6 +15,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import (
     Http404,
@@ -46,7 +47,13 @@ from core.permissions import (
 from nucleos.models import ConviteNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
-from .forms import EmailLoginForm, InformacoesPessoaisForm
+from organizacoes.utils import validate_cnpj
+from .forms import (
+    CPF_REUSE_ERROR,
+    IDENTIFIER_REQUIRED_ERROR,
+    EmailLoginForm,
+    InformacoesPessoaisForm,
+)
 from .utils import is_htmx_or_ajax, redirect_to_profile_section
 from .models import AccountToken, SecurityEvent, UserType
 from .validators import cpf_validator
@@ -710,18 +717,61 @@ def nome(request):
 
 def cpf(request):
     if request.method == "POST":
-        valor = request.POST.get("cpf")
+        valor = (request.POST.get("cpf") or "").strip()
+        cnpj_input = (request.POST.get("cnpj") or "").strip()
+        if not valor and not cnpj_input:
+            messages.error(request, IDENTIFIER_REQUIRED_ERROR)
+            return redirect("accounts:cpf")
+
+        normalized_cnpj = ""
+        if cnpj_input:
+            try:
+                normalized_cnpj = validate_cnpj(cnpj_input)
+            except ValidationError as exc:
+                message = exc.messages[0] if hasattr(exc, "messages") and exc.messages else str(exc)
+                messages.error(request, message or _("CNPJ inválido."))
+                return redirect("accounts:cpf")
+            if User.objects.filter(cnpj=normalized_cnpj).exists():
+                messages.error(request, _("CNPJ já cadastrado."))
+                return redirect("accounts:cpf")
+
         if valor:
             try:
                 cpf_validator(valor)
-                if User.objects.filter(cpf=valor).exists():
-                    messages.error(request, _("CPF já cadastrado."))
-                    return redirect("accounts:cpf")
-                else:
-                    request.session["cpf"] = valor
-                    return redirect("accounts:email")
             except ValidationError:
                 messages.error(request, "CPF inválido.")
+                return redirect("accounts:cpf")
+
+            matches = User.objects.filter(cpf=valor)
+            requires_cnpj = matches.filter(Q(cnpj__isnull=True) | Q(cnpj="")).exists()
+            if requires_cnpj:
+                messages.error(request, CPF_REUSE_ERROR)
+                return redirect("accounts:cpf")
+
+            cnpj_required = matches.exists()
+            if cnpj_required and not normalized_cnpj:
+                messages.error(request, CPF_REUSE_ERROR)
+                return redirect("accounts:cpf")
+
+            request.session["cpf"] = valor
+            if normalized_cnpj:
+                request.session["cnpj"] = normalized_cnpj
+            elif cnpj_required:
+                request.session.pop("cnpj", None)
+
+            if cnpj_required:
+                request.session["require_cnpj"] = True
+            else:
+                request.session.pop("require_cnpj", None)
+        else:
+            request.session.pop("cpf", None)
+            request.session.pop("require_cnpj", None)
+            if normalized_cnpj:
+                request.session["cnpj"] = normalized_cnpj
+            else:
+                request.session.pop("cnpj", None)
+
+        return redirect("accounts:email")
     return render(request, "register/cpf.html")
 
 
@@ -806,6 +856,12 @@ def termos(request):
         email_val = request.session.get("email")
         pwd_hash = request.session.get("senha_hash")
         cpf_val = request.session.get("cpf")
+        cnpj_val = request.session.get("cnpj")
+        require_cnpj = request.session.get("require_cnpj")
+
+        if require_cnpj and not cnpj_val:
+            messages.error(request, CPF_REUSE_ERROR)
+            return redirect("accounts:cpf")
         contato = (request.session.get("nome") or "").strip()
 
         if username and pwd_hash:
@@ -821,6 +877,7 @@ def termos(request):
                         contato=contato,
                         password=pwd_hash,
                         cpf=cpf_val,
+                        cnpj=cnpj_val,
                         user_type=mapped_user_type,
                         is_active=False,
                         email_confirmed=False,
@@ -856,6 +913,8 @@ def termos(request):
             send_confirmation_email.delay(token.id)
 
             request.session["termos"] = True
+            request.session.pop("cnpj", None)
+            request.session.pop("require_cnpj", None)
             return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
