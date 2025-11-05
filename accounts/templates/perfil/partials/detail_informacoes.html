@@ -137,11 +137,11 @@
 
 
 {% if can_manage %}
-  <div class="mt-6 text-right">
+  <div class="mt-6 flex justify-end border-t border-[var(--border)] pt-4">
     {% if is_owner %}
       <a
         href="{% url 'accounts:perfil_sections_info' %}"
-        class="text-primary font-medium hover:underline"
+        class="btn btn-secondary"
         hx-get="{% url 'accounts:perfil_sections_info' %}"
         hx-target="#perfil-content"
         hx-swap="innerHTML"
@@ -152,7 +152,7 @@
     {% else %}
       <a
         href="{% url 'accounts:perfil_sections_info' %}?public_id={{ manage_target_public_id }}&username={{ manage_target_username|urlencode }}"
-        class="text-primary font-medium hover:underline"
+        class="btn btn-secondary"
         hx-get="{% url 'accounts:perfil_sections_info' %}?public_id={{ manage_target_public_id }}&username={{ manage_target_username|urlencode }}"
         hx-target="#perfil-content"
         hx-swap="innerHTML"
