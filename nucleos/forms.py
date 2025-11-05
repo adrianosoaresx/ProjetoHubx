@@ -5,6 +5,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import MediaTag
+from accounts.forms import ProfileImageFileInput
 
 from .models import Nucleo, NucleoMidia, ParticipacaoNucleo
 
@@ -20,6 +21,20 @@ class NucleoForm(forms.ModelForm):
             "mensalidade",
             "ativo",
         ]
+        labels = {
+            "avatar": _("Foto do perfil"),
+            "cover": _("Imagem da capa"),
+        }
+        widgets = {
+            "avatar": ProfileImageFileInput(
+                button_label=_("Enviar foto"),
+                empty_label=_("Nenhuma foto selecionada"),
+            ),
+            "cover": ProfileImageFileInput(
+                button_label=_("Enviar imagem"),
+                empty_label=_("Nenhuma imagem selecionada"),
+            ),
+        }
 
     def clean_descricao(self):
         descricao = self.cleaned_data.get("descricao", "")
