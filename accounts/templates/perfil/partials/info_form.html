@@ -1,43 +1,44 @@
 {% load widget_tweaks i18n %}
-<div class="max-w-4xl space-y-6 mx-auto" id="perfil-info-card">
-  <div class="space-y-1">
-    <h3 class="text-xl font-semibold">{% trans "Informações do perfil" %}</h3>
-    <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
-  </div>
+<div class="mx-auto max-w-4xl" id="perfil-info-card">
+  <div class="card">
+    <div class="card-header space-y-1">
+      <h3 class="text-xl font-semibold">{% trans "Informações do perfil" %}</h3>
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
+    </div>
 
-  <div class="space-y-6">
-    {% if not is_self %}
-      <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-        {% blocktrans with nome=target_user.get_full_name %}
-          Você está editando o perfil de {{ nome }}.
-        {% endblocktrans %}
-      </div>
-    {% endif %}
-
-    <form
-      method="post"
-      action="{% url 'accounts:perfil_sections_info' %}"
-      enctype="multipart/form-data"
-      class="space-y-8"
-      hx-post="{% url 'accounts:perfil_sections_info' %}"
-      hx-target="#perfil-content"
-      hx-swap="innerHTML"
-      hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
-      id="perfil-info-form"
-    >
-      {% csrf_token %}
+    <div class="card-body space-y-8">
       {% if not is_self %}
-        <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
-        <input type="hidden" name="username" value="{{ target_user.username }}" />
+        <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+          {% blocktrans with nome=target_user.get_full_name %}
+            Você está editando o perfil de {{ nome }}.
+          {% endblocktrans %}
+        </div>
       {% endif %}
 
-      <div class="space-y-8">
-        <div class="md:w-1/2">
-          {% include '_forms/field.html' with field=form.username %}
-        </div>
+      <form
+        method="post"
+        action="{% url 'accounts:perfil_sections_info' %}"
+        enctype="multipart/form-data"
+        class="space-y-8"
+        hx-post="{% url 'accounts:perfil_sections_info' %}"
+        hx-target="#perfil-content"
+        hx-swap="innerHTML"
+        hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
+        id="perfil-info-form"
+      >
+        {% csrf_token %}
+        {% if not is_self %}
+          <input type="hidden" name="public_id" value="{{ target_user.public_id }}" />
+          <input type="hidden" name="username" value="{{ target_user.username }}" />
+        {% endif %}
 
-        <div class="space-y-6">
-          <div>
+        <div class="space-y-8">
+          <div class="w-full md:w-1/2">
+            {% include '_forms/field.html' with field=form.username %}
+          </div>
+
+          <div class="space-y-6">
+            <div>
             {% include '_forms/field.html' with field=form.razao_social %}
           </div>
           <div>
@@ -97,29 +98,10 @@
           </div>
         {% endwith %}
 
-        <div>
-          {% include '_forms/field.html' with field=form.contato %}
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            {% include '_forms/field.html' with field=form.phone_number %}
-          </div>
-          <div>
-            {% include '_forms/field.html' with field=form.whatsapp %}
-          </div>
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            {% include '_forms/field.html' with field=form.birth_date %}
-          </div>
-          <div>
-            {% include '_forms/field.html' with field=form.email %}
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+        <div
+          class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]"
+          data-accordion
+        >
           <button
             type="button"
             class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
@@ -145,7 +127,7 @@
           </button>
           <div
             id="perfil-local-panel"
-            class="border-t border-[var(--border)] px-4 py-4 space-y-6"
+            class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.endereco.errors and not form.cidade.errors and not form.estado.errors and not form.cep.errors %}hidden{% endif %}"
             data-accordion-panel
           >
             <div>
@@ -162,6 +144,28 @@
                 {% include '_forms/field.html' with field=form.cep %}
               </div>
             </div>
+          </div>
+        </div>
+
+        <div>
+          {% include '_forms/field.html' with field=form.contato %}
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.phone_number %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.whatsapp %}
+          </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.birth_date %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.email %}
           </div>
         </div>
 
@@ -221,10 +225,11 @@
         </div>
       </div>
 
-      <div class="flex justify-end border-t border-[var(--border)] pt-4">
-        <button type="submit" class="btn btn-primary">{% trans "Salvar alterações" %}</button>
-      </div>
-    </form>
+        <div class="flex justify-end border-t border-[var(--border)] pt-4">
+          <button type="submit" class="btn btn-primary">{% trans "Salvar alterações" %}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <script>
