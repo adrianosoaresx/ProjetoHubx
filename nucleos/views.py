@@ -483,11 +483,6 @@ class NucleoCreateView(
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "variant": "compact",
-        }
-        context["cancel_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
         }
         return context
 
@@ -529,12 +524,6 @@ class NucleoUpdateView(
         context["back_component_config"] = {
             "href": back_href,
             "fallback_href": fallback_url,
-            "variant": "compact",
-        }
-        context["cancel_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
-            "aria_label": _("Cancelar edição"),
         }
         return context
 
