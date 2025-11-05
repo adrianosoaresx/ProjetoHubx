@@ -7,6 +7,7 @@ from django_select2 import forms as s2forms
 from nucleos.models import Nucleo
 
 from accounts.models import MediaTag
+from accounts.forms import ProfileImageFileInput
 
 from .validators import validate_uploaded_file
 from .models import Evento, EventoMidia, FeedbackNota, InscricaoEvento
@@ -75,8 +76,14 @@ class EventoForm(forms.ModelForm):
             "data_inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "data_fim": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "descricao": forms.Textarea(attrs={"rows": 3}),
-            "avatar": ClearableFileInput(),
-            "cover": ClearableFileInput(),
+            "avatar": ProfileImageFileInput(
+                button_label=_("Enviar foto"),
+                empty_label=_("Nenhuma foto selecionada"),
+            ),
+            "cover": ProfileImageFileInput(
+                button_label=_("Enviar imagem"),
+                empty_label=_("Nenhuma imagem selecionada"),
+            ),
             "briefing": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
             "parcerias": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
         }
@@ -120,8 +127,11 @@ class EventoForm(forms.ModelForm):
 
             nucleo_field.queryset = queryset.distinct()
 
+        if "avatar" in self.fields:
+            self.fields["avatar"].label = _("Foto do perfil")
+
         if "cover" in self.fields:
-            self.fields["cover"].label = _("Capa")
+            self.fields["cover"].label = _("Imagem da capa")
 
         participantes_field = self.fields.get("participantes_maximo")
         if participantes_field:
