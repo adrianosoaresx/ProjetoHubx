@@ -39,4 +39,14 @@ urlpatterns = [
         views.NucleoToggleActiveView.as_view(),
         name="toggle_active",
     ),
+    path(
+        "portfolio/<int:pk>/editar/",
+        views.NucleoPortfolioUpdateView.as_view(),
+        name="portfolio_edit",
+    ),
+    path(
+        "portfolio/<int:pk>/remover/",
+        views.NucleoPortfolioDeleteView.as_view(),
+        name="portfolio_delete",
+    ),
 ]

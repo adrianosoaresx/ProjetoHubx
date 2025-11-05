@@ -1,0 +1,172 @@
+{% load i18n lucide_icons %}
+<article
+  class="card"
+  data-portfolio-root
+  data-nucleo-id="{{ nucleo.pk }}"
+  data-portfolio-force-open="{% if portfolio_show_form %}true{% else %}false{% endif %}"
+>
+  <details class="group">
+    <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+      <div class="flex items-start gap-3">
+        <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/15">
+          {% lucide 'folder-open' class='h-6 w-6' aria_hidden='true' %}
+        </span>
+        <div class="space-y-2">
+          <h2 class="text-xl font-semibold">{% trans "Portfólio" %}</h2>
+          <div class="space-y-1 text-sm text-[var(--text-secondary)]">
+            <p>{% trans "Gerencie mídias relacionadas ao núcleo" %}</p>
+          </div>
+        </div>
+      </div>
+      <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+        {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+      </span>
+    </summary>
+    <div class="card-body space-y-6">
+      {% if pode_gerenciar_portfolio %}
+        {% if portfolio_show_form and portfolio_form %}
+          <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="form_name" value="nucleo_portfolio">
+            {% if portfolio_form.non_field_errors %}
+              <div class="alert alert-error" role="alert">
+                {{ portfolio_form.non_field_errors }}
+              </div>
+            {% endif %}
+            {% for field in portfolio_form %}
+              {% include '_forms/field.html' with field=field %}
+            {% endfor %}
+            <div class="flex items-center justify-between gap-3 pt-4 border-t border-[var(--border)]">
+              <a href="{{ request.path }}" class="btn btn-ghost">{% trans "Cancelar" %}</a>
+              <button type="submit" class="btn btn-primary">{% trans "Enviar" %}</button>
+            </div>
+          </form>
+        {% else %}
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <a href="{{ request.path }}?portfolio_adicionar=1" class="btn btn-primary inline-flex items-center gap-2">
+              {% lucide 'plus' class='w-4 h-4' aria_hidden='true' %}
+              <span>{% trans "Adicionar mídia" %}</span>
+            </a>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% if not portfolio_show_form %}
+        {% if portfolio_filter_form %}
+          <form method="get" class="space-y-4">
+            {% include '_forms/field.html' with field=portfolio_filter_form.q %}
+          </form>
+        {% endif %}
+        <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" data-portfolio-list>
+          {% for media in portfolio_medias %}
+            <article class="card p-0" data-media-card data-media-id="{{ media.pk }}" data-created-at="{{ media.created_at|date:'c' }}">
+              <div class="card-body relative space-y-5">
+                <div class="absolute right-4 top-4 z-10 flex gap-2" data-card-actions>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm border border-[var(--border)] text-[var(--text-secondary)]"
+                    data-highlight-toggle
+                    data-media-id="{{ media.pk }}"
+                    data-highlight-label-on="{% trans 'Remover dos destaques' %}"
+                    data-highlight-label-off="{% trans 'Marcar como destaque' %}"
+                    aria-pressed="false"
+                    aria-label="{% trans 'Marcar como destaque' %}"
+                  >
+                    <svg
+                      data-highlight-icon="off"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <svg
+                      data-highlight-icon="on"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      class="hidden h-4 w-4 fill-current"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 2.25l2.64 5.35 5.91.86-4.28 4.17 1.01 5.88L12 15.77l-5.28 2.79 1.01-5.88-4.28-4.17 5.91-.86L12 2.25z" />
+                    </svg>
+                  </button>
+                  {% if pode_gerenciar_portfolio %}
+                    <a href="{% url 'nucleos:portfolio_edit' media.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
+                      {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+                    </a>
+                    <a
+                      href="{% url 'nucleos:portfolio_delete' media.pk %}"
+                      class="btn btn-danger btn-sm"
+                      aria-label="{% trans 'Excluir' %}"
+                      hx-get="{% url 'nucleos:portfolio_delete' media.pk %}"
+                      hx-target="#modal"
+                      hx-trigger="click"
+                      hx-swap="innerHTML"
+                      hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                    >
+                      {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+                    </a>
+                  {% endif %}
+                </div>
+                <header class="space-y-2 pr-16">
+                  <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+                  <p class="text-xs text-[var(--text-secondary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+                </header>
+                {% if media.media_type == 'pdf' %}
+                  <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+                    <a href="{{ media.file.url }}" class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]" target="_blank" rel="noopener">
+                      <span class="flex items-center gap-3">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+                          {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
+                        </span>
+                        <span class="truncate">{% trans "Visualizar PDF" %}</span>
+                      </span>
+                      {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
+                    </a>
+                  </div>
+                {% else %}
+                  <a href="{{ media.file.url }}" class="block" target="_blank" rel="noopener">
+                    {% if media.media_type == 'image' %}
+                      <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+                        <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
+                          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full max-h-[320px] object-contain" loading="lazy" />
+                        </div>
+                      </figure>
+                    {% elif media.media_type == 'video' %}
+                      <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
+                        <div class="feed-video-wrapper">
+                          <div class="feed-video-frame">
+                            <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
+                          </div>
+                        </div>
+                      </figure>
+                    {% else %}
+                      <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
+                        {{ media.file.name }}
+                      </div>
+                    {% endif %}
+                  </a>
+                {% endif %}
+                {% if media.tags.all %}
+                  <div class="flex flex-wrap gap-2">
+                    {% for tag in media.tags.all %}
+                      <span class="rounded bg-[var(--bg-secondary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </article>
+          {% empty %}
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhuma mídia cadastrada para este núcleo." %}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </details>
+</article>
