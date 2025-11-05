@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from decimal import Decimal
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -9,7 +10,9 @@ from django.db.models import SET_NULL, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from core.models import SoftDeleteModel, TimeStampedModel
+from accounts.models import MediaTag
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
+from eventos.validators import validate_uploaded_file
 
 User = get_user_model()
 
@@ -143,6 +146,56 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         return self.coordenadores.filter(
             participacoes__papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL
         ).first()
+
+
+class NucleoMidia(TimeStampedModel, SoftDeleteModel):
+    """Arquivos de mídia associados a um núcleo."""
+
+    nucleo = models.ForeignKey(
+        Nucleo,
+        on_delete=models.CASCADE,
+        related_name="midias",
+    )
+    file = models.FileField(upload_to="nucleos/portfolio/")
+    descricao = models.CharField("Descrição", max_length=255, blank=True)
+    tags = models.ManyToManyField(MediaTag, related_name="nucleo_midias", blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        verbose_name = "Mídia do Núcleo"
+        verbose_name_plural = "Portfólio do Núcleo"
+
+    @property
+    def media_type(self) -> str:
+        ext = Path(self.file.name).suffix.lower()
+        if ext in {".jpg", ".jpeg", ".png", ".gif"}:
+            return "image"
+        if ext in {".mp4", ".webm"}:
+            return "video"
+        if ext == ".pdf":
+            return "pdf"
+        return "other"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.file:
+            validate_uploaded_file(self.file)
+
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+        *,
+        soft: bool = True,
+    ) -> None:  # type: ignore[override]
+        if not soft and self.file:
+            self.file.delete(save=False)
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
+
+    def __str__(self) -> str:  # pragma: no cover - representação simples
+        return f"{self.nucleo.nome} - {self.file.name}"
 
 
 class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):

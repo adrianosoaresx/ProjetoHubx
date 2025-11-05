@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponse
@@ -22,6 +23,7 @@ from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
     CreateView,
+    DeleteView,
     DetailView,
     FormView,
     ListView,
@@ -41,13 +43,54 @@ from core.permissions import (
 from core.utils import resolve_back_href
 from eventos.models import Evento
 
-from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm
-from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
+from .forms import (
+    NucleoForm,
+    NucleoMediaForm,
+    NucleoPortfolioFilterForm,
+    NucleoSearchForm,
+    ParticipacaoDecisaoForm,
+)
+from .models import CoordenadorSuplente, Nucleo, NucleoMidia, ParticipacaoNucleo
 from .tasks import notify_participacao_aprovada, notify_participacao_recusada
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+def _nucleo_portfolio_counts(medias: Iterable[NucleoMidia]) -> dict[str, int]:
+    medias_list = list(medias)
+    counts = Counter(media.media_type for media in medias_list)
+    counts["total"] = len(medias_list)
+    return counts
+
+
+def _configure_nucleo_portfolio_form_fields(form: NucleoMediaForm) -> None:
+    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+    file_field = form.fields.get("file")
+    if file_field is not None:
+        file_field.widget.attrs["accept"] = ",".join(allowed_exts)
+        file_field.help_text = _("Selecione um arquivo")
+    descricao_field = form.fields.get("descricao")
+    if descricao_field is not None:
+        descricao_field.help_text = _("Breve descrição do portfólio")
+
+
+def _usuario_pode_gerenciar_portfolio_nucleo(user, nucleo: Nucleo) -> bool:
+    tipo_usuario = getattr(user, "user_type", None)
+    if tipo_usuario in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return True
+    if user.has_perm("nucleos.change_nucleo"):
+        return True
+    participacoes = getattr(user, "participacoes", None)
+    if participacoes is not None:
+        return participacoes.filter(
+            nucleo=nucleo,
+            papel="coordenador",
+            status="ativo",
+            status_suspensao=False,
+        ).exists()
+    return False
 
 
 NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
@@ -666,6 +709,52 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         if part and part.status == "ativo" and not part.status_suspensao:
             ctx["pode_postar"] = True
 
+        pode_gerenciar_portfolio = _usuario_pode_gerenciar_portfolio_nucleo(
+            self.request.user, nucleo
+        )
+        portfolio_filter_form = NucleoPortfolioFilterForm(self.request.GET or None)
+        portfolio_query = ""
+        if portfolio_filter_form.is_valid():
+            portfolio_query = portfolio_filter_form.cleaned_data.get("q", "") or ""
+
+        base_portfolio_qs = nucleo.midias.prefetch_related("tags").order_by("-created_at")
+        all_portfolio_medias = list(base_portfolio_qs)
+        portfolio_counts = _nucleo_portfolio_counts(all_portfolio_medias)
+
+        if portfolio_query:
+            portfolio_medias = list(
+                base_portfolio_qs.filter(
+                    Q(descricao__icontains=portfolio_query)
+                    | Q(tags__nome__icontains=portfolio_query)
+                ).distinct()
+            )
+        else:
+            portfolio_medias = all_portfolio_medias
+
+        portfolio_form = getattr(self, "_portfolio_form", None)
+        portfolio_show_form = False
+        if pode_gerenciar_portfolio:
+            if portfolio_form is None:
+                portfolio_form = NucleoMediaForm()
+            _configure_nucleo_portfolio_form_fields(portfolio_form)
+            portfolio_show_form = self.request.GET.get("portfolio_adicionar") == "1"
+            if getattr(self, "_portfolio_show_form", False):
+                portfolio_show_form = True
+        else:
+            portfolio_form = None
+
+        ctx.update(
+            {
+                "pode_gerenciar_portfolio": pode_gerenciar_portfolio,
+                "portfolio_medias": portfolio_medias,
+                "portfolio_counts": portfolio_counts,
+                "portfolio_filter_form": portfolio_filter_form,
+                "portfolio_query": portfolio_query,
+                "portfolio_form": portfolio_form,
+                "portfolio_show_form": portfolio_show_form,
+            }
+        )
+
         eventos_qs = Evento.objects.filter(nucleo=nucleo)
         ctx["eventos"] = eventos_qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
         # Totais para cards
@@ -762,6 +851,26 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
         return ctx
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.POST.get("form_name") == "nucleo_portfolio":
+            return self._handle_portfolio_post(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
+
+    def _handle_portfolio_post(self, request, *args, **kwargs):
+        if not _usuario_pode_gerenciar_portfolio_nucleo(request.user, self.object):
+            raise PermissionDenied
+
+        form = NucleoMediaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(nucleo=self.object)
+            messages.success(request, _("Arquivo enviado com sucesso."))
+            return redirect("nucleos:detail", pk=self.object.pk)
+
+        self._portfolio_form = form
+        self._portfolio_show_form = True
+        return self.get(request, *args, **kwargs)
+
 
 class NucleoMembrosPartialView(NucleoDetailView):
     template_name = "nucleos/partials/membros_list.html"
@@ -784,9 +893,77 @@ class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object
         ctx["nucleo"] = nucleo
-
         ctx["metrics_url"] = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
         return ctx
+
+
+class NucleoMidiaBaseMixin(LoginRequiredMixin, NoSuperadminMixin):
+    model = NucleoMidia
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if not _usuario_pode_gerenciar_portfolio_nucleo(self.request.user, obj.nucleo):
+            raise PermissionDenied
+        return obj
+
+    def get_success_url(self):
+        return reverse("nucleos:detail", args=[self.object.nucleo.pk])
+
+
+class NucleoPortfolioUpdateView(NucleoMidiaBaseMixin, UpdateView):
+    form_class = NucleoMediaForm
+    template_name = "nucleos/portfolio/form.html"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        _configure_nucleo_portfolio_form_fields(form)
+        return form
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Portfólio do núcleo atualizado."))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nucleo"] = self.object.nucleo
+        context["title"] = _("Editar portfólio do núcleo")
+        context["subtitle"] = self.object.descricao or ""
+        context["back_href"] = reverse("nucleos:detail", args=[self.object.nucleo.pk])
+        return context
+
+
+class NucleoPortfolioDeleteView(NucleoMidiaBaseMixin, DeleteView):
+    template_name = "nucleos/portfolio/confirm_delete.html"
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.headers.get("HX-Target") == "modal":
+            context = {
+                "media": self.object,
+                "titulo": _("Remover item do portfólio"),
+                "mensagem": _("Tem certeza que deseja remover este item do portfólio do núcleo?"),
+                "submit_label": _("Remover"),
+                "form_action": reverse("nucleos:portfolio_delete", args=[self.object.pk]),
+            }
+            return TemplateResponse(request, "nucleos/portfolio/delete_modal.html", context)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["back_href"] = reverse("nucleos:detail", args=[self.object.nucleo.pk])
+        context["nucleo"] = self.object.nucleo
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        messages.success(request, _("Item do portfólio removido."))
+        response = super().delete(request, *args, **kwargs)
+        if bool(request.headers.get("HX-Request")):
+            hx_response = HttpResponse(status=204)
+            hx_response["HX-Redirect"] = self.get_success_url()
+            return hx_response
+        return response
 
 
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
