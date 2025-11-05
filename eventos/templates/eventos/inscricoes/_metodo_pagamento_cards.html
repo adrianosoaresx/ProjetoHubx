@@ -66,13 +66,13 @@
               {% trans "Escolha uma opção para finalizar o pagamento via Pix." %}
             </p>
             <div
-              class="mt-3 grid gap-2 sm:grid-cols-2"
+              class="mt-3 grid items-start gap-2 sm:grid-cols-2"
               role="group"
               aria-label="{% trans 'Opções de pagamento via Pix' %}"
             >
               <button
                 type="button"
-                class="flex h-full w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                class="flex w-full flex-col justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 data-pix-copy-button
                 {% if not evento.organizacao.chave_pix %}disabled{% endif %}
               >
@@ -89,7 +89,7 @@
                 </span>
               </button>
               <div
-                class="flex h-full w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
+                class="flex w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-left transition hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
                 data-pix-qrcode-card
               >
                 <button
