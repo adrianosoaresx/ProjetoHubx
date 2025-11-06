@@ -1,40 +1,76 @@
 {% load i18n widget_tweaks %}
 <div class="space-y-6">
-  <div class="grid gap-6 md:grid-cols-3">
+  <div class="grid gap-6 md:grid-cols-2">
     <div>
-      {% include '_forms/field.html' with field=form.data_inicio %}
-    </div>
-    <div>
-      {% include '_forms/field.html' with field=form.data_fim %}
+      {% include '_forms/field.html' with field=form.titulo %}
     </div>
     <div>
       {% include '_forms/field.html' with field=form.status %}
     </div>
   </div>
 
-  <div class="grid gap-6 md:grid-cols-3">
-    <div>
-      {% include '_forms/field.html' with field=form.publico_alvo %}
-    </div>
-    <div>
-      {% include '_forms/field.html' with field=form.participantes_maximo %}
-    </div>
-    <div id="nucleo-field-container">
-      {% include '_forms/field.html' with field=form.nucleo %}
+  {% with data_inicio_errors=form.data_inicio.errors data_fim_errors=form.data_fim.errors publico_errors=form.publico_alvo.errors participantes_errors=form.participantes_maximo.errors valor_errors=form.valor.errors gratuito_errors=form.gratuito.errors %}
+  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      data-accordion-toggle
+      aria-expanded="{% if data_inicio_errors or data_fim_errors or publico_errors or participantes_errors or valor_errors or gratuito_errors %}true{% else %}false{% endif %}"
+      aria-controls="evento-informacoes-gerais-panel"
+    >
+      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações gerais" %}</span>
+      <svg
+        class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div
+      id="evento-informacoes-gerais-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not data_inicio_errors and not data_fim_errors and not publico_errors and not participantes_errors and not valor_errors and not gratuito_errors %}hidden{% endif %}"
+      data-accordion-panel
+    >
+      <div class="space-y-6">
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.data_inicio %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.data_fim %}
+          </div>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.publico_alvo %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.participantes_maximo %}
+          </div>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2">
+          <div id="valor-field-container" {% if form.gratuito.value %}class="hidden"{% endif %}>
+            {% include '_forms/field.html' with field=form.valor %}
+          </div>
+          <div>
+            {% include '_forms/field.html' with field=form.gratuito %}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  {% endwith %}
 
-  <div class="grid gap-6 md:grid-cols-2">
-    <div id="valor-field-container" {% if form.gratuito.value %}class="hidden"{% endif %}>
-      {% include '_forms/field.html' with field=form.valor %}
-    </div>
-    <div>
-      {% include '_forms/field.html' with field=form.gratuito %}
-    </div>
-  </div>
-
-  <div>
-    {% include '_forms/field.html' with field=form.titulo %}
+  <div id="nucleo-field-container">
+    {% include '_forms/field.html' with field=form.nucleo %}
   </div>
 
   <div>
