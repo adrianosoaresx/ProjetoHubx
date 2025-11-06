@@ -4,23 +4,23 @@
   <div class="text-[var(--text-primary)] font-medium">{{ inscrito.nome_fantasia|default:not_available }}</div>
 
   <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-    <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
+    <dt class="text-xs font-semibold tracking-wide text-[var(--text-secondary)]">{% trans "Razão social:" %}</dt>
     <dd class="text-[var(--text-primary)]">{{ inscrito.razao_social|default:not_available }}</dd>
   </div>
 
   {% if inscrito.cnpj %}
     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
+      <dt class="text-xs font-semibold tracking-wide text-[var(--text-secondary)]">{% trans "Cnpj:" %}</dt>
       <dd class="text-[var(--text-primary)]">{{ inscrito.cnpj }}</dd>
     </div>
   {% elif inscrito.cpf %}
     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Cpf:" %}</dt>
       <dd class="text-[var(--text-primary)]">{{ inscrito.cpf }}</dd>
     </div>
   {% else %}
     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Cpf:" %}</dt>
       <dd class="text-[var(--text-primary)]">{{ not_available }}</dd>
     </div>
   {% endif %}
