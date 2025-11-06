@@ -106,7 +106,7 @@ class EventoForm(forms.ModelForm):
         widgets = {
             "data_inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "data_fim": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "descricao": forms.Textarea(attrs={"rows": 3}),
+            "descricao": forms.Textarea(attrs={"rows": 10}),
             "avatar": ProfileImageFileInput(
                 button_label=_("Enviar foto"),
                 empty_label=_("Nenhuma foto selecionada"),
