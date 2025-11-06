@@ -201,13 +201,13 @@
   </div>
   {% endwith %}
 
-  {% with media_errors=form.avatar.errors or form.cover.errors %}
+  {% with avatar_errors=form.avatar.errors cover_errors=form.cover.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
     <button
       type="button"
       class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
       data-accordion-toggle
-      aria-expanded="{{ media_errors|yesno:'true,false' }}"
+      aria-expanded="{% if avatar_errors or cover_errors %}true{% else %}false{% endif %}"
       aria-controls="evento-media-panel"
     >
       <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Mídias" %}</span>
@@ -228,7 +228,7 @@
     </button>
     <div
       id="evento-media-panel"
-      class="border-t border-[var(--border)] px-4 py-4 {% if not media_errors %}hidden{% endif %}"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not avatar_errors and not cover_errors %}hidden{% endif %}"
       data-accordion-panel
     >
       <div class="space-y-6">
