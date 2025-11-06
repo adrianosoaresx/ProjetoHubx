@@ -289,7 +289,6 @@ def perfil_section(request, section):
                 {
                     "user": profile,
                     "bio": bio,
-                    "manage_target_pk": profile.pk,
                     "manage_target_public_id": profile.public_id,
                     "manage_target_username": profile.username,
                 }
