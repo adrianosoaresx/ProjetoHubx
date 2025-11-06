@@ -4,8 +4,8 @@
 {% block title %}{{ title|default:_('Evento') }}{% endblock %}
 
 {% block hero %}
-  {% if object and object.pk %}
-    {% include "_components/hero_evento_detail.html" with evento=object %}
+  {% if form.instance.pk %}
+    {% include "_components/hero_evento_detail.html" with evento=form.instance %}
   {% else %}
     {% include "_components/hero_evento.html" with title=title|default:_("Eventos") subtitle=subtitle|default_if_none:"" neural_background="eventos" %}
   {% endif %}
