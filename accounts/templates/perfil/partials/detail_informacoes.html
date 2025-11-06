@@ -145,6 +145,7 @@
         hx-get="{% url 'accounts:perfil_sections_info' %}?info_view=edit"
         hx-target="#perfil-content"
         hx-swap="innerHTML"
+        hx-vals='{"info_view": "edit"}'
         hx-push-url="?section=info&info_view=edit"
       >
         {% trans "Editar perfil" %}
@@ -158,6 +159,7 @@
             hx-get="{% url 'accounts:perfil_sections_info' %}?info_view=edit&{{ query_params }}"
             hx-target="#perfil-content"
             hx-swap="innerHTML"
+            hx-vals='{"info_view": "edit", "public_id": "{{ target_public_id|escapejs }}", "username": "{{ target_username|default_if_none:''|escapejs }}"}'
             hx-push-url="?section=info&info_view=edit&{{ query_params }}"
           >
             {% trans "Editar perfil" %}
