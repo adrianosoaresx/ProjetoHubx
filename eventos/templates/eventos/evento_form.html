@@ -5,7 +5,7 @@
 
 {% block hero %}
   {% if object and object.pk %}
-    {% include "_components/hero_evento.html" with title=title|default:object.titulo|default:_("Eventos") subtitle=subtitle|default:object.descricao|default_if_none:"" neural_background="eventos" %}
+    {% include "_components/hero_evento_detail.html" with evento=object %}
   {% else %}
     {% include "_components/hero_evento.html" with title=title|default:_("Eventos") subtitle=subtitle|default_if_none:"" neural_background="eventos" %}
   {% endif %}
