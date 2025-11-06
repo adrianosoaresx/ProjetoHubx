@@ -1,5 +1,36 @@
 {% load i18n lucide_icons %}
-<p class="mt-3 text-sm text-[var(--text-muted)]">@{{ inscrito.username }}</p>
+{% trans "Não informado" as not_available %}
+<dl class="mt-4 space-y-3 text-sm">
+  <div class="space-y-1">
+    <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+    <dd class="text-[var(--text-primary)]">{{ inscrito.contato|default:not_available }}</dd>
+  </div>
+  <div class="space-y-1">
+    <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
+    <dd class="text-[var(--text-primary)]">{{ inscrito.nome_fantasia|default:not_available }}</dd>
+  </div>
+  <div class="space-y-1">
+    <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
+    <dd class="text-[var(--text-primary)]">{{ inscrito.razao_social|default:not_available }}</dd>
+  </div>
+  {% if inscrito.cnpj %}
+    <div class="space-y-1">
+      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
+      <dd class="text-[var(--text-primary)]">{{ inscrito.cnpj }}</dd>
+    </div>
+  {% elif inscrito.cpf %}
+    <div class="space-y-1">
+      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
+      <dd class="text-[var(--text-primary)]">{{ inscrito.cpf }}</dd>
+    </div>
+  {% else %}
+    <div class="space-y-1">
+      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
+      <dd class="text-[var(--text-primary)]">{{ not_available }}</dd>
+    </div>
+  {% endif %}
+</dl>
+<p class="mt-4 text-xs uppercase tracking-wide text-[var(--text-muted)]">@{{ inscrito.username }}</p>
 {% if pode_gerenciar_inscricoes %}
   <div class="mt-4 flex flex-wrap gap-2 sm:justify-end relative z-20">
     <a
