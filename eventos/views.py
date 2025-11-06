@@ -345,6 +345,16 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         {"data": d, "mes_atual": d.month == mes, "hoje": d == hoje, "eventos": eventos_por_dia.get(d, [])}
         for d in dias_iterados
     ]
+    dias_com_eventos = [
+        {
+            "data": dia,
+            "mes_atual": dia.month == mes,
+            "hoje": dia == hoje,
+            "eventos": sorted(eventos, key=lambda e: timezone.localtime(e.data_inicio)),
+        }
+        for dia, eventos in sorted(eventos_por_dia.items(), key=lambda item: item[0])
+        if eventos
+    ]
     prev_ano, prev_mes = (ano - 1, 12) if mes == 1 else (ano, mes - 1)
     next_ano, next_mes = (ano + 1, 1) if mes == 12 else (ano, mes + 1)
     dia_sel = hoje if (hoje.year, hoje.month) == (ano, mes) else primeiro_dia
@@ -357,6 +367,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         "next_mes": next_mes,
         "dia": dia_sel,
         "eventos": eventos_por_dia.get(dia_sel, []),
+        "dias_com_eventos": dias_com_eventos,
         "title": _("Calendário mensal"),
         "subtitle": None,
     }
