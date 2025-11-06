@@ -143,7 +143,7 @@
         href="{% url 'accounts:perfil_sections_info' %}"
         class="btn btn-primary"
         hx-get="{% url 'accounts:perfil_sections_info' %}"
-        hx-target="#perfil-content"
+        hx-target="closest section"
         hx-swap="innerHTML"
         hx-vals='{"info_view": "edit"}'
         hx-push-url="?section=info&info_view=edit"
@@ -157,7 +157,7 @@
             href="{% url 'accounts:perfil_sections_info' %}?{{ query_params }}"
             class="btn btn-primary"
             hx-get="{% url 'accounts:perfil_sections_info' %}"
-            hx-target="#perfil-content"
+            hx-target="closest section"
             hx-swap="innerHTML"
             hx-vals='{"info_view": "edit", "public_id": "{{ target_public_id|escapejs }}", "username": "{{ target_username|default_if_none:''|escapejs }}"}'
             hx-push-url="?section=info&info_view=edit&{{ query_params }}"
