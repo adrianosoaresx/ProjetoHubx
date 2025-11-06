@@ -9,6 +9,10 @@
     </div>
   </div>
 
+  <div>
+    {% include '_forms/field.html' with field=form.descricao %}
+  </div>
+
   {% with data_inicio_errors=form.data_inicio.errors data_fim_errors=form.data_fim.errors publico_errors=form.publico_alvo.errors participantes_errors=form.participantes_maximo.errors valor_errors=form.valor.errors gratuito_errors=form.gratuito.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
     <button
@@ -18,7 +22,7 @@
       aria-expanded="{% if data_inicio_errors or data_fim_errors or publico_errors or participantes_errors or valor_errors or gratuito_errors %}true{% else %}false{% endif %}"
       aria-controls="evento-informacoes-gerais-panel"
     >
-      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações gerais" %}</span>
+      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Agenda e público" %}</span>
       <svg
         class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
         data-accordion-icon
@@ -71,10 +75,6 @@
 
   <div id="nucleo-field-container">
     {% include '_forms/field.html' with field=form.nucleo %}
-  </div>
-
-  <div>
-    {% include '_forms/field.html' with field=form.descricao %}
   </div>
 
   {% with cronograma_has_errors=form.cronograma.errors %}
