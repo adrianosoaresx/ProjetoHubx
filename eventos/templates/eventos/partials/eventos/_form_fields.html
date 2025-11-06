@@ -1,18 +1,18 @@
 {% load i18n widget_tweaks %}
 <div class="space-y-6">
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="grid gap-6 md:grid-cols-3">
     <div>
       {% include '_forms/field.html' with field=form.data_inicio %}
     </div>
     <div>
       {% include '_forms/field.html' with field=form.data_fim %}
     </div>
-  </div>
-
-  <div class="grid gap-6 md:grid-cols-4">
     <div>
       {% include '_forms/field.html' with field=form.status %}
     </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-3">
     <div>
       {% include '_forms/field.html' with field=form.publico_alvo %}
     </div>
@@ -124,14 +124,47 @@
     </div>
   </div>
 
-  <div class="grid gap-6 md:grid-cols-2">
-    <div>
-      {% include '_forms/field.html' with field=form.briefing %}
-    </div>
-    <div>
-      {% include '_forms/field.html' with field=form.parcerias %}
+  {% with briefing_parcerias_errors=form.briefing.errors or form.parcerias.errors %}
+  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      data-accordion-toggle
+      aria-expanded="{{ briefing_parcerias_errors|yesno:'true,false' }}"
+      aria-controls="evento-briefing-parcerias-panel"
+    >
+      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Briefing e parcerias" %}</span>
+      <svg
+        class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div
+      id="evento-briefing-parcerias-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not briefing_parcerias_errors %}hidden{% endif %}"
+      data-accordion-panel
+    >
+      <div class="grid gap-6 md:grid-cols-2">
+        <div>
+          {% include '_forms/field.html' with field=form.briefing %}
+        </div>
+        <div>
+          {% include '_forms/field.html' with field=form.parcerias %}
+        </div>
+      </div>
     </div>
   </div>
+  {% endwith %}
 
   {% with info_has_errors=form.informacoes_adicionais.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
@@ -168,14 +201,47 @@
   </div>
   {% endwith %}
 
-  <div class="space-y-6">
-    <div>
-      {% include '_forms/field.html' with field=form.avatar %}
-    </div>
-    <div>
-      {% include '_forms/field.html' with field=form.cover %}
+  {% with media_errors=form.avatar.errors or form.cover.errors %}
+  <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      data-accordion-toggle
+      aria-expanded="{{ media_errors|yesno:'true,false' }}"
+      aria-controls="evento-media-panel"
+    >
+      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Mídias" %}</span>
+      <svg
+        class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div
+      id="evento-media-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not media_errors %}hidden{% endif %}"
+      data-accordion-panel
+    >
+      <div class="space-y-6">
+        <div>
+          {% include '_forms/field.html' with field=form.avatar %}
+        </div>
+        <div>
+          {% include '_forms/field.html' with field=form.cover %}
+        </div>
+      </div>
     </div>
   </div>
+  {% endwith %}
 </div>
 <script>
   (function () {
