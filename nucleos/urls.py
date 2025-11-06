@@ -11,7 +11,7 @@ urlpatterns = [
     path("uuid/<uuid:public_id>/", views.NucleoDetailView.as_view(), name="detail_uuid"),
     path("<int:pk>/membros/", views.NucleoMembrosPartialView.as_view(), name="membros_list"),
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
-    path("<int:pk>/editar/", views.NucleoUpdateView.as_view(), name="update"),
+    path("<uuid:public_id>/editar/", views.NucleoUpdateView.as_view(), name="update"),
     path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
     path("<int:pk>/participar/", views.ParticipacaoCreateView.as_view(), name="participacao_solicitar"),
     path(

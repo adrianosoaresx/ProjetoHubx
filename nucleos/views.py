@@ -508,12 +508,17 @@ class NucleoUpdateView(
     form_class = NucleoForm
     template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
+    slug_field = "public_id"
+    slug_url_kwarg = "public_id"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         nucleo = context.get("object") or getattr(self, "object", None)
         if nucleo:
-            fallback_url = reverse("nucleos:detail", args=[nucleo.pk])
+            fallback_url = reverse(
+                "nucleos:detail_uuid",
+                kwargs={"public_id": nucleo.public_id},
+            )
         else:
             fallback_url = reverse("nucleos:list")
         back_href = resolve_back_href(
@@ -538,7 +543,10 @@ class NucleoUpdateView(
 
     def get_success_url(self):
         if self.object:
-            return reverse("nucleos:detail", args=[self.object.pk])
+            return reverse(
+                "nucleos:detail_uuid",
+                kwargs={"public_id": self.object.public_id},
+            )
         return super().get_success_url()
 
     def form_valid(self, form):

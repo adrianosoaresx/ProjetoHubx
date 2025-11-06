@@ -123,7 +123,7 @@ def test_operador_edita_nucleo(client, operador_user, organizacao):
     )
     client.force_login(operador_user)
     resp = client.post(
-        reverse("nucleos:update", args=[nucleo.pk]),
+        reverse("nucleos:update", kwargs={"public_id": nucleo.public_id}),
         data={
             "nome": "N Atualizado",
             "descricao": "desc",
@@ -156,7 +156,10 @@ def test_coordenador_nao_ve_acoes_de_edicao_ou_exclusao(client, coordenador_user
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert reverse("nucleos:update", args=[nucleo.pk]) not in content
+    assert (
+        reverse("nucleos:update", kwargs={"public_id": nucleo.public_id})
+        not in content
+    )
     assert reverse("nucleos:delete", args=[nucleo.pk]) not in content
 
 
@@ -172,7 +175,9 @@ def test_operador_ve_acoes_de_edicao_e_exclusao(client, operador_user, organizac
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert reverse("nucleos:update", args=[nucleo.pk]) in content
+    assert reverse(
+        "nucleos:update", kwargs={"public_id": nucleo.public_id}
+    ) in content
     assert reverse("nucleos:delete", args=[nucleo.pk]) in content
 
 
