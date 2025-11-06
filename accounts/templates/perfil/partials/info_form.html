@@ -33,35 +33,74 @@
         {% endif %}
 
         <div class="space-y-8">
-          <div class="w-full md:w-1/2">
-            {% include '_forms/field.html' with field=form.username %}
-          </div>
-
-          <div class="space-y-6">
+          <div class="grid gap-6 md:grid-cols-2">
             <div>
-            {% include '_forms/field.html' with field=form.razao_social %}
+              {% include '_forms/field.html' with field=form.username %}
+            </div>
+            {% if form.membro_deste %}
+              <div>
+                {% include '_forms/field.html' with field=form.membro_deste %}
+              </div>
+            {% elif form.membro_desde %}
+              <div>
+                {% include '_forms/field.html' with field=form.membro_desde %}
+              </div>
+            {% endif %}
           </div>
-          <div>
-            {% include '_forms/field.html' with field=form.nome_fantasia %}
-          </div>
-        </div>
 
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            {% include '_forms/field.html' with field=form.cnpj %}
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              data-accordion-toggle
+              aria-expanded="{% if form.razao_social.errors or form.nome_fantasia.errors or form.cnpj.errors or form.cpf.errors or form.area_atuacao.errors or form.descricao_atividade.errors %}true{% else %}false{% endif %}"
+              aria-controls="perfil-company-panel"
+            >
+              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações da empresa" %}</span>
+              <svg
+                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div
+              id="perfil-company-panel"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.razao_social.errors and not form.nome_fantasia.errors and not form.cnpj.errors and not form.cpf.errors and not form.area_atuacao.errors and not form.descricao_atividade.errors %}hidden{% endif %}"
+              data-accordion-panel
+            >
+              <div class="space-y-6">
+                <div>
+                  {% include '_forms/field.html' with field=form.razao_social %}
+                </div>
+                <div>
+                  {% include '_forms/field.html' with field=form.nome_fantasia %}
+                </div>
+              </div>
+              <div class="grid gap-6 md:grid-cols-2">
+                <div>
+                  {% include '_forms/field.html' with field=form.cnpj %}
+                </div>
+                <div>
+                  {% include '_forms/field.html' with field=form.cpf %}
+                </div>
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.area_atuacao %}
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.descricao_atividade %}
+              </div>
+            </div>
           </div>
-          <div>
-            {% include '_forms/field.html' with field=form.cpf %}
-          </div>
-        </div>
-
-        <div>
-          {% include '_forms/field.html' with field=form.area_atuacao %}
-        </div>
-
-        <div>
-          {% include '_forms/field.html' with field=form.descricao_atividade %}
-        </div>
 
         {% with biografia_has_errors=form.biografia.errors %}
           <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
@@ -147,26 +186,54 @@
           </div>
         </div>
 
+        <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            data-accordion-toggle
+            aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors %}true{% else %}false{% endif %}"
+            aria-controls="perfil-contact-panel"
+          >
+            <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações de contato" %}</span>
+            <svg
+              class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div
+            id="perfil-contact-panel"
+            class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors %}hidden{% endif %}"
+            data-accordion-panel
+          >
+            <div>
+              {% include '_forms/field.html' with field=form.contato %}
+            </div>
+            <div class="grid gap-6 md:grid-cols-2">
+              <div>
+                {% include '_forms/field.html' with field=form.phone_number %}
+              </div>
+              <div>
+                {% include '_forms/field.html' with field=form.whatsapp %}
+              </div>
+            </div>
+            <div>
+              {% include '_forms/field.html' with field=form.email %}
+            </div>
+          </div>
+        </div>
+
         <div>
-          {% include '_forms/field.html' with field=form.contato %}
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            {% include '_forms/field.html' with field=form.phone_number %}
-          </div>
-          <div>
-            {% include '_forms/field.html' with field=form.whatsapp %}
-          </div>
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            {% include '_forms/field.html' with field=form.birth_date %}
-          </div>
-          <div>
-            {% include '_forms/field.html' with field=form.email %}
-          </div>
+          {% include '_forms/field.html' with field=form.birth_date %}
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">

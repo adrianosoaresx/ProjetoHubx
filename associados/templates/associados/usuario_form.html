@@ -31,11 +31,179 @@
       {% for hidden in form.hidden_fields %}
         {{ hidden }}
       {% endfor %}
-      {% for field in form.visible_fields %}
-        {% include '_forms/field.html' with field=field %}
-      {% endfor %}
+
+      <div class="space-y-6">
+        <div class="grid gap-6 md:grid-cols-2">
+          {% if form.username %}
+            <div>
+              {% include '_forms/field.html' with field=form.username %}
+            </div>
+          {% endif %}
+          {% if form.membro_deste %}
+            <div>
+              {% include '_forms/field.html' with field=form.membro_deste %}
+            </div>
+          {% elif form.membro_desde %}
+            <div>
+              {% include '_forms/field.html' with field=form.membro_desde %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if form.user_type %}
+          <div>
+            {% include '_forms/field.html' with field=form.user_type %}
+          </div>
+        {% endif %}
+
+        {% if form.razao_social or form.nome_fantasia or form.cnpj or form.cpf or form.area_atuacao or form.descricao_atividade %}
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              data-accordion-toggle
+              aria-expanded="{% if form.razao_social.errors or form.nome_fantasia.errors or form.cnpj.errors or form.cpf.errors or form.area_atuacao.errors or form.descricao_atividade.errors %}true{% else %}false{% endif %}"
+              aria-controls="associado-company-panel"
+            >
+              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações da empresa" %}</span>
+              <svg
+                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div
+              id="associado-company-panel"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.razao_social.errors and not form.nome_fantasia.errors and not form.cnpj.errors and not form.cpf.errors and not form.area_atuacao.errors and not form.descricao_atividade.errors %}hidden{% endif %}"
+              data-accordion-panel
+            >
+              {% if form.razao_social %}
+                <div>
+                  {% include '_forms/field.html' with field=form.razao_social %}
+                </div>
+              {% endif %}
+              {% if form.nome_fantasia %}
+                <div>
+                  {% include '_forms/field.html' with field=form.nome_fantasia %}
+                </div>
+              {% endif %}
+              <div class="grid gap-6 md:grid-cols-2">
+                {% if form.cnpj %}
+                  <div>
+                    {% include '_forms/field.html' with field=form.cnpj %}
+                  </div>
+                {% endif %}
+                {% if form.cpf %}
+                  <div>
+                    {% include '_forms/field.html' with field=form.cpf %}
+                  </div>
+                {% endif %}
+              </div>
+              {% if form.area_atuacao %}
+                <div>
+                  {% include '_forms/field.html' with field=form.area_atuacao %}
+                </div>
+              {% endif %}
+              {% if form.descricao_atividade %}
+                <div>
+                  {% include '_forms/field.html' with field=form.descricao_atividade %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if form.contato or form.phone_number or form.whatsapp or form.email %}
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              data-accordion-toggle
+              aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors %}true{% else %}false{% endif %}"
+              aria-controls="associado-contact-panel"
+            >
+              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações de contato" %}</span>
+              <svg
+                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div
+              id="associado-contact-panel"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors %}hidden{% endif %}"
+              data-accordion-panel
+            >
+              {% if form.contato %}
+                <div>
+                  {% include '_forms/field.html' with field=form.contato %}
+                </div>
+              {% endif %}
+              <div class="grid gap-6 md:grid-cols-2">
+                {% if form.phone_number %}
+                  <div>
+                    {% include '_forms/field.html' with field=form.phone_number %}
+                  </div>
+                {% endif %}
+                {% if form.whatsapp %}
+                  <div>
+                    {% include '_forms/field.html' with field=form.whatsapp %}
+                  </div>
+                {% endif %}
+              </div>
+              {% if form.email %}
+                <div>
+                  {% include '_forms/field.html' with field=form.email %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if form.password1 %}
+          <div>
+            {% include '_forms/field.html' with field=form.password1 %}
+          </div>
+        {% endif %}
+        {% if form.password2 %}
+          <div>
+            {% include '_forms/field.html' with field=form.password2 %}
+          </div>
+        {% endif %}
+
+        {% with handled_fields=' username membro_deste membro_desde user_type razao_social nome_fantasia cnpj cpf area_atuacao descricao_atividade contato phone_number whatsapp email password1 password2 ' %}
+          {% for field in form.visible_fields %}
+            {% if not field.is_hidden %}
+              {% with identifier=' '|add:field.name|add:' ' %}
+                {% if identifier not in handled_fields %}
+                  {% include '_forms/field.html' with field=field %}
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+      </div>
+
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        
+
         <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
       </div>
     </form>
