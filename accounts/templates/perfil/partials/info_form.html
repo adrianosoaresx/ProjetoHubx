@@ -191,7 +191,7 @@
             type="button"
             class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
             data-accordion-toggle
-            aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors or form.birth_date.errors %}true{% else %}false{% endif %}"
+            aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors %}true{% else %}false{% endif %}"
             aria-controls="perfil-contact-panel"
           >
             <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações de contato" %}</span>
@@ -212,7 +212,7 @@
           </button>
           <div
             id="perfil-contact-panel"
-            class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors and not form.birth_date.errors %}hidden{% endif %}"
+            class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors %}hidden{% endif %}"
             data-accordion-panel
           >
             <div>
@@ -226,62 +226,24 @@
                 {% include '_forms/field.html' with field=form.whatsapp %}
               </div>
             </div>
-            <div class="grid gap-6 md:grid-cols-2">
-              <div>
-                {% include '_forms/field.html' with field=form.email %}
-              </div>
-              <div>
-                {% include '_forms/field.html' with field=form.birth_date %}
-              </div>
+            <div>
+              {% include '_forms/field.html' with field=form.email %}
             </div>
           </div>
         </div>
 
-        {% if form.avatar or form.cover %}
-          <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
-            <button
-              type="button"
-              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-              data-accordion-toggle
-              aria-expanded="{% if (form.avatar and form.avatar.errors) or (form.cover and form.cover.errors) %}true{% else %}false{% endif %}"
-              aria-controls="perfil-media-panel"
-            >
-              <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Imagens do perfil" %}</span>
-              <svg
-                class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
-                data-accordion-icon
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div
-              id="perfil-media-panel"
-              class="border-t border-[var(--border)] px-4 py-4 {% if not (form.avatar and form.avatar.errors) and not (form.cover and form.cover.errors) %}hidden{% endif %}"
-              data-accordion-panel
-            >
-              <div class="grid gap-6 md:grid-cols-2">
-                {% if form.avatar %}
-                  <div>
-                    {% include '_forms/field.html' with field=form.avatar %}
-                  </div>
-                {% endif %}
-                {% if form.cover %}
-                  <div>
-                    {% include '_forms/field.html' with field=form.cover %}
-                  </div>
-                {% endif %}
-              </div>
-            </div>
+        <div>
+          {% include '_forms/field.html' with field=form.birth_date %}
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            {% include '_forms/field.html' with field=form.avatar %}
           </div>
-        {% endif %}
+          <div>
+            {% include '_forms/field.html' with field=form.cover %}
+          </div>
+        </div>
 
         <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
           <button
