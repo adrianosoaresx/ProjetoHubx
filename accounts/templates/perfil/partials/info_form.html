@@ -37,15 +37,6 @@
             <div>
               {% include '_forms/field.html' with field=form.username %}
             </div>
-            {% if form.membro_deste %}
-              <div>
-                {% include '_forms/field.html' with field=form.membro_deste %}
-              </div>
-            {% elif form.membro_desde %}
-              <div>
-                {% include '_forms/field.html' with field=form.membro_desde %}
-              </div>
-            {% endif %}
           </div>
 
           <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
