@@ -23,7 +23,7 @@
         hx-post="{% url 'accounts:perfil_sections_info' %}"
         hx-target="#perfil-content"
         hx-swap="innerHTML"
-        hx-vals='{"public_id": "{{ target_user.public_id }}", "username": "{{ target_user.username }}"}'
+        hx-vals='{"public_id": "{{ target_user.public_id|stringformat:"s"|escapejs }}", "username": "{{ target_user.username|default_if_none:''|escapejs }}"}'
         id="perfil-info-form"
       >
         {% csrf_token %}
