@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% if object %}{{ object.nome }}{% else %}{% trans 'Adicionar núcleo' %}{% endif %}{% endblock %}
 
@@ -25,9 +25,29 @@
     <div class="card-body space-y-6">
       <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
-        {% for field in form %}
-          {% include '_forms/field.html' with field=field %}
+        {% for hidden_field in form.hidden_fields %}
+          {{ hidden_field }}
         {% endfor %}
+
+        {% include '_forms/field.html' with field=form.nome %}
+        {% include '_forms/field.html' with field=form.descricao %}
+        {% include '_forms/field.html' with field=form.classificacao %}
+        {% include '_forms/field.html' with field=form.mensalidade %}
+        {% include '_forms/field.html' with field=form.ativo %}
+
+        <details class="group rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)]">
+          <summary class="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] select-none [&::-webkit-details-marker]:hidden">
+            <span>{% trans "Imagens do núcleo" %}</span>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+              {% lucide 'chevron-down' class='h-4 w-4' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="space-y-6 border-t border-[var(--border)] px-4 py-4">
+            {% include '_forms/field.html' with field=form.avatar %}
+            {% include '_forms/field.html' with field=form.cover %}
+          </div>
+        </details>
+
         <div class="flex justify-end pt-4 border-t border-[var(--border)]">
           <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
