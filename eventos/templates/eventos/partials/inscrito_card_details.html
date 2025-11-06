@@ -1,30 +1,26 @@
 {% load i18n lucide_icons %}
 {% trans "Não informado" as not_available %}
-<dl class="mt-4 space-y-3 text-sm">
-  <div class="text-[var(--text-primary)] font-medium">{{ inscrito.nome_fantasia|default:not_available }}</div>
+<div class="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+  <p class="text-[var(--text-muted)]">{{ inscrito.nome_fantasia|default:not_available }}</p>
 
-  <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-    <dt class="text-xs font-semibold tracking-wide text-[var(--text-secondary)]">{% trans "Razão social:" %}</dt>
-    <dd class="text-[var(--text-primary)]">{{ inscrito.razao_social|default:not_available }}</dd>
-  </div>
+  <p class="text-[var(--text-muted)]">
+    {% trans "Razão social:" %} {{ inscrito.razao_social|default:not_available }}
+  </p>
 
   {% if inscrito.cnpj %}
-    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold tracking-wide text-[var(--text-secondary)]">{% trans "Cnpj:" %}</dt>
-      <dd class="text-[var(--text-primary)]">{{ inscrito.cnpj }}</dd>
-    </div>
+    <p class="text-[var(--text-muted)]">
+      {% trans "Cnpj:" %} {{ inscrito.cnpj }}
+    </p>
   {% elif inscrito.cpf %}
-    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Cpf:" %}</dt>
-      <dd class="text-[var(--text-primary)]">{{ inscrito.cpf }}</dd>
-    </div>
+    <p class="text-[var(--text-muted)]">
+      {% trans "Cpf:" %} {{ inscrito.cpf }}
+    </p>
   {% else %}
-    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <dt class="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Cpf:" %}</dt>
-      <dd class="text-[var(--text-primary)]">{{ not_available }}</dd>
-    </div>
+    <p class="text-[var(--text-muted)]">
+      {% trans "Cpf:" %} {{ not_available }}
+    </p>
   {% endif %}
-</dl>
+</div>
 <p class="mt-4 text-xs tracking-wide text-[var(--text-muted)]">@{{ inscrito.username }}</p>
 {% if pode_gerenciar_inscricoes %}
   <div class="mt-4 flex flex-wrap gap-2 sm:justify-end relative z-20">
