@@ -7,6 +7,7 @@ from .views import (
     EventoCreateView,
     EventoDeleteView,
     EventoDetailView,
+    EventoInscritosPDFView,
     EventoInscritosPartialView,
     EventoFeedbackView,
     EventoRemoverInscritoModalView,
@@ -33,6 +34,11 @@ urlpatterns = [
     path("evento/novo/", EventoCreateView.as_view(), name="evento_novo"),
     path("evento/<uuid:pk>/", EventoDetailView.as_view(), name="evento_detalhe"),
     path("evento/<uuid:pk>/inscritos/", EventoInscritosPartialView.as_view(), name="evento_inscritos"),
+    path(
+        "evento/<uuid:pk>/inscritos/pdf/",
+        EventoInscritosPDFView.as_view(),
+        name="evento_inscritos_pdf",
+    ),
     path("evento/<uuid:pk>/editar/", EventoUpdateView.as_view(), name="evento_editar"),
     path("evento/<uuid:pk>/excluir/", EventoDeleteView.as_view(), name="evento_excluir"),
     path(

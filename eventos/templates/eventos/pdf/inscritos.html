@@ -1,0 +1,117 @@
+{% load i18n l10n tz %}
+{% localtime on %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% blocktrans with titulo=evento.titulo %}Lista de inscritos - {{ titulo }}{% endblocktrans %}</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 24px;
+        color: #111827;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 24px 0 8px;
+      }
+      p {
+        margin: 0 0 8px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+      }
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        text-align: left;
+      }
+      thead th {
+        background-color: #f3f4f6;
+        font-weight: 600;
+      }
+      tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>{% trans "Lista de inscritos" %}</h1>
+      <p>
+        <strong>{% trans "Evento" %}:</strong>
+        {{ evento.titulo }}
+      </p>
+      {% if evento.data_inicio %}
+        <p>
+          <strong>{% trans "Período" %}:</strong>
+          {{ evento.data_inicio|date:"SHORT_DATETIME_FORMAT" }}
+          {% if evento.data_fim %}
+            – {{ evento.data_fim|date:"SHORT_DATETIME_FORMAT" }}
+          {% endif %}
+        </p>
+      {% endif %}
+      <p>
+        <strong>{% trans "Gerado em" %}:</strong>
+        {{ generated_at|date:"SHORT_DATETIME_FORMAT" }}
+      </p>
+    </header>
+
+    <section>
+      <h2>{% trans "Inscrições confirmadas" %}</h2>
+      <table aria-describedby="inscritos">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">{% trans "Participante" %}</th>
+            <th scope="col">{% trans "E-mail" %}</th>
+            <th scope="col">{% trans "Telefone" %}</th>
+            <th scope="col">{% trans "Confirmado em" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inscricao in inscricoes %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                {% firstof
+                  inscricao.user.contato
+                  inscricao.user.display_name
+                  inscricao.user.get_full_name
+                  inscricao.user.username
+                %}
+              </td>
+              <td>{{ inscricao.user.email|default:"-" }}</td>
+              <td>{{ inscricao.user.phone_number|default:"-" }}</td>
+              <td>
+                {% if inscricao.data_confirmacao %}
+                  {{ inscricao.data_confirmacao|date:"SHORT_DATETIME_FORMAT" }}
+                {% else %}
+                  –
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5">{% trans "Nenhuma inscrição confirmada até o momento." %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </body>
+</html>
+{% endlocaltime %}
