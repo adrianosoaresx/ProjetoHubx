@@ -46,7 +46,8 @@ def evento(organizacao, usuario_logado):
         publico_alvo=0,
         numero_presentes=0,
         participantes_maximo=100,
-        valor=Decimal("99.90"),
+        valor_associado=Decimal("129.90"),
+        valor_nucleado=Decimal("79.90"),
     )
 
 
@@ -118,7 +119,7 @@ def test_usuario_pode_inscrever_e_cancelar(evento, usuario_comum, client):
     assert resp1.status_code == 302
     inscricao = InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").first()
     assert inscricao is not None
-    assert inscricao.valor_pago == evento.valor
+    assert inscricao.valor_pago == evento.get_valor_para_usuario(usuario_comum)
 
     # Cancela
     resp2 = client.post(cancel_url)
@@ -186,7 +187,7 @@ def test_admin_pode_editar_inscricao(evento, usuario_logado, client, organizacao
     )
     assert response_post.status_code == 302
     inscricao.refresh_from_db()
-    assert inscricao.valor_pago == evento.valor
+    assert inscricao.valor_pago == evento.get_valor_para_usuario(outro_usuario)
     assert inscricao.metodo_pagamento == "pix"
 
 
@@ -207,10 +208,12 @@ def test_admin_pode_definir_faturamento_parcelado(
     )
     url = reverse("eventos:inscricao_editar", args=[inscricao.pk])
 
+    valor_evento = evento.get_valor_para_usuario(outro_usuario) or Decimal("0.00")
+
     response_post = client.post(
         url,
         {
-            "valor_pago": f"{evento.valor:.2f}",
+            "valor_pago": f"{valor_evento:.2f}",
             "metodo_pagamento": "faturar_2x",
         },
     )
@@ -218,6 +221,7 @@ def test_admin_pode_definir_faturamento_parcelado(
     assert response_post.status_code == 302
     inscricao.refresh_from_db()
     assert inscricao.metodo_pagamento == "faturar_2x"
+    assert inscricao.valor_pago == valor_evento
 
 
 def test_admin_pode_validar_pagamento(evento, usuario_logado, client, organizacao):
@@ -281,7 +285,8 @@ def test_nao_permite_validacao_de_outra_organizacao(evento, usuario_logado, clie
         publico_alvo=0,
         numero_presentes=0,
         participantes_maximo=10,
-        valor=Decimal("50.00"),
+        valor_associado=Decimal("50.00"),
+        valor_nucleado=Decimal("40.00"),
     )
     participante = User.objects.create_user(
         username="externo",

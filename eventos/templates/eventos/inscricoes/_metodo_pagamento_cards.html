@@ -55,7 +55,7 @@
             data-payment-accordion-value="pix"
             data-pix-section
             data-pix-key="{{ evento.organizacao.chave_pix|default:''|escapejs }}"
-            data-pix-amount="{{ evento.valor|default:0 }}"
+            data-pix-amount="{{ valor_evento_usuario|default_if_none:0 }}"
             data-pix-event-title="{{ evento.titulo|default:''|escapejs }}"
             data-copy-success-text="{% trans 'Chave Pix copiada para a área de transferência.' %}"
             data-copy-error-text="{% trans 'Não foi possível copiar a chave Pix. Tente novamente.' %}"

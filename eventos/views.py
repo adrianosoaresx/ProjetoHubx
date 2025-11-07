@@ -2,7 +2,6 @@ import calendar
 from collections import Counter
 from decimal import Decimal
 from datetime import date, timedelta
-from decimal import Decimal
 from typing import Any
 
 from django import forms
@@ -704,7 +703,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 continue
             valor_referencia = inscricao.valor_pago
             if valor_referencia is None:
-                valor_referencia = getattr(inscricao.evento, "valor", None)
+                valor_referencia = inscricao.get_valor_evento()
             if valor_referencia is None:
                 continue
             valor_total_pagamentos_validados += Decimal(valor_referencia)
@@ -1150,6 +1149,7 @@ class InscricaoEventoUpdateView(
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["evento"] = getattr(self.object, "evento", None)
+        kwargs["user"] = getattr(self.object, "user", None)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -1162,12 +1162,17 @@ class InscricaoEventoUpdateView(
                 "title": _("Editar inscrição"),
                 "subtitle": getattr(evento, "descricao", None),
                 "back_href": resolve_back_href(self.request, fallback=fallback),
+                "valor_evento_usuario": evento.get_valor_para_usuario(
+                    user=self.object.user
+                ),
             }
         )
         return context
 
     def form_valid(self, form):
-        form.instance.valor_pago = form.instance.evento.valor
+        valor_evento = form.instance.evento.get_valor_para_usuario(user=form.instance.user)
+        if valor_evento is not None:
+            form.instance.valor_pago = valor_evento
         messages.success(self.request, _("Inscrição atualizada com sucesso."))
         return super().form_valid(form)
 
@@ -1315,11 +1320,15 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         context["title"] = self.evento.titulo
         fallback = reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
         context["back_href"] = resolve_back_href(self.request, fallback=fallback)
+        context["valor_evento_usuario"] = self.evento.get_valor_para_usuario(
+            user=self.request.user
+        )
         return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["evento"] = self.evento
+        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
@@ -1337,7 +1346,9 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
 
         form.instance.user = self.request.user
         form.instance.evento = self.evento
-        form.instance.valor_pago = self.evento.valor
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+        if valor_evento is not None:
+            form.instance.valor_pago = valor_evento
 
         if existing_inscricao and existing_inscricao.deleted:
             # Reaproveita a inscrição cancelada, removendo o soft delete
