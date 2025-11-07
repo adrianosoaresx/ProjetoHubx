@@ -1,0 +1,47 @@
+{% load i18n %}
+{% if is_htmx %}
+  <p
+    id="inscritos-summary"
+    class="text-sm text-[var(--text-secondary)]"
+    hx-swap-oob="true"
+  >
+    {% blocktrans count count=inscritos_total_count %}
+      {{ count }} inscrito confirmado
+    {% plural %}
+      {{ count }} inscritos confirmados
+    {% endblocktrans %}
+    {% if vagas_disponiveis is not None %}
+      ·
+      {% blocktrans count vagas=vagas_disponiveis %}
+        {{ vagas }} vaga disponível
+      {% plural %}
+        {{ vagas }} vagas disponíveis
+      {% endblocktrans %}
+    {% endif %}
+  </p>
+{% endif %}
+<div
+  class="grid grid-cols-1 gap-6 md:grid-cols-2"
+  role="list"
+  aria-label="{% trans 'Lista de inscritos do evento' %}"
+>
+  {% if inscricoes_confirmadas %}
+    {% for inscricao in inscricoes_confirmadas %}
+      {% include 'eventos/partials/inscrito_card.html' with inscrito=inscricao.user inscricao=inscricao pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
+    {% endfor %}
+  {% else %}
+    <p class="col-span-full text-center text-[var(--text-muted)]">
+      {% if inscritos_search_query %}
+        {% blocktrans trimmed with search=inscritos_search_query %}
+          Nenhum inscrito encontrado para "{{ search }}".
+        {% endblocktrans %}
+      {% else %}
+        {% trans "Nenhum inscrito." %}
+      {% endif %}
+    </p>
+  {% endif %}
+</div>
+{% if inscritos_page_obj %}
+  {% url 'eventos:evento_inscritos' object.pk as inscritos_list_url %}
+  {% include '_partials/pagination.html' with page_obj=inscritos_page_obj querystring=inscritos_querystring hx_get=inscritos_list_url hx_target='#inscritos-list' hx_indicator='#inscritos-loading' hx_push_url='true' %}
+{% endif %}

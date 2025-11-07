@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Q, Count, Model
 from django.db.models.fields.files import FieldFile
@@ -613,6 +614,34 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
 
+    def get_inscritos_paginate_by(self) -> int:
+        return getattr(settings, "EVENTOS_INSCRITOS_PAGINATE_BY", 12)
+
+    def get_inscritos_base_queryset(self):
+        return (
+            InscricaoEvento.objects.filter(
+                evento=self.object,
+                status="confirmada",
+                deleted=False,
+            )
+            .select_related("user")
+            .order_by("-data_confirmacao", "-created_at")
+        )
+
+    def get_inscritos_search_query(self) -> str:
+        return (self.request.GET.get("search", "") or "").strip()
+
+    def filter_inscritos_queryset(self, qs, search_query: str):
+        if search_query:
+            for term in search_query.split():
+                qs = qs.filter(
+                    Q(user__contato__icontains=term)
+                    | Q(user__nome_fantasia__icontains=term)
+                    | Q(user__email__icontains=term)
+                    | Q(user__username__icontains=term)
+                )
+        return qs
+
     def get_queryset(self):
         base = (
             Evento.objects.select_related("organizacao")
@@ -653,7 +682,6 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             InscricaoEvento.objects.filter(evento=evento, deleted=False)
             .select_related("user")
         )
-        inscricoes_confirmadas = [inscricao for inscricao in inscricoes if inscricao.status == "confirmada"]
         inscricoes_financeiro = [
             inscricao for inscricao in inscricoes if inscricao.status != "cancelada"
         ]
@@ -673,6 +701,18 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         vagas_disponiveis = None
         if evento.participantes_maximo is not None:
             vagas_disponiveis = max(evento.participantes_maximo - total_confirmadas, 0)
+        inscritos_queryset = self.get_inscritos_base_queryset()
+        inscritos_search_query = self.get_inscritos_search_query()
+        filtered_inscritos = self.filter_inscritos_queryset(
+            inscritos_queryset, inscritos_search_query
+        )
+        paginator = Paginator(filtered_inscritos, self.get_inscritos_paginate_by())
+        page_number = self.request.GET.get("page")
+        inscritos_page_obj = paginator.get_page(page_number)
+        inscricoes_confirmadas = list(inscritos_page_obj.object_list)
+        inscritos_query_params = self.request.GET.copy()
+        inscritos_query_params.pop("page", None)
+        inscritos_querystring = inscritos_query_params.urlencode()
         feedbacks = list(evento.feedbacks.all())
         total_feedbacks = len(feedbacks)
         media_feedback = None
@@ -788,6 +828,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 
         context.update(
             {
+                "is_htmx": bool(self.request.headers.get("HX-Request")),
                 "local": evento.local,
                 "cidade": evento.cidade,
                 "estado": evento.estado,
@@ -804,6 +845,11 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "vagas_disponiveis": vagas_disponiveis,
                 "media_feedback": media_feedback,
                 "total_feedbacks": total_feedbacks,
+                "inscritos_page_obj": inscritos_page_obj,
+                "inscritos_search_query": inscritos_search_query,
+                "inscritos_filtered_count": inscritos_page_obj.paginator.count,
+                "inscritos_total_count": total_confirmadas,
+                "inscritos_querystring": inscritos_querystring,
                 "inscricoes_confirmadas": inscricoes_confirmadas,
                 "inscricoes_financeiro": inscricoes_financeiro,
                 "pode_editar_evento": pode_editar_evento,
@@ -845,6 +891,17 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         request = self.request
         fallback = reverse("eventos:calendario")
         return resolve_back_href(request, fallback=fallback)
+
+
+class EventoInscritosPartialView(EventoDetailView):
+    template_name = "eventos/partials/inscritos_list.html"
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not _usuario_pode_ver_inscritos(request.user, self.object):
+            raise PermissionDenied
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
 
 # ---------------------------------------------------------------------------

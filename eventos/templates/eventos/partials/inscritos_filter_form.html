@@ -1,0 +1,28 @@
+{% load i18n lucide_icons %}
+{% url 'eventos:evento_inscritos' object.pk as inscritos_list_url %}
+{% with form_id=form_id|default:'inscritos-filter-form' search_input_id=search_input_id|default:'inscritos-search' hx_target=hx_target|default:'#inscritos-list' hx_indicator=hx_indicator|default:'#inscritos-loading' hx_push_url=hx_push_url|default:'true' search_label=search_label|default:_('Buscar por nome ou email') search_placeholder=search_placeholder|default:_('Buscar por nome ou email') search_value=search_value|default:inscritos_search_query %}
+<form
+  id="{{ form_id }}"
+  class="flex w-full flex-col gap-3 sm:flex-row sm:items-center"
+  hx-get="{{ inscritos_list_url }}"
+  hx-target="{{ hx_target }}"
+  hx-trigger="input changed delay:500ms, submit"
+  hx-indicator="{{ hx_indicator }}"
+  hx-push-url="{{ hx_push_url }}"
+>
+  <div class="flex w-full items-center gap-2">
+    <label for="{{ search_input_id }}" class="sr-only">{{ search_label }}</label>
+    <input
+      type="search"
+      id="{{ search_input_id }}"
+      name="search"
+      value="{{ search_value }}"
+      placeholder="{{ search_placeholder }}"
+      class="input input-bordered w-full"
+    >
+    <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
+      {% lucide 'search' class='w-4 h-4' aria_hidden='true' %}
+    </button>
+  </div>
+</form>
+{% endwith %}
