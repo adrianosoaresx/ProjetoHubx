@@ -20,19 +20,9 @@
                 <p class="text-sm text-[var(--text-secondary)]">{% trans "Dados gerais do evento" %}</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <a
-                class="btn btn-secondary btn-sm p-2"
-                href="{% url 'eventos:evento_inscritos_pdf' object.pk %}"
-                hx-on="click: event.stopPropagation()"
-                aria-label="{% trans 'Baixar lista de inscritos em PDF' %}"
-              >
-                {% lucide 'download' class='h-4 w-4' aria_hidden='true' %}
-              </a>
-              <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
-                {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-              </span>
-            </div>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+              {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+            </span>
           </summary>
           <div class="card-body space-y-6">
             <dl class="space-y-6 text-sm">
