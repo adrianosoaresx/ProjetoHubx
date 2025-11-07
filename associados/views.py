@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
@@ -81,7 +81,7 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        fallback_url = str(self.success_url)
+        fallback_url = reverse("associados:associados_lista")
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context["back_href"] = back_href
         context["back_component_config"] = {
@@ -89,8 +89,9 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
             "fallback_href": fallback_url,
         }
         context["cancel_component_config"] = {
-            "href": back_href,
+            "href": fallback_url,
             "fallback_href": fallback_url,
+            "prevent_history": True,
         }
         return context
 
