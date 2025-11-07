@@ -1,5 +1,5 @@
 import pytest
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlparse, urlsplit
 
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -92,6 +92,73 @@ def test_perfil_info_section_edit_renders_form(client, django_user_model):
         template.name and template.name.endswith("info_form.html")
         for template in getattr(ajax_response, "templates", [])
     )
+
+
+def test_perfil_info_edit_cancel_button_has_fallback(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        email="owner@example.com",
+        username="owner",
+        password="pass123",
+    )
+
+    client.force_login(user)
+
+    response = client.get(
+        reverse("accounts:perfil_sections_info"),
+        {"info_view": "edit"},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    context = response.context
+    assert context is not None
+    expected_fallback = f"{reverse('accounts:perfil')}?section=info"
+    assert context["cancel_fallback_url"] == expected_fallback
+    cancel_config = context["cancel_component_config"]
+    assert cancel_config["fallback_href"] == expected_fallback
+    assert cancel_config["href"] == context["back_href"]
+
+
+def test_perfil_info_edit_cancel_button_keeps_target_identifiers(
+    client, django_user_model
+):
+    organizacao = OrganizacaoFactory()
+    admin = django_user_model.objects.create_user(
+        email="admin@example.com",
+        username="admin",
+        password="pass123",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+        is_staff=True,
+    )
+    target = django_user_model.objects.create_user(
+        email="target@example.com",
+        username="target",
+        password="pass123",
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=True,
+    )
+
+    client.force_login(admin)
+    response = client.get(
+        reverse("accounts:perfil_sections_info"),
+        {"info_view": "edit", "public_id": str(target.public_id), "username": target.username},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    context = response.context
+    assert context is not None
+    cancel_config = context["cancel_component_config"]
+    fallback = cancel_config["fallback_href"]
+    parsed = urlparse(fallback)
+    assert parsed.path == reverse("accounts:perfil")
+    params = parse_qs(parsed.query)
+    assert params["section"] == ["info"]
+    assert params["public_id"] == [str(target.public_id)]
+    assert params["username"] == [target.username]
+    assert "info_view" not in params
 
 
 def test_admin_can_access_edit_form_for_other_user(client, django_user_model):
