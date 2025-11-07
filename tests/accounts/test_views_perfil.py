@@ -116,7 +116,12 @@ def test_perfil_info_edit_cancel_button_has_fallback(client, django_user_model):
     assert context["cancel_fallback_url"] == expected_fallback
     cancel_config = context["cancel_component_config"]
     assert cancel_config["fallback_href"] == expected_fallback
-    assert cancel_config["href"] == context["back_href"]
+    assert cancel_config["href"] == expected_fallback
+    assert context["back_href"] == expected_fallback
+    assert cancel_config["hx_get"] == reverse("accounts:perfil_info_partial")
+    assert cancel_config["hx_push_url"] == expected_fallback
+    assert cancel_config["hx_target"] == "closest section"
+    assert cancel_config["hx_swap"] == "innerHTML"
 
 
 def test_perfil_info_edit_cancel_button_keeps_target_identifiers(
@@ -159,6 +164,12 @@ def test_perfil_info_edit_cancel_button_keeps_target_identifiers(
     assert params["public_id"] == [str(target.public_id)]
     assert params["username"] == [target.username]
     assert "info_view" not in params
+    cancel_hx_get = cancel_config["hx_get"]
+    assert cancel_hx_get.startswith(reverse("accounts:perfil_info_partial"))
+    hx_parsed = urlparse(cancel_hx_get)
+    hx_params = parse_qs(hx_parsed.query)
+    assert hx_params["public_id"] == [str(target.public_id)]
+    assert hx_params["username"] == [target.username]
 
 
 def test_admin_can_access_edit_form_for_other_user(client, django_user_model):

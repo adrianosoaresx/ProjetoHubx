@@ -34,8 +34,6 @@ from rest_framework import viewsets
 
 from rest_framework.permissions import IsAuthenticated
 
-from core.utils import resolve_back_href
-
 from accounts.serializers import UserSerializer
 from accounts.tasks import (
     send_cancel_delete_email,
@@ -321,6 +319,13 @@ def perfil_info(request):
             )
         return redirect_to_profile_section(request, "info", extra_params)
 
+    target_identifiers: dict[str, str] = {}
+    if not is_self:
+        target_identifiers = {
+            "public_id": str(target_user.public_id),
+            "username": target_user.username,
+        }
+
     if request.method == "POST":
         form = InformacoesPessoaisForm(request.POST, request.FILES, instance=target_user)
         if form.is_valid():
@@ -341,33 +346,29 @@ def perfil_info(request):
                     )
 
             extra_params: dict[str, str | None] | None = {"info_view": None}
-            if not is_self:
-                extra_params.update(
-                    {
-                        "public_id": str(target_user.public_id),
-                        "username": target_user.username,
-                    }
-                )
+            if target_identifiers:
+                extra_params.update(target_identifiers)
             return redirect_to_profile_section(request, "info", extra_params)
         if not is_htmx_or_ajax(request):
             extra_params = {"info_view": "edit"}
-            if not is_self:
-                extra_params.update(
-                    {
-                        "public_id": str(target_user.public_id),
-                        "username": target_user.username,
-                    }
-                )
+            if target_identifiers:
+                extra_params.update(target_identifiers)
             return redirect_to_profile_section(request, "info", extra_params)
     else:
         form = InformacoesPessoaisForm(instance=target_user)
 
+    cancel_params: dict[str, str | None] = {"info_view": None}
+    if target_identifiers:
+        cancel_params.update(target_identifiers)
+
     cancel_fallback_url = build_profile_section_url(
         request,
         "info",
-        {"info_view": None},
+        cancel_params,
     )
-    back_href = resolve_back_href(request, fallback=cancel_fallback_url)
+    cancel_hx_get_url = reverse("accounts:perfil_info_partial")
+    if target_identifiers:
+        cancel_hx_get_url = f"{cancel_hx_get_url}?{urlencode(target_identifiers)}"
 
     return render(
         request,
@@ -376,12 +377,16 @@ def perfil_info(request):
             "form": form,
             "target_user": target_user,
             "is_self": is_self,
-            "back_href": back_href,
+            "back_href": cancel_fallback_url,
             "cancel_fallback_url": cancel_fallback_url,
             "cancel_component_config": {
-                "href": back_href,
+                "href": cancel_fallback_url,
                 "fallback_href": cancel_fallback_url,
                 "aria_label": _("Cancelar edição"),
+                "hx_get": cancel_hx_get_url,
+                "hx_target": "closest section",
+                "hx_swap": "innerHTML",
+                "hx_push_url": cancel_fallback_url,
             },
         },
     )
