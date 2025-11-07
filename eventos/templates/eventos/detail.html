@@ -287,7 +287,15 @@
 
         {% if pode_ver_inscritos %}
           <article class="card">
-            <details class="group">
+            <details
+              class="group"
+              hx-get="{% url 'eventos:evento_inscritos' object.pk %}"
+              hx-target="#inscritos-list"
+              hx-trigger="toggle[target.open]"
+              hx-include="#inscritos-filter-form"
+              hx-indicator="#inscritos-loading"
+              hx-push-url="true"
+            >
               <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
                 <div class="flex items-start gap-3">
                   <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
@@ -295,39 +303,44 @@
                   </span>
                   <div class="space-y-1">
                     <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
-                    {% with total_inscritos=inscricoes_confirmadas|default_if_none:''|length %}
-                      <p class="text-sm text-[var(--text-secondary)]">
-                        {% blocktrans count count=total_inscritos %}
-                          {{ count }} inscrito confirmado
+                    <p class="text-sm text-[var(--text-secondary)]" id="inscritos-summary">
+                      {% blocktrans count count=inscritos_total_count %}
+                        {{ count }} inscrito confirmado
+                      {% plural %}
+                        {{ count }} inscritos confirmados
+                      {% endblocktrans %}
+                      {% if vagas_disponiveis is not None %}
+                        ·
+                        {% blocktrans count vagas=vagas_disponiveis %}
+                          {{ vagas }} vaga disponível
                         {% plural %}
-                          {{ count }} inscritos confirmados
+                          {{ vagas }} vagas disponíveis
                         {% endblocktrans %}
-                        {% if vagas_disponiveis is not None %}
-                          ·
-                          {% blocktrans count vagas=vagas_disponiveis %}
-                            {{ vagas }} vaga disponível
-                          {% plural %}
-                            {{ vagas }} vagas disponíveis
-                          {% endblocktrans %}
-                        {% endif %}
-                      </p>
-                    {% endwith %}
+                      {% endif %}
+                    </p>
                   </div>
                 </div>
                 <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
                   {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
                 </span>
               </summary>
-              <div class="card-body space-y-4">
-                {% if inscricoes_confirmadas %}
-                  <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {% for ins in inscricoes_confirmadas %}
-                      {% include 'eventos/partials/inscrito_card.html' with inscrito=ins.user inscricao=ins pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
-                    {% endfor %}
+              <div class="card-body space-y-6">
+                <div id="inscritos-filter-container">
+                  {% include 'eventos/partials/inscritos_filter_form.html' with form_id='inscritos-filter-form' search_input_id='inscritos-search' hx_target='#inscritos-list' hx_indicator='#inscritos-loading' hx_push_url='true' search_value=inscritos_search_query %}
+                </div>
+                <section class="space-y-6">
+                  <div id="inscritos-list">
+                    {% include 'eventos/partials/inscritos_list.html' %}
                   </div>
-                {% else %}
-                  <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
-                {% endif %}
+                  <div
+                    id="inscritos-loading"
+                    class="htmx-indicator text-center text-sm text-[var(--text-secondary)]"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {% trans 'Carregando inscritos...' %}
+                  </div>
+                </section>
               </div>
             </details>
           </article>
