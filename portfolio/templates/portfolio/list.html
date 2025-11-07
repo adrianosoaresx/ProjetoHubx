@@ -7,7 +7,7 @@
 
 {% block content %}
   <div class="space-y-6" data-portfolio-root data-user-id="{{ request.user.pk }}">
-    <div class="card" data-accordion>
+    <div class="card" data-accordion data-accordion-id="portfolio-highlights">
       <div class="card-header">
         <button
           type="button"
@@ -50,7 +50,12 @@
       </div>
     </div>
 
-    <div class="card" data-accordion>
+    <div
+      class="card"
+      data-accordion
+      data-accordion-id="portfolio-library"
+      {% if show_form %}data-accordion-force-open{% endif %}
+    >
       <div class="card-header">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <button
@@ -251,31 +256,95 @@
   {{ block.super }}
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const accordionButtons = document.querySelectorAll('[data-accordion-toggle]');
-      accordionButtons.forEach((button) => {
-        const controls = button.getAttribute('aria-controls');
-        const panel = controls ? document.getElementById(controls) : null;
-        const icon = button.querySelector('[data-accordion-icon]');
-        if (!panel) {
+      const root = document.querySelector('[data-portfolio-root]');
+      const userId = root?.getAttribute('data-user-id') || 'anonymous';
+
+      const accordionStateKey = `portfolioAccordionState:${userId}`;
+
+      const readAccordionState = () => {
+        try {
+          const stored = localStorage.getItem(accordionStateKey);
+          if (!stored) {
+            return new Map();
+          }
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === 'object') {
+            return new Map(
+              Object.entries(parsed).map(([key, value]) => [key, Boolean(value)]),
+            );
+          }
+        } catch (error) {
+          console.warn('Não foi possível ler o estado dos acordions.', error);
+        }
+        return new Map();
+      };
+
+      const persistAccordionState = (state) => {
+        try {
+          const serialized = JSON.stringify(Object.fromEntries(state));
+          localStorage.setItem(accordionStateKey, serialized);
+        } catch (error) {
+          console.warn('Não foi possível salvar o estado dos acordions.', error);
+        }
+      };
+
+      const setAccordionState = (button, panel, icon, isOpen) => {
+        button.setAttribute('aria-expanded', String(isOpen));
+        panel.classList.toggle('hidden', !isOpen);
+        if (icon) {
+          icon.classList.toggle('rotate-180', isOpen);
+        }
+      };
+
+      const accordionState = readAccordionState();
+      let accordionStateChanged = false;
+
+      const accordions = document.querySelectorAll('[data-accordion]');
+      accordions.forEach((accordion, index) => {
+        const toggle = accordion.querySelector('[data-accordion-toggle]');
+        const panel = accordion.querySelector('[data-accordion-panel]');
+        const icon = accordion.querySelector('[data-accordion-icon]');
+
+        if (!toggle || !panel) {
           return;
         }
-        button.addEventListener('click', () => {
-          const expanded = button.getAttribute('aria-expanded') === 'true';
-          const next = !expanded;
-          button.setAttribute('aria-expanded', String(next));
-          panel.classList.toggle('hidden', !next);
-          if (icon) {
-            icon.classList.toggle('rotate-180', next);
-          }
+
+        const controls = toggle.getAttribute('aria-controls');
+        const fallbackId = controls || `accordion-${index}`;
+        const accordionId = accordion.dataset.accordionId || fallbackId;
+        const forceOpen = accordion.hasAttribute('data-accordion-force-open');
+        const storedState = accordionState.has(accordionId)
+          ? Boolean(accordionState.get(accordionId))
+          : undefined;
+        const initialState = forceOpen ? true : storedState ?? false;
+
+        setAccordionState(toggle, panel, icon, initialState);
+
+        if (forceOpen && storedState !== true) {
+          accordionState.set(accordionId, true);
+          accordionStateChanged = true;
+        } else if (storedState === undefined) {
+          accordionState.set(accordionId, initialState);
+          accordionStateChanged = true;
+        }
+
+        toggle.addEventListener('click', () => {
+          const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+          const next = !isExpanded;
+          setAccordionState(toggle, panel, icon, next);
+          accordionState.set(accordionId, next);
+          persistAccordionState(accordionState);
         });
       });
 
-      const root = document.querySelector('[data-portfolio-root]');
+      if (accordionStateChanged) {
+        persistAccordionState(accordionState);
+      }
+
       if (!root) {
         return;
       }
 
-      const userId = root.getAttribute('data-user-id') || 'anonymous';
       const storageKey = `portfolioHighlights:${userId}`;
       const highlightList = document.getElementById('portfolio-highlight-list');
       const emptyState = document.getElementById('portfolio-highlight-empty');
