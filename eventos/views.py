@@ -23,6 +23,7 @@ from django.http import (
     JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -32,6 +33,8 @@ from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from weasyprint import HTML
 
 from accounts.models import UserType
 from core.permissions import (
@@ -891,6 +894,61 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         request = self.request
         fallback = reverse("eventos:calendario")
         return resolve_back_href(request, fallback=fallback)
+
+
+class EventoInscritosPDFView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
+    model = Evento
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not _usuario_pode_ver_inscritos(request.user, self.object):
+            raise PermissionDenied
+        inscricoes_queryset = (
+            InscricaoEvento.objects.filter(
+                evento=self.object,
+                status="confirmada",
+                deleted=False,
+            )
+            .select_related("user")
+            .order_by("user__contato", "user__nome_fantasia", "user__username")
+        )
+
+        def _inscricao_sort_key(inscricao: InscricaoEvento) -> tuple[str, int]:
+            user = inscricao.user
+            candidates = [
+                getattr(user, "contato", None),
+                getattr(user, "display_name", None),
+                user.get_full_name() if hasattr(user, "get_full_name") else None,
+                getattr(user, "username", None),
+            ]
+            for candidate in candidates:
+                if callable(candidate):
+                    candidate = candidate()
+                if candidate:
+                    return (str(candidate).strip().casefold(), inscricao.pk or 0)
+            return ("", inscricao.pk or 0)
+
+        inscricoes = sorted(inscricoes_queryset, key=_inscricao_sort_key)
+        contexto = {
+            "evento": self.object,
+            "inscricoes": inscricoes,
+            "generated_at": timezone.localtime(),
+        }
+        rendered_html = render_to_string(
+            "eventos/pdf/inscritos.html",
+            contexto,
+            request=request,
+        )
+        pdf_bytes = HTML(
+            string=rendered_html,
+            base_url=request.build_absolute_uri("/"),
+        ).write_pdf()
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        slug = getattr(self.object, "slug", None) or str(self.object.pk)
+        response["Content-Disposition"] = (
+            f'attachment; filename="inscritos-{slug}.pdf"'
+        )
+        return response
 
 
 class EventoInscritosPartialView(EventoDetailView):
