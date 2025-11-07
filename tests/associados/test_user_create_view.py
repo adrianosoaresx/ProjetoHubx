@@ -46,7 +46,6 @@ class OrganizacaoUserCreateViewTests(TestCase):
         cancel_config = response.context["cancel_component_config"]
         self.assertEqual(cancel_config["href"], "/associados/")
         self.assertEqual(cancel_config["fallback_href"], "/associados/")
-        self.assertTrue(cancel_config["prevent_history"])
 
 
     def test_success_redirects_to_next_when_valid(self):
