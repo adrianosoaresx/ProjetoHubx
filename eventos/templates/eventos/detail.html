@@ -101,11 +101,19 @@
                     <dt class="text-[var(--text-secondary)]">{% trans "Evento gratuito" %}</dt>
                     <dd class="font-medium text-[var(--text-primary)]">{% trans "Sim" %}</dd>
                   </div>
-                {% elif object.valor %}
-                  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-                    <dt class="text-[var(--text-secondary)]">{% trans "Valor" %}</dt>
-                    <dd class="font-medium text-[var(--text-primary)]">{{ object.valor }}</dd>
-                  </div>
+                {% else %}
+                  {% if object.valor_associado is not None %}
+                    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                      <dt class="text-[var(--text-secondary)]">{% trans "Valor para associados" %}</dt>
+                      <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_associado|localize }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if object.valor_nucleado is not None %}
+                    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                      <dt class="text-[var(--text-secondary)]">{% trans "Valor para nucleados" %}</dt>
+                      <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_nucleado|localize }}</dd>
+                    </div>
+                  {% endif %}
                 {% endif %}
                 {% if object.orcamento_estimado %}
                   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
@@ -412,8 +420,8 @@
                             <td class="px-4 py-3">
                               {% if inscricao.valor_pago %}
                                 <span class="font-medium">{{ inscricao.valor_pago|localize }}</span>
-                              {% elif inscricao.evento.valor %}
-                                <span class="font-medium">{{ inscricao.evento.valor|localize }}</span>
+                              {% elif inscricao.get_valor_evento %}
+                                <span class="font-medium">{{ inscricao.get_valor_evento|localize }}</span>
                               {% else %}
                                 <span class="text-[var(--text-secondary)]">&mdash;</span>
                               {% endif %}

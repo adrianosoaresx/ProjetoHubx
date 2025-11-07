@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ClearableFileInput
@@ -95,7 +97,8 @@ class EventoForm(forms.ModelForm):
             "nucleo",
             "participantes_maximo",
             "gratuito",
-            "valor",
+            "valor_associado",
+            "valor_nucleado",
             "cronograma",
             "informacoes_adicionais",
             "briefing",
@@ -189,7 +192,8 @@ class EventoForm(forms.ModelForm):
         participantes_maximo = cleaned_data.get("participantes_maximo")
 
         if cleaned_data.get("gratuito"):
-            cleaned_data["valor"] = None
+            cleaned_data["valor_associado"] = Decimal("0.00")
+            cleaned_data["valor_nucleado"] = Decimal("0.00")
 
         return cleaned_data
 
@@ -226,14 +230,17 @@ class EventoSearchForm(forms.Form):
 
 
 class InscricaoEventoForm(forms.ModelForm):
-    def __init__(self, *args, evento=None, **kwargs):
+    def __init__(self, *args, evento=None, user=None, **kwargs):
         self.evento = evento
+        self.user = user
         super().__init__(*args, **kwargs)
 
         if self.evento is None and self.instance and getattr(
             self.instance, "evento", None
         ) is not None:
             self.evento = self.instance.evento
+        if self.user is None and self.instance and getattr(self.instance, "user", None):
+            self.user = self.instance.user
         valor_field = self.fields.get("valor_pago")
         if valor_field:
             valor_inicial = self._get_evento_valor()
@@ -253,14 +260,25 @@ class InscricaoEventoForm(forms.ModelForm):
         if metodo_field:
             metodo_field.required = not self._is_evento_gratuito()
 
-    def _get_evento_valor(self):
+    def _resolve_evento(self):
         if self.evento is not None:
-            return getattr(self.evento, "valor", None)
-        if self.instance and getattr(self.instance, "evento_id", None):
-            evento = getattr(self.instance, "evento", None)
-            if evento is not None:
-                return getattr(evento, "valor", None)
+            return self.evento
+        if self.instance and getattr(self.instance, "evento", None) is not None:
+            return self.instance.evento
         return None
+
+    def _resolve_user(self):
+        if self.user is not None:
+            return self.user
+        if self.instance and getattr(self.instance, "user", None) is not None:
+            return self.instance.user
+        return None
+
+    def _get_evento_valor(self):
+        evento = self._resolve_evento()
+        if evento is None:
+            return None
+        return evento.get_valor_para_usuario(user=self._resolve_user())
 
     class Meta:
         model = InscricaoEvento
@@ -276,11 +294,15 @@ class InscricaoEventoForm(forms.ModelForm):
         }
 
     def _is_evento_gratuito(self):
-        if self.evento is not None:
-            return getattr(self.evento, "gratuito", False)
-        if self.instance and getattr(self.instance, "evento", None) is not None:
-            return getattr(self.instance.evento, "gratuito", False)
-        return False
+        evento = self._resolve_evento()
+        if evento is None:
+            return False
+        if getattr(evento, "gratuito", False):
+            return True
+        valor = evento.get_valor_para_usuario(user=self._resolve_user())
+        if valor is None:
+            return False
+        return Decimal(valor) == Decimal("0.00")
 
     def clean_valor_pago(self):
         valor_evento = self._get_evento_valor()
@@ -288,7 +310,11 @@ class InscricaoEventoForm(forms.ModelForm):
             valor = valor_evento
         else:
             valor = self.cleaned_data.get("valor_pago")
-        if valor is not None and valor <= 0:
+        if valor is None:
+            return valor
+        if valor < 0:
+            raise forms.ValidationError(_("O valor pago deve ser positivo."))
+        if valor == 0 and not self._is_evento_gratuito():
             raise forms.ValidationError(_("O valor pago deve ser positivo."))
         return valor
 

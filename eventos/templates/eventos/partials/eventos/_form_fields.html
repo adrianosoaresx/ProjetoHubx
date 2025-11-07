@@ -13,7 +13,7 @@
     {% include '_forms/field.html' with field=form.descricao %}
   </div>
 
-  {% with data_inicio_errors=form.data_inicio.errors data_fim_errors=form.data_fim.errors publico_errors=form.publico_alvo.errors participantes_errors=form.participantes_maximo.errors valor_errors=form.valor.errors gratuito_errors=form.gratuito.errors %}
+  {% with data_inicio_errors=form.data_inicio.errors data_fim_errors=form.data_fim.errors publico_errors=form.publico_alvo.errors participantes_errors=form.participantes_maximo.errors valor_associado_errors=form.valor_associado.errors valor_nucleado_errors=form.valor_nucleado.errors gratuito_errors=form.gratuito.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
     <button
       type="button"
@@ -40,7 +40,7 @@
     </button>
     <div
       id="evento-informacoes-gerais-panel"
-      class="border-t border-[var(--border)] px-4 py-4 {% if not data_inicio_errors and not data_fim_errors and not publico_errors and not participantes_errors and not valor_errors and not gratuito_errors %}hidden{% endif %}"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not data_inicio_errors and not data_fim_errors and not publico_errors and not participantes_errors and not valor_associado_errors and not valor_nucleado_errors and not gratuito_errors %}hidden{% endif %}"
       data-accordion-panel
     >
       <div class="space-y-6">
@@ -60,9 +60,20 @@
             {% include '_forms/field.html' with field=form.participantes_maximo %}
           </div>
         </div>
-        <div class="grid gap-6 md:grid-cols-2">
-          <div id="valor-field-container" {% if form.gratuito.value %}class="hidden"{% endif %}>
-            {% include '_forms/field.html' with field=form.valor %}
+        <div class="grid gap-6 md:grid-cols-3">
+          <div
+            id="valor-associado-field-container"
+            class="valor-field{% if form.gratuito.value %} hidden{% endif %}"
+            data-valor-container="associado"
+          >
+            {% include '_forms/field.html' with field=form.valor_associado %}
+          </div>
+          <div
+            id="valor-nucleado-field-container"
+            class="valor-field{% if form.gratuito.value %} hidden{% endif %}"
+            data-valor-container="nucleado"
+          >
+            {% include '_forms/field.html' with field=form.valor_nucleado %}
           </div>
           <div>
             {% include '_forms/field.html' with field=form.gratuito %}
@@ -282,21 +293,34 @@
 <script>
   (function () {
     const gratuitoField = document.querySelector('#id_gratuito');
-    const valorContainer = document.querySelector('#valor-field-container');
+    const publicoField = document.querySelector('#id_publico_alvo');
+    const valorContainers = document.querySelectorAll('[data-valor-container]');
 
     const toggleValor = () => {
-      if (!valorContainer) {
-        return;
-      }
-      if (gratuitoField && gratuitoField.checked) {
-        valorContainer.classList.add('hidden');
-      } else {
-        valorContainer.classList.remove('hidden');
-      }
+      valorContainers.forEach((container) => {
+        if (!(container instanceof HTMLElement)) {
+          return;
+        }
+        container.classList.remove('hidden');
+        if (gratuitoField && gratuitoField.checked) {
+          container.classList.add('hidden');
+          return;
+        }
+        const publicoValue = publicoField ? publicoField.value : '';
+        const target = container.dataset.valorContainer;
+        if (publicoValue === '1' && target === 'associado') {
+          container.classList.add('hidden');
+        } else if (publicoValue === '2' && target === 'nucleado') {
+          container.classList.add('hidden');
+        }
+      });
     };
 
     if (gratuitoField) {
       gratuitoField.addEventListener('change', toggleValor);
+    }
+    if (publicoField) {
+      publicoField.addEventListener('change', toggleValor);
     }
     toggleValor();
 

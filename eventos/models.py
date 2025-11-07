@@ -4,26 +4,27 @@ from __future__ import annotations
 
 import logging
 import uuid
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
 import qrcode
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
-from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
+from accounts.models import MediaTag, UserType
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
-from accounts.models import MediaTag
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -110,7 +111,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
             ]
             self.status = "confirmada"
             self.data_confirmacao = timezone.now()
-            valor_evento = getattr(evento, "valor", None)
+            valor_evento = evento.get_valor_para_usuario(user=self.user)
             if self.valor_pago != valor_evento:
                 self.valor_pago = valor_evento
                 update_fields.append("valor_pago")
@@ -167,6 +168,11 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         path = default_storage.save(filename, ContentFile(buffer.getvalue()))
         self.qrcode_url = default_storage.url(path)
 
+    def get_valor_evento(self) -> Decimal | None:
+        if not getattr(self, "evento", None):
+            return None
+        return self.evento.get_valor_para_usuario(user=getattr(self, "user", None))
+
     def save(self, *args, **kwargs):
         if self.pk:
             old = InscricaoEvento.all_objects.filter(pk=self.pk).first()
@@ -213,7 +219,20 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         choices=[(0, "Público"), (1, "Nucleados"), (2, "Associados")]
     )
     gratuito = models.BooleanField(default=False)
-    valor = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    valor_associado = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_("Valor aplicado para associados."),
+    )
+    valor_nucleado = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_("Valor aplicado para nucleados."),
+    )
     numero_presentes = models.PositiveIntegerField(default=0, editable=False)
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -264,7 +283,22 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         if self.data_fim and self.data_inicio and self.data_fim <= self.data_inicio:
             errors["data_fim"] = _("A data de fim deve ser posterior à data de início.")
         if self.gratuito:
-            self.valor = None
+            self.valor_associado = Decimal("0.00")
+            self.valor_nucleado = Decimal("0.00")
+        else:
+            if self.valor_associado is not None and self.valor_associado < 0:
+                errors["valor_associado"] = _("Deve ser um valor positivo ou zero.")
+            if self.valor_nucleado is not None and self.valor_nucleado < 0:
+                errors["valor_nucleado"] = _("Deve ser um valor positivo ou zero.")
+
+            if self.publico_alvo == 1 and self.valor_nucleado is None:
+                errors["valor_nucleado"] = _("Informe o valor para nucleados.")
+            if self.publico_alvo == 2 and self.valor_associado is None:
+                errors["valor_associado"] = _("Informe o valor para associados.")
+            if self.publico_alvo == 0 and (
+                self.valor_associado is None and self.valor_nucleado is None
+            ):
+                errors["valor_associado"] = _("Informe ao menos um valor para o evento.")
 
         positive_fields = [
             "orcamento_estimado",
@@ -305,6 +339,44 @@ class Evento(TimeStampedModel, SoftDeleteModel):
                         self.valor_gasto,
                     )
         super().save(*args, **kwargs)
+
+    def get_valor_para_usuario(self, user=None) -> Decimal | None:
+        """Retorna o valor aplicável ao usuário informado."""
+
+        if self.gratuito:
+            return Decimal("0.00")
+
+        valor_associado = self.valor_associado
+        valor_nucleado = self.valor_nucleado
+
+        if self.publico_alvo == 1:
+            return valor_nucleado or valor_associado
+        if self.publico_alvo == 2:
+            return valor_associado or valor_nucleado
+
+        tipo_usuario = None
+        if user is not None:
+            get_tipo = getattr(user, "get_tipo_usuario", None)
+            if callable(get_tipo):
+                tipo_usuario = get_tipo()
+            else:
+                tipo_usuario = get_tipo
+            if isinstance(tipo_usuario, UserType):
+                tipo_usuario = tipo_usuario.value
+            if tipo_usuario is None:
+                tipo_usuario = getattr(user, "user_type", None)
+
+        if tipo_usuario == UserType.NUCLEADO.value and valor_nucleado is not None:
+            return valor_nucleado
+        if tipo_usuario == UserType.ASSOCIADO.value and valor_associado is not None:
+            return valor_associado
+        if getattr(user, "is_associado", False) and valor_associado is not None:
+            return valor_associado
+        if valor_associado is not None:
+            return valor_associado
+        if valor_nucleado is not None:
+            return valor_nucleado
+        return None
 
 
 class FeedbackNota(TimeStampedModel, SoftDeleteModel):
