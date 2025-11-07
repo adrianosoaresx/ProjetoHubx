@@ -211,7 +211,7 @@
 
       {% url 'associados:associados_lista' as associados_list_url %}
       <div class="flex flex-wrap justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        {% include '_components/cancel_button.html' with config=cancel_component_config href=cancel_component_config.href|default:associados_list_url fallback_href=cancel_component_config.fallback_href|default:associados_list_url %}
+        <a href="{% url 'associados:associados_lista' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
         <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar associado' %}">{% trans 'Salvar' %}</button>
       </div>
     </form>
