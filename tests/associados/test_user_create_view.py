@@ -36,6 +36,18 @@ class OrganizacaoUserCreateViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_cancel_button_points_to_list_without_history(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+
+        cancel_config = response.context["cancel_component_config"]
+        self.assertEqual(cancel_config["href"], "/associados/")
+        self.assertEqual(cancel_config["fallback_href"], "/associados/")
+
+
     def test_success_redirects_to_next_when_valid(self):
         self.client.force_login(self.admin)
         next_url = "/organizacoes/"

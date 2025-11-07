@@ -89,7 +89,7 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
             "fallback_href": fallback_url,
         }
         context["cancel_component_config"] = {
-            "href": back_href,
+            "href": fallback_url,
             "fallback_href": fallback_url,
         }
         return context
