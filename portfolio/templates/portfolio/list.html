@@ -2,7 +2,7 @@
 {% load i18n lucide_icons %}
 
 {% block hero %}
-  {% include "_components/hero_portfolio.html" with title=hero_title subtitle=hero_subtitle counts=counts action_template='portfolio/hero_action.html' %}
+  {% include "_components/hero_portfolio.html" with title=hero_title subtitle=hero_subtitle counts=counts %}
 {% endblock %}
 
 {% block content %}
@@ -52,26 +52,37 @@
 
     <div class="card" data-accordion>
       <div class="card-header">
-        <button
-          type="button"
-          class="flex w-full items-center justify-between gap-4 text-left"
-          data-accordion-toggle
-          aria-expanded="false"
-          aria-controls="portfolio-library-panel"
-        >
-          <span class="flex items-center gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--accent)]">
-              {% lucide 'folder-open' class='h-6 w-6' aria_hidden='true' %}
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-4 text-left"
+            data-accordion-toggle
+            aria-expanded="false"
+            aria-controls="portfolio-library-panel"
+          >
+            <span class="flex items-center gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--accent)]">
+                {% lucide 'folder-open' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <span>
+                <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
+              </span>
             </span>
-            <span>
-              <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 transform" data-accordion-icon>
+              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
             </span>
-          </span>
-          <span class="text-[var(--text-secondary)] transition-transform duration-200 transform" data-accordion-icon>
-            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-          </span>
-        </button>
+          </button>
+          {% if not show_form %}
+            <a
+              href="{% url 'portfolio:index' %}?adicionar=1"
+              class="btn btn-primary inline-flex items-center justify-center gap-2 w-full md:w-auto"
+            >
+              {% lucide 'plus' class='w-4 h-4' aria_hidden='true' %}
+              <span>{% trans "Adicionar mídia" %}</span>
+            </a>
+          {% endif %}
+        </div>
       </div>
       <div
         id="portfolio-library-panel"
