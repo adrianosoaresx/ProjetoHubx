@@ -48,7 +48,8 @@
           </div>
         </details>
 
-        <div class="flex justify-end pt-4 border-t border-[var(--border)]">
+        <div class="flex justify-end pt-4 border-t border-[var(--border)] gap-3">
+          <a href="{% url 'nucleos:meus' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
           <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
         </div>
       </form>
