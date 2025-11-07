@@ -325,9 +325,7 @@
       </div>
 
         <div class="flex items-center justify-end gap-3 border-t border-[var(--border)] pt-4">
-          <button type="button" class="btn btn-secondary" onclick="window.history.back()">
-            {% trans "Cancelar" %}
-          </button>
+          {% include '_components/cancel_button.html' with config=cancel_component_config href=back_href fallback_href=cancel_fallback_url classes='btn btn-secondary' %}
           <button type="submit" class="btn btn-primary">{% trans "Salvar alterações" %}</button>
         </div>
       </form>

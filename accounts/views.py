@@ -34,6 +34,8 @@ from rest_framework import viewsets
 
 from rest_framework.permissions import IsAuthenticated
 
+from core.utils import resolve_back_href
+
 from accounts.serializers import UserSerializer
 from accounts.tasks import (
     send_cancel_delete_email,
@@ -54,7 +56,7 @@ from .forms import (
     EmailLoginForm,
     InformacoesPessoaisForm,
 )
-from .utils import is_htmx_or_ajax, redirect_to_profile_section
+from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
 from .models import AccountToken, SecurityEvent, UserType
 from .validators import cpf_validator
 
@@ -360,6 +362,13 @@ def perfil_info(request):
     else:
         form = InformacoesPessoaisForm(instance=target_user)
 
+    cancel_fallback_url = build_profile_section_url(
+        request,
+        "info",
+        {"info_view": None},
+    )
+    back_href = resolve_back_href(request, fallback=cancel_fallback_url)
+
     return render(
         request,
         "perfil/partials/info_form.html",
@@ -367,6 +376,13 @@ def perfil_info(request):
             "form": form,
             "target_user": target_user,
             "is_self": is_self,
+            "back_href": back_href,
+            "cancel_fallback_url": cancel_fallback_url,
+            "cancel_component_config": {
+                "href": back_href,
+                "fallback_href": cancel_fallback_url,
+                "aria_label": _("Cancelar edição"),
+            },
         },
     )
 

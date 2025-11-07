@@ -16,13 +16,13 @@ def is_htmx_or_ajax(request: HttpRequest) -> bool:
     return isinstance(requested_with, str) and requested_with.lower() == "xmlhttprequest"
 
 
-def redirect_to_profile_section(
+def build_profile_section_url(
     request: HttpRequest,
     section: str,
     extra_params: dict[str, str | None] | None = None,
     *,
     allowed_sections: Iterable[str] | None = None,
-):
+) -> str:
     params = request.GET.copy()
     params = params.copy()
     if extra_params:
@@ -38,6 +38,22 @@ def redirect_to_profile_section(
     url = reverse("accounts:perfil")
     if query_string:
         url = f"{url}?{query_string}"
+    return url
+
+
+def redirect_to_profile_section(
+    request: HttpRequest,
+    section: str,
+    extra_params: dict[str, str | None] | None = None,
+    *,
+    allowed_sections: Iterable[str] | None = None,
+):
+    url = build_profile_section_url(
+        request,
+        section,
+        extra_params,
+        allowed_sections=allowed_sections,
+    )
     if request.headers.get("HX-Request"):
         response = HttpResponse(status=204)
         response["HX-Redirect"] = url
@@ -45,4 +61,4 @@ def redirect_to_profile_section(
     return redirect(url)
 
 
-__all__ = ["is_htmx_or_ajax", "redirect_to_profile_section"]
+__all__ = ["build_profile_section_url", "is_htmx_or_ajax", "redirect_to_profile_section"]
