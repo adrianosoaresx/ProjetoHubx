@@ -58,6 +58,83 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
+def _user_has_consultoria_access(user) -> bool:
+    tipo = getattr(user, "get_tipo_usuario", None)
+    if tipo == UserType.CONSULTOR.value:
+        return True
+
+    user_type = getattr(user, "user_type", None)
+    if user_type in {UserType.CONSULTOR, UserType.CONSULTOR.value}:
+        return True
+
+    nucleos_consultoria = getattr(user, "nucleos_consultoria", None)
+    if nucleos_consultoria is not None:
+        try:
+            return nucleos_consultoria.filter(deleted=False).exists()
+        except Exception:  # pragma: no cover - defensive
+            pass
+    return False
+
+
+def _get_consultor_nucleo_ids(user) -> set[int]:
+    nucleo_ids: set[int] = set()
+
+    nucleos_consultoria = getattr(user, "nucleos_consultoria", None)
+    if nucleos_consultoria is not None:
+        try:
+            nucleo_ids.update(pk for pk in nucleos_consultoria.values_list("id", flat=True) if pk)
+        except Exception:  # pragma: no cover - defensive
+            pass
+
+    participacoes = getattr(user, "participacoes", None)
+    if participacoes is not None:
+        participacao_ids = participacoes.filter(
+            status="ativo",
+            status_suspensao=False,
+        ).values_list("nucleo_id", flat=True)
+        nucleo_ids.update(pk for pk in participacao_ids if pk)
+
+    nucleo_id = getattr(user, "nucleo_id", None)
+    if nucleo_id:
+        nucleo_ids.add(nucleo_id)
+
+    return nucleo_ids
+
+
+def _get_allowed_classificacao_keys(user) -> set[str]:
+    all_keys = {choice.value for choice in Nucleo.Classificacao}
+    tipo = getattr(user, "get_tipo_usuario", None)
+
+    if tipo in {
+        UserType.ADMIN.value,
+        UserType.OPERADOR.value,
+        UserType.ROOT.value,
+    }:
+        return all_keys
+
+    if _user_has_consultoria_access(user):
+        return all_keys
+
+    return {Nucleo.Classificacao.CONSTITUIDO.value}
+
+
+class NucleoVisibilityMixin:
+    def get_allowed_classificacao_keys(self) -> set[str]:
+        if not hasattr(self, "_allowed_classificacao_keys"):
+            self._allowed_classificacao_keys = _get_allowed_classificacao_keys(self.request.user)
+        return self._allowed_classificacao_keys
+
+    def user_has_consultoria_access(self) -> bool:
+        if not hasattr(self, "_user_has_consultoria_access"):
+            self._user_has_consultoria_access = _user_has_consultoria_access(self.request.user)
+        return self._user_has_consultoria_access
+
+    def get_consultor_nucleo_ids(self) -> set[int]:
+        if not hasattr(self, "_consultor_nucleo_ids"):
+            self._consultor_nucleo_ids = _get_consultor_nucleo_ids(self.request.user)
+        return self._consultor_nucleo_ids
+
+
 def _nucleo_portfolio_counts(medias: Iterable[NucleoMidia]) -> dict[str, int]:
     medias_list = list(medias)
     counts = Counter(media.media_type for media in medias_list)
@@ -124,17 +201,20 @@ NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
 def build_nucleo_sections(
     current_items: Iterable[Nucleo],
     totals_by_classificacao: Mapping[str, int],
+    allowed_keys: Iterable[str],
 ) -> list[dict[str, object]]:
-    grouped: dict[str, list[Nucleo]] = {
-        config["key"]: [] for config in NUCLEO_SECTION_CONFIG
-    }
+    allowed_set = set(allowed_keys)
+    grouped: dict[str, list[Nucleo]] = {key: [] for key in allowed_set}
 
     for nucleo in current_items:
-        grouped.setdefault(nucleo.classificacao, []).append(nucleo)
+        if nucleo.classificacao in allowed_set:
+            grouped.setdefault(nucleo.classificacao, []).append(nucleo)
 
     sections: list[dict[str, object]] = []
     for config in NUCLEO_SECTION_CONFIG:
         key = config["key"]
+        if key not in allowed_set:
+            continue
         items = grouped.get(key, [])
         total = totals_by_classificacao.get(key)
         if total is None:
@@ -166,7 +246,7 @@ class NucleoPainelRenderMixin:
         return TemplateResponse(self.request, self.painel_template_name, context)
 
 
-class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
+class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, ListView):
     model = Nucleo
     template_name = "nucleos/nucleo_list.html"
     paginate_by = 10
@@ -175,9 +255,9 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         if hasattr(self, "_classificacao"):
             return self._classificacao
 
+        allowed_choices = self.get_allowed_classificacao_keys()
         classificacao = self.request.GET.get("classificacao")
-        valid_choices = {choice.value for choice in Nucleo.Classificacao}
-        if classificacao not in valid_choices:
+        if classificacao not in allowed_choices:
             classificacao = None
 
         self._classificacao = classificacao
@@ -189,9 +269,13 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         user = self.request.user
         q = self.request.GET.get("q", "")
+        allowed_keys = self.get_allowed_classificacao_keys()
         classificacao = self.get_classificacao()
         version = get_cache_version("nucleos_list")
-        cache_key = f"nucleos_list:v{version}:{user.id}:{q}:{classificacao or 'all'}"
+        allowed_fragment = ",".join(sorted(allowed_keys)) or "_"
+        cache_key = (
+            f"nucleos_list:v{version}:{user.id}:{allowed_fragment}:{q}:{classificacao or 'all'}"
+        )
 
         base_qs = (
             Nucleo.objects.select_related("organizacao")
@@ -208,14 +292,21 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             )
         )
 
-        qs = base_qs.filter(deleted=False)
+        qs = base_qs.filter(deleted=False, classificacao__in=allowed_keys)
 
-        if user.user_type == UserType.ADMIN:
+        tipo_usuario = getattr(user, "get_tipo_usuario", None)
+        if tipo_usuario == UserType.ADMIN.value:
             qs = qs.filter(organizacao=user.organizacao)
-        elif user.user_type == UserType.COORDENADOR:
+        elif tipo_usuario == UserType.COORDENADOR.value:
             qs = qs.filter(participacoes__user=user)
-        elif user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
+        elif tipo_usuario in {UserType.ASSOCIADO.value, UserType.NUCLEADO.value}:
             qs = qs.filter(organizacao=user.organizacao)
+        elif self.user_has_consultoria_access():
+            consultor_ids = self.get_consultor_nucleo_ids()
+            if consultor_ids:
+                qs = qs.filter(pk__in=consultor_ids)
+            else:
+                qs = qs.none()
 
         if q:
             qs = qs.filter(nome__icontains=q)
@@ -228,7 +319,9 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         cached_ids = cache.get(cache_key)
         if cached_ids is not None:
-            result = list(base_qs.filter(pk__in=cached_ids).order_by("nome"))
+            result = list(
+                base_qs.filter(pk__in=cached_ids, classificacao__in=allowed_keys).order_by("nome")
+            )
             self._cached_queryset = result
             return result
 
@@ -238,7 +331,9 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
 
-        result = list(base_qs.filter(pk__in=ids).order_by("nome"))
+        result = list(
+            base_qs.filter(pk__in=ids, classificacao__in=allowed_keys).order_by("nome")
+        )
         self._cached_queryset = result
         return result
 
@@ -254,6 +349,9 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
         show_totals = self.request.user.user_type in {UserType.ADMIN, UserType.OPERADOR}
         ctx["show_totals"] = show_totals
+
+        allowed_keys = self.get_allowed_classificacao_keys()
+        ctx["allowed_classificacao_keys"] = sorted(allowed_keys)
 
         # Totais: número de núcleos e membros ativos na organização do usuário
         qs = self.get_queryset()
@@ -325,9 +423,11 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
         if show_totals:
             base_qs = getattr(self, "_qs_for_counts", Nucleo.objects.none())
-            counts = {choice.value: 0 for choice in Nucleo.Classificacao}
+            counts = {key: 0 for key in allowed_keys}
             for row in base_qs.values("classificacao").annotate(total=Count("id", distinct=True)):
-                counts[row["classificacao"]] = row["total"]
+                key = row["classificacao"]
+                if key in counts:
+                    counts[key] = row["total"]
 
             classificacao_labels = [
                 (Nucleo.Classificacao.EM_FORMACAO.value, _("Formação")),
@@ -336,6 +436,8 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             ]
 
             for classificacao, label in classificacao_labels:
+                if classificacao not in allowed_keys:
+                    continue
                 params_for_filter = params_without_classificacao.copy()
                 params_for_filter["classificacao"] = classificacao
                 filter_query = params_for_filter.urlencode()
@@ -354,23 +456,23 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx["classificacao_filters"] = classificacao_filters
 
         base_qs_for_totals = getattr(self, "_qs_for_counts", Nucleo.objects.none())
-        classificacao_totals: dict[str, int] = {
-            config["key"]: 0 for config in NUCLEO_SECTION_CONFIG
-        }
+        classificacao_totals: dict[str, int] = {key: 0 for key in allowed_keys}
 
         if hasattr(base_qs_for_totals, "values"):
             for row in base_qs_for_totals.values("classificacao").annotate(total=Count("id", distinct=True)):
-                classificacao_totals[row["classificacao"]] = row["total"]
+                key = row["classificacao"]
+                if key in classificacao_totals:
+                    classificacao_totals[key] = row["total"]
 
         ctx["classificacao_totals"] = classificacao_totals
         ctx["nucleo_sections"] = build_nucleo_sections(
-            list(ctx.get("object_list", [])), classificacao_totals
+            list(ctx.get("object_list", [])), classificacao_totals, allowed_keys
         )
 
         return ctx
 
 
-class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
+class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, ListView):
     model = Nucleo
     # Reutiliza o template padrão de listagem de núcleos para evitar duplicação
     template_name = "nucleos/nucleo_list.html"
@@ -382,10 +484,15 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        if hasattr(self, "_cached_queryset"):
+            return self._cached_queryset
+
         user = self.request.user
         q = self.request.GET.get("q", "")
+        allowed_keys = self.get_allowed_classificacao_keys()
         version = get_cache_version("nucleos_meus")
-        cache_key = f"nucleos_meus:v{version}:{user.id}:{q}"
+        allowed_fragment = ",".join(sorted(allowed_keys)) or "_"
+        cache_key = f"nucleos_meus:v{version}:{user.id}:{allowed_fragment}:{q}"
         cached_ids = cache.get(cache_key)
 
         base_qs = (
@@ -403,11 +510,8 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             )
         )
 
-        if hasattr(self, "_cached_queryset"):
-            return self._cached_queryset
-
         if cached_ids is not None:
-            qs = base_qs.filter(pk__in=cached_ids).order_by("nome")
+            qs = base_qs.filter(pk__in=cached_ids, classificacao__in=allowed_keys).order_by("nome")
             result = list(qs)
             self._cached_queryset = result
             return result
@@ -417,6 +521,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             participacoes__user=user,
             participacoes__status="ativo",
             participacoes__status_suspensao=False,
+            classificacao__in=allowed_keys,
         )
 
         if q:
@@ -425,7 +530,9 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
 
-        result = list(base_qs.filter(pk__in=ids).order_by("nome"))
+        result = list(
+            base_qs.filter(pk__in=ids, classificacao__in=allowed_keys).order_by("nome")
+        )
         self._cached_queryset = result
         return result
 
@@ -449,16 +556,21 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
+        allowed_keys = self.get_allowed_classificacao_keys()
+        ctx["allowed_classificacao_keys"] = sorted(allowed_keys)
         current_items = list(ctx.get("object_list", []))
         all_items = list(self.get_queryset())
-        counts = Counter(nucleo.classificacao for nucleo in all_items)
-        classificacao_totals = {
-            config["key"]: counts.get(config["key"], 0)
-            for config in NUCLEO_SECTION_CONFIG
-        }
+        counts = Counter(
+            nucleo.classificacao for nucleo in all_items if nucleo.classificacao in allowed_keys
+        )
+        classificacao_totals: dict[str, int] = {}
+        for config in NUCLEO_SECTION_CONFIG:
+            key = config["key"]
+            if key in allowed_keys:
+                classificacao_totals[key] = counts.get(key, 0)
         ctx["classificacao_totals"] = classificacao_totals
         ctx["nucleo_sections"] = build_nucleo_sections(
-            current_items, classificacao_totals
+            current_items, classificacao_totals, allowed_keys
         )
 
         return ctx
