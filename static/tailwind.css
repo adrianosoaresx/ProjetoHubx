@@ -2016,40 +2016,6 @@ a:focus {
   }
 }
 
-.card-grid-single {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-@media (min-width: 640px) {
-  .card-grid-single {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 768px) {
-  .card-grid-single {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-grid-single {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .card-grid-single {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1536px) {
-  .card-grid-single {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
 .card {
   border-radius: 0.75rem;
   border-width: 1px;
@@ -2687,10 +2653,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .left-0 {
   left: 0px;
-}
-
-.left-3 {
-  left: 0.75rem;
 }
 
 .left-6 {
@@ -3929,10 +3891,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pb-4 {
   padding-bottom: 1rem;
-}
-
-.pl-10 {
-  padding-left: 2.5rem;
 }
 
 .pl-6 {
@@ -5355,6 +5313,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     display: none;
   }
 
+  .sm\:aspect-auto {
+    aspect-ratio: auto;
+  }
+
   .sm\:h-24 {
     height: 6rem;
   }
@@ -5435,6 +5397,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     justify-content: space-between;
   }
 
+  .sm\:gap-0 {
+    gap: 0px;
+  }
+
   .sm\:gap-2 {
     gap: 0.5rem;
   }
@@ -5455,6 +5421,22 @@ body.sidebar-mobile-open .sidebar-backdrop {
     --tw-space-y-reverse: 0;
     margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
     margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+  }
+
+  .sm\:rounded-none {
+    border-radius: 0px;
+  }
+
+  .sm\:border {
+    border-width: 1px;
+  }
+
+  .sm\:border-\[var\(--border\)\] {
+    border-color: var(--border);
+  }
+
+  .sm\:bg-\[var\(--bg-primary\)\] {
+    background-color: var(--bg-primary);
   }
 
   .sm\:p-10 {
@@ -5720,4 +5702,22 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .\[\&\:\:-webkit-details-marker\]\:hidden::-webkit-details-marker {
   display: none;
+}
+
+@media (min-width: 640px) {
+  .sm\:\[\&\>div\:nth-child\(7n\)\]\:border-r-0>div:nth-child(7n) {
+    border-right-width: 0px;
+  }
+
+  .sm\:\[\&\>div\:nth-last-child\(-n\+7\)\]\:border-b-0>div:nth-last-child(-n+7) {
+    border-bottom-width: 0px;
+  }
+
+  .sm\:\[\&\>div\]\:border>div {
+    border-width: 1px;
+  }
+
+  .sm\:\[\&\>div\]\:border-\[var\(--border\)\]>div {
+    border-color: var(--border);
+  }
 }
