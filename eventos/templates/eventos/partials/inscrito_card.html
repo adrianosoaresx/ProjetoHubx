@@ -1,4 +1,4 @@
 {% load i18n associados_extras %}
 {% url 'accounts:perfil_publico_uuid' inscrito.public_id as profile_url %}
 {% trans 'Ver perfil do inscrito' as sr_label %}
-{% include '_partials/cards/base_card.html' with url=profile_url cover=inscrito.cover avatar=inscrito.avatar title=inscrito.contato|default:inscrito.display_name|default:inscrito.username details='eventos/partials/inscrito_card_details.html' sr_label=sr_label header_social_links=inscrito.redes_sociais header_whatsapp_number=inscrito.whatsapp|digits_only inscricao=inscricao inscrito=inscrito pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
+{% include '_partials/cards/base_card.html' with url=profile_url cover=inscrito.cover avatar=inscrito.avatar title=inscrito.contato|default:inscrito.display_name|default:inscrito.username details='eventos/partials/inscrito_card_details.html' sr_label=sr_label header_social_links=inscrito.redes_sociais header_whatsapp_number=inscrito.whatsapp|digits_only inscricao=inscricao inscrito=inscrito pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object card_classes='h-full flex flex-col' %}
