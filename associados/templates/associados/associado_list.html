@@ -26,25 +26,22 @@
           data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum associado correspondente a {{ term }}.{% endblocktrans %}"
           data-feedback-empty="{% trans 'Digite um termo para buscar associados.' %}"
         >
-          <div class="relative flex-1">
-            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-secondary)]">
-              {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
-            </span>
+          <div class="flex w-full items-center gap-2">
+            <label for="associados-search" class="sr-only">{% trans "Buscar associados" %}</label>
             <input
               type="search"
+              id="associados-search"
               name="q"
               value="{{ search_term }}"
               autocomplete="off"
               placeholder="{% trans 'Buscar por nome, usuário ou contato' %}"
-              aria-label="{% trans 'Buscar associados' %}"
-              class="form-input w-full pl-10"
+              class="input input-bordered w-full"
               data-associados-search-input
             />
+            <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
+              {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+            </button>
           </div>
-          <button type="submit" class="btn btn-primary inline-flex items-center justify-center gap-2">
-            {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
-            <span>{% trans "Buscar" %}</span>
-          </button>
         </form>
         <p
           class="text-sm text-[var(--text-secondary)]"
