@@ -1,5 +1,8 @@
 {% load i18n lucide_icons %}
-<article class="card group relative overflow-hidden{% if cover %} card-with-cover{% endif %}" role="article">
+<article
+  class="card group relative overflow-hidden{% if cover %} card-with-cover{% endif %}{% if card_classes %} {{ card_classes }}{% endif %}"
+  role="article"
+>
   <a
     href="{{ url }}"
     class="absolute inset-0 z-10 rounded-[inherit] focus:outline-none focus:ring-2 focus:ring-primary/40"
