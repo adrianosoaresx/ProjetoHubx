@@ -105,8 +105,8 @@
         </section>
 
         <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
-          {% url 'eventos:calendario' as calendario_list_url %}
-          {% include '_components/back_button.html' with fallback_href=calendario_list_url show_icon=False %}
+          {% url 'eventos:lista' as eventos_lista_url %}
+          {% include '_components/back_button.html' with fallback_href=eventos_lista_url show_icon=False %}
         </div>
 
       </div>
