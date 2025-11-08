@@ -26,10 +26,12 @@
       </div>
 
       <div class="card-body space-y-6">
-        <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[var(--bg-tertiary)] text-sm leading-tight">
+        <div
+          class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[var(--bg-tertiary)] text-sm leading-tight sm:gap-0 sm:border sm:border-[var(--border)] sm:bg-[var(--bg-primary)] sm:[&>div]:border sm:[&>div]:border-[var(--border)] sm:[&>div:nth-child(7n)]:border-r-0 sm:[&>div:nth-last-child(-n+7)]:border-b-0"
+        >
           {% for dia in dias_mes %}
             <div
-              class="relative aspect-square rounded-md p-2 transition-all duration-300 sm:h-28 sm:p-4 {% if dia.eventos %}bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
+              class="relative aspect-square rounded-md p-2 transition-all duration-300 sm:aspect-auto sm:h-28 sm:rounded-none sm:p-4 {% if dia.eventos %}bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
             >
               <div class="flex items-start justify-between">
                 <span
