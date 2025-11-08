@@ -8,7 +8,7 @@
 {% block content %}
   
     <article class="card">
-      <div class="card-header">
+      <div class="card-header space-y-4">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-xl font-semibold">{{ data_atual|date:'YEAR_MONTH_FORMAT' }}</h2>
           {% if perms.eventos.add_evento %}
@@ -17,14 +17,14 @@
               {% trans "Novo Evento" %}
             </a>
           {% endif %}
-          
-        </div>
 
         </div>
         <div class="flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
           <a href="{% url 'eventos:calendario_mes' prev_ano prev_mes %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Mês anterior' %}">&laquo; {% trans "Anterior" %}</a>
           <a href="{% url 'eventos:calendario_mes' next_ano next_mes %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Próximo mês' %}">{% trans "Próximo" %} &raquo;</a>
         </div>
+      </div>
+
       <div class="card-body space-y-6">
         <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[var(--bg-tertiary)] text-sm leading-tight">
           {% for dia in dias_mes %}
@@ -103,6 +103,11 @@
             {% endif %}
           </div>
         </section>
+
+        <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+          {% url 'eventos:calendario' as calendario_list_url %}
+          {% include '_components/back_button.html' with fallback_href=calendario_list_url show_icon=False %}
+        </div>
 
       </div>
     </article>
