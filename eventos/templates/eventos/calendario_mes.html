@@ -29,11 +29,11 @@
         <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[var(--bg-tertiary)] text-sm leading-tight">
           {% for dia in dias_mes %}
             <div
-              class="relative h-28 rounded-md p-4 transition-all duration-300 {% if dia.eventos %}bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
+              class="relative aspect-square rounded-md p-2 transition-all duration-300 sm:h-28 sm:p-4 {% if dia.eventos %}bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
             >
               <div class="flex items-start justify-between">
                 <span
-                  class="inline-flex h-7 w-7 items-center justify-center rounded-full text-center font-semibold {% if dia.hoje %}bg-[var(--primary-light)] text-[var(--primary)] ring-2 ring-primary-500{% endif %}"
+                  class="inline-flex h-6 w-6 items-center justify-center rounded-full text-center text-xs font-semibold sm:h-7 sm:w-7 sm:text-sm {% if dia.hoje %}bg-[var(--primary-light)] text-[var(--primary)] ring-2 ring-primary-500{% endif %}"
                 >
                   {{ dia.data.day }}
                 </span>
