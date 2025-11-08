@@ -31,7 +31,7 @@
         >
           {% for dia in dias_mes %}
             <div
-              class="relative aspect-square rounded-md p-2 transition-all duration-300 sm:aspect-auto sm:h-28 sm:rounded-none sm:p-4 {% if dia.eventos %}bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
+              class="relative aspect-square rounded-md p-2 transition-all duration-300 sm:aspect-auto sm:h-28 sm:rounded-none sm:p-4 {% if dia.highlight %}{{ dia.highlight.cell }}{% else %}bg-[var(--bg-primary)] text-[var(--text-primary)]{% endif %} {% if not dia.mes_atual %}opacity-50{% endif %}"
             >
               <div class="flex items-start justify-between">
                 <span
@@ -44,7 +44,7 @@
                     <span class="sr-only">
                       {% blocktrans count count=dia.eventos|length %}{{ count }} evento agendado{% plural %}{{ count }} eventos agendados{% endblocktrans %}
                     </span>
-                    <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success-light)] text-[var(--success)] sm:h-7 sm:w-7">
+                    <span class="flex h-6 w-6 items-center justify-center rounded-full sm:h-7 sm:w-7 {% if dia.highlight %}{{ dia.highlight.icon }}{% else %}bg-[var(--success-light)] text-[var(--success)]{% endif %}">
                       {% lucide 'sparkles' class='h-3 w-3 sm:h-4 sm:w-4' aria_hidden='true' %}
                     </span>
                   </span>
@@ -70,7 +70,7 @@
                 >
                   <summary class="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 font-medium text-[var(--text-primary)]">
                     <span class="flex items-center gap-2">
-                      <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--primary-light)] text-xs font-semibold text-[var(--primary)]">
+                      <span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold {% if dia.highlight %}{{ dia.highlight.badge }}{% else %}bg-[var(--primary-light)] text-[var(--primary)]{% endif %}">
                         {{ dia.data.day }}
                       </span>
                       <span>

@@ -349,20 +349,59 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     for ev in eventos_qs:
         d = timezone.localtime(ev.data_inicio).date()
         eventos_por_dia.setdefault(d, []).append(ev)
+
+    highlight_schemes = [
+        {
+            "cell": "bg-[var(--success-light)] text-[var(--success)] shadow-[inset_0_0_0_1px_var(--success)]",
+            "icon": "bg-[var(--success-light)] text-[var(--success)]",
+            "badge": "bg-[var(--success-light)] text-[var(--success)]",
+        },
+        {
+            "cell": "bg-[var(--warning-light)] text-[var(--warning)] shadow-[inset_0_0_0_1px_var(--warning)]",
+            "icon": "bg-[var(--warning-light)] text-[var(--warning)]",
+            "badge": "bg-[var(--warning-light)] text-[var(--warning)]",
+        },
+        {
+            "cell": "bg-[var(--primary-light)] text-[var(--primary)] shadow-[inset_0_0_0_1px_var(--primary)]",
+            "icon": "bg-[var(--primary-light)] text-[var(--primary)]",
+            "badge": "bg-[var(--primary-light)] text-[var(--primary)]",
+        },
+        {
+            "cell": "bg-[var(--error-light)] text-[var(--error)] shadow-[inset_0_0_0_1px_var(--error)]",
+            "icon": "bg-[var(--error-light)] text-[var(--error)]",
+            "badge": "bg-[var(--error-light)] text-[var(--error)]",
+        },
+    ]
+
+    dias_eventos_ordenados = sorted(eventos_por_dia.items(), key=lambda item: item[0])
+    highlight_por_dia: dict[date, dict[str, str]] = {
+        dia: highlight_schemes[idx % len(highlight_schemes)]
+        for idx, (dia, _) in enumerate(dias_eventos_ordenados)
+    }
+
     dias_mes = [
-        {"data": d, "mes_atual": d.month == mes, "hoje": d == hoje, "eventos": eventos_por_dia.get(d, [])}
+        {
+            "data": d,
+            "mes_atual": d.month == mes,
+            "hoje": d == hoje,
+            "eventos": eventos_por_dia.get(d, []),
+            "highlight": highlight_por_dia.get(d),
+        }
         for d in dias_iterados
     ]
-    dias_com_eventos = [
-        {
-            "data": dia,
-            "mes_atual": dia.month == mes,
-            "hoje": dia == hoje,
-            "eventos": sorted(eventos, key=lambda e: timezone.localtime(e.data_inicio)),
-        }
-        for dia, eventos in sorted(eventos_por_dia.items(), key=lambda item: item[0])
-        if eventos
-    ]
+    dias_com_eventos = []
+    for dia, eventos in dias_eventos_ordenados:
+        if not eventos:
+            continue
+        dias_com_eventos.append(
+            {
+                "data": dia,
+                "mes_atual": dia.month == mes,
+                "hoje": dia == hoje,
+                "eventos": sorted(eventos, key=lambda e: timezone.localtime(e.data_inicio)),
+                "highlight": highlight_por_dia[dia],
+            }
+        )
     prev_ano, prev_mes = (ano - 1, 12) if mes == 1 else (ano, mes - 1)
     next_ano, next_mes = (ano + 1, 1) if mes == 12 else (ano, mes + 1)
     dia_sel = hoje if (hoje.year, hoje.month) == (ano, mes) else primeiro_dia
