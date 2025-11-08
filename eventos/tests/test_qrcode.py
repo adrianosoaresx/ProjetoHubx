@@ -110,6 +110,55 @@ def test_usuario_cancela_inscricao_confirmada(client, monkeypatch):
 
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
+def test_usuario_nao_cancela_inscricao_pagamento_validado(client, monkeypatch):
+    monkeypatch.setattr(
+        InscricaoEvento,
+        "gerar_qrcode",
+        lambda self: setattr(self, "qrcode_url", "/fake-qrcode.png"),
+    )
+    organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
+    usuario = User.objects.create_user(
+        username="usuario-cancel-validado",
+        email="cancel-validado@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.NUCLEADO,
+    )
+    client.force_login(usuario)
+
+    evento = Evento.objects.create(
+        titulo="Evento",
+        descricao="Desc",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua 1",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_presentes=0,
+        participantes_maximo=10,
+    )
+
+    subscribe_url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    cancel_url = reverse("eventos:evento_cancelar_inscricao", args=[evento.pk])
+    client.post(subscribe_url)
+
+    inscricao = InscricaoEvento.objects.get(user=usuario, evento=evento)
+    inscricao.pagamento_validado = True
+    inscricao.save(update_fields=["pagamento_validado"])
+
+    response = client.post(cancel_url)
+
+    assert response.status_code == 302
+    inscricao.refresh_from_db()
+    assert inscricao.status == "confirmada"
+    assert inscricao.deleted is False
+
+
+@override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
 def test_usuario_nao_cria_inscricao_duplicada(client, monkeypatch):
     monkeypatch.setattr(
         InscricaoEvento,

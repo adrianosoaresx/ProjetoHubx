@@ -125,6 +125,8 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
             )
 
     def cancelar_inscricao(self) -> None:
+        if self.pagamento_validado:
+            raise ValueError(_("Não é possível cancelar após a validação do pagamento."))
         if timezone.now() >= self.evento.data_inicio:
             raise ValueError("Não é possível cancelar após o início do evento.")
         was_confirmed = self.status == "confirmada"
