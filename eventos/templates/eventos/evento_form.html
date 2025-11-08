@@ -4,10 +4,10 @@
 {% block title %}{{ title|default:_('Evento') }}{% endblock %}
 
 {% block hero %}
-  {% if form.instance.pk %}
-    {% include "components/hero_evento_detail.html" with evento=form.instance %}
-  {% else %}
+  {% if show_create_hero or (form.instance and form.instance._state.adding) %}
     {% include "components/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
+  {% else %}
+    {% include "components/hero_evento_detail.html" with evento=form.instance %}
   {% endif %}
 {% endblock %}
 
