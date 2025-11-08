@@ -465,9 +465,12 @@ class EventoCreateView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if "object" not in context:
-            form = context.get("form")
-            context["object"] = getattr(form, "instance", None)
+        form = context.get("form")
+        instance = getattr(form, "instance", None)
+        if instance and getattr(instance, "created_at", None):
+            context["object"] = instance
+        else:
+            context["object"] = None
         fallback_url = str(self.success_url)
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context.update(
