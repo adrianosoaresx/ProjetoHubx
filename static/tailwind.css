@@ -2647,6 +2647,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   visibility: visible;
 }
 
+.collapse {
+  visibility: collapse;
+}
+
 .static {
   position: static;
 }
@@ -2683,6 +2687,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .left-0 {
   left: 0px;
+}
+
+.left-3 {
+  left: 0.75rem;
 }
 
 .left-6 {
@@ -2874,6 +2882,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .hidden {
   display: none;
+}
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
 }
 
 .aspect-video {
@@ -3102,6 +3114,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .table-auto {
   table-layout: auto;
+}
+
+.border-collapse {
+  border-collapse: collapse;
 }
 
 .-translate-x-full {
@@ -3915,6 +3931,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-bottom: 1rem;
 }
 
+.pl-10 {
+  padding-left: 2.5rem;
+}
+
 .pl-6 {
   padding-left: 1.5rem;
 }
@@ -4319,6 +4339,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-ring-color: var(--bg-primary);
 }
 
+.ring-\[var\(--color-primary-500\)\] {
+  --tw-ring-color: var(--color-primary-500);
+}
+
 .ring-\[var\(--primary-soft-border\2c rgba\(59\2c 130\2c 246\2c 0\.3\)\)\] {
   --tw-ring-color: var(--primary-soft-border,rgba(59,130,246,0.3));
 }
@@ -4345,6 +4369,14 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .ring-white\/50 {
   --tw-ring-color: rgb(255 255 255 / 0.5);
+}
+
+.ring-offset-2 {
+  --tw-ring-offset-width: 2px;
+}
+
+.ring-offset-\[var\(--bg-primary\)\] {
+  --tw-ring-offset-color: var(--bg-primary);
 }
 
 .blur {
@@ -5327,6 +5359,14 @@ body.sidebar-mobile-open .sidebar-backdrop {
     height: 6rem;
   }
 
+  .sm\:h-28 {
+    height: 7rem;
+  }
+
+  .sm\:h-7 {
+    height: 1.75rem;
+  }
+
   .sm\:max-h-\[320px\] {
     max-height: 320px;
   }
@@ -5337,6 +5377,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .sm\:w-24 {
     width: 6rem;
+  }
+
+  .sm\:w-7 {
+    width: 1.75rem;
   }
 
   .sm\:w-auto {
@@ -5451,6 +5495,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   .sm\:text-base {
     font-size: 1rem;
     line-height: 1.5rem;
+  }
+
+  .sm\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 }
 
