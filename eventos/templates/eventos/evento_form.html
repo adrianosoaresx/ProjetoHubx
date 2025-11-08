@@ -7,7 +7,7 @@
   {% if form.instance.pk %}
     {% include "_components/hero_evento_detail.html" with evento=form.instance %}
   {% else %}
-    {% include "_components/hero_evento.html" with title=title|default:_("Eventos") subtitle=subtitle|default_if_none:"" neural_background="eventos" %}
+    {% include "_components/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
   {% endif %}
 {% endblock %}
 
