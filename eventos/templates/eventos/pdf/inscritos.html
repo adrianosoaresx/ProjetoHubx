@@ -14,8 +14,9 @@
         margin: 0;
         padding: 24px;
         color: #111827;
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 13px;
+        line-height: 1.45;
+        background-color: #ffffff;
       }
       h1 {
         font-size: 22px;
@@ -23,24 +24,42 @@
       }
       h2 {
         font-size: 16px;
-        margin: 24px 0 8px;
+        margin: 20px 0 6px;
       }
       p {
-        margin: 0 0 8px;
+        margin: 0 0 4px;
+      }
+      header p {
+        font-size: 12.5px;
+      }
+      header p:last-of-type {
+        margin-bottom: 0;
+      }
+      .summary {
+        display: inline-block;
+        padding: 6px 10px;
+        margin-top: 8px;
+        border-radius: 8px;
+        background-color: #f9fafb;
+        font-size: 12.5px;
       }
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 16px;
+        margin-top: 12px;
+        font-size: 12px;
       }
       th,
       td {
         border: 1px solid #d1d5db;
-        padding: 8px 12px;
+        padding: 6px 10px;
         text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
       thead th {
-        background-color: #f3f4f6;
+        background-color: #eef2ff;
         font-weight: 600;
       }
       tbody tr:nth-child(even) {
@@ -72,10 +91,13 @@
 
     <section>
       <h2>{% trans "Inscrições confirmadas" %}</h2>
+      <p class="summary">
+        <strong>{% trans "Total de inscritos" %}:</strong>
+        {{ inscricoes|length }}
+      </p>
       <table aria-describedby="inscritos">
         <thead>
           <tr>
-            <th scope="col">#</th>
             <th scope="col">{% trans "Participante" %}</th>
             <th scope="col">{% trans "E-mail" %}</th>
             <th scope="col">{% trans "Telefone" %}</th>
@@ -85,7 +107,6 @@
         <tbody>
           {% for inscricao in inscricoes %}
             <tr>
-              <td>{{ forloop.counter }}</td>
               <td>{{ inscricao.participante_nome|default:"-" }}</td>
               <td>{{ inscricao.user.email|default:"-" }}</td>
               <td>{{ inscricao.user.phone_number|default:"-" }}</td>
@@ -99,7 +120,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="5">{% trans "Nenhuma inscrição confirmada até o momento." %}</td>
+              <td colspan="4">{% trans "Nenhuma inscrição confirmada até o momento." %}</td>
             </tr>
           {% endfor %}
         </tbody>
