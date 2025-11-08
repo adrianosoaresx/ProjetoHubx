@@ -1,15 +1,17 @@
 {% extends 'base.html' %}
 {% load i18n static %}
 
-{% block title %}{{ title|default:_('Evento') }}{% endblock %}
+{% block title %}{% if object %}{{ object.nome }}{% else %}{% trans 'Adicionar evento' %}{% endif %}{% endblock %}
 
 {% block hero %}
-  {% if show_create_hero or form.instance and form.instance._state.adding %}
-    {% include "components/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
-  {% else %}
+  
+  {% if object %}
     {% include "components/hero_evento_detail.html" with evento=form.instance %}
+  {% else %}
+    {% include "components/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
   {% endif %}
 {% endblock %}
+
 
 {% block content %}
 
