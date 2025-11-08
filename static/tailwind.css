@@ -3915,10 +3915,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-bottom: 1rem;
 }
 
-.pb-6 {
-  padding-bottom: 1.5rem;
-}
-
 .pl-6 {
   padding-left: 1.5rem;
 }
@@ -4073,6 +4069,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .text-\[inherit\] {
   color: inherit;
+}
+
+.text-\[var\(--accent\)\] {
+  color: var(--accent);
 }
 
 .text-\[var\(--color-danger-500\)\] {
@@ -5534,10 +5534,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .md\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .md\:flex-row {
