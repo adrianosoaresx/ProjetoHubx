@@ -933,7 +933,23 @@ class EventoInscritosPDFView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                     return (str(candidate).strip().casefold(), inscricao.pk or 0)
             return ("", inscricao.pk or 0)
 
+        def _resolve_participante_nome(inscricao: InscricaoEvento) -> str:
+            user = inscricao.user
+            for candidate in (
+                getattr(user, "contato", None),
+                getattr(user, "display_name", None),
+                user.get_full_name if hasattr(user, "get_full_name") else None,
+                getattr(user, "username", None),
+            ):
+                if callable(candidate):
+                    candidate = candidate()
+                if candidate:
+                    return str(candidate).strip()
+            return "-"
+
         inscricoes = sorted(inscricoes_queryset, key=_inscricao_sort_key)
+        for inscricao in inscricoes:
+            inscricao.participante_nome = _resolve_participante_nome(inscricao)
         contexto = {
             "evento": self.object,
             "inscricoes": inscricoes,

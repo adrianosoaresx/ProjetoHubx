@@ -86,14 +86,7 @@
           {% for inscricao in inscricoes %}
             <tr>
               <td>{{ forloop.counter }}</td>
-              <td>
-                {% firstof
-                  inscricao.user.contato
-                  inscricao.user.display_name
-                  inscricao.user.get_full_name
-                  inscricao.user.username
-                %}
-              </td>
+              <td>{{ inscricao.participante_nome|default:"-" }}</td>
               <td>{{ inscricao.user.email|default:"-" }}</td>
               <td>{{ inscricao.user.phone_number|default:"-" }}</td>
               <td>
