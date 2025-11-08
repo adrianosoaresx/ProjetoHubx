@@ -1,6 +1,13 @@
 {% load i18n lucide_icons %}
-<div class="card">
-    <div class="card-header">
+<div id="perfil-info-accordion" class="card" data-accordion>
+  <div class="card-header">
+    <button
+      type="button"
+      class="flex w-full items-center justify-between gap-3 text-left"
+      data-accordion-toggle
+      aria-expanded="false"
+      aria-controls="perfil-info-panel"
+    >
       <div class="flex items-start gap-3">
         <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] shadow-lg shadow-[var(--accent)]/20">
           {% lucide 'id-card' class='h-6 w-6' aria_hidden='true' %}
@@ -10,169 +17,219 @@
           <p class="text-sm text-[var(--text-secondary)]">{% trans "Visualize seus dados pessoais, de contato e redes sociais" %}</p>
         </div>
       </div>
-    </div>
-
-    <div class="card-body space-y-6">
-  <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm">
-    {% if user.razao_social or user.nome_fantasia %}
-    <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      {% if user.razao_social %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.razao_social }}</dd>
-      </div>
-      {% endif %}
-      {% if user.nome_fantasia %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.nome_fantasia }}</dd>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
-    {% if user.cnpj or user.cpf %}
-    <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
-      {% if user.cnpj %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.cnpj }}</dd>
-      </div>
-      {% endif %}
-      {% if user.cpf %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.cpf }}</dd>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
-    {% if user.area_atuacao or user.descricao_atividade %}
-    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
-      {% if user.area_atuacao %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Área de atuação" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.get_area_atuacao_display }}</dd>
-      </div>
-      {% endif %}
-      {% if user.descricao_atividade %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Descrição da atividade" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ user.descricao_atividade }}</dd>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    {% if user.endereco or user.cidade or user.estado or user.cep %}
-    <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {% if user.endereco %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.endereco }}</dd>
-      </div>
-      {% endif %}
-      {% if user.cidade %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Cidade" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.cidade }}</dd>
-      </div>
-      {% endif %}
-      {% if user.estado %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "Estado" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.estado }}</dd>
-      </div>
-      {% endif %}
-      {% if user.cep %}
-      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-        <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    {% if user.contato %}
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{{ user.contato }}</dd>
-    </div>
-    {% endif %}
-
-    {% if user.birth_date %}
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "Data de nascimento" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{{ user.birth_date|date:"d/m/Y" }}</dd>
-    </div>
-    {% endif %}
-
-    {% if user.phone_number %}
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number.as_national }}</dd>
-    </div>
-    {% endif %}
-
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
-    </div>
-
-  </dl>
-  {% if profile.date_joined or profile.last_login %}
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm mt-4">
-    {% if profile.date_joined %}
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
-    </div>
-    {% endif %}
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-      <dt class="text-[var(--text-secondary)]">{% trans "Último acesso" %}</dt>
-      <dd class="font-medium text-[var(--text-primary)]">{% if profile.last_login %}{{ profile.last_login|date:"d/m/Y H:i" }}{% else %}-{% endif %}</dd>
-    </div>
-  </div>
-  {% endif %}
-  {% if bio %}
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
-    <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ bio }}</p>
-  </div>
-</div>
-{% endif %}
-
-
-
-{% if can_manage %}
-  <div class="mt-6 flex justify-end border-t border-[var(--border)] pt-4">
-    {% if is_owner %}
-      <a
-        href="{% url 'accounts:perfil_sections_info' %}"
-        class="btn btn-primary"
-        hx-get="{% url 'accounts:perfil_sections_info' %}"
-        hx-target="closest section"
-        hx-swap="innerHTML"
-        hx-vals='{"info_view": "edit"}'
-        hx-push-url="?section=info&info_view=edit"
+      <svg
+        class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
+        data-accordion-icon
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
       >
-        {% trans "Editar perfil" %}
-      </a>
-    {% else %}
-      {% with target_public_id=manage_target_public_id|stringformat:"s" target_username=manage_target_username target_username_encoded=manage_target_username|urlencode %}
-        {% with query_params="public_id="|add:target_public_id|add:"&username="|add:target_username_encoded %}
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <div
+    id="perfil-info-panel"
+    class="card-body space-y-6 hidden border-t border-[var(--border)]"
+    data-accordion-panel
+  >
+    <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm">
+      {% if user.razao_social or user.nome_fantasia %}
+        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {% if user.razao_social %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.razao_social }}</dd>
+            </div>
+          {% endif %}
+          {% if user.nome_fantasia %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.nome_fantasia }}</dd>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if user.cnpj or user.cpf %}
+        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {% if user.cnpj %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.cnpj }}</dd>
+            </div>
+          {% endif %}
+          {% if user.cpf %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "CPF" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.cpf }}</dd>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if user.area_atuacao or user.descricao_atividade %}
+        <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {% if user.area_atuacao %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Área de atuação" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.get_area_atuacao_display }}</dd>
+            </div>
+          {% endif %}
+          {% if user.descricao_atividade %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Descrição da atividade" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ user.descricao_atividade }}</dd>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if user.endereco or user.cidade or user.estado or user.cep %}
+        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {% if user.endereco %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.endereco }}</dd>
+            </div>
+          {% endif %}
+          {% if user.cidade %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Cidade" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.cidade }}</dd>
+            </div>
+          {% endif %}
+          {% if user.estado %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "Estado" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.estado }}</dd>
+            </div>
+          {% endif %}
+          {% if user.cep %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+              <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+              <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if user.contato %}
+        <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+          <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+          <dd class="font-medium text-[var(--text-primary)]">{{ user.contato }}</dd>
+        </div>
+      {% endif %}
+
+      {% if user.birth_date %}
+        <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+          <dt class="text-[var(--text-secondary)]">{% trans "Data de nascimento" %}</dt>
+          <dd class="font-medium text-[var(--text-primary)]">{{ user.birth_date|date:"d/m/Y" }}</dd>
+        </div>
+      {% endif %}
+
+      {% if user.phone_number %}
+        <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+          <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
+          <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number.as_national }}</dd>
+        </div>
+      {% endif %}
+
+      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+        <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
+        <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
+      </div>
+    </dl>
+
+    {% if profile.date_joined or profile.last_login %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm mt-4">
+        {% if profile.date_joined %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
+          </div>
+        {% endif %}
+        <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+          <dt class="text-[var(--text-secondary)]">{% trans "Último acesso" %}</dt>
+          <dd class="font-medium text-[var(--text-primary)]">{% if profile.last_login %}{{ profile.last_login|date:"d/m/Y H:i" }}{% else %}-{% endif %}</dd>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if bio %}
+      <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+        <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
+        <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ bio }}</p>
+      </div>
+    {% endif %}
+
+    {% if can_manage %}
+      <div class="mt-6 flex justify-end border-t border-[var(--border)] pt-4">
+        {% if is_owner %}
           <a
-            href="{% url 'accounts:perfil_sections_info' %}?{{ query_params }}"
+            href="{% url 'accounts:perfil_sections_info' %}"
             class="btn btn-primary"
             hx-get="{% url 'accounts:perfil_sections_info' %}"
             hx-target="closest section"
             hx-swap="innerHTML"
-            hx-vals='{"info_view": "edit", "public_id": "{{ target_public_id|escapejs }}", "username": "{{ target_username|default_if_none:''|escapejs }}"}'
-            hx-push-url="?section=info&info_view=edit&{{ query_params }}"
+            hx-vals='{"info_view": "edit"}'
+            hx-push-url="?section=info&info_view=edit"
           >
             {% trans "Editar perfil" %}
           </a>
-        {% endwith %}
-      {% endwith %}
+        {% else %}
+          {% with target_public_id=manage_target_public_id|stringformat:"s" target_username=manage_target_username target_username_encoded=manage_target_username|urlencode %}
+            {% with query_params="public_id="|add:target_public_id|add:"&username="|add:target_username_encoded %}
+              <a
+                href="{% url 'accounts:perfil_sections_info' %}?{{ query_params }}"
+                class="btn btn-primary"
+                hx-get="{% url 'accounts:perfil_sections_info' %}"
+                hx-target="closest section"
+                hx-swap="innerHTML"
+                hx-vals='{"info_view": "edit", "public_id": "{{ target_public_id|escapejs }}", "username": "{{ target_username|default_if_none:''|escapejs }}"}'
+                hx-push-url="?section=info&info_view=edit&{{ query_params }}"
+              >
+                {% trans "Editar perfil" %}
+              </a>
+            {% endwith %}
+          {% endwith %}
+        {% endif %}
+      </div>
     {% endif %}
   </div>
-{% endif %}
+</div>
+<script>
+  (function () {
+    const accordion = document.getElementById('perfil-info-accordion');
+    if (!accordion) {
+      return;
+    }
+
+    const toggle = accordion.querySelector('[data-accordion-toggle]');
+    const panel = accordion.querySelector('[data-accordion-panel]');
+    const icon = accordion.querySelector('[data-accordion-icon]');
+
+    if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+      return;
+    }
+
+    const setExpanded = (expanded) => {
+      toggle.setAttribute('aria-expanded', String(expanded));
+      panel.classList.toggle('hidden', !expanded);
+      if (icon instanceof HTMLElement) {
+        icon.classList.toggle('rotate-180', expanded);
+      }
+    };
+
+    setExpanded(false);
+
+    toggle.addEventListener('click', () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      setExpanded(!isExpanded);
+    });
+  })();
+</script>
