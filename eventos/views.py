@@ -685,6 +685,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             bool(minha_inscricao)
             and context["inscricao_permitida"]
             and timezone.now() < evento.data_inicio
+            and not getattr(minha_inscricao, "pagamento_validado", False)
         )
         inscricoes = list(
             InscricaoEvento.objects.filter(evento=evento, deleted=False)
@@ -1168,12 +1169,17 @@ class EventoCancelarInscricaoModalView(LoginRequiredMixin, NoSuperadminMixin, Vi
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             return HttpResponseForbidden(_("Administradores não podem cancelar inscrições."))
 
-        get_object_or_404(
+        inscricao = get_object_or_404(
             InscricaoEvento,
             user=request.user,
             evento=evento,
             status="confirmada",
         )
+
+        if inscricao.pagamento_validado:
+            return HttpResponseForbidden(
+                _("Não é possível cancelar após a validação do pagamento."),
+            )
 
         context = {
             "evento": evento,
