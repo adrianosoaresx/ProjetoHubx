@@ -44,8 +44,8 @@
                     <span class="sr-only">
                       {% blocktrans count count=dia.eventos|length %}{{ count }} evento agendado{% plural %}{{ count }} eventos agendados{% endblocktrans %}
                     </span>
-                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--success-light)] text-[var(--success)]">
-                      {% lucide 'sparkles' class='h-4 w-4' aria_hidden='true' %}
+                    <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success-light)] text-[var(--success)] sm:h-7 sm:w-7">
+                      {% lucide 'sparkles' class='h-3 w-3 sm:h-4 sm:w-4' aria_hidden='true' %}
                     </span>
                   </span>
                 {% endif %}
