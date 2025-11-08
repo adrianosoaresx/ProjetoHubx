@@ -681,3 +681,109 @@ def test_coordenador_bloqueado_em_evento_de_outro_nucleo(client, organizacao, nu
     response = client.get(url)
 
     assert response.status_code in {403, 404}
+
+
+def test_evento_inscritos_pdf_view_returns_pdf(
+    client,
+    usuario_logado,
+    evento,
+    organizacao,
+    monkeypatch,
+):
+    from eventos import views as eventos_views
+
+    captured: dict[str, str | bool] = {}
+
+    def fake_render_to_string(template_name, context, request=None):
+        assert template_name == "eventos/pdf/inscritos.html"
+        names: list[str] = []
+        for inscricao in context["inscricoes"]:
+            user = inscricao.user
+            for candidate in (
+                getattr(user, "contato", None),
+                getattr(user, "display_name", None),
+                user.get_full_name if hasattr(user, "get_full_name") else None,
+                getattr(user, "username", None),
+            ):
+                value = candidate() if callable(candidate) else candidate
+                if value:
+                    names.append(str(value))
+                    break
+            else:  # pragma: no cover - defensive branch
+                names.append("")
+        captured["names"] = names
+        return "\n".join(names)
+
+    def fake_create_pdf(html: str, dest, encoding: str = "utf-8", **kwargs):
+        captured["html"] = html
+        captured["encoding"] = encoding
+        dest.write(b"%PDF-1.4")
+        return type("Result", (), {"err": False})()
+
+    monkeypatch.setattr(eventos_views, "render_to_string", fake_render_to_string)
+    monkeypatch.setattr(
+        eventos_views,
+        "pisa",
+        type("DummyPisa", (), {"CreatePDF": staticmethod(fake_create_pdf)}),
+    )
+
+    usuarios = [
+        User.objects.create_user(
+            username="ana",
+            email="ana@example.com",
+            password="12345",
+            organizacao=organizacao,
+            user_type=UserType.ASSOCIADO,
+            contato="Ana Contato",
+        ),
+        User.objects.create_user(
+            username="bruno",
+            email="bruno@example.com",
+            password="12345",
+            organizacao=organizacao,
+            user_type=UserType.ASSOCIADO,
+            nome_fantasia="Bruno Display",
+        ),
+        User.objects.create_user(
+            username="douglas",
+            email="douglas@example.com",
+            password="12345",
+            organizacao=organizacao,
+            user_type=UserType.ASSOCIADO,
+        ),
+    ]
+
+    nomes_esperados = ["Ana Contato", "Bruno Display", "douglas"]
+
+    for usuario, data_confirmacao in zip(
+        usuarios,
+        [
+            make_aware(datetime.now()),
+            make_aware(datetime.now() + timedelta(minutes=5)),
+            make_aware(datetime.now() + timedelta(minutes=10)),
+        ],
+        strict=True,
+    ):
+        InscricaoEvento.objects.create(
+            user=usuario,
+            evento=evento,
+            status="confirmada",
+            data_confirmacao=data_confirmacao,
+        )
+
+    url = reverse("eventos:evento_inscritos_pdf", args=[evento.pk])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "application/pdf"
+    assert response["Content-Disposition"].startswith("attachment; filename=\"inscritos-")
+    assert response.content == b"%PDF-1.4"
+    assert captured.get("encoding") == "utf-8"
+
+    assert captured.get("names") == nomes_esperados
+    html = captured.get("html", "")
+    assert html
+    lowered_html = html.casefold()
+    assert all(nome.casefold() in lowered_html for nome in nomes_esperados)
+    positions = [lowered_html.index(nome.casefold()) for nome in nomes_esperados]
+    assert positions == sorted(positions)
