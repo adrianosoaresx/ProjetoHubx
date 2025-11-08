@@ -2,6 +2,7 @@ import calendar
 from collections import Counter
 from decimal import Decimal
 from datetime import date, timedelta
+from io import BytesIO
 from typing import Any
 
 from django import forms
@@ -10,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.paginator import Paginator
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Q, Count, Model
@@ -20,9 +21,11 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponseServerError,
     JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -32,6 +35,11 @@ from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+try:  # pragma: no cover - fallback for optional dependency
+    from xhtml2pdf import pisa
+except ImportError:  # pragma: no cover - handled at runtime
+    pisa = None
 
 from accounts.models import UserType
 from core.permissions import (
@@ -891,6 +899,70 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         request = self.request
         fallback = reverse("eventos:calendario")
         return resolve_back_href(request, fallback=fallback)
+
+
+class EventoInscritosPDFView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
+    model = Evento
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not _usuario_pode_ver_inscritos(request.user, self.object):
+            raise PermissionDenied
+        inscricoes_queryset = (
+            InscricaoEvento.objects.filter(
+                evento=self.object,
+                status="confirmada",
+                deleted=False,
+            )
+            .select_related("user")
+            .order_by("user__contato", "user__nome_fantasia", "user__username")
+        )
+
+        def _inscricao_sort_key(inscricao: InscricaoEvento) -> tuple[str, int]:
+            user = inscricao.user
+            candidates = [
+                getattr(user, "contato", None),
+                getattr(user, "display_name", None),
+                user.get_full_name() if hasattr(user, "get_full_name") else None,
+                getattr(user, "username", None),
+            ]
+            for candidate in candidates:
+                if callable(candidate):
+                    candidate = candidate()
+                if candidate:
+                    return (str(candidate).strip().casefold(), inscricao.pk or 0)
+            return ("", inscricao.pk or 0)
+
+        inscricoes = sorted(inscricoes_queryset, key=_inscricao_sort_key)
+        contexto = {
+            "evento": self.object,
+            "inscricoes": inscricoes,
+            "generated_at": timezone.localtime(),
+        }
+        if pisa is None:
+            raise ImproperlyConfigured("xhtml2pdf precisa estar instalado para gerar PDFs.")
+
+        rendered_html = render_to_string(
+            "eventos/pdf/inscritos.html",
+            contexto,
+            request=request,
+        )
+
+        pdf_buffer = BytesIO()
+        pdf_result = pisa.CreatePDF(
+            rendered_html,
+            dest=pdf_buffer,
+            encoding="utf-8",
+        )
+        if getattr(pdf_result, "err", False):
+            return HttpResponseServerError("Não foi possível gerar o PDF de inscritos.")
+
+        response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
+        slug = getattr(self.object, "slug", None) or str(self.object.pk)
+        response["Content-Disposition"] = (
+            f'attachment; filename="inscritos-{slug}.pdf"'
+        )
+        return response
 
 
 class EventoInscritosPartialView(EventoDetailView):
