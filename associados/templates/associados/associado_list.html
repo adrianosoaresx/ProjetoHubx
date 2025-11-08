@@ -10,6 +10,53 @@
 {% block content %}
 
   <div class="space-y-6">
+    <div class="card" data-associados-search-card>
+      <div class="card-body space-y-4">
+        <div>
+          <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Buscar associados" %}</h2>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Procure por associados, nucleados, consultores e coordenadores." %}</p>
+        </div>
+        <form
+          class="flex flex-col gap-3 md:flex-row md:items-center"
+          role="search"
+          novalidate
+          data-associados-search-form
+          data-initial-search-term="{{ search_term }}"
+          data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
+          data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum associado correspondente a {{ term }}.{% endblocktrans %}"
+          data-feedback-empty="{% trans 'Digite um termo para buscar associados.' %}"
+        >
+          <div class="relative flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[var(--text-secondary)]">
+              {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+            </span>
+            <input
+              type="search"
+              name="q"
+              value="{{ search_term }}"
+              autocomplete="off"
+              placeholder="{% trans 'Buscar por nome, usuário ou contato' %}"
+              aria-label="{% trans 'Buscar associados' %}"
+              class="form-input w-full pl-10"
+              data-associados-search-input
+            />
+          </div>
+          <button type="submit" class="btn btn-primary inline-flex items-center justify-center gap-2">
+            {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+            <span>{% trans "Buscar" %}</span>
+          </button>
+        </form>
+        <p
+          class="text-sm text-[var(--text-secondary)]"
+          data-associados-search-feedback
+          id="associados-search-feedback"
+          hidden
+          role="status"
+          aria-live="polite"
+        ></p>
+      </div>
+    </div>
+
     <details class="card group" data-associados-section="sem-nucleo">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
@@ -115,4 +162,178 @@
     </details>
   </div>
 
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const highlightClasses = [
+        'ring-2',
+        'ring-offset-2',
+        'ring-[var(--color-primary-500)]',
+        'ring-offset-[var(--bg-primary)]',
+        'transition-shadow',
+      ];
+
+      function normalizeTerm(value) {
+        return value
+          ? value
+              .toString()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toLowerCase()
+          : '';
+      }
+
+      function setFeedbackMessage(feedbackEl, message) {
+        if (!feedbackEl) {
+          return;
+        }
+        if (message) {
+          feedbackEl.textContent = message;
+          feedbackEl.hidden = false;
+        } else {
+          feedbackEl.textContent = '';
+          feedbackEl.hidden = true;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('[data-associados-search-form]');
+        if (!form) {
+          return;
+        }
+
+        const input = form.querySelector('[data-associados-search-input]');
+        const feedback = form.parentElement.querySelector('[data-associados-search-feedback]');
+        const cards = Array.from(document.querySelectorAll('[data-associado-card]'));
+        const sections = Array.from(document.querySelectorAll('[data-associados-section]'));
+
+        function clearHighlights() {
+          cards.forEach((card) => {
+            const article = card.querySelector('article');
+            if (article) {
+              highlightClasses.forEach((cls) => article.classList.remove(cls));
+              article.removeAttribute('data-associado-highlight');
+            }
+          });
+        }
+
+        function highlightCard(card) {
+          const article = card.querySelector('article');
+          if (!article) {
+            return;
+          }
+          highlightClasses.forEach((cls) => article.classList.add(cls));
+          article.setAttribute('data-associado-highlight', 'true');
+
+          window.requestAnimationFrame(() => {
+            article.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const focusable = article.querySelector('a');
+            if (focusable) {
+              focusable.focus({ preventScroll: true });
+            }
+          });
+        }
+
+        function openSectionFor(card) {
+          const section = card.closest('details');
+          if (!section) {
+            return null;
+          }
+          sections.forEach((detail) => {
+            if (detail === section) {
+              detail.open = true;
+            } else {
+              detail.open = false;
+            }
+          });
+          return section;
+        }
+
+        function formatMessage(template, value) {
+          if (!template) {
+            return '';
+          }
+          return template.replace('__term__', value);
+        }
+
+        function performSearch(term, options = {}) {
+          const trimmedTerm = term.trim();
+          if (!trimmedTerm) {
+            clearHighlights();
+            if (options.skipEmptyMessage) {
+              setFeedbackMessage(feedback, '');
+            } else {
+              setFeedbackMessage(feedback, form.dataset.feedbackEmpty || '');
+            }
+            return;
+          }
+
+          const normalizedSearch = normalizeTerm(trimmedTerm);
+          if (!normalizedSearch) {
+            clearHighlights();
+            setFeedbackMessage(feedback, form.dataset.feedbackEmpty || '');
+            return;
+          }
+
+          const match = cards.find((card) => {
+            const cardValue = normalizeTerm(card.dataset.associadoSearch || '');
+            return cardValue.includes(normalizedSearch);
+          });
+
+          if (match) {
+            clearHighlights();
+            openSectionFor(match);
+            highlightCard(match);
+            const label = match.dataset.associadoLabel || trimmedTerm;
+            setFeedbackMessage(
+              feedback,
+              formatMessage(form.dataset.feedbackFoundTemplate, label) || ''
+            );
+            return;
+          }
+
+          clearHighlights();
+          setFeedbackMessage(
+            feedback,
+            formatMessage(form.dataset.feedbackNotFoundTemplate, trimmedTerm) || ''
+          );
+        }
+
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+          performSearch(input.value || '');
+        });
+
+        input.addEventListener('input', function () {
+          if (!input.value.trim()) {
+            clearHighlights();
+            setFeedbackMessage(feedback, '');
+          }
+        });
+
+        input.addEventListener('search', function () {
+          if (!input.value.trim()) {
+            clearHighlights();
+            setFeedbackMessage(feedback, '');
+          }
+        });
+
+        input.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            input.value = '';
+            clearHighlights();
+            setFeedbackMessage(feedback, '');
+          }
+        });
+
+        const initialTerm = form.dataset.initialSearchTerm || '';
+        if (initialTerm.trim()) {
+          performSearch(initialTerm, { skipEmptyMessage: true });
+        }
+      });
+    })();
+  </script>
 {% endblock %}
