@@ -10,7 +10,7 @@
 {% block content %}
 
   <div class="space-y-6">
-    <details class="card group" data-associados-search-card open>
+    <details class="card group" data-associados-search-card>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
@@ -208,6 +208,7 @@
 
       document.addEventListener('DOMContentLoaded', function () {
         const form = document.querySelector('[data-associados-search-form]');
+        const searchCard = document.querySelector('[data-associados-search-card]');
         if (!form) {
           return;
         }
@@ -270,6 +271,9 @@
           const trimmedTerm = term.trim();
           if (!trimmedTerm) {
             clearHighlights();
+            if (searchCard && !searchCard.open) {
+              searchCard.open = true;
+            }
             if (options.skipEmptyMessage) {
               setFeedbackMessage(feedback, '');
             } else {
@@ -281,6 +285,9 @@
           const normalizedSearch = normalizeTerm(trimmedTerm);
           if (!normalizedSearch) {
             clearHighlights();
+            if (searchCard && !searchCard.open) {
+              searchCard.open = true;
+            }
             setFeedbackMessage(feedback, form.dataset.feedbackEmpty || '');
             return;
           }
@@ -292,6 +299,9 @@
 
           if (match) {
             clearHighlights();
+            if (searchCard && !searchCard.open) {
+              searchCard.open = true;
+            }
             openSectionFor(match);
             highlightCard(match);
             const label = match.dataset.associadoLabel || trimmedTerm;
@@ -303,6 +313,9 @@
           }
 
           clearHighlights();
+          if (searchCard && !searchCard.open) {
+            searchCard.open = true;
+          }
           setFeedbackMessage(
             feedback,
             formatMessage(form.dataset.feedbackNotFoundTemplate, trimmedTerm) || ''
