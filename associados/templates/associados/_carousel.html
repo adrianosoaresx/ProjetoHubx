@@ -10,7 +10,7 @@
   data-search-term="{{ search_term }}"
 >
   <div class="relative">
-    <div class="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" data-carousel-viewport>
+    <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
       <div class="flex transition-transform duration-500 ease-out" data-carousel-track>
         {% include 'associados/_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message %}
       </div>
