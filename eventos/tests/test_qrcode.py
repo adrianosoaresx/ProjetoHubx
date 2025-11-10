@@ -1,11 +1,17 @@
-import pytest
 from datetime import datetime, timedelta
+import json
+from decimal import Decimal
+
+import pytest
 from django.urls import reverse, path, include
+
+from django.core.files.storage import default_storage
 from django.utils.timezone import make_aware
 from django.test import override_settings
 from django.views.i18n import JavaScriptCatalog
 
 from accounts.models import User, UserType
+from eventos import models as eventos_models
 from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
@@ -157,6 +163,66 @@ def test_usuario_nao_cancela_inscricao_pagamento_validado(client, monkeypatch):
     assert inscricao.status == "confirmada"
     assert inscricao.deleted is False
 
+
+def test_gerar_qrcode_inclui_dados_da_inscricao(monkeypatch):
+    captured_data = {}
+
+    class DummyImage:
+        def save(self, buffer, format):
+            buffer.write(b"dummy")
+
+    def fake_make(data):
+        captured_data["payload"] = data
+        return DummyImage()
+
+    monkeypatch.setattr(eventos_models.qrcode, "make", fake_make)
+    monkeypatch.setattr(default_storage, "save", lambda name, content: name)
+    monkeypatch.setattr(default_storage, "url", lambda path: f"/media/{path}")
+
+    organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
+    usuario = User.objects.create_user(
+        username="usuario-qrcode",
+        email="usuario-qrcode@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.ASSOCIADO,
+        cpf="123.456.789-00",
+    )
+
+    evento = Evento.objects.create(
+        titulo="Evento com QRCode",
+        descricao="Desc",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua 1",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_presentes=0,
+        participantes_maximo=10,
+    )
+
+    inscricao = InscricaoEvento.objects.create(
+        user=usuario,
+        evento=evento,
+        status="confirmada",
+        valor_pago=Decimal("25.50"),
+    )
+
+    inscricao.gerar_qrcode()
+
+    assert "payload" in captured_data
+    payload = json.loads(captured_data["payload"])
+    assert payload["evento_id"] == str(evento.pk)
+    assert payload["evento_titulo"] == evento.titulo
+    assert payload["usuario_id"] == usuario.pk
+    assert payload["usuario_nome"]
+    assert payload["usuario_email"] == usuario.email
+    assert payload["valor_pago"] == "25.50"
+    assert payload["inscricao_id"] == str(inscricao.pk)
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
 def test_usuario_nao_cria_inscricao_duplicada(client, monkeypatch):

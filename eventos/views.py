@@ -711,6 +711,15 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         confirmada = bool(minha_inscricao)
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
+        if minha_inscricao is not None:
+            minha_inscricao.evento = evento
+            valor_exibicao = minha_inscricao.valor_pago
+            if valor_exibicao is None:
+                valor_exibicao = minha_inscricao.get_valor_evento()
+            minha_inscricao.valor_exibicao = valor_exibicao
+            if not minha_inscricao.qrcode_url:
+                minha_inscricao.gerar_qrcode()
+                minha_inscricao.save(update_fields=["qrcode_url"])
         context["inscricao"] = minha_inscricao
         context["inscricao_permitida"] = evento.status == Evento.Status.ATIVO
         context["back_href"] = self._resolve_back_href()
@@ -797,6 +806,15 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             pode_excluir_evento = True
 
         pode_gerenciar_portfolio = _usuario_pode_gerenciar_portfolio(user, evento)
+
+        minhas_inscricoes = []
+        if (
+            user.is_authenticated
+            and user.get_tipo_usuario == UserType.ASSOCIADO.value
+            and evento.status == Evento.Status.ATIVO
+            and minha_inscricao is not None
+        ):
+            minhas_inscricoes = [minha_inscricao]
 
         portfolio_filter_form = EventoPortfolioFilterForm(self.request.GET or None)
         portfolio_query = ""
@@ -897,6 +915,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "inscritos_querystring": inscritos_querystring,
                 "inscricoes_confirmadas": inscricoes_confirmadas,
                 "inscricoes_financeiro": inscricoes_financeiro,
+                "minhas_inscricoes": minhas_inscricoes,
                 "pode_editar_evento": pode_editar_evento,
                 "pode_excluir_evento": pode_excluir_evento,
                 "pode_gerenciar_inscricoes": pode_gerenciar_inscricoes,
