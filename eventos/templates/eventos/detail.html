@@ -785,6 +785,28 @@
           await performCheckin(url, decodedText);
         };
 
+        const extractErrorMessage = (error) => {
+          if (!error) {
+            return '';
+          }
+          if (typeof error === 'string') {
+            return error;
+          }
+          if (error instanceof Error && error.message) {
+            return error.message;
+          }
+          if (typeof error === 'object') {
+            const { message, name } = error;
+            if (typeof message === 'string' && message.trim()) {
+              return message.trim();
+            }
+            if (typeof name === 'string' && name.trim()) {
+              return name.trim();
+            }
+          }
+          return '';
+        };
+
         const startScanner = async () => {
           const scanner = ensureScanner();
           if (!scanner) {
@@ -807,7 +829,12 @@
             console.error('Não foi possível iniciar o leitor de QR Code.', error);
             toggleModalVisibility(scannerModal, false);
             lastFeedbackTrigger = scanButton;
-            showFeedback('error', gettext('Não foi possível iniciar a câmera para leitura do QR Code.'));
+            const baseMessage = gettext('Não foi possível iniciar a câmera para leitura do QR Code.');
+            const detailedMessage = extractErrorMessage(error);
+            const message = detailedMessage
+              ? `${baseMessage} ${gettext('Detalhes:')} ${detailedMessage}`
+              : baseMessage;
+            showFeedback('error', message);
           }
         };
 
