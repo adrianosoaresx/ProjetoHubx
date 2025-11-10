@@ -6,7 +6,7 @@
     {% endif %}
         <div
           role="listitem"
-          class="h-full"
+          class="h-full{% if not forloop.counter0|divisibleby:3 %} hidden lg:block{% endif %}"
           data-associado-card
           data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
           data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
@@ -14,10 +14,10 @@
           {% include '_components/card_usuario.html' with user=user %}
         </div>
         {% if forloop.last and not forloop.counter|divisibleby:3 %}
-          <div class="h-full opacity-0 pointer-events-none" aria-hidden="true"></div>
+          <div class="h-full opacity-0 pointer-events-none hidden lg:block" aria-hidden="true"></div>
         {% endif %}
         {% if forloop.last and forloop.counter|add:"-1"|divisibleby:3 %}
-          <div class="h-full opacity-0 pointer-events-none" aria-hidden="true"></div>
+          <div class="h-full opacity-0 pointer-events-none hidden lg:block" aria-hidden="true"></div>
         {% endif %}
     {% if forloop.counter|divisibleby:3 or forloop.last %}
       </div>
