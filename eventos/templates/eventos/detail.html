@@ -294,6 +294,61 @@
         {% endif %}
 
         {% if pode_ver_inscritos %}
+          <article
+            class="card"
+            data-checkin-root
+            data-checkin-url-template="{% url 'eventos:inscricao_checkin' 0 %}"
+          >
+            <details class="group">
+              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+                    {% lucide 'shield-check' class='h-6 w-6' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-semibold">{% trans "Check-ins" %}</h2>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe as presenças confirmadas e realize novos check-ins." %}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm p-2"
+                    data-checkin-scan-button
+                    aria-label="{% trans 'Ler QR Code de check-in' %}"
+                  >
+                    {% lucide 'scan' class='h-4 w-4' aria_hidden='true' %}
+                  </button>
+                  <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+                    {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+                  </span>
+                </div>
+              </summary>
+              <div class="card-body space-y-4">
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Use o leitor de QR Code para registrar a presença dos participantes." %}</p>
+                <section class="space-y-3" data-checkin-list>
+                  {% if checkins_realizados %}
+                    <ul class="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" role="list">
+                      {% for checkin in checkins_realizados %}
+                        <li class="flex items-start justify-between gap-4 px-4 py-3" data-checkin-item>
+                          <div class="space-y-0.5">
+                            <p class="font-medium text-[var(--text-primary)]">{{ checkin.participante_nome }}</p>
+                            <p class="text-xs text-[var(--text-secondary)]">@{{ checkin.user.username }}</p>
+                          </div>
+                          <time datetime="{{ checkin.check_in_realizado_em|date:'c' }}" class="text-sm text-[var(--text-secondary)]">
+                            {{ checkin.check_in_realizado_em|date:'SHORT_DATETIME_FORMAT' }}
+                          </time>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <p class="text-sm text-[var(--text-secondary)]" data-checkin-empty>{% trans "Nenhum check-in realizado até o momento." %}</p>
+                  {% endif %}
+                </section>
+              </div>
+            </details>
+          </article>
+
           <article class="card">
             <details
               class="group"
@@ -341,7 +396,7 @@
                     {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
                   </span>
                 </div>
-                </summary>
+              </summary>
               <div class="card-body space-y-6">
                 <div id="inscritos-filter-container">
                   {% include 'eventos/partials/inscritos_filter_form.html' with form_id='inscritos-filter-form' search_input_id='inscritos-search' hx_target='#inscritos-list' hx_indicator='#inscritos-loading' hx_push_url='true' search_value=inscritos_search_query %}
@@ -362,7 +417,7 @@
               </div>
             </details>
           </article>
-      {% endif %}
+        {% endif %}
         {% if pode_ver_financeiro %}
           <article class="card">
             <details class="group">
@@ -469,14 +524,337 @@
 
     </div>
 
+    <div
+      id="checkin-scanner-modal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkin-scanner-title"
+      tabindex="-1"
+    >
+      <div class="w-full max-w-lg rounded-xl bg-[var(--bg-primary)] shadow-xl">
+        <div class="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
+          <h2 id="checkin-scanner-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Leitor de QR Code" %}</h2>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            data-checkin-close
+            aria-label="{% trans 'Fechar leitor de QR Code' %}"
+          >
+            {% lucide 'x' class='h-4 w-4' aria_hidden='true' %}
+          </button>
+        </div>
+        <div class="space-y-4 px-5 py-4">
+          <div
+            id="checkin-scanner"
+            class="aspect-square w-full max-h-[320px] rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]"
+            role="presentation"
+          ></div>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Aponte a câmera para o QR Code do participante e aguarde a leitura." %}</p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="checkin-feedback-modal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="checkin-feedback-title"
+      tabindex="-1"
+    >
+      <div
+        class="w-full max-w-sm rounded-xl border px-4 py-3 text-sm font-medium"
+        data-checkin-feedback-container
+      >
+        <div class="flex items-center justify-between gap-4">
+          <p id="checkin-feedback-title" data-checkin-feedback-message class="text-[var(--text-primary)]"></p>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            data-checkin-feedback-close
+            aria-label="{% trans 'Fechar mensagem de check-in' %}"
+          >
+            {% lucide 'x' class='h-4 w-4' aria_hidden='true' %}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="modal" role="presentation" aria-live="polite"></div>
 
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
+  {% if pode_ver_inscritos %}
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+  {% endif %}
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const checkinRoot = document.querySelector('[data-checkin-root]');
+      if (checkinRoot) {
+        const scannerModal = document.getElementById('checkin-scanner-modal');
+        const scannerClose = scannerModal?.querySelector('[data-checkin-close]');
+        const scanButton = checkinRoot.querySelector('[data-checkin-scan-button]');
+        const scannerContainer = document.getElementById('checkin-scanner');
+        const feedbackModal = document.getElementById('checkin-feedback-modal');
+        const feedbackContainer = feedbackModal?.querySelector('[data-checkin-feedback-container]');
+        const feedbackMessage = feedbackModal?.querySelector('[data-checkin-feedback-message]');
+        const feedbackClose = feedbackModal?.querySelector('[data-checkin-feedback-close]');
+        let qrScanner = null;
+        let scannerActive = false;
+        let lastFocusedElement = null;
+        let lastFeedbackTrigger = null;
+
+        const toggleModalVisibility = (modal, show, focusTarget) => {
+          if (!modal) {
+            return;
+          }
+          if (show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const target = focusTarget || modal;
+            window.requestAnimationFrame(() => {
+              if (target && typeof target.focus === 'function') {
+                target.focus({ preventScroll: true });
+              }
+            });
+          } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+        };
+
+        const getCsrfToken = () => {
+          const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+          return match ? decodeURIComponent(match[1]) : '';
+        };
+
+        const ensureScanner = () => {
+          if (typeof Html5Qrcode === 'undefined' || !scannerContainer) {
+            console.warn('Html5Qrcode não disponível ou container ausente.');
+            return null;
+          }
+          if (!qrScanner) {
+            qrScanner = new Html5Qrcode(scannerContainer.id);
+          }
+          return qrScanner;
+        };
+
+        const resetScannerView = () => {
+          if (scannerContainer) {
+            scannerContainer.innerHTML = '';
+          }
+        };
+
+        const stopScanner = async () => {
+          if (qrScanner && scannerActive) {
+            try {
+              await qrScanner.stop();
+            } catch (error) {
+              console.warn('Não foi possível parar o leitor de QR Code.', error);
+            }
+            try {
+              await qrScanner.clear();
+            } catch (error) {
+              console.warn('Não foi possível limpar o leitor de QR Code.', error);
+            }
+          }
+          scannerActive = false;
+          resetScannerView();
+        };
+
+        const closeScanner = async () => {
+          await stopScanner();
+          toggleModalVisibility(scannerModal, false);
+          if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus({ preventScroll: true });
+          }
+          lastFocusedElement = null;
+        };
+
+        const applyFeedbackStyles = (type) => {
+          if (!feedbackContainer) {
+            return;
+          }
+          const classesToRemove = [
+            'border-[var(--color-success-200)]',
+            'bg-[var(--color-success-500)]/10',
+            'text-[var(--color-success-700)]',
+            'border-[var(--color-danger-200)]',
+            'bg-[var(--color-danger-500)]/10',
+            'text-[var(--color-danger-700)]',
+          ];
+          feedbackContainer.classList.remove(...classesToRemove);
+          if (type === 'success') {
+            feedbackContainer.classList.add(
+              'border-[var(--color-success-200)]',
+              'bg-[var(--color-success-500)]/10',
+              'text-[var(--color-success-700)]',
+            );
+          } else {
+            feedbackContainer.classList.add(
+              'border-[var(--color-danger-200)]',
+              'bg-[var(--color-danger-500)]/10',
+              'text-[var(--color-danger-700)]',
+            );
+          }
+        };
+
+        const showFeedback = (type, message) => {
+          if (!feedbackModal || !feedbackMessage) {
+            return;
+          }
+          feedbackMessage.textContent = message;
+          applyFeedbackStyles(type);
+          toggleModalVisibility(feedbackModal, true, feedbackClose);
+        };
+
+        const closeFeedback = () => {
+          toggleModalVisibility(feedbackModal, false);
+          if (lastFeedbackTrigger && typeof lastFeedbackTrigger.focus === 'function') {
+            lastFeedbackTrigger.focus({ preventScroll: true });
+          }
+          lastFeedbackTrigger = null;
+        };
+
+        const buildCheckinUrl = (inscricaoId) => {
+          const template = checkinRoot.dataset.checkinUrlTemplate || '';
+          if (!template) {
+            return null;
+          }
+          return template.replace(/\/0\/checkin\/$/, `/${inscricaoId}/checkin/`);
+        };
+
+        const parseInscricaoId = (codigo) => {
+          const match = typeof codigo === 'string' ? codigo.match(/inscricao:(\d+):/) : null;
+          return match ? match[1] : null;
+        };
+
+        const performCheckin = async (url, codigo) => {
+          const csrfToken = getCsrfToken();
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              body: new URLSearchParams({ codigo }),
+            });
+            if (!response.ok) {
+              const text = (await response.text()).trim();
+              throw new Error(text || gettext('Não foi possível realizar o check-in.'));
+            }
+            let message = gettext('Check-in confirmado com sucesso.');
+            try {
+              const data = await response.json();
+              if (data && typeof data.message === 'string' && data.message.trim()) {
+                message = data.message;
+              }
+            } catch (error) {
+              // Ignora erros de parsing do JSON
+            }
+            showFeedback('success', message);
+            window.setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } catch (error) {
+            const fallbackMessage = gettext('Não foi possível realizar o check-in.');
+            showFeedback('error', error instanceof Error && error.message ? error.message : fallbackMessage);
+          }
+        };
+
+        const handleScanSuccess = async (decodedText) => {
+          await stopScanner();
+          toggleModalVisibility(scannerModal, false);
+          const inscricaoId = parseInscricaoId(decodedText);
+          if (!inscricaoId) {
+            lastFeedbackTrigger = scanButton;
+            showFeedback('error', gettext('Código de check-in inválido.'));
+            return;
+          }
+          const url = buildCheckinUrl(inscricaoId);
+          if (!url) {
+            lastFeedbackTrigger = scanButton;
+            showFeedback('error', gettext('Não foi possível determinar o endpoint de check-in.'));
+            return;
+          }
+          lastFeedbackTrigger = scanButton;
+          await performCheckin(url, decodedText);
+        };
+
+        const startScanner = async () => {
+          const scanner = ensureScanner();
+          if (!scanner) {
+            lastFeedbackTrigger = scanButton;
+            showFeedback('error', gettext('Leitor de QR Code indisponível.'));
+            return;
+          }
+          lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          toggleModalVisibility(scannerModal, true, scannerClose);
+          resetScannerView();
+          try {
+            await scanner.start(
+              { facingMode: 'environment' },
+              { fps: 10, qrbox: 250 },
+              handleScanSuccess,
+              () => {}
+            );
+            scannerActive = true;
+          } catch (error) {
+            console.error('Não foi possível iniciar o leitor de QR Code.', error);
+            toggleModalVisibility(scannerModal, false);
+            lastFeedbackTrigger = scanButton;
+            showFeedback('error', gettext('Não foi possível iniciar a câmera para leitura do QR Code.'));
+          }
+        };
+
+        scanButton?.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          startScanner();
+        });
+
+        scannerClose?.addEventListener('click', (event) => {
+          event.preventDefault();
+          closeScanner();
+        });
+
+        scannerModal?.addEventListener('click', (event) => {
+          if (event.target === scannerModal) {
+            closeScanner();
+          }
+        });
+
+        feedbackClose?.addEventListener('click', (event) => {
+          event.preventDefault();
+          closeFeedback();
+        });
+
+        feedbackModal?.addEventListener('click', (event) => {
+          if (event.target === feedbackModal) {
+            closeFeedback();
+          }
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          if (scannerModal && !scannerModal.classList.contains('hidden')) {
+            event.preventDefault();
+            closeScanner();
+            return;
+          }
+          if (feedbackModal && !feedbackModal.classList.contains('hidden')) {
+            event.preventDefault();
+            closeFeedback();
+          }
+        });
+      }
+
       const portfolioRoots = document.querySelectorAll('[data-portfolio-root]');
       portfolioRoots.forEach((root) => {
         const eventId = root.getAttribute('data-event-id') || 'evento';

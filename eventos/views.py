@@ -106,6 +106,23 @@ def _configure_portfolio_form_fields(form: EventoMediaForm) -> None:
         descricao_field.help_text = _("Breve descrição do portfólio")
 
 
+def _resolve_participante_nome(inscricao: InscricaoEvento) -> str:
+    user = getattr(inscricao, "user", None)
+    if not user:
+        return "-"
+    for candidate in (
+        getattr(user, "contato", None),
+        getattr(user, "display_name", None),
+        getattr(user, "get_full_name", None),
+        getattr(user, "username", None),
+    ):
+        if callable(candidate):
+            candidate = candidate()
+        if candidate:
+            return str(candidate).strip()
+    return "-"
+
+
 def _usuario_eh_coordenador_do_evento(user, evento: Evento) -> bool:
     if evento.nucleo_id is None:
         return False
@@ -844,6 +861,21 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         ):
             minhas_inscricoes = [minha_inscricao]
 
+        checkins_realizados = list(
+            InscricaoEvento.objects.filter(
+                evento=evento,
+                status="confirmada",
+                deleted=False,
+                check_in_realizado_em__isnull=False,
+            )
+            .select_related("user")
+            .order_by("-check_in_realizado_em")
+        )
+        for inscricao_checkin in checkins_realizados:
+            inscricao_checkin.participante_nome = _resolve_participante_nome(
+                inscricao_checkin
+            )
+
         portfolio_filter_form = EventoPortfolioFilterForm(self.request.GET or None)
         portfolio_query = ""
         if portfolio_filter_form.is_valid():
@@ -944,6 +976,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "inscricoes_confirmadas": inscricoes_confirmadas,
                 "inscricoes_financeiro": inscricoes_financeiro,
                 "minhas_inscricoes": minhas_inscricoes,
+                "checkins_realizados": checkins_realizados,
                 "pode_editar_evento": pode_editar_evento,
                 "pode_excluir_evento": pode_excluir_evento,
                 "pode_gerenciar_inscricoes": pode_gerenciar_inscricoes,
