@@ -294,61 +294,6 @@
         {% endif %}
 
         {% if pode_ver_inscritos %}
-          <article
-            class="card"
-            data-checkin-root
-            data-checkin-url-template="{% url 'eventos:inscricao_checkin' 0 %}"
-          >
-            <details class="group">
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
-                    {% lucide 'shield-check' class='h-6 w-6' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h2 class="text-lg font-semibold">{% trans "Check-ins" %}</h2>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe as presenças confirmadas e realize novos check-ins." %}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm p-2"
-                    data-checkin-scan-button
-                    aria-label="{% trans 'Ler QR Code de check-in' %}"
-                  >
-                    {% lucide 'scan' class='h-4 w-4' aria_hidden='true' %}
-                  </button>
-                  <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
-                    {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-                  </span>
-                </div>
-              </summary>
-              <div class="card-body space-y-4">
-                <p class="text-sm text-[var(--text-secondary)]">{% trans "Use o leitor de QR Code para registrar a presença dos participantes." %}</p>
-                <section class="space-y-3" data-checkin-list>
-                  {% if checkins_realizados %}
-                    <ul class="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" role="list">
-                      {% for checkin in checkins_realizados %}
-                        <li class="flex items-start justify-between gap-4 px-4 py-3" data-checkin-item>
-                          <div class="space-y-0.5">
-                            <p class="font-medium text-[var(--text-primary)]">{{ checkin.participante_nome }}</p>
-                            <p class="text-xs text-[var(--text-secondary)]">@{{ checkin.user.username }}</p>
-                          </div>
-                          <time datetime="{{ checkin.check_in_realizado_em|date:'c' }}" class="text-sm text-[var(--text-secondary)]">
-                            {{ checkin.check_in_realizado_em|date:'SHORT_DATETIME_FORMAT' }}
-                          </time>
-                        </li>
-                      {% endfor %}
-                    </ul>
-                  {% else %}
-                    <p class="text-sm text-[var(--text-secondary)]" data-checkin-empty>{% trans "Nenhum check-in realizado até o momento." %}</p>
-                  {% endif %}
-                </section>
-              </div>
-            </details>
-          </article>
-
           <article class="card">
             <details
               class="group"
@@ -413,6 +358,61 @@
                   >
                     {% trans 'Carregando inscritos...' %}
                   </div>
+                </section>
+              </div>
+            </details>
+          </article>
+
+          <article
+            class="card"
+            data-checkin-root
+            data-checkin-url-template="{% url 'eventos:inscricao_checkin' 0 %}"
+          >
+            <details class="group">
+              <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+                    {% lucide 'shield-check' class='h-6 w-6' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-semibold">{% trans "Check-ins" %}</h2>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe as presenças confirmadas e realize novos check-ins." %}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm p-2"
+                    data-checkin-scan-button
+                    aria-label="{% trans 'Ler QR Code de check-in' %}"
+                  >
+                    {% lucide 'scan' class='h-4 w-4' aria_hidden='true' %}
+                  </button>
+                  <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+                    {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+                  </span>
+                </div>
+              </summary>
+              <div class="card-body space-y-4">
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Use o leitor de QR Code para registrar a presença dos participantes." %}</p>
+                <section class="space-y-3" data-checkin-list>
+                  {% if checkins_realizados %}
+                    <ul class="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" role="list">
+                      {% for checkin in checkins_realizados %}
+                        <li class="flex items-start justify-between gap-4 px-4 py-3" data-checkin-item>
+                          <div class="space-y-0.5">
+                            <p class="font-medium text-[var(--text-primary)]">{{ checkin.participante_nome }}</p>
+                            <p class="text-xs text-[var(--text-secondary)]">@{{ checkin.user.username }}</p>
+                          </div>
+                          <time datetime="{{ checkin.check_in_realizado_em|date:'c' }}" class="text-sm text-[var(--text-secondary)]">
+                            {{ checkin.check_in_realizado_em|date:'SHORT_DATETIME_FORMAT' }}
+                          </time>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <p class="text-sm text-[var(--text-secondary)]" data-checkin-empty>{% trans "Nenhum check-in realizado até o momento." %}</p>
+                  {% endif %}
                 </section>
               </div>
             </details>
