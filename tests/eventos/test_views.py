@@ -5,6 +5,7 @@ from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.timezone import make_aware
 
 from accounts.models import User, UserType
@@ -144,6 +145,30 @@ def test_evento_detail_admin_sees_edit_button(evento, client, usuario_logado):
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert reverse("eventos:evento_editar", args=[evento.pk]) in response.content.decode()
+
+
+def test_evento_detail_exibe_checkins_para_admin(evento, client, usuario_logado, organizacao):
+    participante = User.objects.create_user(
+        username="participante-checkin",
+        email="participante@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.NUCLEADO,
+    )
+    InscricaoEvento.objects.create(
+        user=participante,
+        evento=evento,
+        status="confirmada",
+        check_in_realizado_em=timezone.now(),
+        data_confirmacao=timezone.now(),
+    )
+
+    response = client.get(reverse("eventos:evento_detalhe", args=[evento.pk]))
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert "Check-ins" in content
+    assert "participante-checkin" in content
 
 
 def test_evento_detail_non_admin_hides_edit_button(evento, client, usuario_comum):
