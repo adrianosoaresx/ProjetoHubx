@@ -4,11 +4,10 @@
   data-associados-carousel
   data-section="{{ section }}"
   data-fetch-url="{{ fetch_url }}"
-  data-current-page="{{ page.number }}"
-  data-total-pages="{{ page.paginator.num_pages }}"
+  data-current-slide="1"
+  data-backend-page="{{ page.number }}"
+  data-backend-total-pages="{{ page.paginator.num_pages }}"
   data-search-term="{{ search_term }}"
-  data-status-template="{% blocktrans %}Página __page__ de __total__{% endblocktrans %}"
-  data-pagination-template="{% blocktrans %}Ir para página __page__{% endblocktrans %}"
 >
   <div class="relative">
     <div class="overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" data-carousel-viewport>
@@ -16,47 +15,25 @@
         {% include 'associados/_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message %}
       </div>
     </div>
-    {% if page.paginator.count > 0 and page.paginator.num_pages > 1 %}
-      <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)] to-transparent lg:block"></div>
-      <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)] to-transparent lg:block"></div>
+    {% if page.paginator.count > 0 %}
+      <button
+        type="button"
+        class="group absolute left-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-[var(--bg-elevated)]/90 p-2 text-[var(--text-primary)] shadow-lg backdrop-blur transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+        data-carousel-prev
+        aria-label="{% trans 'Anterior' %}"
+      >
+        {% lucide 'chevron-left' class='h-5 w-5' aria_hidden='true' %}
+      </button>
+      <button
+        type="button"
+        class="group absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-[var(--bg-elevated)]/90 p-2 text-[var(--text-primary)] shadow-lg backdrop-blur transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+        data-carousel-next
+        aria-label="{% trans 'Próximo' %}"
+      >
+        {% lucide 'chevron-right' class='h-5 w-5' aria_hidden='true' %}
+      </button>
+      <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
     {% endif %}
   </div>
-
-  {% if page.paginator.count > 0 %}
-    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          data-carousel-prev
-          aria-label="{% trans 'Anterior' %}"
-          {% if page.number == 1 %}disabled{% endif %}
-        >
-          {% lucide 'chevron-left' class='h-4 w-4' aria_hidden='true' %}
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          data-carousel-next
-          aria-label="{% trans 'Próximo' %}"
-          {% if page.number == page.paginator.num_pages %}disabled{% endif %}
-        >
-          {% lucide 'chevron-right' class='h-4 w-4' aria_hidden='true' %}
-        </button>
-        <span class="text-sm text-[var(--text-secondary)]" data-carousel-status>
-          {% blocktrans with page=page.number total=page.paginator.num_pages %}Página {{ page }} de {{ total }}{% endblocktrans %}
-        </span>
-      </div>
-      <div class="flex flex-wrap items-center gap-2" data-carousel-pagination>
-        {% for page_number in page.paginator.page_range %}
-          <button
-            type="button"
-            class="h-2.5 w-2.5 rounded-full border border-[var(--color-primary-200)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary-500)] {% if page_number == page.number %}bg-[var(--color-primary-500)] border-[var(--color-primary-500)]{% endif %}"
-            data-carousel-page-target="{{ page_number }}"
-            aria-label="{% blocktrans with number=page_number %}Ir para página {{ number }}{% endblocktrans %}"
-          ></button>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
 </div>

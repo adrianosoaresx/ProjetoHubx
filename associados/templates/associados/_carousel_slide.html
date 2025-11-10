@@ -1,8 +1,9 @@
 {% load i18n %}
-<div class="w-full flex-shrink-0" data-carousel-page="{{ page_number }}">
-  {% if usuarios %}
-    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="list">
-      {% for user in usuarios %}
+{% if usuarios %}
+  {% for user in usuarios %}
+    {% if forloop.counter0|divisibleby:2 %}
+      <div class="grid min-h-full w-full min-w-full flex-shrink-0 grid-cols-2 gap-6 p-4 sm:p-6" role="list" data-carousel-page="{{ page_number }}">
+    {% endif %}
         <div
           role="listitem"
           class="h-full"
@@ -12,11 +13,17 @@
         >
           {% include '_components/card_usuario.html' with user=user %}
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
+        {% if forloop.last and not forloop.counter|divisibleby:2 %}
+          <div class="h-full opacity-0 pointer-events-none" aria-hidden="true"></div>
+        {% endif %}
+    {% if forloop.counter|divisibleby:2 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
     <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
       <p class="text-sm text-[var(--text-secondary)] italic">{{ empty_message|default:_('Nenhum usuário encontrado.') }}</p>
     </div>
-  {% endif %}
-</div>
+  </div>
+{% endif %}
