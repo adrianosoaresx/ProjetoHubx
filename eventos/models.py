@@ -2,6 +2,7 @@ from __future__ import annotations
 
 # ruff: noqa: I001
 
+import json
 import logging
 import uuid
 from decimal import Decimal
@@ -161,8 +162,51 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
             )
 
     def gerar_qrcode(self) -> None:
-        """Gera um QRCode único e salva no armazenamento padrão."""
-        data = f"inscricao:{self.pk}:{int(self.created_at.timestamp())}"
+        """Gera um QRCode único com detalhes da inscrição e salva no armazenamento padrão."""
+
+        def _resolve_nome_usuario() -> str:
+            if not getattr(self, "user", None):
+                return ""
+            for candidate in (
+                getattr(self.user, "contato", None),
+                getattr(self.user, "display_name", None),
+                getattr(self.user, "get_full_name", None),
+                getattr(self.user, "username", None),
+            ):
+                if callable(candidate):
+                    candidate = candidate()
+                if candidate:
+                    return str(candidate).strip()
+            return ""
+
+        def _format_datetime(value):
+            if not value:
+                return None
+            if timezone.is_naive(value):
+                return value.isoformat()
+            return timezone.localtime(value).isoformat()
+
+        evento = getattr(self, "evento", None)
+        user = getattr(self, "user", None)
+        valor_referencia = self.valor_pago
+        if valor_referencia is None:
+            valor_referencia = self.get_valor_evento()
+
+        payload = {
+            "inscricao_id": str(self.pk) if self.pk else None,
+            "evento_id": str(self.evento_id) if self.evento_id else None,
+            "evento_titulo": getattr(evento, "titulo", ""),
+            "evento_data_inicio": _format_datetime(getattr(evento, "data_inicio", None)),
+            "evento_data_fim": _format_datetime(getattr(evento, "data_fim", None)),
+            "evento_local": getattr(evento, "local", ""),
+            "usuario_id": self.user_id,
+            "usuario_nome": _resolve_nome_usuario(),
+            "usuario_email": getattr(user, "email", "") if user else "",
+            "usuario_documento": getattr(user, "cpf", "") or getattr(user, "cnpj", ""),
+            "valor_pago": str(valor_referencia) if valor_referencia is not None else None,
+        }
+
+        data = json.dumps(payload, cls=DjangoJSONEncoder, ensure_ascii=False)
         img = qrcode.make(data)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
