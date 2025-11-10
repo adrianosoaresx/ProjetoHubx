@@ -86,7 +86,7 @@
         </span>
       </summary>
       <div class="card-body">
-        {% include 'associados/_grid.html' with usuarios=associados_sem_nucleo empty_message=_('Nenhum associado sem núcleo encontrado.') %}
+        {% include 'associados/_carousel.html' with page=associados_sem_nucleo_page section='sem_nucleo' empty_message=associados_section_empty_messages.sem_nucleo fetch_url=associados_fetch_url search_term=search_term %}
       </div>
     </details>
 
@@ -112,7 +112,7 @@
         </span>
       </summary>
       <div class="card-body">
-        {% include 'associados/_grid.html' with usuarios=associados_nucleados empty_message=_('Nenhum associado nucleado encontrado.') %}
+        {% include 'associados/_carousel.html' with page=associados_nucleados_page section='nucleados' empty_message=associados_section_empty_messages.nucleados fetch_url=associados_fetch_url search_term=search_term %}
       </div>
     </details>
 
@@ -138,7 +138,7 @@
         </span>
       </summary>
       <div class="card-body">
-        {% include 'associados/_grid.html' with usuarios=associados_consultores empty_message=_('Nenhum consultor encontrado.') %}
+        {% include 'associados/_carousel.html' with page=associados_consultores_page section='consultores' empty_message=associados_section_empty_messages.consultores fetch_url=associados_fetch_url search_term=search_term %}
       </div>
     </details>
 
@@ -164,7 +164,7 @@
         </span>
       </summary>
       <div class="card-body">
-        {% include 'associados/_grid.html' with usuarios=associados_coordenadores empty_message=_('Nenhum coordenador encontrado.') %}
+        {% include 'associados/_carousel.html' with page=associados_coordenadores_page section='coordenadores' empty_message=associados_section_empty_messages.coordenadores fetch_url=associados_fetch_url search_term=search_term %}
       </div>
     </details>
   </div>
@@ -175,184 +175,192 @@
   {{ block.super }}
   <script>
     (function () {
-      const highlightClasses = [
-        'ring-2',
-        'ring-offset-2',
-        'ring-[var(--color-primary-500)]',
-        'ring-offset-[var(--bg-primary)]',
-        'transition-shadow',
-      ];
-
-      function normalizeTerm(value) {
-        return value
-          ? value
-              .toString()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .toLowerCase()
-          : '';
+      function formatTemplate(template, values) {
+        return (template || '').replace(/__page__/g, values.page).replace(/__total__/g, values.total);
       }
 
-      function setFeedbackMessage(feedbackEl, message) {
-        if (!feedbackEl) {
-          return;
-        }
-        if (message) {
-          feedbackEl.textContent = message;
-          feedbackEl.hidden = false;
-        } else {
-          feedbackEl.textContent = '';
-          feedbackEl.hidden = true;
-        }
-      }
+      function initCarousel(root) {
+        const track = root.querySelector('[data-carousel-track]');
+        const prev = root.querySelector('[data-carousel-prev]');
+        const next = root.querySelector('[data-carousel-next]');
+        const status = root.querySelector('[data-carousel-status]');
+        const pagination = root.querySelector('[data-carousel-pagination]');
+        const fetchUrl = root.dataset.fetchUrl || '';
+        const section = root.dataset.section || '';
+        const searchTerm = root.dataset.searchTerm || '';
+        const statusTemplate = root.dataset.statusTemplate || '';
+        const paginationTemplate = root.dataset.paginationTemplate || '';
 
-      document.addEventListener('DOMContentLoaded', function () {
-        const form = document.querySelector('[data-associados-search-form]');
-        const searchCard = document.querySelector('[data-associados-search-card]');
-        if (!form) {
+        if (!track) {
           return;
         }
 
-        const input = form.querySelector('[data-associados-search-input]');
-        const feedback = form.parentElement.querySelector('[data-associados-search-feedback]');
-        const cards = Array.from(document.querySelectorAll('[data-associado-card]'));
-        const sections = Array.from(document.querySelectorAll('[data-associados-section]'));
+        const cache = new Map();
+        track.querySelectorAll('[data-carousel-page]').forEach((pageEl) => {
+          const pageNumber = parseInt(pageEl.dataset.carouselPage || '1', 10);
+          cache.set(pageNumber, pageEl);
+        });
 
-        function clearHighlights() {
-          cards.forEach((card) => {
-            const article = card.querySelector('article');
-            if (article) {
-              highlightClasses.forEach((cls) => article.classList.remove(cls));
-              article.removeAttribute('data-associado-highlight');
-            }
-          });
+        let totalPages = Math.max(parseInt(root.dataset.totalPages || '1', 10), 1);
+        let currentPage = Math.max(parseInt(root.dataset.currentPage || '1', 10), 1);
+        let isLoading = false;
+
+        function setTransform(page) {
+          track.style.transform = `translateX(-${(page - 1) * 100}%)`;
         }
 
-        function highlightCard(card) {
-          const article = card.querySelector('article');
-          if (!article) {
+        function updateStatus() {
+          if (!status) {
             return;
           }
-          highlightClasses.forEach((cls) => article.classList.add(cls));
-          article.setAttribute('data-associado-highlight', 'true');
-
-          window.requestAnimationFrame(() => {
-            article.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            const focusable = article.querySelector('a');
-            if (focusable) {
-              focusable.focus({ preventScroll: true });
-            }
+          status.textContent = formatTemplate(statusTemplate, {
+            page: currentPage,
+            total: totalPages,
           });
         }
 
-        function openSectionFor(card) {
-          const section = card.closest('details');
-          if (!section) {
-            return null;
+        function updateButtons() {
+          if (prev) {
+            prev.disabled = currentPage <= 1 || isLoading;
           }
-          sections.forEach((detail) => {
-            if (detail === section) {
-              detail.open = true;
+          if (next) {
+            next.disabled = currentPage >= totalPages || isLoading;
+          }
+        }
+
+        function updatePagination() {
+          if (!pagination) {
+            return;
+          }
+          const dots = pagination.querySelectorAll('[data-carousel-page-target]');
+          if (dots.length !== totalPages) {
+            pagination.innerHTML = '';
+            for (let index = 1; index <= totalPages; index += 1) {
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.dataset.carouselPageTarget = String(index);
+              button.className =
+                'h-2.5 w-2.5 rounded-full border border-[var(--color-primary-200)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary-500)]';
+              if (paginationTemplate) {
+                button.setAttribute('aria-label', formatTemplate(paginationTemplate, {
+                  page: index,
+                  total: totalPages,
+                }));
+              }
+              pagination.appendChild(button);
+            }
+          }
+
+          pagination.querySelectorAll('[data-carousel-page-target]').forEach((btn) => {
+            const pageNumber = parseInt(btn.dataset.carouselPageTarget || '1', 10);
+            if (pageNumber === currentPage) {
+              btn.classList.add('bg-[var(--color-primary-500)]', 'border-[var(--color-primary-500)]');
             } else {
-              detail.open = false;
+              btn.classList.remove('bg-[var(--color-primary-500)]', 'border-[var(--color-primary-500)]');
             }
           });
-          return section;
         }
 
-        function formatMessage(template, value) {
-          if (!template) {
-            return '';
+        async function ensurePage(page) {
+          if (cache.has(page) || !fetchUrl) {
+            return cache.get(page) || null;
           }
-          return template.replace('__term__', value);
+          isLoading = true;
+          updateButtons();
+          try {
+            const url = new URL(fetchUrl, window.location.origin);
+            url.searchParams.set('section', section);
+            url.searchParams.set('page', String(page));
+            if (searchTerm) {
+              url.searchParams.set('q', searchTerm);
+            }
+            const response = await fetch(url.toString(), {
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (!response.ok) {
+              throw new Error('Request failed');
+            }
+            const payload = await response.json();
+            totalPages = Math.max(parseInt(String(payload.total_pages || totalPages), 10) || totalPages, 1);
+            root.dataset.totalPages = String(totalPages);
+
+            const template = document.createElement('template');
+            template.innerHTML = payload.html || '';
+            const pageElement = template.content.firstElementChild;
+            if (pageElement) {
+              track.appendChild(pageElement);
+              cache.set(page, pageElement);
+              updatePagination();
+            }
+            return pageElement;
+          } finally {
+            isLoading = false;
+            updateButtons();
+          }
         }
 
-        function performSearch(term, options = {}) {
-          const trimmedTerm = term.trim();
-          if (!trimmedTerm) {
-            clearHighlights();
-            if (searchCard && !searchCard.open) {
-              searchCard.open = true;
-            }
-            if (options.skipEmptyMessage) {
-              setFeedbackMessage(feedback, '');
-            } else {
-              setFeedbackMessage(feedback, form.dataset.feedbackEmpty || '');
-            }
+        async function goTo(page) {
+          const targetPage = Math.min(Math.max(page, 1), totalPages);
+          if (targetPage === currentPage) {
             return;
           }
-
-          const normalizedSearch = normalizeTerm(trimmedTerm);
-          if (!normalizedSearch) {
-            clearHighlights();
-            if (searchCard && !searchCard.open) {
-              searchCard.open = true;
-            }
-            setFeedbackMessage(feedback, form.dataset.feedbackEmpty || '');
+          let pageEl = null;
+          try {
+            pageEl = await ensurePage(targetPage);
+          } catch (error) {
+            console.error(error);
             return;
           }
+          if (!pageEl && totalPages < targetPage) {
+            return;
+          }
+          currentPage = targetPage;
+          root.dataset.currentPage = String(currentPage);
+          setTransform(currentPage);
+          updateButtons();
+          updatePagination();
+          updateStatus();
+        }
 
-          const match = cards.find((card) => {
-            const cardValue = normalizeTerm(card.dataset.associadoSearch || '');
-            return cardValue.includes(normalizedSearch);
+        if (prev) {
+          prev.addEventListener('click', () => {
+            if (!isLoading) {
+              goTo(currentPage - 1);
+            }
           });
+        }
 
-          if (match) {
-            clearHighlights();
-            if (searchCard && !searchCard.open) {
-              searchCard.open = true;
+        if (next) {
+          next.addEventListener('click', () => {
+            if (!isLoading) {
+              goTo(currentPage + 1);
             }
-            openSectionFor(match);
-            highlightCard(match);
-            const label = match.dataset.associadoLabel || trimmedTerm;
-            setFeedbackMessage(
-              feedback,
-              formatMessage(form.dataset.feedbackFoundTemplate, label) || ''
-            );
-            return;
-          }
-
-          clearHighlights();
-          if (searchCard && !searchCard.open) {
-            searchCard.open = true;
-          }
-          setFeedbackMessage(
-            feedback,
-            formatMessage(form.dataset.feedbackNotFoundTemplate, trimmedTerm) || ''
-          );
+          });
         }
 
-        form.addEventListener('submit', function (event) {
-          event.preventDefault();
-          performSearch(input.value || '');
-        });
-
-        input.addEventListener('input', function () {
-          if (!input.value.trim()) {
-            clearHighlights();
-            setFeedbackMessage(feedback, '');
-          }
-        });
-
-        input.addEventListener('search', function () {
-          if (!input.value.trim()) {
-            clearHighlights();
-            setFeedbackMessage(feedback, '');
-          }
-        });
-
-        input.addEventListener('keydown', function (event) {
-          if (event.key === 'Escape') {
-            input.value = '';
-            clearHighlights();
-            setFeedbackMessage(feedback, '');
-          }
-        });
-
-        const initialTerm = form.dataset.initialSearchTerm || '';
-        if (initialTerm.trim()) {
-          performSearch(initialTerm, { skipEmptyMessage: true });
+        if (pagination) {
+          pagination.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-carousel-page-target]');
+            if (!target || target.disabled) {
+              return;
+            }
+            const pageNumber = parseInt(target.dataset.carouselPageTarget || '1', 10);
+            if (!Number.isNaN(pageNumber)) {
+              goTo(pageNumber);
+            }
+          });
         }
+
+        setTransform(currentPage);
+        updateButtons();
+        updatePagination();
+        updateStatus();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document
+          .querySelectorAll('[data-associados-carousel]')
+          .forEach((element) => initCarousel(element));
       });
     })();
   </script>

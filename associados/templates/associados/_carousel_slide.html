@@ -1,0 +1,22 @@
+{% load i18n %}
+<div class="w-full flex-shrink-0" data-carousel-page="{{ page_number }}">
+  {% if usuarios %}
+    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="list">
+      {% for user in usuarios %}
+        <div
+          role="listitem"
+          class="h-full"
+          data-associado-card
+          data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
+          data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
+        >
+          {% include '_components/card_usuario.html' with user=user %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{{ empty_message|default:_('Nenhum usuário encontrado.') }}</p>
+    </div>
+  {% endif %}
+</div>

@@ -6,6 +6,11 @@ app_name = "associados"
 
 urlpatterns = [
     path("", views.AssociadoListView.as_view(), name="associados_lista"),
+    path(
+        "api/section/",
+        views.AssociadoSectionListView.as_view(),
+        name="associados_lista_api",
+    ),
     path("promover/", views.AssociadoPromoverListView.as_view(), name="associados_promover"),
     path(
         "<int:pk>/promover/form/",

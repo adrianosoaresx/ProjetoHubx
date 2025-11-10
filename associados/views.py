@@ -8,14 +8,17 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Prefetch, Q
 from django.db.models.functions import Lower
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView, View
+from django.template.loader import render_to_string
 
 from accounts.models import UserType
 from core.permissions import AssociadosRequiredMixin, NoSuperadminMixin
@@ -141,11 +144,33 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         return super().get_success_url()
 
 
-class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateView):
-    template_name = "associados/associado_list.html"
+class AssociadoListDataMixin:
+    sections = ("sem_nucleo", "nucleados", "consultores", "coordenadores")
+    paginate_by = 6
+
+    def get_paginate_by(self) -> int:
+        try:
+            per_page = int(self.request.GET.get("per_page", self.paginate_by))
+        except (TypeError, ValueError):
+            return self.paginate_by
+        return per_page if per_page > 0 else self.paginate_by
 
     def get_search_term(self) -> str:
         return (self.request.GET.get("q") or "").strip()
+
+    def get_consultor_filter(self) -> Q:
+        return Q(user_type=UserType.CONSULTOR.value)
+
+    def get_coordenador_filter(self) -> Q:
+        return (
+            Q(user_type=UserType.COORDENADOR.value)
+            | Q(is_coordenador=True)
+            | Q(
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
+        )
 
     def get_filtered_queryset(self):
         User = get_user_model()
@@ -165,6 +190,8 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateV
             )
             .select_related("organizacao", "nucleo")
             .prefetch_related("participacoes__nucleo", "nucleos_consultoria")
+            .annotate(_order=Lower("username"))
+            .order_by("_order", "id")
         )
 
         search_term = self.get_search_term()
@@ -173,7 +200,34 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateV
                 Q(username__icontains=search_term) | Q(contato__icontains=search_term)
             )
 
-        return queryset
+        return queryset.distinct()
+
+    def get_section_queryset(self, base_queryset, section: str):
+        if section == "sem_nucleo":
+            return base_queryset.filter(is_associado=True, nucleo__isnull=True)
+        if section == "nucleados":
+            return base_queryset.filter(is_associado=True, nucleo__isnull=False)
+        if section == "consultores":
+            return base_queryset.filter(self.get_consultor_filter())
+        if section == "coordenadores":
+            return base_queryset.filter(self.get_coordenador_filter())
+        raise ValueError(f"Unknown section '{section}'")
+
+    def get_section_page(self, base_queryset, section: str, *, page_number=None):
+        queryset = self.get_section_queryset(base_queryset, section)
+        paginator = Paginator(queryset, self.get_paginate_by())
+        number = page_number or self.request.GET.get(f"{section}_page") or 1
+        page_obj = paginator.get_page(number)
+        return page_obj, paginator
+
+    def get_empty_message(self, section: str) -> str:
+        messages = {
+            "sem_nucleo": _("Nenhum associado sem núcleo encontrado."),
+            "nucleados": _("Nenhum associado nucleado encontrado."),
+            "consultores": _("Nenhum consultor encontrado."),
+            "coordenadores": _("Nenhum coordenador encontrado."),
+        }
+        return messages.get(section, _("Nenhum usuário encontrado."))
 
     def get_totals(self) -> dict[str, int]:
         User = get_user_model()
@@ -187,17 +241,6 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateV
                 "total_coordenadores": 0,
             }
 
-        consultor_filter = Q(user_type=UserType.CONSULTOR.value)
-        coordenador_filter = (
-            Q(user_type=UserType.COORDENADOR.value)
-            | Q(is_coordenador=True)
-            | Q(
-                participacoes__papel="coordenador",
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
-            )
-        )
-
         return {
             "total_usuarios": User.objects.filter(organizacao=organizacao).count(),
             "total_associados": User.objects.filter(
@@ -207,59 +250,96 @@ class AssociadoListView(AssociadosPermissionMixin, LoginRequiredMixin, TemplateV
                 organizacao=organizacao, is_associado=True, nucleo__isnull=False
             ).count(),
             "total_consultores": User.objects.filter(organizacao=organizacao)
-            .filter(consultor_filter)
+            .filter(self.get_consultor_filter())
             .distinct()
             .count(),
             "total_coordenadores": User.objects.filter(organizacao=organizacao)
-            .filter(coordenador_filter)
+            .filter(self.get_coordenador_filter())
             .distinct()
             .count(),
         }
+
+
+class AssociadoListView(
+    AssociadosPermissionMixin,
+    LoginRequiredMixin,
+    AssociadoListDataMixin,
+    TemplateView,
+):
+    template_name = "associados/associado_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         base_queryset = self.get_filtered_queryset()
 
-        consultor_filter = Q(user_type=UserType.CONSULTOR.value)
-        coordenador_filter = (
-            Q(user_type=UserType.COORDENADOR.value)
-            | Q(is_coordenador=True)
-            | Q(
-                participacoes__papel="coordenador",
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
-            )
-        )
-
-        def prepare_queryset(queryset):
-            annotated = queryset.annotate(_order=Lower("username"))
-            return list(annotated.distinct().order_by("_order", "id"))
-
-        associados_sem_nucleo = prepare_queryset(
-            base_queryset.filter(is_associado=True, nucleo__isnull=True)
-        )
-        nucleados = prepare_queryset(
-            base_queryset.filter(is_associado=True, nucleo__isnull=False)
-        )
-        consultores = prepare_queryset(base_queryset.filter(consultor_filter))
-        coordenadores = prepare_queryset(base_queryset.filter(coordenador_filter))
+        section_pages: dict[str, dict[str, object]] = {}
+        for section in self.sections:
+            page_obj, paginator = self.get_section_page(base_queryset, section)
+            section_pages[section] = {
+                "page": page_obj,
+                "count": paginator.count,
+                "total_pages": paginator.num_pages,
+            }
 
         context.update(
             {
                 "search_term": self.get_search_term(),
-                "associados_sem_nucleo": associados_sem_nucleo,
-                "associados_sem_nucleo_count": len(associados_sem_nucleo),
-                "associados_nucleados": nucleados,
-                "associados_nucleados_count": len(nucleados),
-                "associados_consultores": consultores,
-                "associados_consultores_count": len(consultores),
-                "associados_coordenadores": coordenadores,
-                "associados_coordenadores_count": len(coordenadores),
+                "associados_fetch_url": reverse("associados:associados_lista_api"),
+                "associados_sem_nucleo_page": section_pages["sem_nucleo"]["page"],
+                "associados_sem_nucleo_count": section_pages["sem_nucleo"]["count"],
+                "associados_nucleados_page": section_pages["nucleados"]["page"],
+                "associados_nucleados_count": section_pages["nucleados"]["count"],
+                "associados_consultores_page": section_pages["consultores"]["page"],
+                "associados_consultores_count": section_pages["consultores"]["count"],
+                "associados_coordenadores_page": section_pages["coordenadores"]["page"],
+                "associados_coordenadores_count": section_pages["coordenadores"]["count"],
+                "associados_section_empty_messages": {
+                    section: self.get_empty_message(section)
+                    for section in self.sections
+                },
             }
         )
 
         context.update(self.get_totals())
         return context
+
+
+class AssociadoSectionListView(
+    AssociadosPermissionMixin,
+    LoginRequiredMixin,
+    AssociadoListDataMixin,
+    View,
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        section = request.GET.get("section")
+        if section not in self.sections:
+            return JsonResponse({"error": _("Seção inválida.")}, status=400)
+
+        base_queryset = self.get_filtered_queryset()
+        page_obj, paginator = self.get_section_page(
+            base_queryset, section, page_number=request.GET.get("page")
+        )
+
+        html = render_to_string(
+            "associados/_carousel_slide.html",
+            {
+                "usuarios": page_obj.object_list,
+                "page_number": page_obj.number,
+                "empty_message": self.get_empty_message(section),
+            },
+            request=request,
+        )
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "count": paginator.count,
+            }
+        )
 
 
 class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
