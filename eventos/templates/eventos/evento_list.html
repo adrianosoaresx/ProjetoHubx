@@ -47,32 +47,24 @@
                         {{ inscricao.evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }} · {{ inscricao.evento.local }}
                       </p>
                     </div>
-                    <details class="group rounded-lg border border-[var(--border)] bg-[var(--background-primary)]">
-                      <summary class="flex cursor-pointer items-center justify-between gap-4 rounded-lg px-3 py-2 text-left text-sm font-medium text-[var(--text-primary)] [&::-webkit-details-marker]:hidden">
-                        <span>{% trans "Minhas inscrições" %}</span>
-                        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
-                          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-                        </span>
-                      </summary>
-                      <div class="border-t border-[var(--border)] px-3 py-4">
-                        <dl class="grid grid-cols-1 gap-3 text-sm">
-                          <div class="flex flex-col gap-1">
-                            <dt class="text-[var(--text-secondary)]">{% trans "Valor pago" %}</dt>
-                            <dd class="font-medium text-[var(--text-primary)]">
-                              {% if inscricao.valor_exibicao %}
-                                {{ inscricao.valor_exibicao|localize }}
-                              {% else %}
-                                {% trans "Não informado" %}
-                              {% endif %}
-                            </dd>
-                          </div>
-                          <div class="flex flex-col gap-1">
-                            <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
-                            <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.get_status_display }}</dd>
-                          </div>
-                        </dl>
-                      </div>
-                    </details>
+                    <div class="rounded-lg border border-[var(--border)] bg-[var(--background-primary)] px-3 py-4">
+                      <dl class="grid grid-cols-1 gap-3 text-sm">
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "Valor pago" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">
+                            {% if inscricao.valor_exibicao %}
+                              {{ inscricao.valor_exibicao|localize }}
+                            {% else %}
+                              {% trans "Não informado" %}
+                            {% endif %}
+                          </dd>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.get_status_display }}</dd>
+                        </div>
+                      </dl>
+                    </div>
                   </div>
                 </section>
               {% endfor %}
