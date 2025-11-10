@@ -327,6 +327,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
                     status="confirmada",
                     deleted=False,
                     evento__status=Evento.Status.ATIVO,
+                    evento__deleted=False,
                 )
                 .select_related("evento", "user")
                 .order_by("evento__data_inicio", "evento__titulo")
