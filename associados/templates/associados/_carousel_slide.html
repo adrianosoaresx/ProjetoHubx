@@ -1,8 +1,8 @@
 {% load i18n %}
 {% if usuarios %}
   {% for user in usuarios %}
-    {% if forloop.counter0|divisibleby:2 %}
-      <div class="grid min-h-full w-full min-w-full flex-shrink-0 grid-cols-2 gap-6 p-4 sm:p-6" role="list" data-carousel-page="{{ page_number }}">
+    {% if forloop.counter0|divisibleby:3 %}
+      <div class="grid min-h-full w-full min-w-full flex-shrink-0 grid-cols-1 gap-6 p-4 sm:p-6 md:grid-cols-2 lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
     {% endif %}
         <div
           role="listitem"
@@ -13,10 +13,16 @@
         >
           {% include '_components/card_usuario.html' with user=user %}
         </div>
-        {% if forloop.last and not forloop.counter|divisibleby:2 %}
-          <div class="h-full opacity-0 pointer-events-none" aria-hidden="true"></div>
+        {% if forloop.last %}
+          {% if forloop.counter|divisibleby:3 %}
+          {% elif (forloop.counter|add:'1')|divisibleby:3 %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% else %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% endif %}
         {% endif %}
-    {% if forloop.counter|divisibleby:2 or forloop.last %}
+    {% if forloop.counter|divisibleby:3 or forloop.last %}
       </div>
     {% endif %}
   {% endfor %}
