@@ -2677,12 +2677,12 @@ body.sidebar-mobile-open .sidebar-backdrop {
   bottom: -2rem;
 }
 
-.bottom-0 {
-  bottom: 0px;
-}
-
 .left-0 {
   left: 0px;
+}
+
+.left-4 {
+  left: 1rem;
 }
 
 .left-6 {
@@ -3486,10 +3486,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   border-color: var(--border-secondary);
 }
 
-.border-\[var\(--border-subtle\)\] {
-  border-color: var(--border-subtle);
-}
-
 .border-\[var\(--color-danger-200\)\] {
   border-color: var(--color-danger-200);
 }
@@ -3537,10 +3533,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .bg-\[var\(--background-secondary\)\] {
   background-color: var(--background-secondary);
-}
-
-.bg-\[var\(--bg-elevated\)\] {
-  background-color: var(--bg-elevated);
 }
 
 .bg-\[var\(--bg-emphasis\)\] {
@@ -3648,6 +3640,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .bg-gradient-to-br {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+.bg-gradient-to-l {
+  background-image: linear-gradient(to left, var(--tw-gradient-stops));
 }
 
 .bg-gradient-to-r {
@@ -3972,10 +3968,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pb-10 {
   padding-bottom: 2.5rem;
-}
-
-.pb-16 {
-  padding-bottom: 4rem;
 }
 
 .pb-3 {
@@ -5789,6 +5781,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .lg\:-mt-24 {
     margin-top: -6rem;
+  }
+
+  .lg\:block {
+    display: block;
   }
 
   .lg\:max-h-\[420px\] {
