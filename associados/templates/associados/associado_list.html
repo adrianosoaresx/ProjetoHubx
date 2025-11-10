@@ -175,95 +175,55 @@
   {{ block.super }}
   <script>
     (function () {
-      function formatTemplate(template, values) {
-        return (template || '').replace(/__page__/g, values.page).replace(/__total__/g, values.total);
-      }
-
       function initCarousel(root) {
         const track = root.querySelector('[data-carousel-track]');
         const prev = root.querySelector('[data-carousel-prev]');
         const next = root.querySelector('[data-carousel-next]');
-        const status = root.querySelector('[data-carousel-status]');
-        const pagination = root.querySelector('[data-carousel-pagination]');
         const fetchUrl = root.dataset.fetchUrl || '';
         const section = root.dataset.section || '';
         const searchTerm = root.dataset.searchTerm || '';
-        const statusTemplate = root.dataset.statusTemplate || '';
-        const paginationTemplate = root.dataset.paginationTemplate || '';
 
         if (!track) {
           return;
         }
 
-        const cache = new Map();
-        track.querySelectorAll('[data-carousel-page]').forEach((pageEl) => {
-          const pageNumber = parseInt(pageEl.dataset.carouselPage || '1', 10);
-          cache.set(pageNumber, pageEl);
-        });
-
-        let totalPages = Math.max(parseInt(root.dataset.totalPages || '1', 10), 1);
-        let currentPage = Math.max(parseInt(root.dataset.currentPage || '1', 10), 1);
+        let currentSlide = Math.max(parseInt(root.dataset.currentSlide || '1', 10), 1);
+        let currentBackendPage = Math.max(parseInt(root.dataset.backendPage || '1', 10), 1);
+        let totalBackendPages = Math.max(parseInt(root.dataset.backendTotalPages || '1', 10), 1);
+        const loadedBackendPages = new Set();
+        loadedBackendPages.add(currentBackendPage);
         let isLoading = false;
 
-        function setTransform(page) {
-          track.style.transform = `translateX(-${(page - 1) * 100}%)`;
+        function getSlides() {
+          return Array.from(track.querySelectorAll('[data-carousel-page]'));
         }
 
-        function updateStatus() {
-          if (!status) {
+        function setTransform(slideIndex) {
+          const slides = getSlides();
+          if (!slides.length) {
+            track.style.transform = 'translateX(0)';
             return;
           }
-          status.textContent = formatTemplate(statusTemplate, {
-            page: currentPage,
-            total: totalPages,
-          });
+          const clampedIndex = Math.min(Math.max(slideIndex, 1), slides.length);
+          track.style.transform = `translateX(-${(clampedIndex - 1) * 100}%)`;
         }
 
         function updateButtons() {
+          const slides = getSlides();
+          const hasSlides = slides.length > 0;
           if (prev) {
-            prev.disabled = currentPage <= 1 || isLoading;
+            prev.disabled = !hasSlides || isLoading || currentSlide <= 1;
           }
           if (next) {
-            next.disabled = currentPage >= totalPages || isLoading;
+            const slidesCount = slides.length;
+            const reachedEnd = currentSlide >= slidesCount && currentBackendPage >= totalBackendPages;
+            next.disabled = !hasSlides || isLoading || reachedEnd;
           }
         }
 
-        function updatePagination() {
-          if (!pagination) {
-            return;
-          }
-          const dots = pagination.querySelectorAll('[data-carousel-page-target]');
-          if (dots.length !== totalPages) {
-            pagination.innerHTML = '';
-            for (let index = 1; index <= totalPages; index += 1) {
-              const button = document.createElement('button');
-              button.type = 'button';
-              button.dataset.carouselPageTarget = String(index);
-              button.className =
-                'h-2.5 w-2.5 rounded-full border border-[var(--color-primary-200)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary-500)]';
-              if (paginationTemplate) {
-                button.setAttribute('aria-label', formatTemplate(paginationTemplate, {
-                  page: index,
-                  total: totalPages,
-                }));
-              }
-              pagination.appendChild(button);
-            }
-          }
-
-          pagination.querySelectorAll('[data-carousel-page-target]').forEach((btn) => {
-            const pageNumber = parseInt(btn.dataset.carouselPageTarget || '1', 10);
-            if (pageNumber === currentPage) {
-              btn.classList.add('bg-[var(--color-primary-500)]', 'border-[var(--color-primary-500)]');
-            } else {
-              btn.classList.remove('bg-[var(--color-primary-500)]', 'border-[var(--color-primary-500)]');
-            }
-          });
-        }
-
-        async function ensurePage(page) {
-          if (cache.has(page) || !fetchUrl) {
-            return cache.get(page) || null;
+        async function ensureBackendPage(page) {
+          if (!fetchUrl || loadedBackendPages.has(page) || page > totalBackendPages) {
+            return [];
           }
           isLoading = true;
           updateButtons();
@@ -281,51 +241,73 @@
               throw new Error('Request failed');
             }
             const payload = await response.json();
-            totalPages = Math.max(parseInt(String(payload.total_pages || totalPages), 10) || totalPages, 1);
-            root.dataset.totalPages = String(totalPages);
-
+            const parsedTotal = parseInt(String(payload.total_pages || totalBackendPages), 10);
+            if (!Number.isNaN(parsedTotal)) {
+              totalBackendPages = Math.max(parsedTotal, 1);
+              root.dataset.backendTotalPages = String(totalBackendPages);
+            }
             const template = document.createElement('template');
             template.innerHTML = payload.html || '';
-            const pageElement = template.content.firstElementChild;
-            if (pageElement) {
-              track.appendChild(pageElement);
-              cache.set(page, pageElement);
-              updatePagination();
-            }
-            return pageElement;
+            const newSlides = Array.from(template.content.querySelectorAll('[data-carousel-page]'));
+            newSlides.forEach((slide) => {
+              slide.classList.add('flex-shrink-0');
+              track.appendChild(slide);
+            });
+            loadedBackendPages.add(page);
+            currentBackendPage = Math.max(currentBackendPage, page);
+            root.dataset.backendPage = String(currentBackendPage);
+            return newSlides;
+          } catch (error) {
+            console.error(error);
+            throw error;
           } finally {
             isLoading = false;
             updateButtons();
           }
         }
 
-        async function goTo(page) {
-          const targetPage = Math.min(Math.max(page, 1), totalPages);
-          if (targetPage === currentPage) {
+        async function goToSlide(targetIndex) {
+          if (isLoading) {
             return;
           }
-          let pageEl = null;
-          try {
-            pageEl = await ensurePage(targetPage);
-          } catch (error) {
-            console.error(error);
+          let desiredIndex = Math.max(targetIndex, 1);
+          let slides = getSlides();
+          if (!slides.length) {
             return;
           }
-          if (!pageEl && totalPages < targetPage) {
+          while (desiredIndex > slides.length) {
+            if (currentBackendPage >= totalBackendPages) {
+              desiredIndex = slides.length;
+              break;
+            }
+            try {
+              await ensureBackendPage(currentBackendPage + 1);
+            } catch (error) {
+              return;
+            }
+            slides = getSlides();
+            if (!slides.length) {
+              return;
+            }
+          }
+
+          slides = getSlides();
+          if (!slides.length) {
             return;
           }
-          currentPage = targetPage;
-          root.dataset.currentPage = String(currentPage);
-          setTransform(currentPage);
+
+          const maxIndex = slides.length;
+          desiredIndex = Math.min(desiredIndex, maxIndex);
+          currentSlide = desiredIndex;
+          root.dataset.currentSlide = String(currentSlide);
+          setTransform(currentSlide);
           updateButtons();
-          updatePagination();
-          updateStatus();
         }
 
         if (prev) {
           prev.addEventListener('click', () => {
             if (!isLoading) {
-              goTo(currentPage - 1);
+              goToSlide(currentSlide - 1);
             }
           });
         }
@@ -333,28 +315,13 @@
         if (next) {
           next.addEventListener('click', () => {
             if (!isLoading) {
-              goTo(currentPage + 1);
+              goToSlide(currentSlide + 1);
             }
           });
         }
 
-        if (pagination) {
-          pagination.addEventListener('click', (event) => {
-            const target = event.target.closest('[data-carousel-page-target]');
-            if (!target || target.disabled) {
-              return;
-            }
-            const pageNumber = parseInt(target.dataset.carouselPageTarget || '1', 10);
-            if (!Number.isNaN(pageNumber)) {
-              goTo(pageNumber);
-            }
-          });
-        }
-
-        setTransform(currentPage);
+        setTransform(currentSlide);
         updateButtons();
-        updatePagination();
-        updateStatus();
       }
 
       document.addEventListener('DOMContentLoaded', () => {
