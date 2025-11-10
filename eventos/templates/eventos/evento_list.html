@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n lucide_icons %}
+{% load i18n l10n lucide_icons %}
 
 {% block title %}{{ title|default:_('Eventos') }}{% endblock %}
 
@@ -8,7 +8,93 @@
 {% block content %}
 
   <div class="space-y-6">
-   
+
+    {% if user.is_authenticated and user.get_tipo_usuario == 'associado' %}
+      <article class="card">
+        <details class="group">
+          <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+                {% lucide 'qr-code' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h2 class="text-xl font-semibold">{% trans "Minhas inscrições" %}</h2>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Acesse seus ingressos e confira o QR Code para o check-in." %}</p>
+              </div>
+            </div>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:rotate-180">
+              {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="card-body space-y-4">
+            {% if minhas_inscricoes %}
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {% for inscricao in minhas_inscricoes %}
+                  <section class="flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 shadow-sm">
+                    {% if inscricao.qrcode_url %}
+                      <div class="flex flex-col items-center gap-2">
+                        <img
+                          src="{{ inscricao.qrcode_url }}"
+                          alt="{% trans 'QR Code da inscrição' %}"
+                          class="h-40 w-40 rounded-md border border-[var(--border)] bg-white p-2"
+                          loading="lazy"
+                        />
+                        <p class="text-xs text-[var(--text-secondary)]">{% trans "Apresente este QR Code para realizar o check-in." %}</p>
+                      </div>
+                    {% else %}
+                      <p class="text-sm text-[var(--text-secondary)]">{% trans "QR Code indisponível no momento." %}</p>
+                    {% endif %}
+                    <div class="space-y-4">
+                      <div class="space-y-1">
+                        <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ inscricao.evento.titulo }}</h3>
+                        <p class="text-sm text-[var(--text-secondary)]">
+                          {{ inscricao.evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }} · {{ inscricao.evento.local }}
+                        </p>
+                      </div>
+                      <dl class="grid grid-cols-1 gap-3 text-sm">
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "Participante" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">
+                            {{ inscricao.user.contato|default:inscricao.user.display_name|default:inscricao.user.get_full_name|default:inscricao.user.username }}
+                          </dd>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.user.email }}</dd>
+                        </div>
+                        {% if inscricao.user.cpf or inscricao.user.cnpj %}
+                          <div class="flex flex-col gap-1">
+                            <dt class="text-[var(--text-secondary)]">{% trans "Documento" %}</dt>
+                            <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.user.cpf|default:inscricao.user.cnpj }}</dd>
+                          </div>
+                        {% endif %}
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "Valor pago" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">
+                            {% if inscricao.valor_exibicao %}
+                              {{ inscricao.valor_exibicao|localize }}
+                            {% else %}
+                              {% trans "Não informado" %}
+                            {% endif %}
+                          </dd>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                          <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+                          <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.get_status_display }}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </section>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Você ainda não possui inscrições confirmadas em eventos ativos." %}</p>
+            {% endif %}
+          </div>
+        </details>
+      </article>
+    {% endif %}
+
     {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
       <details class="card group" data-eventos-section="ativos">
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">

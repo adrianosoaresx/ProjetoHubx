@@ -315,6 +315,33 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx.setdefault("card_template", "_components/card_evento.html")
         ctx.setdefault("item_context_name", "evento")
         ctx.setdefault("empty_message", _("Nenhum evento encontrado."))
+
+        minhas_inscricoes = []
+        if (
+            user.is_authenticated
+            and user.get_tipo_usuario == UserType.ASSOCIADO.value
+        ):
+            inscricoes_qs = (
+                InscricaoEvento.objects.filter(
+                    user=user,
+                    status="confirmada",
+                    deleted=False,
+                    evento__status=Evento.Status.ATIVO,
+                )
+                .select_related("evento", "user")
+                .order_by("evento__data_inicio", "evento__titulo")
+            )
+            minhas_inscricoes = list(inscricoes_qs)
+            for inscricao in minhas_inscricoes:
+                valor_exibicao = inscricao.valor_pago
+                if valor_exibicao is None:
+                    valor_exibicao = inscricao.get_valor_evento()
+                inscricao.valor_exibicao = valor_exibicao
+                if not inscricao.qrcode_url:
+                    inscricao.gerar_qrcode()
+                    inscricao.save(update_fields=["qrcode_url"])
+
+        ctx["minhas_inscricoes"] = minhas_inscricoes
         return ctx
 
 
