@@ -818,15 +818,35 @@
           toggleModalVisibility(scannerModal, true, scannerClose);
           resetScannerView();
           try {
-            await scanner.start(
-              { facingMode: 'environment' },
-              { fps: 10, qrbox: 250 },
-              handleScanSuccess,
-              () => {}
-            );
+            let cameraId = null;
+            try {
+              const cameras = await Html5Qrcode.getCameras();
+              if (!Array.isArray(cameras) || cameras.length === 0) {
+                await stopScanner();
+                toggleModalVisibility(scannerModal, false);
+                lastFeedbackTrigger = scanButton;
+                showFeedback('error', gettext('Nenhum dispositivo de câmera compatível foi encontrado.'));
+                return;
+              }
+              const preferredCamera = cameras.find((camera) => {
+                const label = typeof camera.label === 'string' ? camera.label.toLowerCase() : '';
+                return label.includes('back') || label.includes('traseira');
+              });
+              cameraId = (preferredCamera || cameras[0]).id;
+            } catch (cameraError) {
+              console.warn('Não foi possível obter a lista de câmeras disponíveis.', cameraError);
+            }
+
+            const startConfig = { fps: 10, qrbox: 250 };
+            if (cameraId) {
+              await scanner.start(cameraId, startConfig, handleScanSuccess, () => {});
+            } else {
+              await scanner.start({ facingMode: 'environment' }, startConfig, handleScanSuccess, () => {});
+            }
             scannerActive = true;
           } catch (error) {
             console.error('Não foi possível iniciar o leitor de QR Code.', error);
+            await stopScanner();
             toggleModalVisibility(scannerModal, false);
             lastFeedbackTrigger = scanButton;
             const baseMessage = gettext('Não foi possível iniciar a câmera para leitura do QR Code.');
