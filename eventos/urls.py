@@ -27,6 +27,11 @@ app_name = "eventos"
 
 urlpatterns = [
     path("lista/", views.EventoListView.as_view(), name="lista"),
+    path(
+        "lista/carousel/",
+        views.EventoListCarouselView.as_view(),
+        name="eventos_carousel_api",
+    ),
     path("", views.painel_eventos, name="painel"),
     path("ultimos-30/", views.calendario_cards_ultimos_30, name="calendario"),
     path("<int:ano>/<int:mes>/", views.calendario, name="calendario_mes"),

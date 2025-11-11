@@ -63,6 +63,8 @@ from .querysets import filter_eventos_por_usuario
 
 User = get_user_model()
 
+EVENTO_CAROUSEL_PAGE_SIZE = 6
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -189,6 +191,130 @@ def _get_nucleos_coordenacao_consultoria_ids(user) -> set[int]:
     return nucleo_ids
 
 
+def _resolve_planejamento_permissions(user):
+    tipo_usuario = _get_tipo_usuario(user)
+    can_view = tipo_usuario != UserType.ASSOCIADO.value
+    nucleo_ids_limit: set[int] | None = None
+    if can_view and tipo_usuario in {UserType.COORDENADOR.value, UserType.CONSULTOR.value}:
+        nucleo_ids_limit = _get_nucleos_coordenacao_consultoria_ids(user)
+    return can_view, nucleo_ids_limit
+
+
+def get_evento_base_queryset(request):
+    qs = (
+        Evento.objects.select_related("nucleo", "organizacao")
+        .prefetch_related("inscricoes")
+    )
+    qs = filter_eventos_por_usuario(qs, request.user)
+    q = request.GET.get("q", "").strip()
+    if q:
+        qs = qs.filter(
+            Q(titulo__icontains=q)
+            | Q(descricao__icontains=q)
+            | Q(nucleo__nome__icontains=q)
+        )
+    return qs
+
+
+def build_evento_carousel_sections(
+    request,
+    base_queryset,
+    *,
+    can_view_planejamento_cancelados: bool | None = None,
+    nucleo_ids_limit: set[int] | None = None,
+    section_pages: dict[str, Any] | None = None,
+    only_sections: set[str] | None = None,
+):
+    if section_pages is None:
+        section_pages = {}
+
+    if can_view_planejamento_cancelados is None or (
+        can_view_planejamento_cancelados and nucleo_ids_limit is None
+    ):
+        resolved_can_view, resolved_limit = _resolve_planejamento_permissions(
+            request.user
+        )
+        if can_view_planejamento_cancelados is None:
+            can_view_planejamento_cancelados = resolved_can_view
+        if nucleo_ids_limit is None:
+            nucleo_ids_limit = resolved_limit
+
+    def restringe_planejamento_cancelados(qs):
+        if not can_view_planejamento_cancelados:
+            return qs.none()
+        if nucleo_ids_limit is None:
+            return qs
+        if not nucleo_ids_limit:
+            return qs.none()
+        return qs.filter(nucleo_id__in=nucleo_ids_limit)
+
+    fetch_url = reverse("eventos:eventos_carousel_api")
+    search_term = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status") or ""
+    if status_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
+        status_filter = "todos"
+
+    annotated_base = base_queryset.annotate(
+        num_inscritos=Count("inscricoes", distinct=True)
+    )
+
+    sections_order = ["ativos", "realizados"]
+    if can_view_planejamento_cancelados:
+        sections_order.insert(1, "planejamento")
+
+    if only_sections is not None:
+        sections_order = [section for section in sections_order if section in only_sections]
+
+    sections: dict[str, dict[str, Any]] = {}
+
+    for section in sections_order:
+        if section == "ativos":
+            queryset = annotated_base.filter(status=Evento.Status.ATIVO).order_by(
+                "-data_inicio"
+            )
+            empty_message = _("Nenhum evento ativo encontrado.")
+            aria_label = _("Lista de eventos ativos")
+        elif section == "planejamento":
+            queryset = restringe_planejamento_cancelados(
+                annotated_base.filter(status=Evento.Status.PLANEJAMENTO)
+            ).order_by("data_inicio")
+            empty_message = _("Nenhum evento em planejamento encontrado.")
+            aria_label = _("Lista de eventos em planejamento")
+        elif section == "realizados":
+            queryset = annotated_base.filter(status=Evento.Status.CONCLUIDO).order_by(
+                "-data_inicio"
+            )
+            empty_message = _("Nenhum evento realizado encontrado.")
+            aria_label = _("Lista de eventos realizados")
+        else:
+            continue
+
+        paginator = Paginator(queryset, EVENTO_CAROUSEL_PAGE_SIZE)
+        page_number = section_pages.get(section) or 1
+        page_obj = paginator.get_page(page_number)
+
+        sections[section] = {
+            "section": section,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "total": paginator.count,
+            "total_pages": paginator.num_pages,
+            "empty_message": empty_message,
+            "aria_label": aria_label,
+            "fetch_url": fetch_url,
+            "search_term": search_term,
+            "status_filter": status_filter,
+        }
+
+    return {
+        "sections": sections,
+        "fetch_url": fetch_url,
+        "search_term": search_term,
+        "status_filter": status_filter,
+        "can_view_planejamento_cancelados": can_view_planejamento_cancelados,
+    }
+
+
 # ---------------------------------------------------------------------------
 # List / Calendário
 # ---------------------------------------------------------------------------
@@ -203,19 +329,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     def get_base_queryset(self):
         if hasattr(self, "_base_queryset_cache"):
             return self._base_queryset_cache
-        user = self.request.user
-        qs = (
-            Evento.objects.select_related("nucleo", "organizacao")
-            .prefetch_related("inscricoes")
-        )
-        qs = filter_eventos_por_usuario(qs, user)
-        q = self.request.GET.get("q", "").strip()
-        if q:
-            qs = qs.filter(
-                Q(titulo__icontains=q)
-                | Q(descricao__icontains=q)
-                | Q(nucleo__nome__icontains=q)
-            )
+        qs = get_evento_base_queryset(self.request)
         self._base_queryset_cache = qs
         return qs
 
@@ -325,6 +439,58 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["eventos_cancelados"] = restringe_planejamento_cancelados(
             annotated_base.filter(cancelados_filter)
         ).order_by("-data_inicio")
+
+        carousel_sections = build_evento_carousel_sections(
+            self.request,
+            base_qs,
+            can_view_planejamento_cancelados=can_view_planejamento_cancelados,
+            nucleo_ids_limit=nucleo_ids_limit,
+        )
+        sections = carousel_sections["sections"]
+
+        ativos_section = sections.get("ativos")
+        ctx["eventos_ativos_page"] = ativos_section["page_obj"] if ativos_section else None
+        ctx["eventos_ativos_empty_message"] = (
+            ativos_section["empty_message"] if ativos_section else _("Nenhum evento ativo encontrado.")
+        )
+        ctx["eventos_ativos_aria_label"] = (
+            ativos_section["aria_label"] if ativos_section else _("Lista de eventos ativos")
+        )
+
+        planejamento_section = sections.get("planejamento")
+        ctx["eventos_planejamento_page"] = (
+            planejamento_section["page_obj"] if planejamento_section else None
+        )
+        ctx["eventos_planejamento_empty_message"] = (
+            planejamento_section["empty_message"]
+            if planejamento_section
+            else _("Nenhum evento em planejamento encontrado.")
+        )
+        ctx["eventos_planejamento_aria_label"] = (
+            planejamento_section["aria_label"]
+            if planejamento_section
+            else _("Lista de eventos em planejamento")
+        )
+
+        realizados_section = sections.get("realizados")
+        ctx["eventos_realizados_page"] = (
+            realizados_section["page_obj"] if realizados_section else None
+        )
+        ctx["eventos_realizados_empty_message"] = (
+            realizados_section["empty_message"]
+            if realizados_section
+            else _("Nenhum evento realizado encontrado.")
+        )
+        ctx["eventos_realizados_aria_label"] = (
+            realizados_section["aria_label"]
+            if realizados_section
+            else _("Lista de eventos realizados")
+        )
+
+        ctx["eventos_carousel_fetch_url"] = carousel_sections["fetch_url"]
+        ctx["eventos_search_query"] = carousel_sections["search_term"]
+        ctx["eventos_status_filter"] = carousel_sections["status_filter"]
+
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
@@ -361,6 +527,55 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
         ctx["minhas_inscricoes"] = minhas_inscricoes
         return ctx
+
+
+class EventoListCarouselView(LoginRequiredMixin, NoSuperadminMixin, View):
+    http_method_names = ["get"]
+    sections = {"ativos", "planejamento", "realizados"}
+
+    def get(self, request, *args, **kwargs):
+        section = request.GET.get("section")
+        if section not in self.sections:
+            return JsonResponse({"error": _("Seção inválida.")}, status=400)
+
+        can_view_planejamento_cancelados, nucleo_ids_limit = _resolve_planejamento_permissions(
+            request.user
+        )
+        if section == "planejamento" and not can_view_planejamento_cancelados:
+            return JsonResponse({"error": _("Seção indisponível para o usuário.")}, status=403)
+
+        base_queryset = get_evento_base_queryset(request)
+        carousel_sections = build_evento_carousel_sections(
+            request,
+            base_queryset,
+            can_view_planejamento_cancelados=can_view_planejamento_cancelados,
+            nucleo_ids_limit=nucleo_ids_limit,
+            section_pages={section: request.GET.get("page")},
+            only_sections={section},
+        )
+        section_data = carousel_sections["sections"].get(section)
+        if section_data is None:
+            return JsonResponse({"error": _("Seção não disponível.")}, status=404)
+
+        page_obj = section_data["page_obj"]
+        html = render_to_string(
+            "eventos/partials/evento_carousel_slide.html",
+            {
+                "eventos": page_obj.object_list,
+                "page_number": page_obj.number,
+                "empty_message": section_data["empty_message"],
+            },
+            request=request,
+        )
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": section_data["total_pages"],
+                "count": section_data["total"],
+            }
+        )
 
 
 # ---------------------------------------------------------------------------

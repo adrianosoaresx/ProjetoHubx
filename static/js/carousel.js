@@ -37,6 +37,7 @@
     const eventoId = root.dataset.eventoId || '';
     const classificacao = root.dataset.classificacao || '';
     const scope = root.dataset.scope || '';
+    const statusFilter = root.dataset.statusFilter || '';
 
     url.searchParams.set('page', String(page));
     if (section) {
@@ -62,6 +63,9 @@
     }
     if (scope) {
       url.searchParams.set('scope', scope);
+    }
+    if (statusFilter) {
+      url.searchParams.set('status', statusFilter);
     }
     return url;
   }
