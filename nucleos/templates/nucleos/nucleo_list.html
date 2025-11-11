@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n lucide_icons %}
+{% load i18n lucide_icons static %}
 
 {% block title %}{{ list_title|default_if_none:_('Núcleos')|default:_('Núcleos') }}{% endblock %}
 
@@ -13,53 +13,44 @@
   <div class="space-y-6">
     
 
-    {% with card_template=list_card_template|default_if_none:'_components/card_nucleo.html'|default:'_components/card_nucleo.html' %}
-      {% with card_item_name=item_context_name|default_if_none:'nucleo'|default:'nucleo' %}
-        <div class="space-y-6">
-          {% for section in nucleo_sections %}
-            <details class="card group" data-nucleos-section="{{ section.key }}">
-              <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-                <div class="flex items-start gap-3">
-                  <span class="{{ section.icon_classes }}">
-                    {% lucide section.icon class='h-6 w-6' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <p class="text-xl font-semibold">{{ section.title }}</p>
-                    <p class="text-sm text-[var(--text-secondary)]">
-                      {% blocktrans count count=section.total %}
-                        {{ count }} núcleo no total
-                      {% plural %}
-                        {{ count }} núcleos no total
-                      {% endblocktrans %}
-                    </p>
-                  </div>
-                </div>
-                <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
-                  {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-                </span>
-              </summary>
-              <div class="card-body">
-                {% if section.items %}
-                  <div role="list" aria-label="{{ section.aria_label }}" class="grid gap-4 md:grid-cols-2">
-                    {% for nucleo in section.items %}
-                      <div role="listitem">
-                        {% include card_template with item=nucleo nucleo=nucleo item_context_name=card_item_name %}
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% else %}
-                  <p class="text-sm text-[var(--text-secondary)] italic">{{ section.empty_message }}</p>
-                {% endif %}
+    <div class="space-y-6">
+      {% for section in nucleo_sections %}
+        <details class="card group" data-nucleos-section="{{ section.key }}">
+          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+            <div class="flex items-start gap-3">
+              <span class="{{ section.icon_classes }}">
+                {% lucide section.icon class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <p class="text-xl font-semibold">{{ section.title }}</p>
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans count count=section.total %}
+                    {{ count }} núcleo no total
+                  {% plural %}
+                    {{ count }} núcleos no total
+                  {% endblocktrans %}
+                </p>
               </div>
-            </details>
-          {% endfor %}
-        </div>
-      {% endwith %}
-    {% endwith %}
+            </div>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+              {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="card-body">
+            {% include 'nucleos/partials/nucleo_carousel.html' with section=section page=section.page_obj fetch_url=section.fetch_url search_term=section.search_term|default:nucleos_search_term empty_message=section.empty_message scope=section.scope|default:nucleos_carousel_scope classificacao_filter=selected_classificacao %}
+          </div>
+        </details>
+      {% endfor %}
+    </div>
 
     {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
     {% block list_footer %}{% endblock %}
   </div>
 
   <div id="modal" role="presentation" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}
