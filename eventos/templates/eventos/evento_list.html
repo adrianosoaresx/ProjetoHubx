@@ -9,6 +9,52 @@
 
   <div class="space-y-6">
 
+    <div>
+      <form
+        class="flex flex-col gap-3 md:flex-row md:items-center"
+        role="search"
+        novalidate
+        data-eventos-search-form
+        data-initial-search-term="{{ eventos_search_query|default:'' }}"
+        data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
+        data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum evento correspondente a {{ term }}.{% endblocktrans %}"
+        data-feedback-empty="{% trans 'Digite um termo para buscar eventos.' %}"
+      >
+        <div class="flex w-full items-center gap-2">
+          <label for="eventos-search" class="sr-only">{% trans "Buscar eventos" %}</label>
+          <input
+            type="search"
+            id="eventos-search"
+            name="q"
+            value="{{ eventos_search_query|default:q|default:'' }}"
+            autocomplete="off"
+            placeholder="{% trans 'Buscar por título, descrição ou núcleo' %}"
+            class="input input-bordered w-full"
+            data-eventos-search-input
+            aria-describedby="eventos-search-feedback"
+          />
+          <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
+            {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+          </button>
+        </div>
+        {% for key, values in request.GET.lists %}
+          {% if key != 'q' and key != 'page' and key|slice:'-5:' != '_page' %}
+            {% for value in values %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}" />
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </form>
+      <p
+        class="text-sm text-[var(--text-secondary)]"
+        data-eventos-search-feedback
+        id="eventos-search-feedback"
+        hidden
+        role="status"
+        aria-live="polite"
+      ></p>
+    </div>
+
     {% if user.is_authenticated and user.get_tipo_usuario == 'associado' %}
       <details class="card group" data-eventos-section="minhas-inscricoes">
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
@@ -80,7 +126,12 @@
     {% endif %}
 
     {% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
-      <details class="card group" data-eventos-section="ativos">
+      <details
+        class="card group"
+        data-eventos-section="ativos"
+        data-eventos-search-section
+        data-eventos-section-total="{{ total_eventos_ativos|default_if_none:0 }}"
+      >
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
           <div class="flex items-start gap-3">
             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
@@ -109,7 +160,12 @@
       </details>
 
       {% if can_view_planejamento_cancelados %}
-        <details class="card group" data-eventos-section="planejamento">
+        <details
+          class="card group"
+          data-eventos-section="planejamento"
+          data-eventos-search-section
+          data-eventos-section-total="{{ total_eventos_planejamento|default_if_none:0 }}"
+        >
           <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-start gap-3">
               <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
@@ -138,7 +194,12 @@
         </details>
       {% endif %}
 
-      <details class="card group" data-eventos-section="realizados">
+      <details
+        class="card group"
+        data-eventos-section="realizados"
+        data-eventos-search-section
+        data-eventos-section-total="{{ total_eventos_concluidos|default_if_none:0 }}"
+      >
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
           <div class="flex items-start gap-3">
             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
@@ -167,7 +228,12 @@
       </details>
 
       {% if can_view_planejamento_cancelados %}
-        <details class="card group" data-eventos-section="cancelados">
+        <details
+          class="card group"
+          data-eventos-section="cancelados"
+          data-eventos-search-section
+          data-eventos-section-total="{{ total_eventos_cancelados|default_if_none:0 }}"
+        >
           <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-start gap-3">
               <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-danger-500)]/10 text-[var(--color-danger-500)] shadow-lg shadow-[var(--color-danger-500)]/20">
@@ -215,4 +281,5 @@
 {% block scripts %}
   {{ block.super }}
   <script type="module" src="{% static 'js/carousel.js' %}"></script>
+  <script type="module" src="{% static 'js/eventos-search.js' %}"></script>
 {% endblock %}
