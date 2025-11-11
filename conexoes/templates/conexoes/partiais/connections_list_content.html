@@ -23,7 +23,7 @@
         </span>
       </summary>
       <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/request_list.html' %}
+        {% include 'conexoes/partials/conexao_carousel.html' with page=solicitacoes_pendentes_page section='pendentes' fetch_url=conexoes_carousel_fetch_url search_term=conexoes_search_query status_filter=conexoes_status_filter empty_message=solicitacoes_pendentes_empty_message empty_cta=solicitacoes_pendentes_empty_cta aria_label=solicitacoes_pendentes_aria_label %}
       </div>
     </details>
   {% elif connections_filter == 'enviadas' %}
@@ -49,7 +49,7 @@
         </span>
       </summary>
       <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/sent_request_list.html' %}
+        {% include 'conexoes/partials/conexao_carousel.html' with page=solicitacoes_enviadas_page section='enviadas' fetch_url=conexoes_carousel_fetch_url search_term=conexoes_search_query status_filter=conexoes_status_filter empty_message=solicitacoes_enviadas_empty_message empty_cta=solicitacoes_enviadas_empty_cta aria_label=solicitacoes_enviadas_aria_label %}
       </div>
     </details>
   {% else %}
@@ -75,7 +75,7 @@
         </span>
       </summary>
       <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/connections_list.html' %}
+        {% include 'conexoes/partials/conexao_carousel.html' with page=minhas_conexoes_page section='minhas' fetch_url=conexoes_carousel_fetch_url search_term=conexoes_search_query status_filter=conexoes_status_filter empty_message=minhas_conexoes_empty_message empty_cta=minhas_conexoes_empty_cta aria_label=minhas_conexoes_aria_label %}
       </div>
     </details>
 
@@ -101,7 +101,7 @@
         </span>
       </summary>
       <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/request_list.html' %}
+        {% include 'conexoes/partials/conexao_carousel.html' with page=solicitacoes_pendentes_page section='pendentes' fetch_url=conexoes_carousel_fetch_url search_term=conexoes_search_query status_filter=conexoes_status_filter empty_message=solicitacoes_pendentes_empty_message empty_cta=solicitacoes_pendentes_empty_cta aria_label=solicitacoes_pendentes_aria_label %}
       </div>
     </details>
 
@@ -127,7 +127,7 @@
         </span>
       </summary>
       <div class="card-body space-y-6">
-        {% include 'conexoes/partiais/sent_request_list.html' %}
+        {% include 'conexoes/partials/conexao_carousel.html' with page=solicitacoes_enviadas_page section='enviadas' fetch_url=conexoes_carousel_fetch_url search_term=conexoes_search_query status_filter=conexoes_status_filter empty_message=solicitacoes_enviadas_empty_message empty_cta=solicitacoes_enviadas_empty_cta aria_label=solicitacoes_enviadas_aria_label %}
       </div>
     </details>
   {% endif %}

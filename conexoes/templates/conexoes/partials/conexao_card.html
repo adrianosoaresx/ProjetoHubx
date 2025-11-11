@@ -1,0 +1,149 @@
+{% load i18n lucide_icons %}
+{% if section == 'pendentes' %}
+  <article class="card request-card h-full" role="listitem">
+    <div class="card-body space-y-4">
+      <div class="flex items-center gap-3">
+        {% if usuario.avatar %}
+          <img
+            src="{{ usuario.avatar.url }}"
+            alt="{{ usuario.display_name|default:usuario.username }}"
+            class="h-10 w-10 rounded-full object-cover"
+            loading="lazy"
+          />
+        {% else %}
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]"
+            role="img"
+            aria-label="{{ usuario.display_name|default:usuario.username }}"
+          >
+            {{ usuario.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <p class="font-medium text-[var(--text-primary)]">{{ usuario.display_name }}</p>
+          <p class="text-sm text-[var(--text-secondary)]">@{{ usuario.username }}</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <form
+          method="post"
+          action="{% url 'conexoes:aceitar_conexao' usuario.id %}"
+          hx-post="{% url 'conexoes:aceitar_conexao' usuario.id %}"
+          hx-target="closest .request-card"
+          hx-swap="outerHTML"
+          class="space-y-4"
+        >
+          {% csrf_token %}
+          <button class="btn btn-primary btn-sm">{% trans "Aceitar" %}</button>
+        </form>
+        <form
+          method="post"
+          action="{% url 'conexoes:recusar_conexao' usuario.id %}"
+          hx-post="{% url 'conexoes:recusar_conexao' usuario.id %}"
+          hx-target="closest .request-card"
+          hx-swap="outerHTML"
+          class="space-y-4"
+        >
+          {% csrf_token %}
+          <button class="btn btn-danger btn-sm">{% trans "Recusar" %}</button>
+        </form>
+      </div>
+    </div>
+  </article>
+{% elif section == 'enviadas' %}
+  <article class="card h-full" role="listitem">
+    <div class="card-body space-y-4">
+      <div class="flex items-center gap-3">
+        {% if usuario.avatar %}
+          <img
+            src="{{ usuario.avatar.url }}"
+            alt="{{ usuario.display_name|default:usuario.username }}"
+            class="h-10 w-10 rounded-full object-cover"
+            loading="lazy"
+          />
+        {% else %}
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]"
+            role="img"
+            aria-label="{{ usuario.display_name|default:usuario.username }}"
+          >
+            {{ usuario.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <p class="font-medium text-[var(--text-primary)]">{{ usuario.display_name }}</p>
+          <p class="text-sm text-[var(--text-secondary)]">@{{ usuario.username }}</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <a
+          href="{% url 'accounts:perfil_publico_uuid' usuario.public_id %}"
+          class="btn btn-secondary btn-sm"
+        >
+          {% trans "Ver perfil" %}
+        </a>
+        <span class="inline-flex items-center rounded-md bg-[var(--bg-tertiary)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]">
+          {% trans "Aguardando resposta" %}
+        </span>
+      </div>
+    </div>
+  </article>
+{% else %}
+  <article
+    role="listitem"
+    id="connection-{{ usuario.id }}"
+    class="card connection-card h-full"
+  >
+    <div class="card-body relative h-full space-y-4">
+      <div class="absolute right-0 top-0 z-10 flex gap-2">
+        <a
+          href="{% url 'accounts:perfil_publico_uuid' usuario.public_id %}"
+          class="btn btn-secondary btn-sm"
+          data-connection-link="connection-{{ usuario.id }}"
+          aria-label="{% trans 'Ver perfil' %}"
+          title="{% trans 'Ver perfil' %}"
+        >
+          {% lucide 'eye' class='h-4 w-4' aria_hidden='true' %}
+        </a>
+        {% with connection_id=usuario.id|stringformat:'s' %}
+          {% with target_id='connection-'|add:connection_id %}
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              aria-label="{% trans 'Desconectar' %}"
+              title="{% trans 'Desconectar' %}"
+              hx-get="{% url 'conexoes:remover_conexao_modal' usuario.id %}?target_id={{ target_id }}&swap=outerHTML&remove_target={{ target_id }}"
+              hx-target="#modal"
+              hx-swap="innerHTML"
+              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+            >
+              {% lucide 'user-x' class='h-4 w-4' aria_hidden='true' %}
+            </button>
+          {% endwith %}
+        {% endwith %}
+      </div>
+      <div class="flex items-center gap-3">
+        {% if usuario.avatar %}
+          <img
+            src="{{ usuario.avatar.url }}"
+            alt="{{ usuario.display_name|default:usuario.username }}"
+            class="h-12 w-12 rounded-full object-cover"
+            loading="lazy"
+          />
+        {% else %}
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]"
+            role="img"
+            aria-label="{{ usuario.display_name|default:usuario.username }}"
+          >
+            {{ usuario.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <p class="font-semibold text-[var(--text-primary)]">{{ usuario.display_name }}</p>
+          <p class="text-sm text-[var(--text-secondary)]">@{{ usuario.username }}</p>
+        </div>
+      </div>
+    </div>
+  </article>
+{% endif %}

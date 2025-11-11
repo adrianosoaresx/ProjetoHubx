@@ -37,6 +37,7 @@
     const eventoId = root.dataset.eventoId || '';
     const classificacao = root.dataset.classificacao || '';
     const scope = root.dataset.scope || '';
+    const ownership = root.dataset.ownership || '';
     const statusFilter = root.dataset.statusFilter || '';
     const tipoFilter = root.dataset.tipoFilter || '';
 
@@ -64,6 +65,9 @@
     }
     if (scope) {
       url.searchParams.set('scope', scope);
+    }
+    if (ownership) {
+      url.searchParams.set('ownership', ownership);
     }
     if (statusFilter) {
       url.searchParams.set('status', statusFilter);
