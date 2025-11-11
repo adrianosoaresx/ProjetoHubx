@@ -3,7 +3,7 @@
 
   {% if request.user.user_type != 'root' %}
   
-  <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
+  <a href="{% url 'feed:nova_postagem' %}?back=feed" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
     {% lucide 'circle-plus' class='w-4 h-4' %}
     {% trans 'Nova postagem' %}
   </a>

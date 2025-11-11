@@ -75,7 +75,7 @@
           </button>
           {% if is_owner %}
             <a
-              href="{% url 'feed:nova_postagem' %}?tipo_feed=usuario"
+              href="{% url 'feed:nova_postagem' %}?tipo_feed=usuario&back=minhas-postagens"
               class="btn btn-primary w-full sm:w-auto"
             >
               {% trans "Nova postagem" %}
@@ -122,7 +122,12 @@
       };
 
       const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      setExpanded(initialExpanded);
+      const shouldExpandFromHash = window.location.hash === '#perfil-posts-accordion';
+      setExpanded(shouldExpandFromHash || initialExpanded);
+
+      if (shouldExpandFromHash) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
 
       toggle.addEventListener('click', () => {
         const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
