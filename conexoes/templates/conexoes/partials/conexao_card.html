@@ -1,328 +1,45 @@
 {% load i18n lucide_icons associados_extras %}
 {% url 'accounts:perfil_publico_uuid' usuario.public_id as profile_url %}
-{% with redes=usuario.redes_sociais|default_if_none:'' whatsapp=usuario.whatsapp|default_if_none:''|digits_only %}
-  {% if section == 'pendentes' %}
-    <article class="card card-with-cover group relative flex h-full flex-col overflow-hidden request-card" role="listitem">
-      <header class="relative">
-        {% if usuario.cover %}
-          <img src="{{ usuario.cover.url|default:usuario.cover }}" alt="{% trans 'Capa da conexão' %}" class="h-28 w-full object-cover object-center" loading="lazy" />
-        {% else %}
-          <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
-        {% endif %}
-      </header>
-      <div class="relative px-4 pb-4 sm:px-6">
-        <div class="flex flex-col items-center gap-4">
-          <div class="-mt-12 sm:-mt-14 relative z-10 flex flex-col items-center">
-            <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--bg-primary)] ring-1 ring-black/5 shadow-lg dark:border-[var(--bg-secondary)] dark:ring-white/10">
-              {% if usuario.avatar %}
-                <img src="{{ usuario.avatar.url|default:usuario.avatar }}" alt="{{ usuario.display_name|default:usuario.username }}" class="h-full w-full object-cover" loading="lazy" />
-              {% else %}
-                <div class="flex h-full w-full items-center justify-center bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ usuario.display_name|default:usuario.username }}">
-                  {{ usuario.display_name|default:usuario.username|first|upper }}
-                </div>
-              {% endif %}
-            </div>
-            {% if redes or whatsapp %}
-              <div class="mt-3 flex flex-wrap items-center justify-center gap-1">
-                {% if redes %}
-                  {% for rede, url in redes.items %}
-                    {% if url %}
-                      {% with rede_label=rede|capfirst %}
-                        <a
-                          href="{{ url }}"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
-                          aria-label="{{ rede_label }}"
-                        >
-                          {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                          <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                        </a>
-                      {% endwith %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-                {% if whatsapp %}
-                  <a
-                    href="https://wa.me/{{ whatsapp }}"
-                    class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
-                    target="_blank"
-                    rel="noopener"
-                    aria-label="{% trans 'WhatsApp' %}"
-                  >
-                    {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                    <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                  </a>
-                {% endif %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      <div class="card-body flex-1 space-y-4 px-6 text-center">
-        <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
-        <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
-        <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
-            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            <dt class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {% trans 'CNPJ' as documento_label %}
-              {% elif usuario.cpf %}
-                {% trans 'CPF' as documento_label %}
-              {% else %}
-                {% trans 'Documento' as documento_label %}
-              {% endif %}
-              {{ documento_label }}:
-            </dt>
-            <dd class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {{ usuario.cnpj }}
-              {% elif usuario.cpf %}
-                {{ usuario.cpf }}
-              {% else %}
-                {% trans 'Não informado' %}
-              {% endif %}
-            </dd>
-          </div>
-        </dl>
-      </div>
-      <footer class="card-footer flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 sm:flex-row">
-        <form
-          method="post"
-          action="{% url 'conexoes:aceitar_conexao' usuario.id %}"
-          hx-post="{% url 'conexoes:aceitar_conexao' usuario.id %}"
-          hx-target="closest .request-card"
-          hx-swap="outerHTML"
-          class="w-full sm:w-auto sm:flex-1"
-        >
-          {% csrf_token %}
-          <button class="btn btn-primary w-full">{% trans "Aceitar" %}</button>
-        </form>
-        <form
-          method="post"
-          action="{% url 'conexoes:recusar_conexao' usuario.id %}"
-          hx-post="{% url 'conexoes:recusar_conexao' usuario.id %}"
-          hx-target="closest .request-card"
-          hx-swap="outerHTML"
-          class="w-full sm:w-auto sm:flex-1"
-        >
-          {% csrf_token %}
-          <button class="btn btn-danger w-full">{% trans "Recusar" %}</button>
-        </form>
-      </footer>
-    </article>
-  {% elif section == 'enviadas' %}
-    <article class="card card-with-cover group relative flex h-full flex-col overflow-hidden" role="listitem">
-      <header class="relative">
-        {% if usuario.cover %}
-          <img src="{{ usuario.cover.url|default:usuario.cover }}" alt="{% trans 'Capa da conexão' %}" class="h-28 w-full object-cover object-center" loading="lazy" />
-        {% else %}
-          <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
-        {% endif %}
-      </header>
-      <div class="relative px-4 pb-4 sm:px-6">
-        <div class="flex flex-col items-center gap-4">
-          <div class="-mt-12 sm:-mt-14 relative z-10 flex flex-col items-center">
-            <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--bg-primary)] ring-1 ring-black/5 shadow-lg dark:border-[var(--bg-secondary)] dark:ring-white/10">
-              {% if usuario.avatar %}
-                <img src="{{ usuario.avatar.url|default:usuario.avatar }}" alt="{{ usuario.display_name|default:usuario.username }}" class="h-full w-full object-cover" loading="lazy" />
-              {% else %}
-                <div class="flex h-full w-full items-center justify-center bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ usuario.display_name|default:usuario.username }}">
-                  {{ usuario.display_name|default:usuario.username|first|upper }}
-                </div>
-              {% endif %}
-            </div>
-            {% if redes or whatsapp %}
-              <div class="mt-3 flex flex-wrap items-center justify-center gap-1">
-                {% if redes %}
-                  {% for rede, url in redes.items %}
-                    {% if url %}
-                      {% with rede_label=rede|capfirst %}
-                        <a
-                          href="{{ url }}"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
-                          aria-label="{{ rede_label }}"
-                        >
-                          {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                          <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                        </a>
-                      {% endwith %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-                {% if whatsapp %}
-                  <a
-                    href="https://wa.me/{{ whatsapp }}"
-                    class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
-                    target="_blank"
-                    rel="noopener"
-                    aria-label="{% trans 'WhatsApp' %}"
-                  >
-                    {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                    <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                  </a>
-                {% endif %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      <div class="card-body flex-1 space-y-4 px-6 text-center">
-        <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
-        <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
-        <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
-            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            <dt class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {% trans 'CNPJ' as documento_label %}
-              {% elif usuario.cpf %}
-                {% trans 'CPF' as documento_label %}
-              {% else %}
-                {% trans 'Documento' as documento_label %}
-              {% endif %}
-              {{ documento_label }}:
-            </dt>
-            <dd class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {{ usuario.cnpj }}
-              {% elif usuario.cpf %}
-                {{ usuario.cpf }}
-              {% else %}
-                {% trans 'Não informado' %}
-              {% endif %}
-            </dd>
-          </div>
-        </dl>
-      </div>
-      <footer class="card-footer flex flex-col items-stretch gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 sm:flex-row sm:items-center">
-        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:w-auto sm:flex-1">{% trans "Ver perfil" %}</a>
-        <span class="inline-flex w-full items-center justify-center rounded-md bg-[var(--bg-tertiary)] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)] sm:w-auto">
-          {% trans "Aguardando resposta" %}
-        </span>
-      </footer>
-    </article>
-  {% else %}
-    <article role="listitem" id="connection-{{ usuario.id }}" class="card card-with-cover connection-card group relative flex h-full flex-col overflow-hidden">
-      <header class="relative">
-        {% if usuario.cover %}
-          <img src="{{ usuario.cover.url|default:usuario.cover }}" alt="{% trans 'Capa da conexão' %}" class="h-28 w-full object-cover object-center" loading="lazy" />
-        {% else %}
-          <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
-        {% endif %}
-      </header>
-      <div class="relative px-4 pb-4 sm:px-6">
-        <div class="flex flex-col items-center gap-4">
-          <div class="-mt-12 sm:-mt-14 relative z-10 flex flex-col items-center">
-            <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--bg-primary)] ring-1 ring-black/5 shadow-lg dark:border-[var(--bg-secondary)] dark:ring-white/10">
-              {% if usuario.avatar %}
-                <img src="{{ usuario.avatar.url|default:usuario.avatar }}" alt="{{ usuario.display_name|default:usuario.username }}" class="h-full w-full object-cover" loading="lazy" />
-              {% else %}
-                <div class="flex h-full w-full items-center justify-center bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ usuario.display_name|default:usuario.username }}">
-                  {{ usuario.display_name|default:usuario.username|first|upper }}
-                </div>
-              {% endif %}
-            </div>
-            {% if redes or whatsapp %}
-              <div class="mt-3 flex flex-wrap items-center justify-center gap-1">
-                {% if redes %}
-                  {% for rede, url in redes.items %}
-                    {% if url %}
-                      {% with rede_label=rede|capfirst %}
-                        <a
-                          href="{{ url }}"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
-                          aria-label="{{ rede_label }}"
-                        >
-                          {% lucide rede class='h-4 w-4' aria_hidden='true' %}
-                          <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
-                        </a>
-                      {% endwith %}
-                    {% endif %}
-                  {% endfor %}
-                {% endif %}
-                {% if whatsapp %}
-                  <a
-                    href="https://wa.me/{{ whatsapp }}"
-                    class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
-                    target="_blank"
-                    rel="noopener"
-                    aria-label="{% trans 'WhatsApp' %}"
-                  >
-                    {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
-                    <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
-                  </a>
-                {% endif %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      <div class="card-body flex-1 space-y-4 px-6 text-center">
-        <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
-        <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
-        <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
-            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            <dt class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {% trans 'CNPJ' as documento_label %}
-              {% elif usuario.cpf %}
-                {% trans 'CPF' as documento_label %}
-              {% else %}
-                {% trans 'Documento' as documento_label %}
-              {% endif %}
-              {{ documento_label }}:
-            </dt>
-            <dd class="text-[var(--text-muted)]">
-              {% if usuario.cnpj %}
-                {{ usuario.cnpj }}
-              {% elif usuario.cpf %}
-                {{ usuario.cpf }}
-              {% else %}
-                {% trans 'Não informado' %}
-              {% endif %}
-            </dd>
-          </div>
-        </dl>
-      </div>
-      <footer class="card-footer flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 sm:flex-row">
-        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:w-auto sm:flex-1" data-connection-link="connection-{{ usuario.id }}">{% trans "Ver perfil" %}</a>
-        {% with connection_id=usuario.id|stringformat:'s' %}
-          {% with target_id='connection-'|add:connection_id %}
-            <button
-              type="button"
-              class="btn btn-danger w-full sm:w-auto sm:flex-1"
-              hx-get="{% url 'conexoes:remover_conexao_modal' usuario.id %}?target_id={{ target_id }}&swap=outerHTML&remove_target={{ target_id }}"
-              hx-target="#modal"
-              hx-swap="innerHTML"
-              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-            >
-              {% trans "Desconectar" %}
-            </button>
+{% with usuario.id|stringformat:'s' as usuario_id %}
+  {% with 'connection-'|add:usuario_id as card_identifier %}
+    {% with redes=usuario.redes_sociais|default_if_none:'' whatsapp=usuario.whatsapp|default_if_none:''|digits_only %}
+      {% with 'connection-card h-full flex flex-col' as base_classes %}
+        {% if section == 'pendentes' %}
+          {% with base_classes|add:' request-card' as computed_classes %}
+            {% include '_partials/cards/base_card.html' with
+              url=profile_url
+              cover=usuario.cover
+              avatar=usuario.avatar
+              title=usuario.display_name|default:usuario.username
+              sr_label=usuario.display_name|default:usuario.username
+              header_social_links=redes
+              header_whatsapp_number=whatsapp
+              details='conexoes/partials/conexao_card_details.html'
+              card_classes=computed_classes
+              card_id=card_identifier
+              section=section
+              usuario=usuario
+              profile_url=profile_url
+            %}
           {% endwith %}
-        {% endwith %}
-      </footer>
-    </article>
-  {% endif %}
+        {% else %}
+          {% include '_partials/cards/base_card.html' with
+            url=profile_url
+            cover=usuario.cover
+            avatar=usuario.avatar
+            title=usuario.display_name|default:usuario.username
+            sr_label=usuario.display_name|default:usuario.username
+            header_social_links=redes
+            header_whatsapp_number=whatsapp
+            details='conexoes/partials/conexao_card_details.html'
+            card_classes=base_classes
+            card_id=card_identifier
+            section=section
+            usuario=usuario
+            profile_url=profile_url
+          %}
+        {% endif %}
+      {% endwith %}
+    {% endwith %}
+  {% endwith %}
 {% endwith %}
