@@ -34,6 +34,7 @@
     const papel = root.dataset.papel || '';
     const card = root.dataset.card || '';
     const nucleoId = root.dataset.nucleoId || '';
+    const eventoId = root.dataset.eventoId || '';
 
     url.searchParams.set('page', String(page));
     if (section) {
@@ -50,6 +51,9 @@
     }
     if (nucleoId) {
       url.searchParams.set('nucleo_id', nucleoId);
+    }
+    if (eventoId) {
+      url.searchParams.set('evento_id', eventoId);
     }
     return url;
   }

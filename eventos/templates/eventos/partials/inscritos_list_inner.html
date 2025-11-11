@@ -20,28 +20,13 @@
     {% endif %}
   </p>
 {% endif %}
-<div
-  class="grid grid-cols-1 gap-6 md:grid-cols-2"
-  role="list"
-  aria-label="{% trans 'Lista de inscritos do evento' %}"
->
-  {% if inscricoes_confirmadas %}
-    {% for inscricao in inscricoes_confirmadas %}
-      {% include 'eventos/partials/inscrito_card.html' with inscrito=inscricao.user inscricao=inscricao pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
-    {% endfor %}
-  {% else %}
-    <p class="col-span-full text-center text-[var(--text-muted)]">
-      {% if inscritos_search_query %}
-        {% blocktrans trimmed with search=inscritos_search_query %}
-          Nenhum inscrito encontrado para "{{ search }}".
-        {% endblocktrans %}
-      {% else %}
-        {% trans "Nenhum inscrito." %}
-      {% endif %}
-    </p>
-  {% endif %}
-</div>
-{% if inscritos_page_obj %}
-  {% url 'eventos:evento_inscritos' object.pk as inscritos_list_url %}
-  {% include '_partials/pagination.html' with page_obj=inscritos_page_obj querystring=inscritos_querystring hx_get=inscritos_list_url hx_target='#inscritos-list' hx_indicator='#inscritos-loading' hx_push_url='true' %}
-{% endif %}
+{% include 'eventos/partials/inscritos_carousel.html' with
+  page=inscritos_page_obj
+  inscricoes=inscricoes_confirmadas
+  search_term=inscritos_search_query
+  fetch_url=inscritos_carousel_fetch_url
+  evento_id=inscritos_evento_id|default:object.pk
+  pode_gerenciar_inscricoes=pode_gerenciar_inscricoes
+  object=object
+  evento=evento
+%}

@@ -348,7 +348,7 @@
                 </div>
                 <section class="space-y-6">
                   <div id="inscritos-list">
-                    {% include 'eventos/partials/inscritos_list.html' %}
+                    {% include 'eventos/partials/inscritos_list.html' with inscritos_carousel_fetch_url=inscritos_carousel_fetch_url %}
                   </div>
                   <div
                     id="inscritos-loading"
