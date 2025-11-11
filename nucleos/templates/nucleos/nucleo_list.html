@@ -11,11 +11,61 @@
 {% block content %}
 
   <div class="space-y-6">
-    
+
+    <div>
+      <form
+        class="flex flex-col gap-3 md:flex-row md:items-center"
+        role="search"
+        novalidate
+        data-nucleos-search-form
+        data-initial-search-term="{{ nucleos_search_term }}"
+        data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
+        data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum núcleo correspondente a {{ term }}.{% endblocktrans %}"
+        data-feedback-empty="{% trans 'Digite um termo para buscar núcleos.' %}"
+      >
+        <div class="flex w-full items-center gap-2">
+          <label for="nucleos-search" class="sr-only">{% trans "Buscar núcleos" %}</label>
+          <input
+            type="search"
+            id="nucleos-search"
+            name="q"
+            value="{{ nucleos_search_term }}"
+            autocomplete="off"
+            placeholder="{% trans 'Buscar por nome ou descrição do núcleo' %}"
+            class="input input-bordered w-full"
+            data-nucleos-search-input
+            aria-describedby="nucleos-search-feedback"
+          />
+          <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
+            {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+          </button>
+        </div>
+        {% for key, values in request.GET.lists %}
+          {% if key != 'q' and key != 'page' and key|slice:'-5:' != '_page' %}
+            {% for value in values %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </form>
+      <p
+        class="text-sm text-[var(--text-secondary)]"
+        data-nucleos-search-feedback
+        id="nucleos-search-feedback"
+        hidden
+        role="status"
+        aria-live="polite"
+      ></p>
+    </div>
+
 
     <div class="space-y-6">
       {% for section in nucleo_sections %}
-        <details class="card group" data-nucleos-section="{{ section.key }}">
+        <details
+          class="card group"
+          data-nucleos-section="{{ section.key }}"
+          data-nucleos-section-total="{{ section.page_obj.paginator.count }}"
+        >
           <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-start gap-3">
               <span class="{{ section.icon_classes }}">
@@ -53,4 +103,5 @@
 {% block scripts %}
   {{ block.super }}
   <script type="module" src="{% static 'js/carousel.js' %}"></script>
+  <script type="module" src="{% static 'js/nucleos-search.js' %}"></script>
 {% endblock %}
