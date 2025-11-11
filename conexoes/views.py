@@ -362,6 +362,7 @@ def perfil_conexoes(request):
             url = f"{url}?{query_string}"
         return redirect(url)
 
+    tab = (request.GET.get("tab") or "").strip().lower()
     active_filter = _resolve_connections_filter(request)
 
     search_form, q = _get_connections_search_form(request)
@@ -381,7 +382,12 @@ def perfil_conexoes(request):
 
     if is_htmx_or_ajax(request):
         context.update(_profile_dashboard_hx_context())
+        if tab == "solicitacoes":
+            return render(request, "conexoes/partiais/request_list.html", context)
         return render(request, "conexoes/partiais/connections_list_content.html", context)
+
+    if tab == "solicitacoes":
+        return render(request, "conexoes/solicitacoes.html", context)
 
     return render(request, "conexoes/connections_list.html", context)
 
@@ -407,6 +413,7 @@ def perfil_conexoes_partial(request):
     if public_id and str(request.user.public_id) != public_id:
         return HttpResponseForbidden(_("Esta seção está disponível apenas para o proprietário do perfil."))
 
+    tab = (request.GET.get("tab") or "").strip().lower()
     active_filter = _resolve_connections_filter(request)
 
     search_form, q = _get_connections_search_form(request)
@@ -426,6 +433,8 @@ def perfil_conexoes_partial(request):
     )
     context.update(_profile_dashboard_hx_context())
     _refresh_minhas_conexoes_empty_cta(context)
+    if tab == "solicitacoes":
+        return render(request, "conexoes/partiais/request_list.html", context)
     return render(request, "conexoes/partiais/connections_list_content.html", context)
 
 
