@@ -214,14 +214,10 @@
               </div>
               <section class="space-y-6">
                 <div id="coordenadores-list">
-                  {% if is_coordenadores_filter_active %}
-                    {% if partial_template %}
-                      {% include partial_template with card='coordenadores' %}
-                    {% else %}
-                      {% include 'nucleos/partials/membros_list.html' with card='coordenadores' %}
-                    {% endif %}
+                  {% if partial_template %}
+                    {% include partial_template with card='coordenadores' %}
                   {% else %}
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Clique para visualizar apenas os coordenadores do núcleo." %}</p>
+                    {% include 'nucleos/partials/membros_list.html' with card='coordenadores' %}
                   {% endif %}
                 </div>
                 <div
