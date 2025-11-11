@@ -987,6 +987,10 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "pode_ver_campos_restritos": _usuario_tem_acesso_restrito_evento(user, evento),
             }
         )
+        context["inscritos_carousel_fetch_url"] = reverse(
+            "eventos:evento_inscritos_carousel", args=[evento.pk]
+        )
+        context["inscritos_evento_id"] = str(evento.pk)
         context["title"] = evento.titulo
         context["subtitle"] = getattr(evento, "descricao", None)
         context["pode_ver_inscritos"] = _usuario_pode_ver_inscritos(user, evento)
@@ -1107,6 +1111,39 @@ class EventoInscritosPartialView(EventoDetailView):
             raise PermissionDenied
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)
+
+
+class EventoInscritosCarouselView(EventoInscritosPartialView):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not _usuario_pode_ver_inscritos(request.user, self.object):
+            raise PermissionDenied
+        context = self.get_context_data(object=self.object)
+        page_obj = context.get("inscritos_page_obj")
+        page_number = getattr(page_obj, "number", 1)
+        paginator = getattr(page_obj, "paginator", None)
+        total_pages = getattr(paginator, "num_pages", 1)
+        total_count = getattr(paginator, "count", 0)
+        total_count = context.get("inscritos_filtered_count", total_count)
+        slides_html = render_to_string(
+            "eventos/partials/inscritos_carousel_slide.html",
+            {
+                "inscricoes": context.get("inscricoes_confirmadas", []),
+                "page_number": page_number,
+                "inscritos_search_query": context.get("inscritos_search_query"),
+                "pode_gerenciar_inscricoes": context.get("pode_gerenciar_inscricoes"),
+                "object": context.get("object", self.object),
+                "evento": context.get("evento", self.object),
+            },
+            request=request,
+        )
+        payload = {
+            "html": slides_html,
+            "page": page_number,
+            "total_pages": total_pages,
+            "count": total_count,
+        }
+        return JsonResponse(payload)
 
 
 # ---------------------------------------------------------------------------

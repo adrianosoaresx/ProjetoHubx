@@ -1,0 +1,47 @@
+{% load i18n lucide_icons %}
+{% with current_page=page.number|default:1 total_pages=page.paginator.num_pages|default:1 total_count=page.paginator.count|default:0 %}
+<div
+  class="space-y-4"
+  data-carousel-root="inscritos"
+  data-section="inscritos"
+  data-fetch-url="{{ fetch_url }}"
+  data-current-slide="1"
+  data-backend-page="{{ current_page }}"
+  data-backend-total-pages="{{ total_pages }}"
+  data-search-term="{{ search_term|default:'' }}"
+  data-search-param="search"
+  data-evento-id="{{ evento_id|default:'' }}"
+>
+  <div class="relative">
+    <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+      <div class="flex transition-transform duration-500 ease-out" data-carousel-track>
+        {% include 'eventos/partials/inscritos_carousel_slide.html' with inscricoes=inscricoes page_number=current_page inscritos_search_query=search_term pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object evento=evento %}
+      </div>
+    </div>
+    {% if total_count > 0 %}
+      <div class="absolute inset-y-0 left-4 flex items-center">
+        <button
+          type="button"
+          class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+          data-carousel-prev
+          aria-label="{% trans 'Anterior' %}"
+        >
+          {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+        </button>
+      </div>
+      <div class="absolute inset-y-0 right-4 flex items-center">
+        <button
+          type="button"
+          class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+          data-carousel-next
+          aria-label="{% trans 'Próximo' %}"
+        >
+          {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+        </button>
+      </div>
+      <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+    {% endif %}
+  </div>
+</div>
+{% endwith %}

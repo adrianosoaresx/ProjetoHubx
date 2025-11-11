@@ -1,0 +1,58 @@
+{% load i18n %}
+{% if inscricoes %}
+  {% for inscricao in inscricoes %}
+    {% with user=inscricao.user %}
+      <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
+        <div
+          role="listitem"
+          class="h-full"
+          data-inscrito-card
+          data-inscrito-label="{{ user.contato|default:user.display_name|default:user.username }}"
+          data-inscrito-search="{{ user.contato|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.email|default:'' }}"
+        >
+          {% include 'eventos/partials/inscrito_card.html' with inscrito=user inscricao=inscricao pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
+        </div>
+      </div>
+    {% endwith %}
+  {% endfor %}
+
+  {% for inscricao in inscricoes %}
+    {% with user=inscricao.user %}
+      {% if forloop.counter0|divisibleby:3 %}
+        <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
+      {% endif %}
+          <div
+            role="listitem"
+            class="h-full"
+            data-inscrito-card
+            data-inscrito-label="{{ user.contato|default:user.display_name|default:user.username }}"
+            data-inscrito-search="{{ user.contato|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.email|default:'' }}"
+          >
+            {% include 'eventos/partials/inscrito_card.html' with inscrito=user inscricao=inscricao pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object %}
+          </div>
+          {% if forloop.last and not forloop.counter|divisibleby:3 %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% endif %}
+          {% if forloop.last and forloop.counter|add:'-1'|divisibleby:3 %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% endif %}
+      {% if forloop.counter|divisibleby:3 or forloop.last %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      {% if inscritos_search_query %}
+        <p class="text-sm text-[var(--text-secondary)] italic">
+          {% blocktrans trimmed with search=inscritos_search_query %}
+            Nenhum inscrito encontrado para "{{ search }}".
+          {% endblocktrans %}
+        </p>
+      {% else %}
+        <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Nenhum inscrito confirmado no momento." %}</p>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
