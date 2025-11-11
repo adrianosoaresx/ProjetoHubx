@@ -29,6 +29,8 @@ from .forms import OrganizacaoUserCreateForm
 
 User = get_user_model()
 
+ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE = 6
+
 
 class AssociadosPermissionMixin(AssociadosRequiredMixin, NoSuperadminMixin):
     """Combines permission checks for associados views."""
@@ -345,7 +347,7 @@ class AssociadoSectionListView(
 class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
     template_name = "associados/promover_list.html"
     context_object_name = "associados"
-    paginate_by = 12
+    paginate_by = ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE
 
     def get_queryset(self):
         User = get_user_model()
@@ -415,14 +417,13 @@ class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequired
         context = super().get_context_data(**kwargs)
         context["search_term"] = getattr(self, "search_term", "")
 
-        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
-        current_filter = self.request.GET.get("tipo") or ""
-        if current_filter not in valid_filters:
-            current_filter = "todos"
+        current_filter = self.get_current_filter()
 
         params = self.request.GET.copy()
         if "page" in params:
             params.pop("page")
+
+        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
 
         def build_url(filter_value: str | None) -> str:
             query_params = params.copy()
@@ -478,19 +479,56 @@ class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequired
             context["total_coordenadores"] = 0
 
         context["has_search"] = bool(context["search_term"].strip())
+        context["promover_empty_message"] = self.get_empty_message()
+        context["promover_carousel_fetch_url"] = reverse(
+            "associados:associados_promover_carousel"
+        )
         return context
 
-    def render_to_response(self, context, **response_kwargs):
-        if self.request.headers.get("HX-Request"):
-            response_kwargs.setdefault("content_type", self.content_type)
-            return self.response_class(
-                request=self.request,
-                template="associados/_promover_grid.html",
-                context=context,
-                using=self.template_engine,
-                **response_kwargs,
-            )
-        return super().render_to_response(context, **response_kwargs)
+    def get_current_filter(self) -> str:
+        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
+        current_filter = self.request.GET.get("tipo") or ""
+        if current_filter not in valid_filters:
+            return "todos"
+        return current_filter
+
+    def get_empty_message(self) -> str:
+        if getattr(self, "search_term", "").strip():
+            return _("Nenhum associado encontrado para a busca informada.")
+        return _("Nenhum associado disponível para promoção no momento.")
+
+
+class AssociadoPromoverCarouselView(AssociadosPromocaoPermissionMixin, View):
+    def get(self, request, *args, **kwargs):
+        list_view = AssociadoPromoverListView()
+        list_view.request = request
+        list_view.args = ()
+        list_view.kwargs = {}
+
+        queryset = list_view.get_queryset()
+        paginator = Paginator(queryset, ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE)
+        page_obj = paginator.get_page(request.GET.get("page") or 1)
+
+        empty_message = list_view.get_empty_message()
+
+        html = render_to_string(
+            "associados/partials/promover_carousel_slide.html",
+            {
+                "usuarios": page_obj.object_list,
+                "page_number": page_obj.number,
+                "empty_message": empty_message,
+            },
+            request=request,
+        )
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "count": paginator.count,
+            }
+        )
 
 
 class AssociadoPromoverFormView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):

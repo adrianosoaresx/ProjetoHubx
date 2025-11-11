@@ -13,6 +13,11 @@ urlpatterns = [
     ),
     path("promover/", views.AssociadoPromoverListView.as_view(), name="associados_promover"),
     path(
+        "promover/carousel/",
+        views.AssociadoPromoverCarouselView.as_view(),
+        name="associados_promover_carousel",
+    ),
+    path(
         "<int:pk>/promover/form/",
         views.AssociadoPromoverFormView.as_view(),
         name="associado_promover_form",
