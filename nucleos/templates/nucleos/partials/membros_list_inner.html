@@ -49,18 +49,15 @@
   </div>
 {% endif %}
 
-<div
-  class="grid gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2"
-  role="list"
-  aria-label="{{ list_aria_label }}"
->
-  {% if page_obj.object_list %}
-    {% for part in page_obj.object_list %}
-      {% include 'nucleos/partials/membro_card.html' with part=part %}
-    {% endfor %}
-  {% else %}
-    <p class="col-span-full text-center text-[var(--text-muted)]">{{ empty_message_text }}</p>
-  {% endif %}
-</div>
-{% url 'nucleos:membros_list' object.pk as membros_list_url %}
-{% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_get=membros_list_url hx_target=list_target hx_indicator=loading_id hx_push_url='false' %}
+{% with active_card=card_name_value|default:card|default:selected_card|default:'membros' %}
+  {% include 'nucleos/partials/membros_carousel.html' with
+    page=page_obj
+    empty_message=empty_message_text
+    fetch_url=membros_carousel_fetch_url|default:''
+    search=membros_search_query
+    papel=current_papel_filter
+    card=active_card
+    section=active_card
+    nucleo_id=object.pk
+  %}
+{% endwith %}

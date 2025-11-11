@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n l10n lucide_icons %}
+{% load i18n l10n lucide_icons static %}
 
 {% block title %}{{ object.nome }}{% endblock %}
 
@@ -245,6 +245,7 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const portfolioRoots = document.querySelectorAll('[data-portfolio-root]');
