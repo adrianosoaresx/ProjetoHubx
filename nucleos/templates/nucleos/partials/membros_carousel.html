@@ -1,26 +1,30 @@
 {% load i18n lucide_icons %}
+{% with page_obj=page|default:page_obj %}
+{% with current_page=page_obj.number|default:1 total_pages=page_obj.paginator.num_pages|default:1 %}
 <div
   class="space-y-4"
-  data-carousel-root="associados"
-  data-section="{{ section }}"
+  data-carousel-root="{{ carousel_root|default:'membros' }}"
   data-fetch-url="{{ fetch_url }}"
+  data-section="{{ section|default:'' }}"
   data-current-slide="1"
-  data-backend-page="{{ page.number }}"
-  data-backend-total-pages="{{ page.paginator.num_pages }}"
-  data-search-term="{{ search_term }}"
-  data-search-param="q"
+  data-backend-page="{{ current_page }}"
+  data-backend-total-pages="{{ total_pages }}"
+  data-search-term="{{ search|default:'' }}"
+  data-papel="{{ papel|default:'' }}"
+  data-card="{{ card|default:'' }}"
+  {% if nucleo_id %}data-nucleo-id="{{ nucleo_id }}"{% endif %}
 >
   <div class="relative">
     <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
       <div class="flex transition-transform duration-500 ease-out" data-carousel-track>
-        {% include 'associados/_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message %}
+        {% include 'nucleos/partials/membros_carousel_slide.html' with participacoes=page_obj.object_list page_number=current_page empty_message=empty_message %}
       </div>
     </div>
-    {% if page.paginator.count > 0 %}
+    {% if page_obj.paginator.count > 0 %}
       <div class="absolute inset-y-0 left-4 flex items-center">
         <button
           type="button"
-          class="group flex items-center justify-center mr-3 text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+          class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
           data-carousel-prev
           aria-label="{% trans 'Anterior' %}"
         >
@@ -42,3 +46,5 @@
     {% endif %}
   </div>
 </div>
+{% endwith %}
+{% endwith %}

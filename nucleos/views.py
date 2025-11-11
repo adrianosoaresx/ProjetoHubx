@@ -13,8 +13,9 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -988,6 +989,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
+        ctx["membros_carousel_fetch_url"] = reverse("nucleos:membros_carousel_api", args=[nucleo.pk])
 
         return ctx
 
@@ -1014,6 +1016,45 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
 class NucleoMembrosPartialView(NucleoDetailView):
     template_name = "nucleos/partials/membros_list.html"
+
+
+class NucleoMembrosCarouselView(NucleoMembrosPartialView):
+    http_method_names = ["get"]
+
+    def get_empty_message(self, card: str) -> str:
+        if card == "coordenadores":
+            return _("Sem coordenadores.")
+        return _("Sem membros.")
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        membros_qs = self.get_membros_queryset()
+        paginator = Paginator(membros_qs, self.get_membros_paginate_by())
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        card = request.GET.get("card", "membros")
+        if card not in {"membros", "coordenadores"}:
+            card = "membros"
+
+        html = render_to_string(
+            "nucleos/partials/membros_carousel_slide.html",
+            {
+                "participacoes": page_obj.object_list,
+                "page_number": page_obj.number,
+                "empty_message": self.get_empty_message(card),
+            },
+            request=request,
+        )
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "count": paginator.count,
+            }
+        )
 
 
 class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
