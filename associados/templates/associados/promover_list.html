@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% trans 'Promover associado' %}{% endblock %}
 
@@ -34,7 +34,7 @@
     </form>
 
     <div id="associados-grid">
-      {% include 'associados/_promover_grid.html' with associados=associados page_obj=page_obj request=request has_search=has_search %}
+      {% include 'associados/partials/promover_carousel.html' with page=page_obj paginator=page_obj.paginator usuarios=associados empty_message=promover_empty_message current_filter=current_filter search_term=search_term fetch_url=promover_carousel_fetch_url has_search=has_search %}
     </div>
 
     <div class="pt-4 border-t border-[var(--border)]">
@@ -52,6 +52,7 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'js/carousel.js' %}"></script>
   <script>
     (function () {
       const form = document.querySelector('[data-promover-search-form]');

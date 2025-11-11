@@ -38,6 +38,7 @@
     const classificacao = root.dataset.classificacao || '';
     const scope = root.dataset.scope || '';
     const statusFilter = root.dataset.statusFilter || '';
+    const tipoFilter = root.dataset.tipoFilter || '';
 
     url.searchParams.set('page', String(page));
     if (section) {
@@ -66,6 +67,9 @@
     }
     if (statusFilter) {
       url.searchParams.set('status', statusFilter);
+    }
+    if (tipoFilter) {
+      url.searchParams.set('tipo', tipoFilter);
     }
     return url;
   }
