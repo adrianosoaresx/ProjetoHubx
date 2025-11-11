@@ -63,8 +63,8 @@ class PostForm(forms.ModelForm):
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         allowed_choices = [
-            ("global", _("Feed Público")),
-            ("usuario", _("Mural")),
+            ("global", _("Público")),
+            ("usuario", _("Privado")),
         ]
         current_value = self.data.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
         choice_map = dict(Post.TIPO_FEED_CHOICES)

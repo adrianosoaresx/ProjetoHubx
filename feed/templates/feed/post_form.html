@@ -81,7 +81,7 @@
                            class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
                            data-exclusive="tipo-feed"
                            {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
-                    <span>{% trans "Feed Público" %}</span>
+                    <span>{% trans "Público" %}</span>
                   </label>
                   <label for="tipo_feed_usuario"
                          class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
@@ -94,7 +94,7 @@
                            class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
                            data-exclusive="tipo-feed"
                            {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
-                    <span>{% trans "Mural" %}</span>
+                    <span>{% trans "Privado" %}</span>
                   </label>
                 </div>
               {% if form.tipo_feed.errors %}
