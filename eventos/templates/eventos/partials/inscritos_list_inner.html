@@ -20,13 +20,5 @@
     {% endif %}
   </p>
 {% endif %}
-{% include 'eventos/partials/inscritos_carousel.html' with
-  page=inscritos_page_obj
-  inscricoes=inscricoes_confirmadas
-  search_term=inscritos_search_query
-  fetch_url=inscritos_carousel_fetch_url
-  evento_id=inscritos_evento_id|default:object.pk
-  pode_gerenciar_inscricoes=pode_gerenciar_inscricoes
-  object=object
-  evento=evento
-%}
+{% include 'eventos/partials/inscritos_carousel.html' with page=inscritos_page_obj inscricoes=inscricoes_confirmadas search_term=inscritos_search_query fetch_url=inscritos_carousel_fetch_url evento_id=inscritos_evento_id|default:object.pk pode_gerenciar_inscricoes=pode_gerenciar_inscricoes object=object evento=evento %}
+
