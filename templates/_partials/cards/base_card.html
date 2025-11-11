@@ -1,5 +1,6 @@
 {% load i18n lucide_icons %}
 <article
+  {% if card_id %}id="{{ card_id }}"{% endif %}
   class="card group relative overflow-hidden{% if cover %} card-with-cover{% endif %}{% if card_classes %} {{ card_classes }}{% endif %}"
   role="article"
 >
