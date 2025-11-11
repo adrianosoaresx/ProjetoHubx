@@ -1,26 +1,12 @@
 {% load i18n %}
 {% if usuarios %}
   {% for user in usuarios %}
-    <div class="min-h-full w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" data-carousel-page="{{ page_number }}-{{ forloop.counter }}">
-      <div class="grid h-full grid-cols-1 gap-6" role="list">
-        <div
-          role="listitem"
-          class="h-full"
-          data-associado-card
-          data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
-          data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
-        >
-          {% include '_components/card_usuario.html' with user=user %}
-        </div>
-      </div>
-    </div>
-
     {% if forloop.counter0|divisibleby:3 %}
-      <div class="hidden min-h-full w-full min-w-full flex-shrink-0 grid-cols-1 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
+      <div class="grid min-h-full w-full min-w-full flex-shrink-0 grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
     {% endif %}
         <div
           role="listitem"
-          class="h-full hidden lg:block"
+          class="h-full{% if not forloop.counter0|divisibleby:3 %} hidden lg:block{% endif %}"
           data-associado-card
           data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
           data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
