@@ -61,13 +61,13 @@
       </div>
       <div class="card-body flex-1 space-y-4 px-6 text-center">
         <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
+        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
           <div class="flex flex-wrap items-center justify-center gap-1">
             {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
-            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
+            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
           <div class="flex flex-wrap items-center justify-center gap-1">
             <dt class="text-[var(--text-muted)]">
@@ -78,9 +78,9 @@
               {% else %}
                 {% trans 'Documento' as documento_label %}
               {% endif %}
-              {{ documento_label|lower }}:
+              {{ documento_label }}:
             </dt>
-            <dd class="text-[var(--text-primary)]">
+            <dd class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
@@ -177,13 +177,13 @@
       </div>
       <div class="card-body flex-1 space-y-4 px-6 text-center">
         <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
+        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
           <div class="flex flex-wrap items-center justify-center gap-1">
             {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
-            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
+            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
           <div class="flex flex-wrap items-center justify-center gap-1">
             <dt class="text-[var(--text-muted)]">
@@ -194,9 +194,9 @@
               {% else %}
                 {% trans 'Documento' as documento_label %}
               {% endif %}
-              {{ documento_label|lower }}:
+              {{ documento_label }}:
             </dt>
-            <dd class="text-[var(--text-primary)]">
+            <dd class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
@@ -275,13 +275,13 @@
       </div>
       <div class="card-body flex-1 space-y-4 px-6 text-center">
         <h3 class="text-base font-semibold uppercase tracking-wide text-[var(--text-primary)]">{{ usuario.display_name|default:usuario.username }}</h3>
-        <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
+        <p class="text-sm text-[var(--text-muted)]">{{ usuario.contato|default:_('Contato não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
           <div class="flex flex-wrap items-center justify-center gap-1">
             {% trans 'Razão social' as razao_social_label %}
-            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
-            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label }}:</dt>
+            <dd class="text-[var(--text-muted)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
           <div class="flex flex-wrap items-center justify-center gap-1">
             <dt class="text-[var(--text-muted)]">
@@ -292,9 +292,9 @@
               {% else %}
                 {% trans 'Documento' as documento_label %}
               {% endif %}
-              {{ documento_label|lower }}:
+              {{ documento_label }}:
             </dt>
-            <dd class="text-[var(--text-primary)]">
+            <dd class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
