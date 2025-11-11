@@ -3180,10 +3180,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
           user-select: none;
 }
 
-.resize {
-  resize: both;
-}
-
 .list-inside {
   list-style-position: inside;
 }
@@ -5831,10 +5827,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 }
 
 @media (min-width: 1536px) {
-  .\32xl\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .\32xl\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
