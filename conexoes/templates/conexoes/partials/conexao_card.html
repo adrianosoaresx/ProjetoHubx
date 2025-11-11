@@ -6,38 +6,12 @@
       {% with 'connection-card h-full flex flex-col' as base_classes %}
         {% if section == 'pendentes' %}
           {% with base_classes|add:' request-card' as computed_classes %}
-            {% include '_partials/cards/base_card.html' with
-              url=profile_url
-              cover=usuario.cover
-              avatar=usuario.avatar
-              title=usuario.display_name|default:usuario.username
-              sr_label=usuario.display_name|default:usuario.username
-              header_social_links=redes
-              header_whatsapp_number=whatsapp
-              details='conexoes/partials/conexao_card_details.html'
-              card_classes=computed_classes
-              card_id=card_identifier
-              section=section
-              usuario=usuario
-              profile_url=profile_url
-            %}
+           {% include '_partials/cards/base_card.html' with url=profile_url cover=usuario.cover avatar=usuario.avatar title=usuario.display_name|default:usuario.username sr_label=usuario.display_name|default:usuario.username header_social_links=redes header_whatsapp_number=whatsapp details='conexoes/partials/conexao_card_details.html' card_classes=computed_classes card_id=card_identifier section=section usuario=usuario profile_url=profile_url %}
+
           {% endwith %}
         {% else %}
-          {% include '_partials/cards/base_card.html' with
-            url=profile_url
-            cover=usuario.cover
-            avatar=usuario.avatar
-            title=usuario.display_name|default:usuario.username
-            sr_label=usuario.display_name|default:usuario.username
-            header_social_links=redes
-            header_whatsapp_number=whatsapp
-            details='conexoes/partials/conexao_card_details.html'
-            card_classes=base_classes
-            card_id=card_identifier
-            section=section
-            usuario=usuario
-            profile_url=profile_url
-          %}
+         {% include '_partials/cards/base_card.html' with url=profile_url cover=usuario.cover avatar=usuario.avatar title=usuario.display_name|default:usuario.username sr_label=usuario.display_name|default:usuario.username header_social_links=redes header_whatsapp_number=whatsapp details='conexoes/partials/conexao_card_details.html' card_classes=base_classes card_id=card_identifier section=section usuario=usuario profile_url=profile_url %}
+
         {% endif %}
       {% endwith %}
     {% endwith %}
