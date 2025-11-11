@@ -1,4 +1,4 @@
-{% load i18n associados_extras %}
+{% load i18n associados_extras lucide_icons %}
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
 {% usuario_badges user as user_badges %}
 <article class="card card-with-cover group relative flex h-full flex-col overflow-hidden">
@@ -15,8 +15,7 @@
     {% endif %}
   </header>
 
-  <div class="relative px-4 pb-2 sm:px-6">
-    {% include '_partials/cards/badge_list.html' with badges=user_badges %}
+  <div class="relative px-4 pb-4 sm:px-6">
     <div class="flex flex-col items-center gap-4">
       <div class="-mt-12 sm:-mt-14 relative z-10 flex flex-col items-center">
         <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--bg-primary)] ring-1 ring-black/5 shadow-lg dark:border-[var(--bg-secondary)] dark:ring-white/10">
@@ -29,6 +28,44 @@
           {% endif %}
         </div>
       </div>
+      {% with redes=user.redes_sociais|default_if_none:'' whatsapp=user.whatsapp|default_if_none:''|digits_only %}
+        {% if redes or whatsapp %}
+          <div class="mt-3 flex flex-wrap items-center justify-center gap-1">
+            {% with redes_items=redes.items %}
+              {% if redes_items %}
+                {% for rede, url in redes_items %}
+                  {% if url %}
+                    {% with rede_label=rede|capfirst %}
+                      <a
+                        href="{{ url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/20 dark:bg-white/10 dark:text-white"
+                        aria-label="{{ rede_label }}"
+                      >
+                        {% lucide rede class='h-4 w-4' aria_hidden='true' %}
+                        <span class="sr-only">{% blocktrans with rede=rede_label %}Visitar {{ rede }}{% endblocktrans %}</span>
+                      </a>
+                    {% endwith %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% if whatsapp %}
+              <a
+                href="https://wa.me/{{ whatsapp }}"
+                class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-500 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300"
+                target="_blank"
+                rel="noopener"
+                aria-label="{% trans 'WhatsApp' %}"
+              >
+                {% lucide 'whatsapp' class='h-4 w-4' aria_hidden='true' %}
+                <span class="sr-only">{% trans 'Conversar no WhatsApp' %}</span>
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endwith %}
     </div>
   </div>
 
@@ -49,6 +86,7 @@
         <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
       </div>
     </dl>
+    {% include '_partials/cards/badge_list.html' with badges=user_badges container_classes='flex flex-wrap justify-center gap-2 pt-2' %}
   </div>
   <footer class="card-footer">
     <a href="{% url 'associados:associado_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover' %}</a>
