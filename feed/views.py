@@ -396,8 +396,20 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
         context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
-        fallback_url = get_back_navigation_fallback(self.request, fallback=reverse("feed:listar"))
-        back_href = resolve_back_href(self.request, fallback=fallback_url)
+        back_origin = (self.request.GET.get("back") or self.request.POST.get("back") or "").strip()
+        fallback_map = {
+            "feed": reverse("feed:listar"),
+            "minhas-postagens": f"{reverse('accounts:perfil')}#perfil-posts-accordion",
+        }
+        explicit_fallback = fallback_map.get(back_origin)
+        default_fallback = reverse("feed:listar")
+        fallback_url = get_back_navigation_fallback(
+            self.request, fallback=explicit_fallback or default_fallback
+        )
+        if explicit_fallback:
+            back_href = fallback_url
+        else:
+            back_href = resolve_back_href(self.request, fallback=fallback_url)
         context["back_href"] = back_href
         context["back_component_config"] = {
             "href": back_href,
@@ -408,6 +420,9 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             "fallback_href": fallback_url,
         }
         form_action = reverse("feed:nova_postagem")
+        query_string = self.request.META.get("QUERY_STRING", "")
+        if query_string:
+            form_action = f"{form_action}?{query_string}"
         context.update(
             {
                 "is_update": False,
