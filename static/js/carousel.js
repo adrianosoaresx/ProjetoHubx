@@ -35,6 +35,8 @@
     const card = root.dataset.card || '';
     const nucleoId = root.dataset.nucleoId || '';
     const eventoId = root.dataset.eventoId || '';
+    const classificacao = root.dataset.classificacao || '';
+    const scope = root.dataset.scope || '';
 
     url.searchParams.set('page', String(page));
     if (section) {
@@ -54,6 +56,12 @@
     }
     if (eventoId) {
       url.searchParams.set('evento_id', eventoId);
+    }
+    if (classificacao) {
+      url.searchParams.set('classificacao', classificacao);
+    }
+    if (scope) {
+      url.searchParams.set('scope', scope);
     }
     return url;
   }

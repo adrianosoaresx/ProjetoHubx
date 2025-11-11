@@ -171,6 +171,9 @@ def _usuario_pode_gerenciar_portfolio_nucleo(user, nucleo: Nucleo) -> bool:
     return False
 
 
+NUCLEO_SECTION_PAGE_SIZE = 6
+
+
 NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
     {
         "key": Nucleo.Classificacao.CONSTITUIDO.value,
@@ -199,31 +202,58 @@ NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
 ]
 
 
+NUCLEO_SECTION_CONFIG_MAP = {config["key"]: config for config in NUCLEO_SECTION_CONFIG}
+
+
 def build_nucleo_sections(
-    current_items: Iterable[Nucleo],
+    request,
+    base_queryset: Iterable[Nucleo],
     totals_by_classificacao: Mapping[str, int],
     allowed_keys: Iterable[str],
+    *,
+    fetch_url: str = "",
+    search_term: str = "",
+    selected_classificacao: str | None = None,
+    scope: str | None = None,
+    per_page: int = NUCLEO_SECTION_PAGE_SIZE,
 ) -> list[dict[str, object]]:
     allowed_set = set(allowed_keys)
-    grouped: dict[str, list[Nucleo]] = {key: [] for key in allowed_set}
-
-    for nucleo in current_items:
-        if nucleo.classificacao in allowed_set:
-            grouped.setdefault(nucleo.classificacao, []).append(nucleo)
 
     sections: list[dict[str, object]] = []
     for config in NUCLEO_SECTION_CONFIG:
         key = config["key"]
         if key not in allowed_set:
             continue
-        items = grouped.get(key, [])
-        total = totals_by_classificacao.get(key)
-        if total is None:
-            total = len(items)
+
+        queryset = getattr(base_queryset, "filter", None)
+        if callable(queryset):
+            section_qs = base_queryset.filter(classificacao=key).order_by("nome").distinct()
+        else:
+            section_qs = [
+                nucleo
+                for nucleo in base_queryset
+                if getattr(nucleo, "classificacao", None) == key
+            ]
+
+        if selected_classificacao and selected_classificacao != key:
+            if callable(getattr(section_qs, "none", None)):
+                section_qs = section_qs.none()
+            else:
+                section_qs = []
+
+        paginator = Paginator(section_qs, per_page)
+        page_number = request.GET.get(f"{key}_page") or 1
+        page_obj = paginator.get_page(page_number)
+
+        total = totals_by_classificacao.get(key, paginator.count)
+
         section = {
             **config,
-            "items": items,
             "total": total,
+            "page_obj": page_obj,
+            "fetch_url": fetch_url,
+            "search_term": search_term,
+            "scope": scope,
         }
         sections.append(section)
 
@@ -347,7 +377,8 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
-        ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        form = NucleoSearchForm(self.request.GET or None)
+        ctx["form"] = form
         show_totals = self.request.user.user_type in {UserType.ADMIN, UserType.OPERADOR}
         ctx["show_totals"] = show_totals
 
@@ -389,7 +420,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
             ctx["total_eventos_org"] = None
             ctx["total_eventos_planejamento_org"] = None
             ctx["total_eventos_ativos_org"] = None
-            ctx["total_eventos_concluidos_org"] = None
+        ctx["total_eventos_concluidos_org"] = None
         params = self.request.GET.copy()
         try:
             params.pop("page")
@@ -400,6 +431,13 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         selected_classificacao = self.get_classificacao()
         ctx["selected_classificacao"] = selected_classificacao
         ctx["is_all_classificacao_active"] = selected_classificacao is None
+
+        search_term = ""
+        if form.is_bound and form.is_valid():
+            search_term = form.cleaned_data.get("q", "").strip()
+        ctx["nucleos_search_term"] = search_term
+        ctx["nucleos_carousel_fetch_url"] = reverse("nucleos:nucleos_carousel_api")
+        ctx["nucleos_carousel_scope"] = "list"
 
         params_without_page = self.request.GET.copy()
         params_without_page.pop("page", None)
@@ -466,8 +504,16 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
                     classificacao_totals[key] = row["total"]
 
         ctx["classificacao_totals"] = classificacao_totals
+        base_qs_for_totals = getattr(self, "_qs_for_counts", Nucleo.objects.none())
         ctx["nucleo_sections"] = build_nucleo_sections(
-            list(ctx.get("object_list", [])), classificacao_totals, allowed_keys
+            self.request,
+            base_qs_for_totals,
+            classificacao_totals,
+            allowed_keys,
+            fetch_url=ctx["nucleos_carousel_fetch_url"],
+            search_term=search_term,
+            selected_classificacao=selected_classificacao,
+            scope=ctx["nucleos_carousel_scope"],
         )
 
         return ctx
@@ -513,6 +559,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
 
         if cached_ids is not None:
             qs = base_qs.filter(pk__in=cached_ids, classificacao__in=allowed_keys).order_by("nome")
+            self._qs_for_counts = qs.distinct()
             result = list(qs)
             self._cached_queryset = result
             return result
@@ -524,6 +571,8 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
             participacoes__status_suspensao=False,
             classificacao__in=allowed_keys,
         )
+
+        self._qs_for_counts = qs.distinct()
 
         if q:
             qs = qs.filter(nome__icontains=q)
@@ -539,7 +588,8 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        form = NucleoSearchForm(self.request.GET or None)
+        ctx["form"] = form
         # Ajusta títulos e rótulos para o contexto "Meus Núcleos"
         ctx.setdefault("list_title", _("Meus Núcleos"))
         ctx.setdefault("list_aria_label", _("Lista de núcleos do usuário"))
@@ -551,6 +601,12 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx.setdefault("list_card_template", "_components/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
         ctx.setdefault("show_totals", False)
+        search_term = ""
+        if form.is_bound and form.is_valid():
+            search_term = form.cleaned_data.get("q", "").strip()
+        ctx["nucleos_search_term"] = search_term
+        ctx["nucleos_carousel_fetch_url"] = reverse("nucleos:nucleos_carousel_api")
+        ctx["nucleos_carousel_scope"] = "meus"
         params = self.request.GET.copy()
         try:
             params.pop("page")
@@ -559,22 +615,113 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx["querystring"] = urlencode(params, doseq=True)
         allowed_keys = self.get_allowed_classificacao_keys()
         ctx["allowed_classificacao_keys"] = sorted(allowed_keys)
-        current_items = list(ctx.get("object_list", []))
-        all_items = list(self.get_queryset())
-        counts = Counter(
-            nucleo.classificacao for nucleo in all_items if nucleo.classificacao in allowed_keys
-        )
-        classificacao_totals: dict[str, int] = {}
-        for config in NUCLEO_SECTION_CONFIG:
-            key = config["key"]
-            if key in allowed_keys:
-                classificacao_totals[key] = counts.get(key, 0)
+        selected_classificacao = self.request.GET.get("classificacao")
+        if selected_classificacao not in allowed_keys:
+            selected_classificacao = None
+        ctx["selected_classificacao"] = selected_classificacao
+        base_qs_for_totals = getattr(self, "_qs_for_counts", Nucleo.objects.none())
+        classificacao_totals: dict[str, int] = {key: 0 for key in allowed_keys}
+        if hasattr(base_qs_for_totals, "values"):
+            for row in base_qs_for_totals.values("classificacao").annotate(total=Count("id", distinct=True)):
+                key = row["classificacao"]
+                if key in classificacao_totals:
+                    classificacao_totals[key] = row["total"]
         ctx["classificacao_totals"] = classificacao_totals
         ctx["nucleo_sections"] = build_nucleo_sections(
-            current_items, classificacao_totals, allowed_keys
+            self.request,
+            base_qs_for_totals,
+            classificacao_totals,
+            allowed_keys,
+            fetch_url=ctx["nucleos_carousel_fetch_url"],
+            search_term=search_term,
+            selected_classificacao=selected_classificacao,
+            scope=ctx["nucleos_carousel_scope"],
         )
 
         return ctx
+
+
+class NucleoListCarouselView(NoSuperadminMixin, LoginRequiredMixin, View):
+    http_method_names = ["get"]
+
+    def get_paginate_by(self) -> int:
+        try:
+            per_page = int(self.request.GET.get("per_page", NUCLEO_SECTION_PAGE_SIZE))
+        except (TypeError, ValueError):
+            return NUCLEO_SECTION_PAGE_SIZE
+        return per_page if per_page > 0 else NUCLEO_SECTION_PAGE_SIZE
+
+    def _get_view_for_scope(self, scope: str):
+        if scope == "meus":
+            return NucleoMeusView()
+        return NucleoListView()
+
+    def get(self, request, *args, **kwargs):
+        scope = request.GET.get("scope", "list")
+        section_key = request.GET.get("section")
+
+        view = self._get_view_for_scope(scope)
+        view.setup(request, *args, **kwargs)
+        view.get_queryset()
+
+        allowed_keys = view.get_allowed_classificacao_keys()
+        if section_key not in allowed_keys:
+            return JsonResponse({"error": _("Seção inválida.")}, status=400)
+
+        config = NUCLEO_SECTION_CONFIG_MAP.get(section_key)
+        if config is None:
+            return JsonResponse({"error": _("Seção inválida.")}, status=400)
+
+        base_queryset = getattr(view, "_qs_for_counts", Nucleo.objects.none())
+
+        if hasattr(view, "get_classificacao"):
+            selected_classificacao = view.get_classificacao()
+        else:
+            selected_classificacao = request.GET.get("classificacao")
+            if selected_classificacao not in allowed_keys:
+                selected_classificacao = None
+
+        if hasattr(base_queryset, "filter"):
+            queryset = (
+                base_queryset.filter(classificacao=section_key)
+                .order_by("nome")
+                .distinct()
+            )
+            if selected_classificacao and selected_classificacao != section_key:
+                queryset = queryset.none()
+        else:
+            queryset = [
+                nucleo
+                for nucleo in base_queryset
+                if getattr(nucleo, "classificacao", None) == section_key
+                and (
+                    not selected_classificacao
+                    or selected_classificacao == section_key
+                )
+            ]
+
+        paginator = Paginator(queryset, self.get_paginate_by())
+        page_number = request.GET.get("page") or 1
+        page_obj = paginator.get_page(page_number)
+
+        html = render_to_string(
+            "nucleos/partials/nucleo_carousel_slide.html",
+            {
+                "nucleos": list(page_obj.object_list),
+                "page_number": page_obj.number,
+                "empty_message": config.get("empty_message"),
+            },
+            request=request,
+        )
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "count": paginator.count,
+            }
+        )
 
 
 class NucleoCreateView(
