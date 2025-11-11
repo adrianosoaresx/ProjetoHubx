@@ -5,6 +5,7 @@ from . import views
 app_name = "conexoes"
 
 urlpatterns = [
+    path("carousel/", views.ConexaoListCarouselView.as_view(), name="conexoes_carousel_api"),
     path("perfil/sections/conexoes/", views.perfil_conexoes, name="perfil_sections_conexoes"),
     path(
         "perfil/conexoes/<int:id>/remover/modal/",

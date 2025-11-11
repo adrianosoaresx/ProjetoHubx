@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% trans "Conexões" %}{% endblock %}
 
@@ -9,4 +9,9 @@
 
 {% block content %}
   {% include 'conexoes/partiais/connections_list_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}

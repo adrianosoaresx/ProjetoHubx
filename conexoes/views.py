@@ -4,13 +4,17 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import F, Q, Value
 from django.db.models.functions import Replace
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 
 from accounts.models import UserType
 from accounts.utils import is_htmx_or_ajax
@@ -82,19 +86,37 @@ def _connection_totals(user):
 
 
 CONNECTION_FILTER_CHOICES = {"ativas", "pendentes", "enviadas"}
+CONEXOES_CAROUSEL_PAGE_SIZE = 6
 
 
 def _resolve_connections_filter(request):
+    status_value = (request.GET.get("status") or "").strip().lower()
     filter_value = (request.GET.get("filter") or "").strip().lower()
     tab = (request.GET.get("tab") or "").strip().lower()
 
-    if tab == "solicitacoes" and not filter_value:
-        filter_value = "pendentes"
+    resolved = status_value or filter_value
 
-    if filter_value not in CONNECTION_FILTER_CHOICES:
-        filter_value = "ativas"
+    if tab == "solicitacoes" and not resolved:
+        resolved = "pendentes"
 
-    return filter_value
+    if resolved not in CONNECTION_FILTER_CHOICES:
+        resolved = "ativas"
+
+    return resolved
+
+
+def _get_connections_search_form(request):
+    form = ConnectionsSearchForm(
+        request.GET or None,
+        placeholder=_("Buscar conexões..."),
+        label=_("Buscar conexões"),
+        aria_label=_("Buscar conexões"),
+    )
+    if form.is_valid():
+        query = form.cleaned_data.get("q", "") or ""
+    else:
+        query = ""
+    return form, query.strip()
 
 
 def _build_connections_page_context(
@@ -105,14 +127,38 @@ def _build_connections_page_context(
     sent_requests,
     query: str,
     active_filter: str,
+    *,
+    section_pages: dict[str, int] | None = None,
 ):
+    if section_pages is None:
+        section_pages = {}
+
     total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
     search_params = {"q": query} if query else {}
     search_page_url = reverse("conexoes:perfil_conexoes_buscar")
     if search_params:
         search_page_url = f"{search_page_url}?{urlencode(search_params)}"
 
-    return {
+    carousel_sections = build_conexao_carousel_sections(
+        request,
+        connections=connections,
+        connection_requests=connection_requests,
+        sent_requests=sent_requests,
+        search_term=query,
+        status_filter=active_filter,
+        section_pages=section_pages,
+    )
+
+    sections = carousel_sections.get("sections", {})
+
+    def get_section(section_key: str):
+        return sections.get(section_key, {})
+
+    minhas_section = get_section("minhas")
+    pendentes_section = get_section("pendentes")
+    enviadas_section = get_section("enviadas")
+
+    context = {
         "connections": connections,
         "connection_requests": connection_requests,
         "sent_requests": sent_requests,
@@ -129,6 +175,112 @@ def _build_connections_page_context(
         "total_solicitacoes": total_solicitacoes,
         "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
         "connections_filter": active_filter,
+        "conexoes_carousel_fetch_url": carousel_sections.get("fetch_url"),
+        "conexoes_search_query": carousel_sections.get("search_term", ""),
+        "conexoes_status_filter": carousel_sections.get("status_filter", ""),
+        "minhas_conexoes_page": minhas_section.get("page_obj"),
+        "minhas_conexoes_empty_message": minhas_section.get("empty_message"),
+        "minhas_conexoes_empty_cta": None,
+        "minhas_conexoes_aria_label": minhas_section.get("aria_label"),
+        "solicitacoes_pendentes_page": pendentes_section.get("page_obj"),
+        "solicitacoes_pendentes_empty_message": pendentes_section.get("empty_message"),
+        "solicitacoes_pendentes_empty_cta": None,
+        "solicitacoes_pendentes_aria_label": pendentes_section.get("aria_label"),
+        "solicitacoes_enviadas_page": enviadas_section.get("page_obj"),
+        "solicitacoes_enviadas_empty_message": enviadas_section.get("empty_message"),
+        "solicitacoes_enviadas_empty_cta": None,
+        "solicitacoes_enviadas_aria_label": enviadas_section.get("aria_label"),
+    }
+
+    _refresh_minhas_conexoes_empty_cta(context)
+
+    return context
+
+
+def _refresh_minhas_conexoes_empty_cta(context):
+    search_page_url = context.get("search_page_url")
+    if not search_page_url:
+        context["minhas_conexoes_empty_cta"] = None
+        return
+
+    context["minhas_conexoes_empty_cta"] = {
+        "label": _("Buscar Pessoas"),
+        "href": search_page_url,
+        "hx_get": context.get("search_page_hx_get"),
+        "hx_target": context.get("search_page_hx_target"),
+        "hx_push_url": context.get("search_page_hx_push_url"),
+    }
+
+
+def build_conexao_carousel_sections(
+    request,
+    *,
+    connections,
+    connection_requests,
+    sent_requests,
+    search_term: str | None = None,
+    status_filter: str | None = None,
+    section_pages: dict[str, int] | None = None,
+    only_sections: set[str] | None = None,
+):
+    if section_pages is None:
+        section_pages = {}
+
+    if search_term is None:
+        search_term = (request.GET.get("q") or "").strip()
+
+    if status_filter is None:
+        status_filter = _resolve_connections_filter(request)
+
+    fetch_url = reverse("conexoes:conexoes_carousel_api")
+
+    section_definitions = {
+        "minhas": {
+            "queryset": connections if connections is not None else User.objects.none(),
+            "empty_message": _("Você ainda não tem conexões."),
+            "aria_label": _("Lista de conexões ativas"),
+        },
+        "pendentes": {
+            "queryset": connection_requests if connection_requests is not None else User.objects.none(),
+            "empty_message": _("Você não tem solicitações de conexão pendentes."),
+            "aria_label": _("Lista de solicitações de conexão pendentes"),
+        },
+        "enviadas": {
+            "queryset": sent_requests if sent_requests is not None else User.objects.none(),
+            "empty_message": _("Você não enviou solicitações de conexão recentemente."),
+            "aria_label": _("Lista de solicitações de conexão enviadas"),
+        },
+    }
+
+    sections: dict[str, dict[str, object]] = {}
+
+    for section_key, definition in section_definitions.items():
+        if only_sections is not None and section_key not in only_sections:
+            continue
+
+        queryset = definition["queryset"]
+        paginator = Paginator(queryset, CONEXOES_CAROUSEL_PAGE_SIZE)
+        page_number = section_pages.get(section_key) or 1
+        page_obj = paginator.get_page(page_number)
+
+        sections[section_key] = {
+            "section": section_key,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "total": paginator.count,
+            "total_pages": paginator.num_pages,
+            "empty_message": definition["empty_message"],
+            "aria_label": definition["aria_label"],
+            "fetch_url": fetch_url,
+            "search_term": search_term,
+            "status_filter": status_filter,
+        }
+
+    return {
+        "sections": sections,
+        "fetch_url": fetch_url,
+        "search_term": search_term,
+        "status_filter": status_filter,
     }
 
 
@@ -212,16 +364,7 @@ def perfil_conexoes(request):
 
     active_filter = _resolve_connections_filter(request)
 
-    search_form = ConnectionsSearchForm(
-        request.GET or None,
-        placeholder=_("Buscar conexões..."),
-        label=_("Buscar conexões"),
-        aria_label=_("Buscar conexões"),
-    )
-    if search_form.is_valid():
-        q = search_form.cleaned_data.get("q", "")
-    else:
-        q = ""
+    search_form, q = _get_connections_search_form(request)
 
     connections = _get_user_connections(request.user, q)
     connection_requests = _get_user_connection_requests(request.user, q)
@@ -266,16 +409,7 @@ def perfil_conexoes_partial(request):
 
     active_filter = _resolve_connections_filter(request)
 
-    search_form = ConnectionsSearchForm(
-        request.GET or None,
-        placeholder=_("Buscar conexões..."),
-        label=_("Buscar conexões"),
-        aria_label=_("Buscar conexões"),
-    )
-    if search_form.is_valid():
-        q = search_form.cleaned_data.get("q", "")
-    else:
-        q = ""
+    search_form, q = _get_connections_search_form(request)
 
     connections = _get_user_connections(request.user, q)
     connection_requests = _get_user_connection_requests(request.user, q)
@@ -291,7 +425,96 @@ def perfil_conexoes_partial(request):
         active_filter,
     )
     context.update(_profile_dashboard_hx_context())
+    _refresh_minhas_conexoes_empty_cta(context)
     return render(request, "conexoes/partiais/connections_list_content.html", context)
+
+
+class ConexaoListCarouselView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        response = _deny_root_connections_access(request)
+        if response:
+            return response
+
+        section = (request.GET.get("section") or "minhas").strip().lower()
+        valid_sections = {"minhas", "pendentes", "enviadas"}
+        if section not in valid_sections:
+            return JsonResponse({"error": _("Seção inválida.")}, status=400)
+
+        try:
+            page_number = int(request.GET.get("page") or 1)
+        except (TypeError, ValueError):
+            page_number = 1
+        if page_number < 1:
+            page_number = 1
+
+        search_form, search_term = _get_connections_search_form(request)
+        status_filter = _resolve_connections_filter(request)
+
+        connections = _get_user_connections(request.user, search_term)
+        connection_requests = _get_user_connection_requests(request.user, search_term)
+        sent_requests = _get_user_sent_connection_requests(request.user, search_term)
+
+        base_context = _build_connections_page_context(
+            request,
+            search_form,
+            connections,
+            connection_requests,
+            sent_requests,
+            search_term,
+            status_filter,
+            section_pages={section: page_number},
+        )
+
+        section_context_map = {
+            "minhas": {
+                "page": "minhas_conexoes_page",
+                "empty_message": "minhas_conexoes_empty_message",
+                "empty_cta": "minhas_conexoes_empty_cta",
+            },
+            "pendentes": {
+                "page": "solicitacoes_pendentes_page",
+                "empty_message": "solicitacoes_pendentes_empty_message",
+                "empty_cta": "solicitacoes_pendentes_empty_cta",
+            },
+            "enviadas": {
+                "page": "solicitacoes_enviadas_page",
+                "empty_message": "solicitacoes_enviadas_empty_message",
+                "empty_cta": "solicitacoes_enviadas_empty_cta",
+            },
+        }
+
+        mapping = section_context_map.get(section)
+        page_obj = base_context.get(mapping["page"])
+        if page_obj is None:
+            return JsonResponse({"error": _("Seção não disponível.")}, status=404)
+
+        empty_message = base_context.get(mapping["empty_message"])
+        empty_cta = base_context.get(mapping["empty_cta"])
+
+        html = render_to_string(
+            "conexoes/partials/conexao_carousel_slide.html",
+            {
+                "items": page_obj.object_list,
+                "page_number": page_obj.number,
+                "section": section,
+                "empty_message": empty_message,
+                "empty_cta": empty_cta,
+            },
+            request=request,
+        )
+
+        paginator = getattr(page_obj, "paginator", None)
+        total_pages = paginator.num_pages if paginator else 1
+        total_count = paginator.count if paginator else len(page_obj.object_list)
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": page_obj.number,
+                "total_pages": total_pages,
+                "count": total_count,
+            }
+        )
 
 
 @login_required

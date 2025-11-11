@@ -1,0 +1,50 @@
+{% load i18n lucide_icons %}
+<div
+  class="space-y-4"
+  data-carousel-root="conexoes"
+  data-section="{{ section }}"
+  data-fetch-url="{{ fetch_url }}"
+  data-current-slide="1"
+  data-backend-page="{{ page.number }}"
+  data-backend-total-pages="{{ page.paginator.num_pages }}"
+  data-search-term="{{ search_term }}"
+  data-search-param="q"
+  data-status-filter="{{ status_filter }}"
+>
+  <div class="relative">
+    <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+      <div
+        class="flex transition-transform duration-500 ease-out"
+        data-carousel-track
+        role="list"
+        aria-label="{{ aria_label }}"
+      >
+        {% include 'conexoes/partials/conexao_carousel_slide.html' with items=page.object_list page_number=page.number section=section empty_message=empty_message empty_cta=empty_cta %}
+      </div>
+    </div>
+    {% if page.paginator.count > 0 %}
+      <div class="absolute inset-y-0 left-4 flex items-center">
+        <button
+          type="button"
+          class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+          data-carousel-prev
+          aria-label="{% trans 'Anterior' %}"
+        >
+          {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+        </button>
+      </div>
+      <div class="absolute inset-y-0 right-4 flex items-center">
+        <button
+          type="button"
+          class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+          data-carousel-next
+          aria-label="{% trans 'Próximo' %}"
+        >
+          {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+        </button>
+      </div>
+      <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+    {% endif %}
+  </div>
+</div>
