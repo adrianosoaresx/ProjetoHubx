@@ -30,7 +30,7 @@
       </div>
       {% with redes=user.redes_sociais|default_if_none:'' whatsapp=user.whatsapp|default_if_none:''|digits_only %}
         {% if redes or whatsapp %}
-          <div class="mt-3 flex flex-wrap items-center justify-center gap-1">
+          <div class="flex flex-wrap items-center justify-center gap-1">
             {% with redes_items=redes.items %}
               {% if redes_items %}
                 {% for rede, url in redes_items %}
