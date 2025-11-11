@@ -195,17 +195,31 @@
         let isLoading = false;
 
         function getSlides() {
-          return Array.from(track.querySelectorAll('[data-carousel-page]'));
+          return Array.from(track.querySelectorAll('[data-carousel-page]')).filter((slide) => {
+            if (!(slide instanceof HTMLElement)) {
+              return false;
+            }
+            if (slide.offsetParent !== null) {
+              return true;
+            }
+            const rects = slide.getClientRects();
+            return rects.length > 0;
+          });
         }
 
         function setTransform(slideIndex) {
           const slides = getSlides();
           if (!slides.length) {
+            currentSlide = 1;
+            root.dataset.currentSlide = String(currentSlide);
             track.style.transform = 'translateX(0)';
-            return;
+            return currentSlide;
           }
           const clampedIndex = Math.min(Math.max(slideIndex, 1), slides.length);
+          currentSlide = clampedIndex;
+          root.dataset.currentSlide = String(currentSlide);
           track.style.transform = `translateX(-${(clampedIndex - 1) * 100}%)`;
+          return currentSlide;
         }
 
         function updateButtons() {
@@ -256,6 +270,8 @@
             loadedBackendPages.add(page);
             currentBackendPage = Math.max(currentBackendPage, page);
             root.dataset.backendPage = String(currentBackendPage);
+            setTransform(currentSlide);
+            updateButtons();
             return newSlides;
           } catch (error) {
             console.error(error);
@@ -298,9 +314,7 @@
 
           const maxIndex = slides.length;
           desiredIndex = Math.min(desiredIndex, maxIndex);
-          currentSlide = desiredIndex;
-          root.dataset.currentSlide = String(currentSlide);
-          setTransform(currentSlide);
+          setTransform(desiredIndex);
           updateButtons();
         }
 
@@ -319,6 +333,23 @@
             }
           });
         }
+
+        const mediaQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 1024px)') : null;
+
+        function handleBreakpointChange() {
+          setTransform(currentSlide);
+          updateButtons();
+        }
+
+        if (mediaQuery) {
+          if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', handleBreakpointChange);
+          } else if (typeof mediaQuery.addListener === 'function') {
+            mediaQuery.addListener(handleBreakpointChange);
+          }
+        }
+
+        window.addEventListener('resize', handleBreakpointChange);
 
         setTransform(currentSlide);
         updateButtons();

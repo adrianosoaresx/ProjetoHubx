@@ -1,12 +1,26 @@
 {% load i18n %}
 {% if usuarios %}
   {% for user in usuarios %}
+    <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
+      <div
+        role="listitem"
+        class="h-full"
+        data-associado-card
+        data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
+        data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
+      >
+        {% include '_components/card_usuario.html' with user=user %}
+      </div>
+    </div>
+  {% endfor %}
+
+  {% for user in usuarios %}
     {% if forloop.counter0|divisibleby:3 %}
-      <div class="grid min-h-full w-full min-w-full flex-shrink-0 grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
     {% endif %}
         <div
           role="listitem"
-          class="h-full{% if not forloop.counter0|divisibleby:3 %} hidden lg:block{% endif %}"
+          class="h-full"
           data-associado-card
           data-associado-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
           data-associado-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
@@ -14,10 +28,10 @@
           {% include '_components/card_usuario.html' with user=user %}
         </div>
         {% if forloop.last and not forloop.counter|divisibleby:3 %}
-          <div class="h-full opacity-0 pointer-events-none hidden lg:block" aria-hidden="true"></div>
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
         {% endif %}
         {% if forloop.last and forloop.counter|add:"-1"|divisibleby:3 %}
-          <div class="h-full opacity-0 pointer-events-none hidden lg:block" aria-hidden="true"></div>
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
         {% endif %}
     {% if forloop.counter|divisibleby:3 or forloop.last %}
       </div>
