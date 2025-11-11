@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans "Solicitações de conexão" %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_conexoes.html' with title=_('Solicitações de conexão') subtitle=_('Gerencie as solicitações pendentes e enviadas na sua rede') action_url=search_page_url action_icon='user-round-plus' total_conexoes=total_conexoes total_solicitacoes=total_solicitacoes total_solicitacoes_enviadas=total_solicitacoes_enviadas %}
+{% endblock %}
+
+{% block content %}
+  {% include 'conexoes/partiais/connections_list_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
+{% endblock %}
