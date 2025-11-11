@@ -15,7 +15,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 from django.db.models.functions import Lower
 from django.http import (
     Http404,
@@ -48,6 +48,7 @@ from nucleos.models import ConviteNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
+from feed.models import Bookmark, Flag, Post, Reacao
 from .forms import (
     CPF_REUSE_ERROR,
     IDENTIFIER_REQUIRED_ERROR,
@@ -211,11 +212,65 @@ def perfil(request):
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
 
+    profile_posts = (
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+        .prefetch_related("reacoes", "comments")
+        .filter(deleted=False, autor=target_user)
+        .annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+        )
+    )
+
+    if viewer.is_authenticated:
+        profile_posts = profile_posts.annotate(
+            is_bookmarked=Exists(
+                Bookmark.objects.filter(post=OuterRef("pk"), user=viewer, deleted=False)
+            ),
+            is_flagged=Exists(
+                Flag.objects.filter(post=OuterRef("pk"), user=viewer, deleted=False)
+            ),
+            is_liked=Exists(
+                Reacao.objects.filter(
+                    post=OuterRef("pk"),
+                    user=viewer,
+                    vote="like",
+                    deleted=False,
+                )
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(
+                    post=OuterRef("pk"),
+                    user=viewer,
+                    vote="share",
+                    deleted=False,
+                )
+            ),
+        )
+    else:
+        profile_posts = profile_posts.annotate(
+            is_bookmarked=Value(False, output_field=BooleanField()),
+            is_flagged=Value(False, output_field=BooleanField()),
+            is_liked=Value(False, output_field=BooleanField()),
+            is_shared=Value(False, output_field=BooleanField()),
+        )
+
+    profile_posts = profile_posts.order_by("-created_at").distinct()
+
     context = {
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "profile": target_user,
         "is_owner": is_owner,
+        "profile_posts": profile_posts,
     }
 
     default_section, default_url = _perfil_default_section_url(

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load i18n static lucide_icons %}
 
 {% block hero %}
   {% include "_components/hero_profile.html" with is_owner=is_owner profile=profile hero_title=hero_title hero_subtitle=hero_subtitle %}
@@ -8,7 +8,7 @@
 {% block content %}
 
 <div class="space-y-6">
-  
+
       {% with default_section=perfil_default_section|default:"info" %}
         <section
           id="perfil-content"
@@ -40,11 +40,86 @@
         </section>
       {% endwith %}
 
+      <section id="perfil-posts-accordion" class="card" data-accordion>
+        <div class="card-header">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 text-left"
+            data-accordion-toggle
+            aria-expanded="true"
+            aria-controls="perfil-posts-panel"
+          >
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                {% lucide 'newspaper' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h3 class="text-xl font-semibold">{% trans "Minhas postagens" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe todas as publicações feitas por você." %}</p>
+              </div>
+            </div>
+            <svg
+              class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200 rotate-180"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div
+          id="perfil-posts-panel"
+          class="card-body space-y-6 border-t border-[var(--border)]"
+          data-accordion-panel
+        >
+          {% include "feed/_grid.html" with posts=profile_posts %}
+        </div>
+      </section>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
   <script type="module" src="{% static 'perfil/js/perfil.js' %}"></script>
+  <script>
+    (function () {
+      const accordion = document.getElementById('perfil-posts-accordion');
+      if (!accordion) {
+        return;
+      }
+
+      const toggle = accordion.querySelector('[data-accordion-toggle]');
+      const panel = accordion.querySelector('[data-accordion-panel]');
+      const icon = accordion.querySelector('[data-accordion-icon]');
+
+      if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+        return;
+      }
+
+      const setExpanded = (expanded) => {
+        toggle.setAttribute('aria-expanded', String(expanded));
+        panel.classList.toggle('hidden', !expanded);
+        if (icon instanceof HTMLElement) {
+          icon.classList.toggle('rotate-180', expanded);
+        }
+      };
+
+      setExpanded(true);
+
+      toggle.addEventListener('click', () => {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isExpanded);
+      });
+    })();
+  </script>
 {% endblock %}
 
