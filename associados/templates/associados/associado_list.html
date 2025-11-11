@@ -10,59 +10,43 @@
 {% block content %}
 
   <div class="space-y-6">
-    <details class="card group" data-associados-search-card>
-      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-        <div class="flex items-start gap-3">
-          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
-            {% lucide 'search' class='h-6 w-6' aria_hidden='true' %}
-          </span>
-          <div class="space-y-1">
-            <p class="text-xl font-semibold">{% trans "Buscar associados" %}</p>
-            <p class="text-sm text-[var(--text-secondary)]">{% trans "Procure por associados, nucleados, consultores e coordenadores." %}</p>
-          </div>
+    <div>
+      <form
+        class="flex flex-col gap-3 md:flex-row md:items-center"
+        role="search"
+        novalidate
+        data-associados-search-form
+        data-initial-search-term="{{ search_term }}"
+        data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
+        data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum associado correspondente a {{ term }}.{% endblocktrans %}"
+        data-feedback-empty="{% trans 'Digite um termo para buscar associados.' %}"
+      >
+        <div class="flex w-full items-center gap-2">
+          <label for="associados-search" class="sr-only">{% trans "Buscar associados" %}</label>
+          <input
+            type="search"
+            id="associados-search"
+            name="q"
+            value="{{ search_term }}"
+            autocomplete="off"
+            placeholder="{% trans 'Buscar por nome, usuário ou contato' %}"
+            class="input input-bordered w-full"
+            data-associados-search-input
+          />
+          <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
+            {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
+          </button>
         </div>
-        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
-          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-        </span>
-      </summary>
-      <div class="card-body space-y-4">
-        <form
-          class="flex flex-col gap-3 md:flex-row md:items-center"
-          role="search"
-          novalidate
-          data-associados-search-form
-          data-initial-search-term="{{ search_term }}"
-          data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
-          data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum associado correspondente a {{ term }}.{% endblocktrans %}"
-          data-feedback-empty="{% trans 'Digite um termo para buscar associados.' %}"
-        >
-          <div class="flex w-full items-center gap-2">
-            <label for="associados-search" class="sr-only">{% trans "Buscar associados" %}</label>
-            <input
-              type="search"
-              id="associados-search"
-              name="q"
-              value="{{ search_term }}"
-              autocomplete="off"
-              placeholder="{% trans 'Buscar por nome, usuário ou contato' %}"
-              class="input input-bordered w-full"
-              data-associados-search-input
-            />
-            <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
-              {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
-            </button>
-          </div>
-        </form>
-        <p
-          class="text-sm text-[var(--text-secondary)]"
-          data-associados-search-feedback
-          id="associados-search-feedback"
-          hidden
-          role="status"
-          aria-live="polite"
-        ></p>
-      </div>
-    </details>
+      </form>
+      <p
+        class="text-sm text-[var(--text-secondary)]"
+        data-associados-search-feedback
+        id="associados-search-feedback"
+        hidden
+        role="status"
+        aria-live="polite"
+      ></p>
+    </div>
 
     <details class="card group" data-associados-section="sem-nucleo">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
