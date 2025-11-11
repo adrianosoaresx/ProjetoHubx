@@ -64,21 +64,23 @@
         <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">{% trans 'Razão social' %}</dt>
-            <dd class="font-medium text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            {% trans 'Razão social' as razao_social_label %}
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
+            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <dt class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
-                {% trans 'CNPJ' %}
+                {% trans 'CNPJ' as documento_label %}
               {% elif usuario.cpf %}
-                {% trans 'CPF' %}
+                {% trans 'CPF' as documento_label %}
               {% else %}
-                {% trans 'Documento' %}
+                {% trans 'Documento' as documento_label %}
               {% endif %}
+              {{ documento_label|lower }}:
             </dt>
-            <dd class="font-medium text-[var(--text-primary)]">
+            <dd class="text-[var(--text-primary)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
@@ -97,7 +99,7 @@
           hx-post="{% url 'conexoes:aceitar_conexao' usuario.id %}"
           hx-target="closest .request-card"
           hx-swap="outerHTML"
-          class="w-full sm:flex-1"
+          class="w-full sm:w-auto sm:flex-1"
         >
           {% csrf_token %}
           <button class="btn btn-primary w-full">{% trans "Aceitar" %}</button>
@@ -108,7 +110,7 @@
           hx-post="{% url 'conexoes:recusar_conexao' usuario.id %}"
           hx-target="closest .request-card"
           hx-swap="outerHTML"
-          class="w-full sm:flex-1"
+          class="w-full sm:w-auto sm:flex-1"
         >
           {% csrf_token %}
           <button class="btn btn-danger w-full">{% trans "Recusar" %}</button>
@@ -178,21 +180,23 @@
         <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">{% trans 'Razão social' %}</dt>
-            <dd class="font-medium text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            {% trans 'Razão social' as razao_social_label %}
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
+            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <dt class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
-                {% trans 'CNPJ' %}
+                {% trans 'CNPJ' as documento_label %}
               {% elif usuario.cpf %}
-                {% trans 'CPF' %}
+                {% trans 'CPF' as documento_label %}
               {% else %}
-                {% trans 'Documento' %}
+                {% trans 'Documento' as documento_label %}
               {% endif %}
+              {{ documento_label|lower }}:
             </dt>
-            <dd class="font-medium text-[var(--text-primary)]">
+            <dd class="text-[var(--text-primary)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
@@ -205,7 +209,7 @@
         </dl>
       </div>
       <footer class="card-footer flex flex-col items-stretch gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 sm:flex-row sm:items-center">
-        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:flex-1">{% trans "Ver perfil" %}</a>
+        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:w-auto sm:flex-1">{% trans "Ver perfil" %}</a>
         <span class="inline-flex w-full items-center justify-center rounded-md bg-[var(--bg-tertiary)] px-3 py-2 text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)] sm:w-auto">
           {% trans "Aguardando resposta" %}
         </span>
@@ -274,21 +278,23 @@
         <p class="text-sm text-[var(--text-muted)]">{{ usuario.nome_fantasia|default:_('Nome fantasia não informado') }}</p>
         <p class="text-xs text-[var(--text-secondary)]">@{{ usuario.username }}</p>
         <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">{% trans 'Razão social' %}</dt>
-            <dd class="font-medium text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            {% trans 'Razão social' as razao_social_label %}
+            <dt class="text-[var(--text-muted)]">{{ razao_social_label|lower }}:</dt>
+            <dd class="text-[var(--text-primary)]">{{ usuario.razao_social|default:_('Não informado') }}</dd>
           </div>
-          <div class="space-y-1">
-            <dt class="text-[var(--text-muted)] uppercase tracking-wide">
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <dt class="text-[var(--text-muted)]">
               {% if usuario.cnpj %}
-                {% trans 'CNPJ' %}
+                {% trans 'CNPJ' as documento_label %}
               {% elif usuario.cpf %}
-                {% trans 'CPF' %}
+                {% trans 'CPF' as documento_label %}
               {% else %}
-                {% trans 'Documento' %}
+                {% trans 'Documento' as documento_label %}
               {% endif %}
+              {{ documento_label|lower }}:
             </dt>
-            <dd class="font-medium text-[var(--text-primary)]">
+            <dd class="text-[var(--text-primary)]">
               {% if usuario.cnpj %}
                 {{ usuario.cnpj }}
               {% elif usuario.cpf %}
@@ -301,12 +307,12 @@
         </dl>
       </div>
       <footer class="card-footer flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 sm:flex-row">
-        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:flex-1" data-connection-link="connection-{{ usuario.id }}">{% trans "Ver perfil" %}</a>
+        <a href="{{ profile_url }}" class="btn btn-secondary w-full sm:w-auto sm:flex-1" data-connection-link="connection-{{ usuario.id }}">{% trans "Ver perfil" %}</a>
         {% with connection_id=usuario.id|stringformat:'s' %}
           {% with target_id='connection-'|add:connection_id %}
             <button
               type="button"
-              class="btn btn-danger w-full sm:flex-1"
+              class="btn btn-danger w-full sm:w-auto sm:flex-1"
               hx-get="{% url 'conexoes:remover_conexao_modal' usuario.id %}?target_id={{ target_id }}&swap=outerHTML&remove_target={{ target_id }}"
               hx-target="#modal"
               hx-swap="innerHTML"
