@@ -41,10 +41,10 @@
       {% endwith %}
 
       <section id="perfil-posts-accordion" class="card" data-accordion>
-        <div class="card-header">
+        <div class="card-header flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            class="flex w-full items-center justify-between gap-3 text-left"
+            class="flex w-full items-center justify-between gap-3 text-left sm:flex-1"
             data-accordion-toggle
             aria-expanded="false"
             aria-controls="perfil-posts-panel"
@@ -73,6 +73,14 @@
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
+          {% if is_owner %}
+            <a
+              href="{% url 'feed:nova_postagem' %}?tipo_feed=usuario"
+              class="btn btn-primary w-full sm:w-auto"
+            >
+              {% trans "Nova postagem" %}
+            </a>
+          {% endif %}
         </div>
 
         <div
