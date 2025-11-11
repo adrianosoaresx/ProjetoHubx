@@ -1,27 +1,38 @@
 {% load i18n associados_extras %}
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
 {% usuario_badges user as user_badges %}
-<article class="card h-full flex flex-col overflow-hidden">
-  <header class="card-header pb-0">
-    <div class="relative -mx-6 -mt-6">
-      {% include '_partials/cards/badge_list.html' with badges=user_badges %}
-      {% if user.cover %}
-        <img src="{{ user.cover.url|default:user.cover }}" alt="{% trans 'Capa do associado' %}" class="h-24 w-full object-cover" loading="lazy" />
-      {% else %}
-        <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
-      {% endif %}
-      <div class="absolute -bottom-8 left-6">
-        {% if user.avatar %}
-          <img src="{{ user.avatar.url|default:user.avatar }}" alt="{{ user.display_name|default:user.username }}" class="h-16 w-16 rounded-full object-cover ring-4 ring-[var(--bg-primary)]" loading="lazy" />
-        {% else %}
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)] ring-4 ring-[var(--bg-primary)]" role="img" aria-label="{{ user.display_name|default:user.username }}">
-            {{ user.display_name|default:user.username|first|upper }}
-          </div>
-        {% endif %}
+<article class="card card-with-cover group relative flex h-full flex-col overflow-hidden">
+  <header class="relative">
+    {% if user.cover %}
+      <img
+        src="{{ user.cover.url|default:user.cover }}"
+        alt="{% trans 'Capa do associado' %}"
+        class="h-28 w-full object-cover object-center"
+        loading="lazy"
+      />
+    {% else %}
+      <div class="h-28 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
+    {% endif %}
+  </header>
+
+  <div class="relative px-4 pb-2 sm:px-6">
+    {% include '_partials/cards/badge_list.html' with badges=user_badges %}
+    <div class="flex flex-col items-center gap-4">
+      <div class="-mt-12 sm:-mt-14 relative z-10 flex flex-col items-center">
+        <div class="h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--bg-primary)] ring-1 ring-black/5 shadow-lg dark:border-[var(--bg-secondary)] dark:ring-white/10">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url|default:user.avatar }}" alt="{{ user.display_name|default:user.username }}" class="h-full w-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="flex h-full w-full items-center justify-center bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ user.display_name|default:user.username }}">
+              {{ user.display_name|default:user.username|first|upper }}
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </header>
-  <div class="card-body space-y-4 pt-10 flex-1">
+  </div>
+
+  <div class="card-body flex-1 space-y-4 px-6 text-center">
     <h3 class="text-base font-semibold text-[var(--text-primary)]">
       <a href="{{ profile_url }}" class="rounded focus:outline-none focus-visible:ring focus-visible:ring-primary/40 hover:underline">{{ user.display_name|default:user.username }}</a>
     </h3>
