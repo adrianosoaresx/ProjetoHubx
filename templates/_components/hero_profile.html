@@ -1,5 +1,5 @@
-{% load i18n lucide_icons %}
-          
+{% load i18n lucide_icons associados_extras %}
+
 <section class="relative isolate overflow-visible">
   <div class="relative overflow-hidden min-h-[400px] sm:min-h-[440px] lg:min-h-[480px] {% if not profile.cover %}bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]{% endif %}">
     {% if profile.cover %}
@@ -80,6 +80,31 @@
           {% endif %}
         </div>
       {% endwith %}
+
+      {% usuario_tipo_badge profile as profile_tipo_badge %}
+      {% usuario_badges profile as profile_badges %}
+      {% if profile_tipo_badge or profile_badges %}
+        <div class="mt-6 space-y-3 text-center sm:text-left">
+          {% if profile_tipo_badge %}
+            <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
+              <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))]"{% if profile_tipo_badge.style %} style="{{ profile_tipo_badge.style }}"{% endif %}>
+                {% lucide profile_tipo_badge.icon|default:'badge-check' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+                <span class="truncate">{{ profile_tipo_badge.label }}</span>
+              </span>
+            </div>
+          {% endif %}
+          {% if profile_badges %}
+            <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
+              {% for badge in profile_badges %}
+                <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))]"{% if badge.style %} style="{{ badge.style }}"{% endif %}>
+                  {% lucide badge.icon|default:'badge-check' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+                  <span class="truncate">{{ badge.label }}</span>
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
 
     </div>
   </div>
