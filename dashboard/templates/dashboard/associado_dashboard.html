@@ -64,12 +64,17 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="space-y-3" aria-live="polite">
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
             {% for conexao in conexoes %}
               <li>
                 <a
                   href="{% url 'accounts:perfil_publico_uuid' conexao.public_id %}"
-                  class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)] focus-visible:ring-offset-2"
+                  class="
+                    flex h-full flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]
+                    px-4 py-3 transition hover:border-[var(--color-primary-500)] hover:text-[var(--color-primary-600)]
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]
+                    focus-visible:ring-offset-2
+                  "
                   aria-label="{% blocktrans trimmed with nome=conexao.get_full_name|default:conexao.username %}Ver perfil de {{ nome }}{% endblocktrans %}"
                 >
                   <span class="text-sm font-medium text-[var(--text-primary)]">{{ conexao.get_full_name|default:conexao.username }}</span>
@@ -79,7 +84,7 @@
                 </a>
               </li>
             {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)] sm:col-span-2 lg:col-span-3">
                 {% trans "Você ainda não possui conexões ativas." %}
               </li>
             {% endfor %}
@@ -110,12 +115,17 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="space-y-3" aria-live="polite">
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
             {% for participacao in participacoes %}
               <li>
                 <a
                   href="{% url 'nucleos:detail_uuid' participacao.nucleo.public_id %}"
-                  class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-success-500)] hover:text-[var(--color-success-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success-500)] focus-visible:ring-offset-2"
+                  class="
+                    flex h-full flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]
+                    px-4 py-3 transition hover:border-[var(--color-success-500)] hover:text-[var(--color-success-600)]
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success-500)]
+                    focus-visible:ring-offset-2
+                  "
                   aria-label="{% blocktrans trimmed with nome=participacao.nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}"
                 >
                   <span class="text-sm font-medium text-[var(--text-primary)]">{{ participacao.nucleo.nome }}</span>
@@ -123,7 +133,7 @@
                 </a>
               </li>
             {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)] sm:col-span-2 lg:col-span-3">
                 {% trans "Você ainda não integra nenhum núcleo." %}
               </li>
             {% endfor %}
@@ -147,11 +157,11 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="space-y-3" aria-live="polite">
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
             {% for inscricao in inscricoes_ativas %}
               {% with evento=inscricao.evento %}
                 <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                  <div class="flex flex-col gap-1">
+                  <div class="flex h-full flex-col gap-1">
                     <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</span>
                     <span class="text-xs text-[var(--text-muted)]">
                       {% if evento %}
@@ -167,7 +177,7 @@
                 </li>
               {% endwith %}
             {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)] sm:col-span-2 lg:col-span-3">
                 {% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}
               </li>
             {% endfor %}
@@ -252,54 +262,5 @@
       </details>
     </section>
 
-    <section aria-labelledby="associado-favoritos-title" class="space-y-6">
-      <details class="card group">
-        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
-          <div class="flex items-start gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-danger-500)]/10 text-[var(--color-danger-500)] shadow-lg shadow-[var(--color-danger-500)]/15">
-              {% lucide 'bookmark' class='h-6 w-6' aria_hidden='true' %}
-            </span>
-            <div class="space-y-1">
-              <h2 id="associado-favoritos-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Favoritos" %}</h2>
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Publicações do feed salvas por você." %}</p>
-            </div>
-          </div>
-          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
-            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-          </span>
-        </summary>
-        <div class="card-body space-y-4">
-          <ul class="space-y-3" aria-live="polite">
-            {% for favorito in favoritos %}
-              {% with post=favorito.post autor=favorito.post.autor %}
-                <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                  <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium text-[var(--text-primary)]">
-                      {% if autor %}
-                        {{ autor.get_full_name|default:autor.username }}
-                      {% else %}
-                        {% trans "Autor desconhecido" %}
-                      {% endif %}
-                    </span>
-                    <p class="text-xs text-[var(--text-secondary)] line-clamp-3">
-                      {% if post and post.conteudo %}
-                        {{ post.conteudo }}
-                      {% else %}
-                        {% trans "Publicação indisponível" %}
-                      {% endif %}
-                    </p>
-                    <span class="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{{ favorito.created_at|date:"SHORT_DATETIME_FORMAT" }}</span>
-                  </div>
-                </li>
-              {% endwith %}
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-6 text-sm text-[var(--text-secondary)]">
-                {% trans "Você ainda não salvou publicações como favoritas." %}
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </details>
-    </section>
   </div>
 {% endblock %}
