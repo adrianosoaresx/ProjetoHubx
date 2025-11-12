@@ -39,18 +39,6 @@ class AdminOrOperatorRequiredMixin(AdminRequiredMixin):
         }
 
 
-class DashboardAccessRequiredMixin(AdminRequiredMixin):
-    """Permite acesso ao dashboard para administradores, operadores e associados."""
-
-    def test_func(self):  # pragma: no cover - comportamento validado em views
-        return self.request.user.user_type in {
-            UserType.ROOT,
-            UserType.ADMIN,
-            UserType.OPERADOR,
-            UserType.ASSOCIADO,
-        }
-
-
 class AdminOperatorOrCoordinatorRequiredMixin(UserPassesTestMixin):
     """Permite acesso a administradores, operadores e coordenadores."""
 

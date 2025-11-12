@@ -68,18 +68,9 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
 @pytest.mark.parametrize(
     ("user_type", "expected_visibility"),
     [
-        (
-            UserType.ASSOCIADO,
-            {"associados": False, "tokens": False, "admin-dashboard": True},
-        ),
-        (
-            UserType.COORDENADOR,
-            {"associados": False, "tokens": False, "admin-dashboard": False},
-        ),
-        (
-            UserType.ADMIN,
-            {"associados": True, "tokens": True, "admin-dashboard": True},
-        ),
+        (UserType.ASSOCIADO, {"associados": False, "tokens": False}),
+        (UserType.COORDENADOR, {"associados": False, "tokens": False}),
+        (UserType.ADMIN, {"associados": True, "tokens": True}),
     ],
 )
 def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
