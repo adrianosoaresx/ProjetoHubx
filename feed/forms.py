@@ -21,6 +21,11 @@ class PostForm(forms.ModelForm):
 
     tipo_feed = forms.ChoiceField(choices=Post.TIPO_FEED_CHOICES)
     organizacao = forms.ModelChoiceField(queryset=None)
+    arquivo = forms.FileField(
+        label=_("Arquivo"),
+        help_text=_("Aceita imagem, PDF ou vídeo."),
+        required=False,
+    )
 
     class Meta:
         model = Post
@@ -45,23 +50,37 @@ class PostForm(forms.ModelForm):
             ),
             "image": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
+                    "class": "hidden",
                 }
             ),
             "pdf": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
+                    "class": "hidden",
                 }
             ),
             "video": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
+                    "class": "hidden",
                 }
             ),
         }
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        file_input_classes = (
+            "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 "
+            "file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold "
+            "file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]"
+        )
+        self.fields["arquivo"].widget = forms.ClearableFileInput(
+            attrs={
+                "class": file_input_classes,
+                "accept": "image/*,application/pdf,video/*,.pdf",
+            }
+        )
+        for field in ["image", "pdf", "video"]:
+            self.fields[field].widget.attrs.update({"class": "hidden"})
+            self.fields[field].required = False
         allowed_choices = [
             ("global", _("Público")),
             ("usuario", _("Privado")),
@@ -96,9 +115,30 @@ class PostForm(forms.ModelForm):
 
         self.fields["tags"].queryset = Tag.objects.all()
         self._video_preview_key: str | None = None
+        self._arquivo_target: str | None = None
 
     def clean(self):
         cleaned_data = super().clean()
+        arquivo = cleaned_data.get("arquivo")
+        media_fields = ["image", "pdf", "video"]
+        self._arquivo_target = None
+        if arquivo and not isinstance(arquivo, str):
+            content_type = getattr(arquivo, "content_type", "") or ""
+            name = getattr(arquivo, "name", "") or ""
+            lower_name = name.lower()
+            if content_type == "application/pdf" or lower_name.endswith(".pdf"):
+                target_field = "pdf"
+            elif content_type.startswith("video/"):
+                target_field = "video"
+            else:
+                target_field = "image"
+            cleaned_data[target_field] = arquivo
+            for field in media_fields:
+                if field != target_field:
+                    cleaned_data[field] = None
+            self._arquivo_target = target_field
+        cleaned_data["arquivo"] = arquivo
+
         img = cleaned_data.get("image")
         pdf = cleaned_data.get("pdf")
         video = cleaned_data.get("video")
@@ -109,13 +149,17 @@ class PostForm(forms.ModelForm):
         if not conteudo and not img and not pdf and not video:
             raise forms.ValidationError("Informe um conteúdo ou selecione uma mídia.")
 
-        for field in ["image", "pdf", "video"]:
+        for field in media_fields:
             file = cleaned_data.get(field)
             if file and not isinstance(file, str):
                 try:
                     result = upload_media(file)
                 except ValidationError as e:
-                    self.add_error(field, e.message)
+                    if self._arquivo_target == field:
+                        self.add_error("arquivo", e.message)
+                    else:
+                        self.add_error(field, e.message)
+                    cleaned_data[field] = None
                     continue
                 if field == "video" and isinstance(result, tuple):
                     cleaned_data[field] = result[0]
