@@ -1,12 +1,19 @@
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.db.models import Avg, Count, Q
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.generic import TemplateView
 
 from core.permissions import AdminOrOperatorRequiredMixin
 
 from eventos.models import Evento
+from eventos.models import FeedbackNota, InscricaoEvento
+
+from accounts.models import UserType
+from feed.models import Bookmark
 
 from .services import (
     ASSOCIADOS_NUCLEADOS_LABEL,
@@ -127,3 +134,105 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
             }
         )
         return context
+
+
+class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
+    """Dashboard direcionado a associados que não são coordenadores."""
+
+    template_name = "dashboard/associado_dashboard.html"
+    CONNECTION_LIMIT = 6
+    PORTFOLIO_LIMIT = 6
+    FAVORITES_LIMIT = 6
+    EVENT_LIMIT = 6
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.get_tipo_usuario != UserType.ASSOCIADO.value:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        avaliacao_stats = FeedbackNota.objects.filter(usuario=user).aggregate(
+            media=Avg("nota"), total=Count("id")
+        )
+        avaliacao_media = avaliacao_stats["media"]
+        avaliacao_display = f"{avaliacao_media:.1f}" if avaliacao_media is not None else _("Sem dados")
+
+        total_conexoes = user.connections.count() if hasattr(user, "connections") else 0
+        conexoes = list(
+            user.connections.select_related("organizacao")
+            .order_by("first_name", "username")[: self.CONNECTION_LIMIT]
+        )
+        conexoes_restantes = max(total_conexoes - len(conexoes), 0)
+
+        total_posts = user.posts.filter(deleted=False).count()
+        total_reacoes = user.reacoes.filter(deleted=False).count()
+
+        participacoes = list(
+            user.participacoes.select_related("nucleo")
+            .filter(status="ativo", status_suspensao=False, papel="membro")
+            .order_by("nucleo__nome")
+        )
+
+        eventos = list(
+            InscricaoEvento.objects.filter(user=user)
+            .filter(Q(status__in=["confirmada", "pendente"]) | Q(presente=True))
+            .select_related("evento")
+            .order_by("-evento__data_inicio", "-created_at")[: self.EVENT_LIMIT]
+        )
+
+        destaques_qs = (
+            user.medias.filter(publico=True, tags__nome__iexact="destaque")
+            .prefetch_related("tags")
+            .order_by("-created_at")
+            .distinct()
+        )
+        destaques = list(destaques_qs[: self.PORTFOLIO_LIMIT])
+        if not destaques:
+            destaques = list(
+                user.medias.filter(publico=True)
+                .prefetch_related("tags")
+                .order_by("-created_at")[: self.PORTFOLIO_LIMIT]
+            )
+
+        favoritos = list(
+            Bookmark.objects.filter(user=user, post__isnull=False)
+            .select_related("post", "post__autor")
+            .order_by("-created_at")[: self.FAVORITES_LIMIT]
+        )
+
+        context.update(
+            {
+                "avaliacao_media": avaliacao_media,
+                "avaliacao_display": avaliacao_display,
+                "avaliacao_total": avaliacao_stats["total"],
+                "total_conexoes": total_conexoes,
+                "conexoes": conexoes,
+                "conexoes_restantes": conexoes_restantes,
+                "total_posts": total_posts,
+                "total_reacoes": total_reacoes,
+                "participacoes": participacoes,
+                "eventos": eventos,
+                "portfolio_destaques": destaques,
+                "favoritos": favoritos,
+            }
+        )
+        return context
+
+
+class DashboardRouterView(LoginRequiredMixin, View):
+    """Direciona o usuário para o dashboard apropriado conforme o perfil."""
+
+    def dispatch(self, request, *args, **kwargs):
+        tipo = getattr(request.user, "get_tipo_usuario", None)
+        if tipo in {
+            UserType.ROOT.value,
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+        }:
+            return AdminDashboardView.as_view()(request, *args, **kwargs)
+        if tipo == UserType.ASSOCIADO.value:
+            return AssociadoDashboardView.as_view()(request, *args, **kwargs)
+        raise PermissionDenied
