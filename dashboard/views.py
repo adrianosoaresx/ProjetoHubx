@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
-from core.permissions import AdminOrOperatorRequiredMixin
+from core.permissions import DashboardAccessRequiredMixin
 
 from eventos.models import Evento
 
@@ -23,7 +23,7 @@ from .services import (
 )
 
 
-class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, TemplateView):
+class AdminDashboardView(LoginRequiredMixin, DashboardAccessRequiredMixin, TemplateView):
     """View principal do painel administrativo."""
 
     template_name = "dashboard/admin_dashboard.html"
