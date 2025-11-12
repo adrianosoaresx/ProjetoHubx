@@ -111,6 +111,23 @@ def test_novapostagem_cancel_back_to_profile(client, associado_user):
     assert resp.context["cancel_component_config"]["fallback_href"] == expected
 
 
+def test_novapostagem_redirects_to_feed(client, associado_user):
+    client.force_login(associado_user)
+    url = reverse("feed:nova_postagem") + "?back=feed"
+    resp = client.post(url, {"tipo_feed": "global", "conteudo": "feed"})
+    assert resp.status_code == 302
+    assert resp.headers["Location"] == reverse("feed:listar")
+
+
+def test_novapostagem_redirects_to_profile_posts(client, associado_user):
+    client.force_login(associado_user)
+    profile_url = reverse("accounts:perfil")
+    url = reverse("feed:nova_postagem") + "?tipo_feed=usuario&back=minhas-postagens"
+    resp = client.post(url, {"tipo_feed": "usuario", "conteudo": "perfil"})
+    assert resp.status_code == 302
+    assert resp.headers["Location"] == f"{profile_url}#perfil-posts-accordion"
+
+
 def test_create_comment(nucleado_user, posts):
     client = APIClient()
     client.force_authenticate(nucleado_user)
