@@ -505,7 +505,7 @@ def build_time_series_chart(
                     name=gettext("Desvio padrão"),
                     customdata=[[std] for std in std_values],
                     hovertemplate=(
-                        "<b>%{x|%b %Y}</b><br>"
+                        "<b>%{x|%m/%y}</b><br>"
                         + gettext("Desvio padrão")
                         + ": "
                         + value_prefix
@@ -531,7 +531,7 @@ def build_time_series_chart(
                     "line": {"color": "#ffffff", "width": 1},
                 },
                 hovertemplate=(
-                    "<b>%{x|%b %Y}</b><br>"
+                    "<b>%{x|%m/%y}</b><br>"
                     + label
                     + ": "
                     + value_prefix
@@ -548,9 +548,9 @@ def build_time_series_chart(
             _base_layout(
                 xaxis={
                     "title": "",
-                    "tickformat": "%b %Y",
+                    "tickformat": "%m/%y",
                     "dtick": "M1",
-                    "hoverformat": "%b %Y",
+                    "hoverformat": "%m/%y",
                 },
                 yaxis={
                     "title": yaxis_title,

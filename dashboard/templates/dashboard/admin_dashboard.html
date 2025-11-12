@@ -64,7 +64,24 @@
             {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
+        <div class="card-body space-y-6">
+          <form method="get" class="flex flex-wrap items-center justify-end gap-3 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+            <label class="flex items-center gap-3 text-sm font-medium text-[var(--text-secondary)]">
+              <span>{% trans "Período" %}</span>
+              <select name="months" class="form-select w-32" onchange="this.form.submit()">
+                {% for option in dashboard_period_choices %}
+                  <option value="{{ option }}" {% if option == dashboard_period_months %}selected{% endif %}>
+                    {% blocktrans trimmed count months=option %}
+                      Último mês
+                    {% plural %}
+                      Últimos {{ months }} meses
+                    {% endblocktrans %}
+                  </option>
+                {% endfor %}
+              </select>
+            </label>
+          </form>
+
           <div class="grid gap-6 xl:grid-cols-2">
             <figure class="card" aria-labelledby="membros-chart-title">
               <div class="card-body space-y-6">
