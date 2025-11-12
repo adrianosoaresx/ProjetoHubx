@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n lucide_icons %}
+{% load i18n l10n lucide_icons %}
 
 {% block title %}{% trans "Meu dashboard" %}{% endblock %}
 
@@ -121,7 +121,7 @@
                 </div>
               </div>
               <ul class="space-y-3" aria-live="polite">
-                {% for inscricao in eventos %}
+                {% for inscricao in inscricoes_ativas %}
                   {% with evento=inscricao.evento %}
                     <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
                       <div class="flex flex-col gap-1">
@@ -151,16 +151,16 @@
       </details>
     </section>
 
-    <section aria-labelledby="associado-portfolio-title" class="space-y-6">
+    <section aria-labelledby="associado-inscricoes-title" class="space-y-6">
       <details class="card group">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/15">
-              {% lucide 'briefcase' class='h-6 w-6' aria_hidden='true' %}
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+              {% lucide 'qr-code' class='h-6 w-6' aria_hidden='true' %}
             </span>
             <div class="space-y-1">
-              <h2 id="associado-portfolio-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Destaques adicionados ao seu portfólio pessoal." %}</p>
+              <h2 id="associado-inscricoes-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Minhas inscrições" %}</h2>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Acesse seus ingressos e confira o QR Code para o check-in." %}</p>
             </div>
           </div>
           <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
@@ -168,46 +168,61 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="grid gap-4 md:grid-cols-2" aria-live="polite">
-            {% for media in portfolio_destaques %}
-              <li class="card overflow-hidden border border-[var(--border)] bg-[var(--bg-secondary)]">
-                <div class="card-body space-y-3 p-4">
-                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao|default:_("Item sem descrição") }}</span>
-                  <span class="text-xs text-[var(--text-muted)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</span>
-                  {% if media.media_type == 'image' %}
-                    <div class="overflow-hidden rounded-lg border border-[var(--border)]">
-                      <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full object-cover" loading="lazy" />
+          {% if inscricoes_ativas %}
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {% for inscricao in inscricoes_ativas %}
+                {% with evento=inscricao.evento %}
+                  <section class="flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 shadow-sm">
+                    {% if inscricao.qrcode_url %}
+                      <div class="flex flex-col items-center gap-2">
+                        <img
+                          src="{{ inscricao.qrcode_url }}"
+                          alt="{% trans 'QR Code da inscrição' %}"
+                          class="h-40 w-40 rounded-md border border-[var(--border)] bg-white p-2"
+                          loading="lazy"
+                        />
+                        <p class="text-xs text-[var(--text-secondary)]">{% trans "Apresente este QR Code para realizar o check-in." %}</p>
+                      </div>
+                    {% else %}
+                      <p class="text-sm text-[var(--text-secondary)]">{% trans "QR Code indisponível no momento." %}</p>
+                    {% endif %}
+                    <div class="space-y-4">
+                      <div class="space-y-1">
+                        <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</h3>
+                        <p class="text-sm text-[var(--text-secondary)]">
+                          {% if evento %}
+                            {{ evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }}{% if evento.local %} · {{ evento.local }}{% endif %}
+                          {% else %}
+                            {% trans "Data do evento indisponível" %}
+                          {% endif %}
+                        </p>
+                      </div>
+                      <div class="rounded-lg border border-[var(--border)] bg-[var(--background-primary)] px-3 py-4">
+                        <dl class="grid grid-cols-1 gap-3 text-sm">
+                          <div class="flex flex-col gap-1">
+                            <dt class="text-[var(--text-secondary)]">{% trans "Valor pago" %}</dt>
+                            <dd class="font-medium text-[var(--text-primary)]">
+                              {% if inscricao.valor_exibicao %}
+                                {{ inscricao.valor_exibicao|localize }}
+                              {% else %}
+                                {% trans "Não informado" %}
+                              {% endif %}
+                            </dd>
+                          </div>
+                          <div class="flex flex-col gap-1">
+                            <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+                            <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.get_status_display }}</dd>
+                          </div>
+                        </dl>
+                      </div>
                     </div>
-                  {% elif media.media_type == 'video' %}
-                    <div class="overflow-hidden rounded-lg border border-[var(--border)] bg-black">
-                      <video src="{{ media.file.url }}" controls class="w-full"></video>
-                    </div>
-                  {% elif media.media_type == 'pdf' %}
-                    <a href="{{ media.file.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-[var(--accent)]">
-                      {% lucide 'file-text' class='h-4 w-4' aria_hidden='true' %}
-                      {% trans "Abrir PDF" %}
-                    </a>
-                  {% else %}
-                    <span class="text-xs text-[var(--text-secondary)]">{{ media.file.name }}</span>
-                  {% endif %}
-                  {% if media.tags.all %}
-                    <div class="flex flex-wrap gap-2">
-                      {% for tag in media.tags.all %}
-                        <span class="rounded bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
-              </li>
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-6 text-sm text-[var(--text-secondary)]">
-                {% trans "Nenhuma mídia disponível no momento." %}
-              </li>
-            {% endfor %}
-          </ul>
-          <p class="text-xs text-[var(--text-secondary)]">
-            {% trans "Gerencie seus destaques no menu Portfólio." %}
-          </p>
+                  </section>
+                {% endwith %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Você não possui inscrições ativas no momento." %}</p>
+          {% endif %}
         </div>
       </details>
     </section>

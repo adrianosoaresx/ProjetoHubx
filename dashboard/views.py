@@ -3,6 +3,7 @@ from typing import Any, Dict
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Avg, Count, Q
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import TemplateView
@@ -141,7 +142,6 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
 
     template_name = "dashboard/associado_dashboard.html"
     CONNECTION_LIMIT = 6
-    PORTFOLIO_LIMIT = 6
     FAVORITES_LIMIT = 6
     EVENT_LIMIT = 6
 
@@ -158,7 +158,9 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
             media=Avg("nota"), total=Count("id")
         )
         avaliacao_media = avaliacao_stats["media"]
-        avaliacao_display = f"{avaliacao_media:.1f}" if avaliacao_media is not None else _("Sem dados")
+        avaliacao_display = (
+            f"{avaliacao_media:.1f}" if avaliacao_media is not None else ""
+        )
 
         total_conexoes = user.connections.count() if hasattr(user, "connections") else 0
         conexoes = list(
@@ -176,26 +178,21 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
             .order_by("nucleo__nome")
         )
 
-        eventos = list(
+        now = timezone.now()
+        inscricoes_qs = (
             InscricaoEvento.objects.filter(user=user)
             .filter(Q(status__in=["confirmada", "pendente"]) | Q(presente=True))
+            .filter(evento__status__in=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO])
+            .filter(evento__data_fim__gte=now)
             .select_related("evento")
-            .order_by("-evento__data_inicio", "-created_at")[: self.EVENT_LIMIT]
+            .order_by("-evento__data_inicio", "-created_at")
         )
-
-        destaques_qs = (
-            user.medias.filter(publico=True, tags__nome__iexact="destaque")
-            .prefetch_related("tags")
-            .order_by("-created_at")
-            .distinct()
-        )
-        destaques = list(destaques_qs[: self.PORTFOLIO_LIMIT])
-        if not destaques:
-            destaques = list(
-                user.medias.filter(publico=True)
-                .prefetch_related("tags")
-                .order_by("-created_at")[: self.PORTFOLIO_LIMIT]
-            )
+        inscricoes_ativas = list(inscricoes_qs[: self.EVENT_LIMIT])
+        for inscricao in inscricoes_ativas:
+            valor_exibicao = inscricao.valor_pago
+            if valor_exibicao is None:
+                valor_exibicao = inscricao.get_valor_evento()
+            inscricao.valor_exibicao = valor_exibicao
 
         favoritos = list(
             Bookmark.objects.filter(user=user, post__isnull=False)
@@ -214,8 +211,7 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
                 "total_posts": total_posts,
                 "total_reacoes": total_reacoes,
                 "participacoes": participacoes,
-                "eventos": eventos,
-                "portfolio_destaques": destaques,
+                "inscricoes_ativas": inscricoes_ativas,
                 "favoritos": favoritos,
             }
         )
