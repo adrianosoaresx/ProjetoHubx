@@ -91,3 +91,58 @@ class PostFormTest(TestCase):
         post_id = str(Post.objects.latest("created_at").id)
         mock_inc.assert_called_once_with()
         mock_notify.assert_called_once_with(post_id)
+
+    @patch("feed.forms.upload_media", return_value="uploads/test.pdf")
+    def test_arquivo_maps_to_pdf_field(self, mock_upload):
+        arquivo = SimpleUploadedFile("doc.pdf", b"%PDF-1.4", content_type="application/pdf")
+        form = PostForm(
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"arquivo": arquivo},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.instance.autor = self.user
+        form.instance.organizacao = self.user.organizacao
+        post = form.save()
+        post.refresh_from_db()
+        self.assertEqual(post.pdf.name, "uploads/test.pdf")
+        self.assertFalse(post.image)
+        self.assertFalse(post.video)
+        mock_upload.assert_called_once()
+
+    @patch("feed.forms.upload_media", return_value="uploads/test.png")
+    def test_arquivo_maps_to_image_field(self, mock_upload):
+        arquivo = SimpleUploadedFile("image.png", b"\x89PNG", content_type="image/png")
+        form = PostForm(
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"arquivo": arquivo},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.instance.autor = self.user
+        form.instance.organizacao = self.user.organizacao
+        post = form.save()
+        post.refresh_from_db()
+        self.assertEqual(post.image.name, "uploads/test.png")
+        self.assertFalse(post.pdf)
+        self.assertFalse(post.video)
+        mock_upload.assert_called_once()
+
+    @patch("feed.forms.upload_media", return_value=("uploads/video.mp4", "uploads/video-preview.jpg"))
+    def test_arquivo_maps_to_video_field(self, mock_upload):
+        arquivo = SimpleUploadedFile("video.mp4", b"00", content_type="video/mp4")
+        form = PostForm(
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"arquivo": arquivo},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.instance.autor = self.user
+        form.instance.organizacao = self.user.organizacao
+        post = form.save()
+        post.refresh_from_db()
+        self.assertEqual(post.video.name, "uploads/video.mp4")
+        self.assertEqual(post.video_preview.name, "uploads/video-preview.jpg")
+        self.assertFalse(post.image)
+        self.assertFalse(post.pdf)
+        mock_upload.assert_called_once()

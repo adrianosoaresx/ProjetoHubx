@@ -375,15 +375,18 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             mutable_data = data.copy()
             mutable_data.setdefault("organizacao", str(user_org_id))
             kwargs["data"] = mutable_data
-        file = self.request.FILES.get("arquivo")
-        if file:
+        if self.request.FILES:
             files = self.request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
-                files["pdf"] = file
-            elif file.content_type.startswith("video/"):
-                files["video"] = file
-            else:
-                files["image"] = file
+            arquivo = files.get("arquivo")
+            if arquivo:
+                content_type = getattr(arquivo, "content_type", "") or ""
+                name = getattr(arquivo, "name", "") or ""
+                if content_type == "application/pdf" or name.lower().endswith(".pdf"):
+                    files["pdf"] = arquivo
+                elif content_type.startswith("video/"):
+                    files["video"] = arquivo
+                else:
+                    files["image"] = arquivo
             kwargs["files"] = files
         return kwargs
 
@@ -555,16 +558,18 @@ def post_update(request, pk):
         return redirect("feed:post_detail", pk=pk)
 
     if request.method == "POST":
-        files = request.FILES
-        file = request.FILES.get("arquivo")
-        if file:
-            files = request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
-                files["pdf"] = file
-            elif file.content_type.startswith("video/"):
-                files["video"] = file
-            else:
-                files["image"] = file
+        files = request.FILES.copy() if request.FILES else request.FILES
+        if files:
+            arquivo = files.get("arquivo")
+            if arquivo:
+                content_type = getattr(arquivo, "content_type", "") or ""
+                name = getattr(arquivo, "name", "") or ""
+                if content_type == "application/pdf" or name.lower().endswith(".pdf"):
+                    files["pdf"] = arquivo
+                elif content_type.startswith("video/"):
+                    files["video"] = arquivo
+                else:
+                    files["image"] = arquivo
         data = request.POST.copy()
         if not data.get("organizacao") and post.organizacao_id:
             data.setdefault("organizacao", str(post.organizacao_id))

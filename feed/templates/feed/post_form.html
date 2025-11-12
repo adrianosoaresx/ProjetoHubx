@@ -141,10 +141,29 @@
             <p class="text-xs text-[var(--text-secondary)]">{% trans "Use Enter ou vírgula para separar as tags." %}</p>
           </div>
 
-          <div class="space-y-4">
-            {% include '_forms/field.html' with field=form.image %}
-            {% include '_forms/field.html' with field=form.pdf %}
-            {% include '_forms/field.html' with field=form.video %}
+          <div class="space-y-2">
+            <label for="{{ form.arquivo.id_for_label }}"
+                   class="block text-sm font-medium text-[var(--text-primary)]">
+              {{ form.arquivo.label }}
+            </label>
+            {{ form.arquivo }}
+            <p class="text-xs text-[var(--text-secondary)]">{% trans "Aceita imagem, PDF ou vídeo." %}</p>
+            {% if form.arquivo.errors or form.image.errors or form.pdf.errors or form.video.errors %}
+              <ul class="errorlist">
+                {% for error in form.arquivo.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for error in form.image.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for error in form.pdf.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for error in form.video.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
           </div>
 
           {% if is_update and post %}
