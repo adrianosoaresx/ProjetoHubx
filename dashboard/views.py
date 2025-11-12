@@ -163,7 +163,7 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
         total_conexoes = user.connections.count() if hasattr(user, "connections") else 0
         conexoes = list(
             user.connections.select_related("organizacao")
-            .order_by("first_name", "username")[: self.CONNECTION_LIMIT]
+            .order_by("nome_fantasia", "contato", "username")[: self.CONNECTION_LIMIT]
         )
         conexoes_restantes = max(total_conexoes - len(conexoes), 0)
 
