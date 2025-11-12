@@ -1,0 +1,51 @@
+{% load i18n %}
+<div class="space-y-3" data-feed-file-wrapper>
+  {% if widget.is_initial %}
+    <div class="flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
+      <span>{{ widget.initial_text }}:</span>
+      {% if widget.value and widget.value.url %}
+        <a
+          href="{{ widget.value.url }}"
+          class="link"
+          target="_blank"
+          rel="noopener"
+        >
+          {{ widget.value_name|default:widget.value }}
+        </a>
+      {% else %}
+        <span>{{ widget.value_name|default:widget.value }}</span>
+      {% endif %}
+      {% if not widget.required %}
+        <label
+          for="{{ widget.checkbox_id }}"
+          class="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)]"
+        >
+          <input
+            type="checkbox"
+            name="{{ widget.checkbox_name }}"
+            id="{{ widget.checkbox_id }}"
+            class="form-checkbox"
+            data-feed-file-clear
+            data-empty-text="{{ widget.empty_label }}"
+          />
+          <span>{{ widget.clear_checkbox_label }}</span>
+        </label>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <button type="button" class="btn btn-secondary mt-2 sm:mt-0" data-feed-file-button>
+      {{ widget.button_label }}
+    </button>
+    <span
+      class="text-sm text-[var(--text-secondary)]"
+      data-feed-file-name
+      data-empty-text="{{ widget.empty_label }}"
+      data-initial-text="{{ widget.value_name|default:'' }}"
+      aria-live="polite"
+    >
+      {{ widget.value_name|default:widget.empty_label }}
+    </span>
+  </div>
+  <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+</div>
