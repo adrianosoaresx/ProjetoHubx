@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load i18n lucide_icons %}
+
+{% block title %}{% trans "Dashboard do consultor" %}{% endblock %}
+
+{% block hero %}
+  {% include "_components/hero.html" with title=_("Dashboard do consultor") subtitle=_("Acompanhe o desempenho dos núcleos em que você oferece consultoria e os eventos relacionados.") breadcrumb_template=None neural_background="dashboard" section_classes="relative isolate overflow-hidden text-white" container_classes="max-w-6xl mx-auto w-full px-6 py-14 md:py-16" %}
+{% endblock %}
+
+{% block content %}
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-10">
+    <section aria-labelledby="consultor-metricas-title" class="space-y-6">
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
+              {% lucide 'gauge' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="consultor-metricas-title" class="text-xl font-semibold text-[var(--text-primary)]">
+                {% trans "Visão geral" %}
+              </h2>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% trans "Resumo dos núcleos e eventos sob sua consultoria." %}
+              </p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-6">
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {% include "_partials/cards/total_card.html" with label=_("Núcleos acompanhados") valor=total_nucleos_consultoria icon_name="layers" %}
+            {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=total_eventos_consultoria icon_name="calendar-days" %}
+            {% include "_partials/cards/total_card.html" with label=_("Inscrições confirmadas") valor=total_inscritos_consultoria icon_name="users" %}
+            {% include "_partials/cards/total_card.html" with label=_("Receita de inscrições") valor=valor_total_inscricoes_consultoria icon_name="wallet" %}
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <article class="card" aria-labelledby="consultor-nucleos-title">
+              <div class="card-body space-y-4">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
+                    {% lucide 'layers' class='h-5 w-5' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h3 id="consultor-nucleos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Núcleos com sua consultoria" %}</h3>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos nos quais você atua como consultor." %}</p>
+                  </div>
+                </div>
+                <ul class="space-y-3" aria-live="polite">
+                  {% for nucleo in nucleos_consultoria %}
+                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                      <div class="flex flex-col gap-1">
+                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</span>
+                        {% if nucleo.cidade or nucleo.estado %}
+                          <span class="text-xs text-[var(--text-muted)]">{{ nucleo.cidade }}{% if nucleo.cidade and nucleo.estado %} · {% endif %}{{ nucleo.estado }}</span>
+                        {% endif %}
+                        {% if nucleo.total_membros or nucleo.total_membros == 0 %}
+                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Membros ativos" %}: {{ nucleo.total_membros }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% empty %}
+                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                      {% trans "Você ainda não é consultor de nenhum núcleo." %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </article>
+
+            <article class="card" aria-labelledby="consultor-eventos-title">
+              <div class="card-body space-y-4">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
+                    {% lucide 'calendar-days' class='h-5 w-5' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h3 id="consultor-eventos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Eventos em seus núcleos" %}</h3>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Atividades em andamento ou planejadas." %}</p>
+                  </div>
+                </div>
+                <ul class="space-y-3" aria-live="polite">
+                  {% for evento in eventos_consultoria %}
+                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                      <div class="flex flex-col gap-1">
+                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_('Evento sem título') }}</span>
+                        <span class="text-xs text-[var(--text-muted)]">
+                          {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}
+                          {% if evento.nucleo %}
+                            · {{ evento.nucleo.nome }}
+                          {% endif %}
+                        </span>
+                        {% if evento.total_inscritos or evento.total_inscritos == 0 %}
+                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</span>
+                        {% endif %}
+                        {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
+                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% empty %}
+                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                      {% trans "Ainda não há eventos vinculados aos núcleos que você acompanha." %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </article>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="consultor-visualizacoes-title" class="space-y-6">
+      <details class="card group" {% if dashboard_period_changed %}open{% endif %}>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
+              {% lucide 'line-chart' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="consultor-visualizacoes-title" class="text-xl font-semibold text-[var(--text-primary)]">
+                {% trans "Visualizações" %}
+              </h2>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% trans "Analise a evolução de eventos, inscrições e nucleados dos núcleos que você acompanha." %}
+              </p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-6">
+          <form method="get" class="flex flex-wrap items-center justify-end gap-3 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+            <label class="flex items-center gap-3 text-sm font-medium text-[var(--text-secondary)]">
+              <span>{% trans "Período" %}</span>
+              <select name="months" class="form-select w-32" onchange="this.form.submit()">
+                {% for option in dashboard_period_choices %}
+                  <option value="{{ option }}" {% if option == dashboard_period_months %}selected{% endif %}>
+                    {% blocktrans trimmed count months=option %}
+                      Último mês
+                    {% plural %}
+                      Últimos {{ months }} meses
+                    {% endblocktrans %}
+                  </option>
+                {% endfor %}
+              </select>
+            </label>
+          </form>
+
+          <div class="grid gap-6">
+            <figure class="card" aria-labelledby="consultor-eventos-inscricoes-chart-title">
+              <div
+                class="card-body space-y-6"
+              >
+                <div
+                  id="consultor-eventos-inscricoes-chart"
+                  role="img"
+                  aria-labelledby="consultor-eventos-inscricoes-chart-title"
+                  data-chart="{{ eventos_inscricoes_chart|safe }}"
+                ></div>
+                <figcaption id="consultor-eventos-inscricoes-chart-title" class="text-sm text-[var(--text-secondary)]">
+                  {% trans "Comparação mensal de eventos ativos e inscrições confirmadas." %}
+                </figcaption>
+              </div>
+            </figure>
+
+            <figure class="card" aria-labelledby="consultor-nucleados-chart-title">
+              <div class="card-body space-y-6">
+                <div
+                  id="consultor-nucleados-chart"
+                  role="img"
+                  aria-labelledby="consultor-nucleados-chart-title"
+                  data-chart="{{ nucleados_chart|safe }}"
+                ></div>
+                <figcaption id="consultor-nucleados-chart-title" class="text-sm text-[var(--text-secondary)]">
+                  {% trans "Total de membros nucleados por mês." %}
+                </figcaption>
+              </div>
+            </figure>
+
+            <figure class="card" aria-labelledby="consultor-receita-chart-title">
+              <div class="card-body space-y-6">
+                <div
+                  id="consultor-receita-chart"
+                  role="img"
+                  aria-labelledby="consultor-receita-chart-title"
+                  data-chart="{{ receita_inscricoes_chart|safe }}"
+                ></div>
+                <figcaption id="consultor-receita-chart-title" class="text-sm text-[var(--text-secondary)]">
+                  {% trans "Receita total das inscrições confirmadas." %}
+                </figcaption>
+              </div>
+            </figure>
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
+{% endblock %}
