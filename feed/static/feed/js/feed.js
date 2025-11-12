@@ -42,6 +42,11 @@ function bindFeedEvents(root = document) {
 
   if (fileWrappers.length) {
     fileWrappers.forEach((wrapper) => {
+      if (wrapper.dataset.feedFileEventsBound === 'true') {
+        return;
+      }
+      wrapper.dataset.feedFileEventsBound = 'true';
+
       const input = wrapper.querySelector('[data-feed-file-input]');
       const button = wrapper.querySelector('[data-feed-file-button]');
       const status = wrapper.querySelector('[data-feed-file-name]');
