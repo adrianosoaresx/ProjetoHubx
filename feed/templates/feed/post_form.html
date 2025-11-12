@@ -141,12 +141,25 @@
             <p class="text-xs text-[var(--text-secondary)]">{% trans "Use Enter ou vírgula para separar as tags." %}</p>
           </div>
 
-          <div class="space-y-2">
+          <div class="space-y-2" data-file-upload>
             <label for="{{ form.arquivo.id_for_label }}"
                    class="block text-sm font-medium text-[var(--text-primary)]">
-              {{ form.arquivo.label }}
+              {% trans "Imagem, vídeo ou PDF" %}
             </label>
-            {{ form.arquivo }}
+            {{ form.arquivo|add_class:"sr-only"|attr:"data-file-input:true" }}
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button type="button"
+                      class="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--bg-secondary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)] sm:w-auto"
+                      data-file-trigger
+                      aria-controls="{{ form.arquivo.id_for_label }}">
+                {% trans "Selecionar" %}
+              </button>
+              <span class="text-sm text-[var(--text-secondary)]"
+                    data-file-name
+                    data-empty-text="{% trans 'Nenhum arquivo selecionado' %}">
+                {% trans "Nenhum arquivo selecionado" %}
+              </span>
+            </div>
             <p class="text-xs text-[var(--text-secondary)]">{% trans "Aceita imagem, PDF ou vídeo." %}</p>
             {% if form.arquivo.errors or form.image.errors or form.pdf.errors or form.video.errors %}
               <ul class="errorlist">
