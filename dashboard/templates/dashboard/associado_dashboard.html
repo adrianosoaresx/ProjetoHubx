@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% load i18n lucide_icons %}
+
+{% block title %}{% trans "Meu dashboard" %}{% endblock %}
+
+{% block hero %}
+  {% include "_components/hero.html" with title=_("Meu dashboard") subtitle=_("Acompanhe suas conexões, eventos e destaques pessoais.") breadcrumb_template=None neural_background="dashboard" section_classes="relative isolate overflow-hidden text-white" container_classes="max-w-5xl mx-auto w-full px-6 py-14 md:py-16" %}
+{% endblock %}
+
+{% block content %}
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8">
+    <section aria-labelledby="associado-metricas-title" class="space-y-6">
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15"
+            >
+              {% lucide 'trending-up' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="associado-metricas-title" class="text-xl font-semibold text-[var(--text-primary)]">
+                {% trans "Métricas principais" %}
+              </h2>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% trans "Uma visão geral do seu engajamento na comunidade." %}
+              </p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-6">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {% include "_partials/cards/total_card.html" with label=_("Pontuação média de avaliações") valor=avaliacao_display icon_name="star" %}
+            {% include "_partials/cards/total_card.html" with label=_("Total de conexões") valor=total_conexoes icon_name="users" %}
+            {% include "_partials/cards/total_card.html" with label=_("Postagens publicadas") valor=total_posts icon_name="megaphone" %}
+            {% include "_partials/cards/total_card.html" with label=_("Reações no feed") valor=total_reacoes icon_name="heart" %}
+          </div>
+          <p class="text-sm text-[var(--text-muted)]">
+            {% blocktrans trimmed count total=avaliacao_total %}
+              Você registrou {{ total }} avaliação.
+            {% plural %}
+              Você registrou {{ total }} avaliações.
+            {% endblocktrans %}
+          </p>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <article class="card" aria-labelledby="associado-conexoes-title">
+              <div class="card-body space-y-4">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-primary-600)]">
+                    {% lucide 'users' class='h-5 w-5' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h3 id="associado-conexoes-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Suas conexões" %}</h3>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Pessoas com quem você já está conectado." %}</p>
+                  </div>
+                </div>
+                <ul class="space-y-3" aria-live="polite">
+                  {% for conexao in conexoes %}
+                    <li class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                      <span class="text-sm font-medium text-[var(--text-primary)]">{{ conexao.get_full_name|default:conexao.username }}</span>
+                      {% if conexao.organizacao %}
+                        <span class="text-xs text-[var(--text-muted)]">{{ conexao.organizacao }}</span>
+                      {% endif %}
+                    </li>
+                  {% empty %}
+                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                      {% trans "Você ainda não possui conexões ativas." %}
+                    </li>
+                  {% endfor %}
+                </ul>
+                {% if conexoes_restantes > 0 %}
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% blocktrans trimmed with restantes=conexoes_restantes %}
+                      + {{ restantes }} outras conexões.
+                    {% endblocktrans %}
+                  </p>
+                {% endif %}
+              </div>
+            </article>
+
+            <article class="card" aria-labelledby="associado-nucleos-title">
+              <div class="card-body space-y-4">
+                <div class="flex items-start gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
+                    {% lucide 'layers' class='h-5 w-5' aria_hidden='true' %}
+                  </span>
+                  <div class="space-y-1">
+                    <h3 id="associado-nucleos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Núcleos" %}</h3>
+                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos dos quais você faz parte." %}</p>
+                  </div>
+                </div>
+                <ul class="space-y-3" aria-live="polite">
+                  {% for participacao in participacoes %}
+                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                      <span class="text-sm font-medium text-[var(--text-primary)]">{{ participacao.nucleo.nome }}</span>
+                      <span class="text-xs text-[var(--text-muted)]">{% trans "Status" %}: {{ participacao.get_status_display }}</span>
+                    </li>
+                  {% empty %}
+                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                      {% trans "Você ainda não integra nenhum núcleo." %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </article>
+          </div>
+
+          <article class="card" aria-labelledby="associado-eventos-title">
+            <div class="card-body space-y-4">
+              <div class="flex items-start gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
+                  {% lucide 'calendar-days' class='h-5 w-5' aria_hidden='true' %}
+                </span>
+                <div class="space-y-1">
+                  <h3 id="associado-eventos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Eventos" %}</h3>
+                  <p class="text-sm text-[var(--text-secondary)]">{% trans "Participações confirmadas ou inscrições em andamento." %}</p>
+                </div>
+              </div>
+              <ul class="space-y-3" aria-live="polite">
+                {% for inscricao in eventos %}
+                  {% with evento=inscricao.evento %}
+                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                      <div class="flex flex-col gap-1">
+                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</span>
+                        <span class="text-xs text-[var(--text-muted)]">
+                          {% if evento %}
+                            {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }} ·
+                          {% endif %}
+                          {% if inscricao.presente %}
+                            {% trans "Participação registrada" %}
+                          {% else %}
+                            {{ inscricao.get_status_display }}
+                          {% endif %}
+                        </span>
+                      </div>
+                    </li>
+                  {% endwith %}
+                {% empty %}
+                  <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                    {% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </article>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="associado-portfolio-title" class="space-y-6">
+      <details class="card group">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/15">
+              {% lucide 'briefcase' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="associado-portfolio-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Portfólio" %}</h2>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Destaques adicionados ao seu portfólio pessoal." %}</p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-4">
+          <ul class="grid gap-4 md:grid-cols-2" aria-live="polite">
+            {% for media in portfolio_destaques %}
+              <li class="card overflow-hidden border border-[var(--border)] bg-[var(--bg-secondary)]">
+                <div class="card-body space-y-3 p-4">
+                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao|default:_("Item sem descrição") }}</span>
+                  <span class="text-xs text-[var(--text-muted)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</span>
+                  {% if media.media_type == 'image' %}
+                    <div class="overflow-hidden rounded-lg border border-[var(--border)]">
+                      <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="h-auto w-full object-cover" loading="lazy" />
+                    </div>
+                  {% elif media.media_type == 'video' %}
+                    <div class="overflow-hidden rounded-lg border border-[var(--border)] bg-black">
+                      <video src="{{ media.file.url }}" controls class="w-full"></video>
+                    </div>
+                  {% elif media.media_type == 'pdf' %}
+                    <a href="{{ media.file.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-[var(--accent)]">
+                      {% lucide 'file-text' class='h-4 w-4' aria_hidden='true' %}
+                      {% trans "Abrir PDF" %}
+                    </a>
+                  {% else %}
+                    <span class="text-xs text-[var(--text-secondary)]">{{ media.file.name }}</span>
+                  {% endif %}
+                  {% if media.tags.all %}
+                    <div class="flex flex-wrap gap-2">
+                      {% for tag in media.tags.all %}
+                        <span class="rounded bg-[var(--bg-tertiary)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">{{ tag.nome }}</span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </li>
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-6 text-sm text-[var(--text-secondary)]">
+                {% trans "Nenhuma mídia disponível no momento." %}
+              </li>
+            {% endfor %}
+          </ul>
+          <p class="text-xs text-[var(--text-secondary)]">
+            {% trans "Gerencie seus destaques no menu Portfólio." %}
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="associado-favoritos-title" class="space-y-6">
+      <details class="card group">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-danger-500)]/10 text-[var(--color-danger-500)] shadow-lg shadow-[var(--color-danger-500)]/15">
+              {% lucide 'bookmark' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="associado-favoritos-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Favoritos" %}</h2>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Publicações do feed salvas por você." %}</p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-4">
+          <ul class="space-y-3" aria-live="polite">
+            {% for favorito in favoritos %}
+              {% with post=favorito.post autor=favorito.post.autor %}
+                <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-[var(--text-primary)]">
+                      {% if autor %}
+                        {{ autor.get_full_name|default:autor.username }}
+                      {% else %}
+                        {% trans "Autor desconhecido" %}
+                      {% endif %}
+                    </span>
+                    <p class="text-xs text-[var(--text-secondary)] line-clamp-3">
+                      {% if post and post.conteudo %}
+                        {{ post.conteudo }}
+                      {% else %}
+                        {% trans "Publicação indisponível" %}
+                      {% endif %}
+                    </p>
+                    <span class="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{{ favorito.created_at|date:"SHORT_DATETIME_FORMAT" }}</span>
+                  </div>
+                </li>
+              {% endwith %}
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-6 text-sm text-[var(--text-secondary)]">
+                {% trans "Você ainda não salvou publicações como favoritas." %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+    </section>
+  </div>
+{% endblock %}
