@@ -27,10 +27,29 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
     """View principal do painel administrativo."""
 
     template_name = "dashboard/admin_dashboard.html"
+    DEFAULT_MONTHS = 12
+    PERIOD_CHOICES: tuple[int, ...] = (3, 6, 12, 24)
+
+    def _resolve_months(self) -> int:
+        """Obtém o número de meses válido informado via query string."""
+
+        raw_months = self.request.GET.get("months")
+        if not raw_months:
+            return self.DEFAULT_MONTHS
+
+        try:
+            months = int(raw_months)
+        except (TypeError, ValueError):
+            return self.DEFAULT_MONTHS
+
+        if months not in self.PERIOD_CHOICES:
+            return self.DEFAULT_MONTHS
+        return months
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         organizacao = getattr(self.request.user, "organizacao", None)
+        months = self._resolve_months()
 
         membership_totals = calculate_membership_totals(organizacao)
         event_totals = calculate_event_status_totals(organizacao)
@@ -40,10 +59,14 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
         membros_chart = build_chart_payload(membership_totals)
         eventos_por_nucleo_chart = build_chart_payload(eventos_por_nucleo)
 
-        monthly_associates = calculate_monthly_associates(organizacao)
-        monthly_nucleados = calculate_monthly_nucleados(organizacao)
-        monthly_registrations = calculate_monthly_event_registrations(organizacao)
-        monthly_registration_values = calculate_monthly_registration_values(organizacao)
+        monthly_associates = calculate_monthly_associates(organizacao, months=months)
+        monthly_nucleados = calculate_monthly_nucleados(organizacao, months=months)
+        monthly_registrations = calculate_monthly_event_registrations(
+            organizacao, months=months
+        )
+        monthly_registration_values = calculate_monthly_registration_values(
+            organizacao, months=months
+        )
 
         associados_por_periodo_chart = build_time_series_chart(
             monthly_associates,
@@ -98,6 +121,8 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
                 "inscricoes_por_periodo_chart": inscricoes_por_periodo_chart,
                 "valores_inscricoes_por_periodo_chart": valores_inscricoes_por_periodo_chart,
                 "total_eventos": eventos_chart.get("total", 0),
+                "dashboard_period_months": months,
+                "dashboard_period_choices": self.PERIOD_CHOICES,
             }
         )
         return context
