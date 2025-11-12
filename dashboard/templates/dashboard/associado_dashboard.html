@@ -45,135 +45,133 @@
               Você registrou {{ total }} avaliações.
             {% endblocktrans %}
           </p>
+        </div>
+      </details>
 
-          <div class="space-y-6">
-            <details class="card group" open>
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-primary-600)]">
-                    {% lucide 'users' class='h-5 w-5' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h3 id="associado-conexoes-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Suas conexões" %}</h3>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Pessoas com quem você já está conectado." %}</p>
-                  </div>
-                </div>
-                <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
-                  {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-                </span>
-              </summary>
-              <div class="card-body space-y-4">
-                <ul class="space-y-3" aria-live="polite">
-                  {% for conexao in conexoes %}
-                    <li>
-                      <a
-                        href="{% url 'accounts:perfil_publico_uuid' conexao.public_id %}"
-                        class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)] focus-visible:ring-offset-2"
-                        aria-label="{% blocktrans trimmed with nome=conexao.get_full_name|default:conexao.username %}Ver perfil de {{ nome }}{% endblocktrans %}"
-                      >
-                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ conexao.get_full_name|default:conexao.username }}</span>
-                        {% if conexao.organizacao %}
-                          <span class="text-xs text-[var(--text-muted)]">{{ conexao.organizacao }}</span>
-                        {% endif %}
-                      </a>
-                    </li>
-                  {% empty %}
-                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      {% trans "Você ainda não possui conexões ativas." %}
-                    </li>
-                  {% endfor %}
-                </ul>
-                {% if conexoes_restantes > 0 %}
-                  <p class="text-xs text-[var(--text-secondary)]">
-                    {% blocktrans trimmed with restantes=conexoes_restantes %}
-                      + {{ restantes }} outras conexões.
-                    {% endblocktrans %}
-                  </p>
-                {% endif %}
-              </div>
-            </details>
-
-            <details class="card group" open>
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
-                    {% lucide 'layers' class='h-5 w-5' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h3 id="associado-nucleos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Meus núcleos" %}</h3>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos dos quais você faz parte." %}</p>
-                  </div>
-                </div>
-                <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
-                  {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-                </span>
-              </summary>
-              <div class="card-body space-y-4">
-                <ul class="space-y-3" aria-live="polite">
-                  {% for participacao in participacoes %}
-                    <li>
-                      <a
-                        href="{% url 'nucleos:detail_uuid' participacao.nucleo.public_id %}"
-                        class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-success-500)] hover:text-[var(--color-success-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success-500)] focus-visible:ring-offset-2"
-                        aria-label="{% blocktrans trimmed with nome=participacao.nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}"
-                      >
-                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ participacao.nucleo.nome }}</span>
-                        <span class="text-xs text-[var(--text-muted)]">{% trans "Status" %}: {{ participacao.get_status_display }}</span>
-                      </a>
-                    </li>
-                  {% empty %}
-                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      {% trans "Você ainda não integra nenhum núcleo." %}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </details>
-
-            <details class="card group" open>
-              <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
-                    {% lucide 'calendar-days' class='h-5 w-5' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h3 id="associado-eventos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Meus eventos" %}</h3>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Participações confirmadas ou inscrições em andamento." %}</p>
-                  </div>
-                </div>
-                <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
-                  {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-                </span>
-              </summary>
-              <div class="card-body space-y-4">
-                <ul class="space-y-3" aria-live="polite">
-                  {% for inscricao in inscricoes_ativas %}
-                    {% with evento=inscricao.evento %}
-                      <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                        <div class="flex flex-col gap-1">
-                          <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</span>
-                          <span class="text-xs text-[var(--text-muted)]">
-                            {% if evento %}
-                              {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }} ·
-                            {% endif %}
-                            {% if inscricao.presente %}
-                              {% trans "Participação registrada" %}
-                            {% else %}
-                              {{ inscricao.get_status_display }}
-                            {% endif %}
-                          </span>
-                        </div>
-                      </li>
-                    {% endwith %}
-                  {% empty %}
-                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      {% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </details>
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-primary-600)]">
+              {% lucide 'users' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h3 id="associado-conexoes-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Suas conexões" %}</h3>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Pessoas com quem você já está conectado." %}</p>
+            </div>
           </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-4">
+          <ul class="space-y-3" aria-live="polite">
+            {% for conexao in conexoes %}
+              <li>
+                <a
+                  href="{% url 'accounts:perfil_publico_uuid' conexao.public_id %}"
+                  class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)] focus-visible:ring-offset-2"
+                  aria-label="{% blocktrans trimmed with nome=conexao.get_full_name|default:conexao.username %}Ver perfil de {{ nome }}{% endblocktrans %}"
+                >
+                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ conexao.get_full_name|default:conexao.username }}</span>
+                  {% if conexao.organizacao %}
+                    <span class="text-xs text-[var(--text-muted)]">{{ conexao.organizacao }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                {% trans "Você ainda não possui conexões ativas." %}
+              </li>
+            {% endfor %}
+          </ul>
+          {% if conexoes_restantes > 0 %}
+            <p class="text-xs text-[var(--text-secondary)]">
+              {% blocktrans trimmed with restantes=conexoes_restantes %}
+                + {{ restantes }} outras conexões.
+              {% endblocktrans %}
+            </p>
+          {% endif %}
+        </div>
+      </details>
+
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
+              {% lucide 'layers' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h3 id="associado-nucleos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Meus núcleos" %}</h3>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos dos quais você faz parte." %}</p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-4">
+          <ul class="space-y-3" aria-live="polite">
+            {% for participacao in participacoes %}
+              <li>
+                <a
+                  href="{% url 'nucleos:detail_uuid' participacao.nucleo.public_id %}"
+                  class="flex flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 transition hover:border-[var(--color-success-500)] hover:text-[var(--color-success-600)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success-500)] focus-visible:ring-offset-2"
+                  aria-label="{% blocktrans trimmed with nome=participacao.nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}"
+                >
+                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ participacao.nucleo.nome }}</span>
+                  <span class="text-xs text-[var(--text-muted)]">{% trans "Status" %}: {{ participacao.get_status_display }}</span>
+                </a>
+              </li>
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                {% trans "Você ainda não integra nenhum núcleo." %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+
+      <details class="card group" open>
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
+              {% lucide 'calendar-days' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h3 id="associado-eventos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Meus eventos" %}</h3>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Participações confirmadas ou inscrições em andamento." %}</p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body space-y-4">
+          <ul class="space-y-3" aria-live="polite">
+            {% for inscricao in inscricoes_ativas %}
+              {% with evento=inscricao.evento %}
+                <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</span>
+                    <span class="text-xs text-[var(--text-muted)]">
+                      {% if evento %}
+                        {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }} ·
+                      {% endif %}
+                      {% if inscricao.presente %}
+                        {% trans "Participação registrada" %}
+                      {% else %}
+                        {{ inscricao.get_status_display }}
+                      {% endif %}
+                    </span>
+                  </div>
+                </li>
+              {% endwith %}
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                {% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}
+              </li>
+            {% endfor %}
+          </ul>
         </div>
       </details>
     </section>
