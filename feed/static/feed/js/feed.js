@@ -42,9 +42,6 @@ function bindFeedEvents(root = document) {
 
   if (fileWrappers.length) {
     fileWrappers.forEach((wrapper) => {
-      if (wrapper.dataset.feedFileBound === 'true') {
-        return;
-      }
       const input = wrapper.querySelector('[data-feed-file-input]');
       const button = wrapper.querySelector('[data-feed-file-button]');
       const status = wrapper.querySelector('[data-feed-file-name]');
@@ -53,8 +50,6 @@ function bindFeedEvents(root = document) {
       if (!input || !button || !status) {
         return;
       }
-
-      wrapper.dataset.feedFileBound = 'true';
 
       const emptyText = status.dataset.emptyText || input.dataset.emptyText || '';
       const initialText = status.dataset.initialText || '';

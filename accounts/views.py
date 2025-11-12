@@ -303,12 +303,66 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         perfil.medias.visible_to(viewer, perfil).select_related("user").order_by("-created_at")
     )
 
+    profile_posts = (
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+        .prefetch_related("reacoes", "comments")
+        .filter(deleted=False, autor=perfil, tipo_feed="global")
+        .annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+        )
+    )
+
+    if request.user.is_authenticated:
+        profile_posts = profile_posts.annotate(
+            is_bookmarked=Exists(
+                Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
+            ),
+            is_flagged=Exists(
+                Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
+            ),
+            is_liked=Exists(
+                Reacao.objects.filter(
+                    post=OuterRef("pk"),
+                    user=request.user,
+                    vote="like",
+                    deleted=False,
+                )
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(
+                    post=OuterRef("pk"),
+                    user=request.user,
+                    vote="share",
+                    deleted=False,
+                )
+            ),
+        )
+    else:
+        profile_posts = profile_posts.annotate(
+            is_bookmarked=Value(False, output_field=BooleanField()),
+            is_flagged=Value(False, output_field=BooleanField()),
+            is_liked=Value(False, output_field=BooleanField()),
+            is_shared=Value(False, output_field=BooleanField()),
+        )
+
+    profile_posts = profile_posts.order_by("-created_at").distinct()
+
     context = {
         "perfil": perfil,
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
         "portfolio_medias": portfolio_medias,
+        "profile_posts": profile_posts,
     }
 
     default_section, default_url = _perfil_default_section_url(request)
