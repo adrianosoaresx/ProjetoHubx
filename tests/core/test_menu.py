@@ -3,6 +3,7 @@ from typing import Optional
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
+from django.urls import reverse
 
 from accounts.models import UserType
 from core.menu import MenuItem, build_menu
@@ -109,3 +110,31 @@ def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
         assert tokens_item is not None
         child_ids = {child.id for child in tokens_item.children or []}
         assert {"tokens_gerar", "tokens_listar"} <= child_ids
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("user_type", "expected_url_name"),
+    [
+        (UserType.ADMIN, "dashboard:admin_dashboard_admin"),
+        (UserType.OPERADOR, "dashboard:admin_dashboard_admin"),
+        (UserType.ASSOCIADO, "dashboard:associado_dashboard"),
+    ],
+)
+def test_dashboard_menu_points_to_role_specific_view(user_type, expected_url_name):
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email=f"{user_type.value}-dashboard@example.com",
+        username=f"{user_type.value}_dashboard",
+        password="test-pass",
+        user_type=user_type,
+    )
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+
+    dashboard_item = next(item for item in menu if item.id == "admin-dashboard")
+
+    assert dashboard_item.path == reverse(expected_url_name)

@@ -7,6 +7,8 @@ from urllib.parse import parse_qsl, urlsplit
 from django.urls import reverse
 from django.utils import timezone
 
+from accounts.models import UserType
+
 
 @dataclass
 class MenuItem:
@@ -420,6 +422,44 @@ def _get_menu_items() -> List[MenuItem]:
     ]
 
 
+def _resolve_dashboard_path(user) -> str:
+    """Retorna a URL correta do dashboard conforme o perfil do usuário."""
+
+    if not getattr(user, "is_authenticated", False):
+        return reverse("dashboard:admin_dashboard")
+
+    tipo_usuario = getattr(user, "get_tipo_usuario", None)
+    if isinstance(tipo_usuario, UserType):
+        tipo_usuario = tipo_usuario.value
+
+    if not tipo_usuario:
+        raw_user_type = getattr(user, "user_type", None)
+        if isinstance(raw_user_type, UserType):
+            raw_user_type = raw_user_type.value
+        tipo_usuario = raw_user_type
+
+    if tipo_usuario == UserType.ASSOCIADO.value:
+        return reverse("dashboard:associado_dashboard")
+
+    if tipo_usuario in {
+        UserType.ADMIN.value,
+        UserType.OPERADOR.value,
+        UserType.ROOT.value,
+    }:
+        return reverse("dashboard:admin_dashboard_admin")
+
+    return reverse("dashboard:admin_dashboard")
+
+
+def _apply_dashboard_path(items: List[MenuItem], dashboard_path: str) -> None:
+    for item in items:
+        if item.id == "admin-dashboard":
+            item.path = dashboard_path
+            return
+        if item.children:
+            _apply_dashboard_path(item.children, dashboard_path)
+
+
 def _user_has_permission(user, item: MenuItem) -> bool:
     perms = item.permissions or []
     if not perms:
@@ -495,6 +535,8 @@ def build_menu(request) -> List[MenuItem]:
 
     items = _get_menu_items()
     user = request.user
+    dashboard_path = _resolve_dashboard_path(user)
+    _apply_dashboard_path(items, dashboard_path)
     filtered = _filter_items(items, user)
     current_full_path = request.get_full_path()
     path_queries = defaultdict(set)
