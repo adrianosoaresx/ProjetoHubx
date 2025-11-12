@@ -330,7 +330,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("dashboard:admin_dashboard"),
             label="Dashboard",
             icon=ICON_DASHBOARD,
-            permissions=["admin", "operador", "root"],
+            permissions=["admin", "operador", "root", "associado"],
         ),
         MenuItem(
             id="portfolio",
