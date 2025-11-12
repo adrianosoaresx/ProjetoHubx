@@ -1,12 +1,17 @@
 """Funções auxiliares para agregações do dashboard administrativo."""
 from __future__ import annotations
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from collections.abc import Mapping
+from datetime import datetime, date
+from decimal import Decimal
+from statistics import StatisticsError, pstdev
 from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count
+from django.db.models.functions import TruncDay
+from django.utils import timezone
 from django.utils.translation import gettext
 from plotly import graph_objects as go
 
@@ -28,6 +33,84 @@ def _extract_organizacao_id(organizacao: Any | None) -> Any | None:
     if not organizacao:
         return None
     return getattr(organizacao, "id", organizacao)
+
+
+def _normalize_reference(reference: datetime | None = None) -> datetime:
+    """Normaliza a data de referência para o timezone configurado."""
+
+    normalized = reference or timezone.now()
+    if timezone.is_naive(normalized):
+        normalized = timezone.make_aware(normalized)
+    return normalized
+
+
+def _month_start(moment: datetime) -> datetime:
+    """Retorna o primeiro instante do mês da data informada."""
+
+    normalized = _normalize_reference(moment)
+    return normalized.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
+def _shift_month(moment: datetime, offset: int) -> datetime:
+    """Desloca ``moment`` para o primeiro dia do mês conforme ``offset``."""
+
+    base = _month_start(moment)
+    month_index = base.month - 1 + offset
+    year = base.year + month_index // 12
+    month = month_index % 12 + 1
+    return base.replace(year=year, month=month)
+
+
+def _generate_month_periods(
+    count: int, *, reference: datetime | None = None
+) -> list[datetime]:
+    """Gera ``count`` meses em ordem cronológica até ``reference`` (inclusive)."""
+
+    if count <= 0:
+        return []
+
+    anchor = _month_start(reference or timezone.now())
+    periods: list[datetime] = []
+    current = anchor
+    for _ in range(count):
+        periods.append(current)
+        current = _shift_month(current, -1)
+    return list(reversed(periods))
+
+
+def _baseline_for_periods(
+    periods: list[datetime], *, include_std: bool = False
+) -> OrderedDict[date, dict[str, Any]]:
+    """Inicializa um ``OrderedDict`` com registros vazios para os períodos."""
+
+    baseline: OrderedDict[date, dict[str, Any]] = OrderedDict()
+    for period in periods:
+        record: dict[str, Any] = {"period": period, "total": 0}
+        if include_std:
+            record["std_dev"] = 0.0
+        baseline[_period_key(period)] = record
+    return baseline
+
+
+def _period_key(period: datetime) -> datetime.date:
+    """Normaliza um ``datetime`` para a data correspondente."""
+
+    normalized = _normalize_reference(period)
+    return normalized.date()
+
+
+def _calculate_std_dev(values: list[float]) -> float:
+    """Calcula o desvio padrão populacional com proteção para listas vazias."""
+
+    filtered = [float(value) for value in values if value is not None]
+    if not filtered:
+        return 0.0
+    if len(filtered) == 1:
+        return 0.0
+    try:
+        return round(float(pstdev(filtered)), 2)
+    except StatisticsError:  # pragma: no cover - salvaguarda
+        return 0.0
 
 
 def calculate_membership_totals(organizacao: Any | None) -> OrderedDict[str, int]:
@@ -124,6 +207,188 @@ def count_confirmed_event_registrations(organizacao: Any | None) -> int:
     ).count()
 
 
+def calculate_monthly_associates(
+    organizacao: Any | None,
+    *,
+    months: int = 12,
+    reference: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna evolução mensal de novos associados com desvio padrão diário."""
+
+    periods = _generate_month_periods(months, reference=reference)
+    baseline = _baseline_for_periods(periods, include_std=True)
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    if not organizacao_id or not periods:
+        return list(baseline.values())
+
+    start = periods[0]
+    associados_qs = User.objects.filter(
+        organizacao_id=organizacao_id,
+        is_associado=True,
+        date_joined__isnull=False,
+        date_joined__gte=start,
+    )
+
+    daily_counts = (
+        associados_qs.annotate(day=TruncDay("date_joined"))
+        .values("day")
+        .annotate(total=Count("id"))
+    )
+
+    for item in daily_counts:
+        day = item.get("day")
+        if not day:
+            continue
+        month_start = _month_start(day)
+        record = baseline.get(_period_key(month_start))
+        if not record:
+            continue
+        total = int(item.get("total") or 0)
+        record["total"] += total
+        record.setdefault("_daily_totals", []).append(total)
+
+    for record in baseline.values():
+        daily = record.pop("_daily_totals", [])
+        record["std_dev"] = _calculate_std_dev(daily)
+
+    return list(baseline.values())
+
+
+def calculate_monthly_nucleados(
+    organizacao: Any | None,
+    *,
+    months: int = 12,
+    reference: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna evolução mensal de nucleados ativos com desvio padrão diário."""
+
+    periods = _generate_month_periods(months, reference=reference)
+    baseline = _baseline_for_periods(periods, include_std=True)
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    if not organizacao_id or not periods:
+        return list(baseline.values())
+
+    start = periods[0]
+    participacoes_qs = ParticipacaoNucleo.objects.filter(
+        nucleo__organizacao_id=organizacao_id,
+        status="ativo",
+        created_at__gte=start,
+    )
+
+    daily_counts = (
+        participacoes_qs.annotate(day=TruncDay("created_at"))
+        .values("day")
+        .annotate(total=Count("id"))
+    )
+
+    for item in daily_counts:
+        day = item.get("day")
+        if not day:
+            continue
+        month_start = _month_start(day)
+        record = baseline.get(_period_key(month_start))
+        if not record:
+            continue
+        total = int(item.get("total") or 0)
+        record["total"] += total
+        record.setdefault("_daily_totals", []).append(total)
+
+    for record in baseline.values():
+        daily = record.pop("_daily_totals", [])
+        record["std_dev"] = _calculate_std_dev(daily)
+
+    return list(baseline.values())
+
+
+def calculate_monthly_event_registrations(
+    organizacao: Any | None,
+    *,
+    months: int = 12,
+    reference: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna a contagem mensal de inscrições confirmadas."""
+
+    periods = _generate_month_periods(months, reference=reference)
+    baseline = _baseline_for_periods(periods, include_std=False)
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    if not organizacao_id or not periods:
+        return list(baseline.values())
+
+    start = periods[0]
+    inscricoes_qs = InscricaoEvento.objects.filter(
+        evento__organizacao_id=organizacao_id,
+        status="confirmada",
+        data_confirmacao__isnull=False,
+        data_confirmacao__gte=start,
+    )
+
+    daily_counts = (
+        inscricoes_qs.annotate(day=TruncDay("data_confirmacao"))
+        .values("day")
+        .annotate(total=Count("id"))
+    )
+
+    for item in daily_counts:
+        day = item.get("day")
+        if not day:
+            continue
+        month_start = _month_start(day)
+        record = baseline.get(_period_key(month_start))
+        if not record:
+            continue
+        record["total"] += int(item.get("total") or 0)
+
+    return list(baseline.values())
+
+
+def calculate_monthly_registration_values(
+    organizacao: Any | None,
+    *,
+    months: int = 12,
+    reference: datetime | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna a soma mensal dos valores pagos com desvio padrão."""
+
+    periods = _generate_month_periods(months, reference=reference)
+    baseline = _baseline_for_periods(periods, include_std=True)
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    if not organizacao_id or not periods:
+        return list(baseline.values())
+
+    start = periods[0]
+    inscricoes_qs = InscricaoEvento.objects.filter(
+        evento__organizacao_id=organizacao_id,
+        status="confirmada",
+        valor_pago__isnull=False,
+        data_confirmacao__isnull=False,
+        data_confirmacao__gte=start,
+    ).values("data_confirmacao", "valor_pago")
+
+    grouped_values: dict[date, list[float]] = defaultdict(list)
+    totals: dict[date, Decimal] = defaultdict(lambda: Decimal("0"))
+
+    for item in inscricoes_qs:
+        confirmation = item.get("data_confirmacao")
+        value = item.get("valor_pago")
+        if not confirmation or value is None:
+            continue
+        month_start = _period_key(_month_start(confirmation))
+        if month_start not in baseline:
+            continue
+        totals[month_start] += Decimal(value)
+        grouped_values[month_start].append(float(value))
+
+    for key, record in baseline.items():
+        record["total"] = float(totals.get(key, Decimal("0")))
+        record["std_dev"] = _calculate_std_dev(grouped_values.get(key, []))
+
+    return list(baseline.values())
+
+
 CHART_PALETTE = [
     "#0ea5e9",  # sky-500
     "#2563eb",  # blue-600
@@ -178,6 +443,136 @@ def _palette_for_length(length: int) -> list[str]:
         return []
     repeats = (length // len(CHART_PALETTE)) + 1
     return (CHART_PALETTE * repeats)[:length]
+
+
+def build_time_series_chart(
+    data_points: list[dict[str, Any]],
+    *,
+    value_field: str,
+    label: str,
+    std_field: str | None = None,
+    color: str = "#2563eb",
+    value_format: str = ".0f",
+    value_prefix: str = "",
+    value_suffix: str = "",
+    yaxis_title: str = "",
+    yaxis_tickprefix: str = "",
+    yaxis_ticksuffix: str = "",
+) -> dict[str, Any]:
+    """Gera figura Plotly de série temporal com opção de banda de desvio padrão."""
+
+    if not data_points:
+        empty = _empty_figure(gettext("Sem dados disponíveis"))
+        return {"points": [], "figure": empty.to_dict(), "type": "line"}
+
+    x_values = [point["period"] for point in data_points]
+    y_values = [float(point.get(value_field) or 0.0) for point in data_points]
+
+    if not any(y_values):
+        figure = _empty_figure(gettext("Sem dados disponíveis"))
+    else:
+        figure = go.Figure()
+        std_values: list[float] = []
+        if std_field:
+            std_values = [float(point.get(std_field) or 0.0) for point in data_points]
+
+        band_color = _adjust_color_luminance(color, 0.4)
+        band_border = _adjust_color_luminance(color, 0.2)
+
+        if std_field and any(std_values):
+            upper = [value + std for value, std in zip(y_values, std_values)]
+            lower = [max(0.0, value - std) for value, std in zip(y_values, std_values)]
+
+            figure.add_trace(
+                go.Scatter(
+                    x=x_values,
+                    y=upper,
+                    mode="lines",
+                    line={"width": 0, "color": band_border},
+                    hoverinfo="skip",
+                    showlegend=False,
+                    name="upper",
+                )
+            )
+            figure.add_trace(
+                go.Scatter(
+                    x=x_values,
+                    y=lower,
+                    mode="lines",
+                    line={"width": 0, "color": band_border},
+                    fill="tonexty",
+                    fillcolor=band_color,
+                    name=gettext("Desvio padrão"),
+                    customdata=[[std] for std in std_values],
+                    hovertemplate=(
+                        "<b>%{x|%b %Y}</b><br>"
+                        + gettext("Desvio padrão")
+                        + ": "
+                        + value_prefix
+                        + "%{customdata[0]:"
+                        + value_format
+                        + "}"
+                        + value_suffix
+                        + "<extra></extra>"
+                    ),
+                )
+            )
+
+        figure.add_trace(
+            go.Scatter(
+                x=x_values,
+                y=y_values,
+                mode="lines+markers",
+                name=label,
+                line={"color": color, "width": 3},
+                marker={
+                    "size": 8,
+                    "color": _adjust_color_luminance(color, -0.02),
+                    "line": {"color": "#ffffff", "width": 1},
+                },
+                hovertemplate=(
+                    "<b>%{x|%b %Y}</b><br>"
+                    + label
+                    + ": "
+                    + value_prefix
+                    + "%{y:"
+                    + value_format
+                    + "}"
+                    + value_suffix
+                    + "<extra></extra>"
+                ),
+            )
+        )
+
+        figure.update_layout(
+            _base_layout(
+                xaxis={
+                    "title": "",
+                    "tickformat": "%b %Y",
+                    "dtick": "M1",
+                    "hoverformat": "%b %Y",
+                },
+                yaxis={
+                    "title": yaxis_title,
+                    "tickprefix": yaxis_tickprefix,
+                    "ticksuffix": yaxis_ticksuffix,
+                    "rangemode": "tozero",
+                },
+                hovermode="x unified",
+                margin={"l": 72, "r": 32, "t": 48, "b": 96},
+                height=420,
+            )
+        )
+
+    serialized_points: list[dict[str, Any]] = []
+    for point in data_points:
+        serialized = dict(point)
+        period = serialized.get("period")
+        if hasattr(period, "isoformat"):
+            serialized["period"] = period.isoformat()
+        serialized_points.append(serialized)
+
+    return {"points": serialized_points, "figure": figure.to_dict(), "type": "line"}
 
 
 def _base_layout(**extras: Any) -> dict[str, Any]:
