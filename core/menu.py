@@ -330,7 +330,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("dashboard:admin_dashboard"),
             label="Dashboard",
             icon=ICON_DASHBOARD,
-            permissions=["admin", "operador", "root"],
+            permissions=["admin", "operador", "associado", "root"],
         ),
         MenuItem(
             id="portfolio",
@@ -396,6 +396,29 @@ def _get_menu_items() -> List[MenuItem]:
                 "convidado",
             ],
             children=feed_children,
+        ),
+        MenuItem(
+            "tokens",
+            reverse("tokens:listar_convites"),
+            "Tokens",
+            ICON_TOKEN,
+            ["admin", "operador"],
+            children=[
+                MenuItem(
+                    "tokens_gerar",
+                    reverse("tokens:gerar_convite"),
+                    "Gerar convites",
+                    ICON_PLUS,
+                    ["admin", "operador"],
+                ),
+                MenuItem(
+                    "tokens_listar",
+                    reverse("tokens:listar_convites"),
+                    "Convites emitidos",
+                    ICON_TABLE,
+                    ["admin", "operador"],
+                ),
+            ],
         ),
         MenuItem("organizacoes", reverse("organizacoes:list"), "Organizações", ICON_ORGS, ["root"]),
         MenuItem(
