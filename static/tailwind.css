@@ -5453,6 +5453,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     align-items: center;
   }
 
+  .sm\:justify-start {
+    justify-content: flex-start;
+  }
+
   .sm\:justify-end {
     justify-content: flex-end;
   }
