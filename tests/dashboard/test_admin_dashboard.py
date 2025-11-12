@@ -63,13 +63,12 @@ def test_admin_dashboard_returns_expected_metrics():
     eventos_por_nucleo = context["eventos_por_nucleo"]
     assert eventos_por_nucleo["labels"] == [nucleo.nome, EVENTOS_PUBLICOS_LABEL]
     assert eventos_por_nucleo["series"] == [3, 1]
-    bar_traces = eventos_por_nucleo["figure"]["data"]
-    assert all(trace["type"] == "bar" for trace in bar_traces)
-    assert [trace["name"] for trace in bar_traces] == [
-        f"{nucleo.nome} · 3",
-        f"{EVENTOS_PUBLICOS_LABEL} · 1",
+    chart_traces = eventos_por_nucleo["figure"]["data"]
+    assert all(trace["type"] == "pie" for trace in chart_traces)
+    assert [trace["labels"] for trace in chart_traces] == [
+        [f"{nucleo.nome} · 3", f"{EVENTOS_PUBLICOS_LABEL} · 1"],
+        [f"{nucleo.nome} · 3", f"{EVENTOS_PUBLICOS_LABEL} · 1"],
     ]
-    assert eventos_por_nucleo["figure"]["layout"]["xaxis"]["showticklabels"] is False
 
     membros_chart = context["membros_chart"]
     assert membros_chart["labels"] == [
@@ -84,7 +83,7 @@ def test_admin_dashboard_returns_expected_metrics():
 
 
 @pytest.mark.django_db
-def test_admin_dashboard_forbidden_for_non_admin():
+def test_admin_dashboard_allows_associado():
     rf = RequestFactory()
     organizacao = OrganizacaoFactory()
     associado = UserFactory(
@@ -92,8 +91,22 @@ def test_admin_dashboard_forbidden_for_non_admin():
         organizacao=organizacao,
         is_associado=True,
     )
+
     request = rf.get(reverse("dashboard:admin_dashboard"))
     request.user = associado
+
+    response = AdminDashboardView.as_view()(request)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_admin_dashboard_forbidden_for_non_privileged_user():
+    rf = RequestFactory()
+    organizacao = OrganizacaoFactory()
+    convidado = UserFactory(user_type=UserType.CONVIDADO, organizacao=organizacao)
+    request = rf.get(reverse("dashboard:admin_dashboard"))
+    request.user = convidado
 
     with pytest.raises(PermissionDenied):
         AdminDashboardView.as_view()(request)
