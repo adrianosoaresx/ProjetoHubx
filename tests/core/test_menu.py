@@ -138,3 +138,27 @@ def test_dashboard_menu_points_to_role_specific_view(user_type, expected_url_nam
     dashboard_item = next(item for item in menu if item.id == "admin-dashboard")
 
     assert dashboard_item.path == reverse(expected_url_name)
+
+
+@pytest.mark.django_db
+def test_dashboard_visible_for_legacy_associado_user():
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email="legacy-associado@example.com",
+        username="legacy_associado",
+        password="test-pass",
+        user_type=UserType.CONVIDADO,
+        is_associado=True,
+    )
+
+    assert user.get_tipo_usuario == UserType.ASSOCIADO.value
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+
+    dashboard_item = next((item for item in menu if item.id == "admin-dashboard"), None)
+
+    assert dashboard_item is not None
+    assert dashboard_item.path == reverse("dashboard:associado_dashboard")
