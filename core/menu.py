@@ -468,8 +468,29 @@ def _user_has_permission(user, item: MenuItem) -> bool:
         return True
     if "authenticated" in perms and user.is_authenticated:
         return True
-    if user.is_authenticated and user.user_type in perms:
-        return True
+    if user.is_authenticated:
+        def _coerce(value):
+            if isinstance(value, UserType):
+                return value.value
+            return value
+
+        tipo_attr = getattr(user, "get_tipo_usuario", None)
+        if callable(tipo_attr):
+            tipo_attr = tipo_attr()
+        raw_attr = getattr(user, "user_type", None)
+
+        tipo_value = _coerce(tipo_attr)
+        raw_value = _coerce(raw_attr)
+
+        normalized_perms = {_coerce(perm) for perm in perms}
+
+        for candidate in (tipo_value, raw_value):
+            if candidate and candidate in normalized_perms:
+                return True
+
+        for candidate in (tipo_attr, raw_attr):
+            if candidate and candidate in perms:
+                return True
     return False
 
 
