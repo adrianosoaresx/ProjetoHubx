@@ -24,7 +24,7 @@
                 {% trans "Métricas principais" %}
               </h2>
               <p class="text-sm text-[var(--text-secondary)]">
-                {% trans "Visão geral do crescimento da comunidade e atividades em andamento." %}
+                {% trans "Visão geral do crescimento da comunidade, composição dos membros e atuação dos núcleos." %}
               </p>
             </div>
           </div>
@@ -32,18 +32,60 @@
             {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
+        <div class="card-body space-y-6">
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
             {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
             {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
+          </div>
+
+          <div class="grid gap-6 xl:grid-cols-2">
+            <figure class="card" aria-labelledby="membros-chart-title">
+              <div class="card-body space-y-6">
+                <div
+                  id="membros-chart"
+                  role="img"
+                  aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
+                  class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
+                ></div>
+                {{ membros_chart.figure|json_script:"membros-chart-data" }}
+                <figcaption class="space-y-1">
+                  <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
+                    {% trans "Distribuição de membros" %}
+                  </h3>
+                  <p class="text-sm text-[var(--text-muted)]">
+                    {% trans "Comparativo entre associados nucleados e não nucleados." %}
+                  </p>
+                </figcaption>
+              </div>
+            </figure>
+
+            <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
+              <div class="card-body space-y-6">
+                <div
+                  id="eventos-nucleo-chart"
+                  role="img"
+                  aria-label="{% trans 'Gráfico de pizza com a distribuição de eventos por núcleo e iniciativas públicas.' %}"
+                  class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
+                ></div>
+                {{ eventos_por_nucleo.figure|json_script:"eventos-nucleo-chart-data" }}
+                <figcaption class="space-y-1">
+                  <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
+                    {% trans "Eventos por núcleo" %}
+                  </h3>
+                  <p class="text-sm text-[var(--text-muted)]">
+                    {% trans "Quantidade de eventos por núcleo, incluindo iniciativas públicas." %}
+                  </p>
+                </figcaption>
+              </div>
+            </figure>
           </div>
         </div>
       </details>
     </section>
 
     <section aria-labelledby="dashboard-charts-title" class="space-y-6 pt-4 md:pt-6">
-      <details class="card group">
+      <details class="card group" open>
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
             <span
@@ -56,7 +98,7 @@
                 {% trans "Visualizações" %}
               </h2>
               <p class="text-sm text-[var(--text-secondary)]">
-                {% trans "Explore a distribuição de membros e a participação dos núcleos nos eventos." %}
+                {% trans "Analise tendências de participação, inscrições e nucleação ao longo do tempo." %}
               </p>
             </div>
           </div>
@@ -83,46 +125,6 @@
           </form>
 
           <div class="grid gap-6 xl:grid-cols-2">
-            <figure class="card" aria-labelledby="membros-chart-title">
-              <div class="card-body space-y-6">
-                  <div
-                    id="membros-chart"
-                    role="img"
-                    aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
-                    class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
-                  ></div>
-                  {{ membros_chart.figure|json_script:"membros-chart-data" }}
-                  <figcaption class="space-y-1">
-                    <h3 id="membros-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
-                      {% trans "Distribuição de membros" %}
-                    </h3>
-                    <p class="text-sm text-[var(--text-muted)]">
-                      {% trans "Comparativo entre associados nucleados e não nucleados." %}
-                    </p>
-                  </figcaption>
-                </div>
-              </figure>
-
-            <figure class="card" aria-labelledby="eventos-nucleo-chart-title">
-              <div class="card-body space-y-6">
-                  <div
-                    id="eventos-nucleo-chart"
-                    role="img"
-                    aria-label="{% trans 'Gráfico de pizza com a distribuição de eventos por núcleo e iniciativas públicas.' %}"
-                    class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
-                  ></div>
-                  {{ eventos_por_nucleo.figure|json_script:"eventos-nucleo-chart-data" }}
-                  <figcaption class="space-y-1">
-                    <h3 id="eventos-nucleo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
-                      {% trans "Eventos por núcleo" %}
-                    </h3>
-                    <p class="text-sm text-[var(--text-muted)]">
-                      {% trans "Quantidade de eventos por núcleo, incluindo iniciativas públicas." %}
-                    </p>
-                  </figcaption>
-                </div>
-            </figure>
-
             <figure class="card" aria-labelledby="associados-periodo-chart-title">
               <div class="card-body space-y-6">
                   <div
