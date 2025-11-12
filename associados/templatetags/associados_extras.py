@@ -15,7 +15,31 @@ BADGE_STYLES = {
     "nucleado": "--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);",
     "coordenador": "--primary:#f97316; --primary-soft:rgba(249, 115, 22, 0.15); --primary-soft-border:rgba(249, 115, 22, 0.3);",
     "consultor": "--primary:#8b5cf6; --primary-soft:rgba(139, 92, 246, 0.15); --primary-soft-border:rgba(139, 92, 246, 0.3);",
+    "admin": "--primary:#ef4444; --primary-soft:rgba(239, 68, 68, 0.15); --primary-soft-border:rgba(239, 68, 68, 0.3);",
+    "operador": "--primary:#0ea5e9; --primary-soft:rgba(14, 165, 233, 0.15); --primary-soft-border:rgba(14, 165, 233, 0.3);",
+    "convidado": "--primary:#9ca3af; --primary-soft:rgba(156, 163, 175, 0.15); --primary-soft-border:rgba(156, 163, 175, 0.3);",
+    "root": "--primary:#facc15; --primary-soft:rgba(250, 204, 21, 0.15); --primary-soft-border:rgba(250, 204, 21, 0.3);",
 }
+
+
+BADGE_ICONS = {
+    "associado": "id-card",
+    "nucleado": "users",
+    "coordenador": "flag",
+    "consultor": "briefcase",
+    "admin": "shield-check",
+    "operador": "settings-2",
+    "convidado": "user",
+    "root": "crown",
+}
+
+DEFAULT_BADGE_ICON = "badge-check"
+
+
+def _make_badge(label: str, badge_type: str) -> dict[str, str]:
+    style = BADGE_STYLES.get(badge_type, "")
+    icon = BADGE_ICONS.get(badge_type, DEFAULT_BADGE_ICON)
+    return {"label": label, "style": style, "icon": icon, "type": badge_type}
 
 
 def _get_prefetched(manager, cache_key):
@@ -65,14 +89,14 @@ def usuario_badges(user):
                 label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Coordenador")
-            badges.append({"label": label, "style": BADGE_STYLES["coordenador"], "type": "coordenador"})
+            badges.append(_make_badge(label, "coordenador"))
             types_present.add("coordenador")
         else:
             if nucleo_nome:
                 label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Nucleado")
-            badges.append({"label": label, "style": BADGE_STYLES["nucleado"], "type": "nucleado"})
+            badges.append(_make_badge(label, "nucleado"))
             types_present.add("nucleado")
 
     nucleos_consultoria_manager = getattr(user, "nucleos_consultoria", None)
@@ -90,7 +114,7 @@ def usuario_badges(user):
             label = _("Consultor · %(nucleo)s") % {"nucleo": nucleo_nome}
         else:
             label = _("Consultor")
-        badges.append({"label": label, "style": BADGE_STYLES["consultor"], "type": "consultor"})
+        badges.append(_make_badge(label, "consultor"))
         types_present.add("consultor")
 
     if getattr(user, "nucleo", None) and not {"coordenador", "nucleado"} & types_present:
@@ -100,31 +124,61 @@ def usuario_badges(user):
                 label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Coordenador")
-            badges.append({"label": label, "style": BADGE_STYLES["coordenador"], "type": "coordenador"})
+            badges.append(_make_badge(label, "coordenador"))
             types_present.add("coordenador")
         else:
             if nucleo_nome:
                 label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Nucleado")
-            badges.append({"label": label, "style": BADGE_STYLES["nucleado"], "type": "nucleado"})
+            badges.append(_make_badge(label, "nucleado"))
             types_present.add("nucleado")
 
     if getattr(user, "user_type", "") == UserType.CONSULTOR.value and "consultor" not in types_present:
-        badges.append({"label": _("Consultor"), "style": BADGE_STYLES["consultor"], "type": "consultor"})
+        badges.append(_make_badge(_("Consultor"), "consultor"))
         types_present.add("consultor")
 
     if getattr(user, "is_associado", False) and not types_present:
-        badges.append({"label": _("Associado"), "style": BADGE_STYLES["associado"], "type": "associado"})
+        badges.append(_make_badge(_("Associado"), "associado"))
         types_present.add("associado")
     elif getattr(user, "is_associado", False) and "associado" not in types_present and not badges:
-        badges.append({"label": _("Associado"), "style": BADGE_STYLES["associado"], "type": "associado"})
+        badges.append(_make_badge(_("Associado"), "associado"))
         types_present.add("associado")
 
     if getattr(user, "user_type", "") == UserType.ASSOCIADO.value and "associado" not in types_present and not badges:
-        badges.append({"label": _("Associado"), "style": BADGE_STYLES["associado"], "type": "associado"})
+        badges.append(_make_badge(_("Associado"), "associado"))
 
-    return [{"label": badge["label"], "style": badge.get("style", "")} for badge in badges]
+    return [
+        {
+            "label": badge["label"],
+            "style": badge.get("style", ""),
+            "icon": badge.get("icon", DEFAULT_BADGE_ICON),
+            "type": badge.get("type", ""),
+        }
+        for badge in badges
+    ]
+
+
+@register.simple_tag
+def usuario_tipo_badge(user):
+    """Retorna os metadados da etiqueta do tipo principal do usuário."""
+
+    tipo_attr = getattr(user, "get_tipo_usuario", "")
+    tipo = tipo_attr() if callable(tipo_attr) else tipo_attr
+    if not tipo:
+        tipo = getattr(user, "user_type", "") or ""
+    if not tipo:
+        return None
+
+    try:
+        label = UserType(tipo).label
+    except ValueError:
+        label = str(tipo).title()
+
+    badge_type = tipo if tipo in BADGE_STYLES else "associado"
+    badge = _make_badge(label, badge_type)
+    badge["type"] = tipo
+    return badge
 
 
 @register.simple_tag

@@ -42,10 +42,8 @@
         {% if usuario_badges_list %}
         <div class="flex flex-wrap gap-2">
           {% for badge in usuario_badges_list %}
-            <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap" style="{{ badge.style }}">
-              <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M17.707 9.293 10.414 2H4a2 2 0 0 0-2 2v6.414l7.293 7.293a1 1 0 0 0 1.414 0l7-7a1 1 0 0 0 0-1.414ZM5.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
-              </svg>
+            <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap"{% if badge.style %} style="{{ badge.style }}"{% endif %}>
+              {% lucide badge.icon|default:'badge-check' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
               <span class="truncate">{{ badge.label }}</span>
             </span>
           {% endfor %}
