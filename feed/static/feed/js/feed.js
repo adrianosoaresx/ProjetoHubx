@@ -39,6 +39,56 @@ function bindFeedEvents(root = document) {
 
   const fileInputs = Array.from(root.querySelectorAll('input[type="file"]'));
 
+  if (fileInputs.length) {
+    fileInputs.forEach((input) => {
+      const container = input.closest('[data-file-upload]');
+      if (!container) {
+        return;
+      }
+
+      const trigger = container.querySelector('[data-file-trigger]');
+      const fileName = container.querySelector('[data-file-name]');
+      const defaultText = fileName ? fileName.getAttribute('data-empty-text') || fileName.textContent : '';
+
+      if (trigger) {
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          input.click();
+        });
+      }
+
+      const updateFileName = () => {
+        if (!fileName) {
+          return;
+        }
+
+        const { files } = input;
+        if (!files || files.length === 0) {
+          fileName.textContent = defaultText;
+          return;
+        }
+
+        if (files.length === 1) {
+          fileName.textContent = files[0].name;
+          return;
+        }
+
+        const count = files.length;
+        if (typeof window !== 'undefined' && typeof window.ngettext === 'function') {
+          const singular = '%s arquivo selecionado';
+          const plural = '%s arquivos selecionados';
+          const message = window.ngettext(singular, plural, count).replace('%s', count);
+          fileName.textContent = message;
+        } else {
+          fileName.textContent = `${count} arquivos selecionados`;
+        }
+      };
+
+      updateFileName();
+      input.addEventListener('change', updateFileName);
+    });
+  }
+
   const postForm = root.querySelector(".post-form");
 
   if (postForm) {

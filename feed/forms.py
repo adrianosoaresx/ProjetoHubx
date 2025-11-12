@@ -22,7 +22,7 @@ class PostForm(forms.ModelForm):
     tipo_feed = forms.ChoiceField(choices=Post.TIPO_FEED_CHOICES)
     organizacao = forms.ModelChoiceField(queryset=None)
     arquivo = forms.FileField(
-        label=_("Arquivo"),
+        label=_("Imagem, vídeo ou PDF"),
         help_text=_("Aceita imagem, PDF ou vídeo."),
         required=False,
     )
