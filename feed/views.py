@@ -353,6 +353,15 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     template_name = "feed/post_form.html"
     success_url = reverse_lazy("feed:meu_mural")
 
+    def _get_back_origin(self) -> str:
+        return (self.request.GET.get("back") or self.request.POST.get("back") or "").strip()
+
+    def _get_back_fallback_map(self) -> dict[str, str]:
+        return {
+            "feed": reverse("feed:listar"),
+            "minhas-postagens": f"{reverse('accounts:perfil')}#perfil-posts-accordion",
+        }
+
     def dispatch(self, request, *args, **kwargs):
         if request.method == "POST" and is_ratelimited(
             request,
@@ -399,11 +408,8 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
         context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
-        back_origin = (self.request.GET.get("back") or self.request.POST.get("back") or "").strip()
-        fallback_map = {
-            "feed": reverse("feed:listar"),
-            "minhas-postagens": f"{reverse('accounts:perfil')}#perfil-posts-accordion",
-        }
+        back_origin = self._get_back_origin()
+        fallback_map = self._get_back_fallback_map()
         explicit_fallback = fallback_map.get(back_origin)
         default_fallback = reverse("feed:listar")
         fallback_url = get_back_navigation_fallback(
@@ -470,6 +476,11 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         if self.request.headers.get("HX-Request"):
             return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
         return response
+
+    def get_success_url(self):
+        back_origin = self._get_back_origin()
+        fallback_map = self._get_back_fallback_map()
+        return fallback_map.get(back_origin) or super().get_success_url()
 
     def form_invalid(self, form):  # type: ignore[override]
         """Em requisições HTMX, devolve apenas o formulário com status 422.
