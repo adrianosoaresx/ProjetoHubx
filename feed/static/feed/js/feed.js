@@ -38,6 +38,74 @@ function bindFeedEvents(root = document) {
   }
 
   const fileInputs = Array.from(root.querySelectorAll('input[type="file"]'));
+  const fileWrappers = Array.from(root.querySelectorAll('[data-feed-file-wrapper]'));
+
+  if (fileWrappers.length) {
+    fileWrappers.forEach((wrapper) => {
+      if (wrapper.dataset.feedFileBound === 'true') {
+        return;
+      }
+      const input = wrapper.querySelector('[data-feed-file-input]');
+      const button = wrapper.querySelector('[data-feed-file-button]');
+      const status = wrapper.querySelector('[data-feed-file-name]');
+      const clearCheckbox = wrapper.querySelector('[data-feed-file-clear]');
+
+      if (!input || !button || !status) {
+        return;
+      }
+
+      wrapper.dataset.feedFileBound = 'true';
+
+      const emptyText = status.dataset.emptyText || input.dataset.emptyText || '';
+      const initialText = status.dataset.initialText || '';
+
+      const updateStatus = () => {
+        if (input.files && input.files.length > 0) {
+          const names = Array.from(input.files).map((file) => file.name).filter(Boolean);
+          status.textContent = names.join(', ') || emptyText;
+        } else if (input.value) {
+          const path = input.value.split('\\').pop() || input.value.split('/').pop();
+          status.textContent = path || emptyText;
+        } else if (clearCheckbox && clearCheckbox.checked) {
+          status.textContent = clearCheckbox.dataset.emptyText || emptyText;
+        } else if (initialText) {
+          status.textContent = initialText;
+        } else {
+          status.textContent = emptyText;
+        }
+      };
+
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        input.click();
+      });
+
+      button.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          input.click();
+        }
+      });
+
+      input.addEventListener('change', () => {
+        if (clearCheckbox) {
+          clearCheckbox.checked = false;
+        }
+        updateStatus();
+      });
+
+      if (clearCheckbox) {
+        clearCheckbox.addEventListener('change', () => {
+          if (clearCheckbox.checked) {
+            input.value = '';
+          }
+          updateStatus();
+        });
+      }
+
+      updateStatus();
+    });
+  }
 
   const postForm = root.querySelector(".post-form");
 

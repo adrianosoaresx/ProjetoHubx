@@ -13,6 +13,42 @@ from organizacoes.models import Organizacao
 from .models import Comment, Post, Tag
 from .services import upload_media
 
+
+class FeedMediaFileInput(forms.ClearableFileInput):
+    template_name = "feed/widgets/feed_media_file_input.html"
+
+    def __init__(self, attrs=None, *, button_label=None, empty_label=None):
+        default_attrs = {"class": "sr-only"}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+        self.button_label = button_label or _("Selecionar")
+        self.empty_label = empty_label or _("Nenhum arquivo selecionado")
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        widget = context["widget"]
+        widget["button_label"] = self.button_label
+        widget["empty_label"] = self.empty_label
+
+        final_attrs = widget.get("attrs", {})
+        classes = final_attrs.get("class", "").split()
+        if "sr-only" not in classes:
+            classes.append("sr-only")
+        final_attrs["class"] = " ".join(filter(None, classes))
+        final_attrs.setdefault("data-feed-file-input", "true")
+        final_attrs["data-empty-text"] = self.empty_label
+        widget["attrs"] = final_attrs
+
+        value_name = ""
+        if value:
+            if hasattr(value, "name"):
+                value_name = value.name or ""
+            else:
+                value_name = str(value)
+        widget["value_name"] = value_name
+        return context
+
 User = get_user_model()
 
 
@@ -22,7 +58,7 @@ class PostForm(forms.ModelForm):
     tipo_feed = forms.ChoiceField(choices=Post.TIPO_FEED_CHOICES)
     organizacao = forms.ModelChoiceField(queryset=None)
     arquivo = forms.FileField(
-        label=_("Arquivo"),
+        label=_("Imagem, vídeo ou Pdf"),
         help_text=_("Aceita imagem, PDF ou vídeo."),
         required=False,
     )
@@ -67,16 +103,12 @@ class PostForm(forms.ModelForm):
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        file_input_classes = (
-            "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 "
-            "file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold "
-            "file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]"
-        )
-        self.fields["arquivo"].widget = forms.ClearableFileInput(
+        self.fields["arquivo"].widget = FeedMediaFileInput(
             attrs={
-                "class": file_input_classes,
                 "accept": "image/*,application/pdf,video/*,.pdf",
-            }
+            },
+            button_label=_("Selecionar"),
+            empty_label=_("Nenhum arquivo selecionado"),
         )
         for field in ["image", "pdf", "video"]:
             self.fields[field].widget.attrs.update({"class": "hidden"})

@@ -153,6 +153,18 @@ msgstr ""
 msgid "Salvar"
 msgstr ""
 
+#: feed/forms.py:28 feed/forms.py:63
+msgid "Selecionar"
+msgstr "Select"
+
+#: feed/forms.py:29 feed/forms.py:68
+msgid "Nenhum arquivo selecionado"
+msgstr "No file selected"
+
+#: feed/forms.py:43
+msgid "Imagem, vídeo ou Pdf"
+msgstr "Image, video or PDF"
+
 #: templates/feed/nova_postagem.html:85 templates/feed/nova_postagem.html:86
 #: templates/feed/post_delete.html:13 templates/feed/post_update.html:54
 msgid "Cancelar"
