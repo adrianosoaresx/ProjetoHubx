@@ -123,6 +123,7 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
                 "total_eventos": eventos_chart.get("total", 0),
                 "dashboard_period_months": months,
                 "dashboard_period_choices": self.PERIOD_CHOICES,
+                "dashboard_period_changed": "months" in self.request.GET,
             }
         )
         return context

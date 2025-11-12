@@ -85,7 +85,7 @@
     </section>
 
     <section aria-labelledby="dashboard-charts-title" class="space-y-6 pt-4 md:pt-6">
-      <details class="card group" open>
+      <details class="card group" {% if dashboard_period_changed %}open{% endif %}>
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
             <span
