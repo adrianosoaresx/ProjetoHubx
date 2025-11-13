@@ -124,7 +124,7 @@
 {% if profile.biografia %}
 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 mt-4">
   <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
-  <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ profile.biografia }}</p>
+  <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line break-words">{{ profile.biografia }}</p>
   </div>
 {% endif %}
 
