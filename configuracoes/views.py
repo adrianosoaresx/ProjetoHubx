@@ -123,8 +123,14 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         Resolve o valor da aba a partir dos parâmetros GET ou POST.  Valores
         inválidos são normalizados para ``seguranca``.
         """
-        # Prioriza a seção vinda da rota (kwargs) e, em seguida, POST; ignora query string
-        section = self.kwargs.get("section") or request.POST.get("section") or "seguranca"
+        # Quando a requisição for POST, prioriza a seção enviada no corpo para garantir
+        # que cada formulário seja processado de forma independente, mesmo que a rota
+        # atual tenha sido carregada com outra aba ativa.
+        if request.method == "POST" and request.POST.get("section"):
+            section = request.POST.get("section")
+        else:
+            # Prioriza a seção definida pela rota (kwargs); ignora query string.
+            section = self.kwargs.get("section") or "seguranca"
         # Redireciona seções externas para seus respectivos módulos.
         if section in {"informacoes", "redes"}:
             return section
