@@ -156,7 +156,11 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
     EVENT_LIMIT = 6
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.get_tipo_usuario != UserType.ASSOCIADO.value:
+        allowed_roles = {
+            UserType.ASSOCIADO.value,
+            UserType.NUCLEADO.value,
+        }
+        if request.user.get_tipo_usuario not in allowed_roles:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
