@@ -55,7 +55,7 @@
             {% lucide 'user-round-minus' class='h-6 w-6' aria_hidden='true' %}
           </span>
           <div class="space-y-1">
-            <p class="text-xl font-semibold">{% trans "Membros não nucleados" %}</p>
+            <p class="text-xl font-semibold">{% trans "Associados sem núcleo" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
               {% blocktrans count count=membros_sem_nucleo_count %}
                 {{ count }} membro no total
@@ -81,7 +81,7 @@
             {% lucide 'user-round-plus' class='h-6 w-6' aria_hidden='true' %}
           </span>
           <div class="space-y-1">
-            <p class="text-xl font-semibold">{% trans "Membros nucleados" %}</p>
+            <p class="text-xl font-semibold">{% trans "Nucleados" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
               {% blocktrans count count=membros_nucleados_count %}
                 {{ count }} membro no total
