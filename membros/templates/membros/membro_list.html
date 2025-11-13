@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n lucide_icons static %}
 
-{% block title %}{% trans 'Associados' %}{% endblock %}
+{% block title %}{% trans 'Membros' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_associados.html' with title=_('Associados') action_template='associados/hero_action.html' %}
+  {% include '_components/hero_membros.html' with title=_('Membros') action_template='membros/hero_action.html' %}
 {% endblock %}
 
 {% block content %}
@@ -15,23 +15,23 @@
         class="flex flex-col gap-3 md:flex-row md:items-center"
         role="search"
         novalidate
-        data-associados-search-form
+        data-membros-search-form
         data-initial-search-term="{{ search_term }}"
         data-feedback-found-template="{% blocktrans with term='__term__' %}Resultado encontrado: {{ term }}.{% endblocktrans %}"
-        data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum associado correspondente a {{ term }}.{% endblocktrans %}"
-        data-feedback-empty="{% trans 'Digite um termo para buscar associados.' %}"
+        data-feedback-not-found-template="{% blocktrans with term='__term__' %}Nenhum membro correspondente a {{ term }}.{% endblocktrans %}"
+        data-feedback-empty="{% trans 'Digite um termo para buscar membros.' %}"
       >
         <div class="flex w-full items-center gap-2">
-          <label for="associados-search" class="sr-only">{% trans "Buscar associados" %}</label>
+          <label for="membros-search" class="sr-only">{% trans "Buscar membros" %}</label>
           <input
             type="search"
-            id="associados-search"
+            id="membros-search"
             name="q"
             value="{{ search_term }}"
             autocomplete="off"
             placeholder="{% trans 'Buscar por nome, usuário ou contato' %}"
             class="input input-bordered w-full"
-            data-associados-search-input
+            data-membros-search-input
           />
           <button type="submit" class="btn btn-secondary shrink-0" aria-label="{% trans 'Buscar' %}">
             {% lucide 'search' class='h-4 w-4' aria_hidden='true' %}
@@ -40,27 +40,27 @@
       </form>
       <p
         class="text-sm text-[var(--text-secondary)]"
-        data-associados-search-feedback
-        id="associados-search-feedback"
+        data-membros-search-feedback
+        id="membros-search-feedback"
         hidden
         role="status"
         aria-live="polite"
       ></p>
     </div>
 
-    <details class="card group" data-associados-section="sem-nucleo">
+    <details class="card group" data-membros-section="sem-nucleo">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
             {% lucide 'user-round-minus' class='h-6 w-6' aria_hidden='true' %}
           </span>
           <div class="space-y-1">
-            <p class="text-xl font-semibold">{% trans "Associados não nucleados" %}</p>
+            <p class="text-xl font-semibold">{% trans "Membros não nucleados" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans count count=associados_sem_nucleo_count %}
-                {{ count }} associado no total
+              {% blocktrans count count=membros_sem_nucleo_count %}
+                {{ count }} membro no total
               {% plural %}
-                {{ count }} associados no total
+                {{ count }} membros no total
               {% endblocktrans %}
             </p>
           </div>
@@ -70,23 +70,23 @@
         </span>
       </summary>
       <div >
-        {% include 'associados/_carousel.html' with page=associados_sem_nucleo_page section='sem_nucleo' empty_message=associados_section_empty_messages.sem_nucleo fetch_url=associados_fetch_url search_term=search_term %}
+        {% include 'membros/_carousel.html' with page=membros_sem_nucleo_page section='sem_nucleo' empty_message=membros_section_empty_messages.sem_nucleo fetch_url=membros_fetch_url search_term=search_term %}
       </div>
     </details>
 
-    <details class="card group" data-associados-section="nucleados">
+    <details class="card group" data-membros-section="nucleados">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-500)] shadow-lg shadow-[var(--color-success-500)]/15">
             {% lucide 'user-round-plus' class='h-6 w-6' aria_hidden='true' %}
           </span>
           <div class="space-y-1">
-            <p class="text-xl font-semibold">{% trans "Associados nucleados" %}</p>
+            <p class="text-xl font-semibold">{% trans "Membros nucleados" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans count count=associados_nucleados_count %}
-                {{ count }} associado no total
+              {% blocktrans count count=membros_nucleados_count %}
+                {{ count }} membro no total
               {% plural %}
-                {{ count }} associados no total
+                {{ count }} membros no total
               {% endblocktrans %}
             </p>
           </div>
@@ -96,11 +96,11 @@
         </span>
       </summary>
       <div>
-        {% include 'associados/_carousel.html' with page=associados_nucleados_page section='nucleados' empty_message=associados_section_empty_messages.nucleados fetch_url=associados_fetch_url search_term=search_term %}
+        {% include 'membros/_carousel.html' with page=membros_nucleados_page section='nucleados' empty_message=membros_section_empty_messages.nucleados fetch_url=membros_fetch_url search_term=search_term %}
       </div>
     </details>
 
-    <details class="card group" data-associados-section="consultores">
+    <details class="card group" data-membros-section="consultores">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
@@ -109,7 +109,7 @@
           <div class="space-y-1">
             <p class="text-xl font-semibold">{% trans "Consultores" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans count count=associados_consultores_count %}
+              {% blocktrans count count=membros_consultores_count %}
                 {{ count }} consultor no total
               {% plural %}
                 {{ count }} consultores no total
@@ -122,11 +122,11 @@
         </span>
       </summary>
       <div>
-        {% include 'associados/_carousel.html' with page=associados_consultores_page section='consultores' empty_message=associados_section_empty_messages.consultores fetch_url=associados_fetch_url search_term=search_term %}
+        {% include 'membros/_carousel.html' with page=membros_consultores_page section='consultores' empty_message=membros_section_empty_messages.consultores fetch_url=membros_fetch_url search_term=search_term %}
       </div>
     </details>
 
-    <details class="card group" data-associados-section="coordenadores">
+    <details class="card group" data-membros-section="coordenadores">
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
@@ -135,7 +135,7 @@
           <div class="space-y-1">
             <p class="text-xl font-semibold">{% trans "Coordenadores" %}</p>
             <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans count count=associados_coordenadores_count %}
+              {% blocktrans count count=membros_coordenadores_count %}
                 {{ count }} coordenador no total
               {% plural %}
                 {{ count }} coordenadores no total
@@ -148,7 +148,7 @@
         </span>
       </summary>
       <div>
-        {% include 'associados/_carousel.html' with page=associados_coordenadores_page section='coordenadores' empty_message=associados_section_empty_messages.coordenadores fetch_url=associados_fetch_url search_term=search_term %}
+        {% include 'membros/_carousel.html' with page=membros_coordenadores_page section='coordenadores' empty_message=membros_section_empty_messages.coordenadores fetch_url=membros_fetch_url search_term=search_term %}
       </div>
     </details>
   </div>

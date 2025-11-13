@@ -21,8 +21,8 @@ from nucleos.models import ParticipacaoNucleo
 User = get_user_model()
 
 
-ASSOCIADOS_NUCLEADOS_LABEL = gettext("Associados nucleados")
-ASSOCIADOS_NAO_NUCLEADOS_LABEL = gettext("Associados não nucleados")
+MEMBROS_NUCLEADOS_LABEL = gettext("Membros nucleados")
+MEMBROS_NAO_NUCLEADOS_LABEL = gettext("Membros não nucleados")
 EVENTOS_PUBLICOS_LABEL = gettext("Eventos públicos")
 SEM_NUCLEO_LABEL = gettext("Sem núcleo")
 
@@ -130,21 +130,21 @@ def _calculate_std_dev(values: list[float]) -> float:
 
 
 def calculate_membership_totals(organizacao: Any | None) -> OrderedDict[str, int]:
-    """Calcula totais de associados nucleados e não nucleados."""
+    """Calcula totais de membros nucleados e não nucleados."""
 
     organizacao_id = _extract_organizacao_id(organizacao)
     totals = OrderedDict(
         (label, 0)
-        for label in (ASSOCIADOS_NUCLEADOS_LABEL, ASSOCIADOS_NAO_NUCLEADOS_LABEL)
+        for label in (MEMBROS_NUCLEADOS_LABEL, MEMBROS_NAO_NUCLEADOS_LABEL)
     )
     if not organizacao_id:
         return totals
 
-    associados_qs = User.objects.filter(
+    membros_qs = User.objects.filter(
         organizacao_id=organizacao_id,
         is_associado=True,
     )
-    total_associados = associados_qs.count()
+    total_membros = membros_qs.count()
 
     total_nucleados = (
         ParticipacaoNucleo.objects.filter(
@@ -156,10 +156,10 @@ def calculate_membership_totals(organizacao: Any | None) -> OrderedDict[str, int
         .distinct()
         .count()
     )
-    total_nao_nucleados = max(total_associados - total_nucleados, 0)
+    total_nao_nucleados = max(total_membros - total_nucleados, 0)
 
-    totals[ASSOCIADOS_NUCLEADOS_LABEL] = total_nucleados
-    totals[ASSOCIADOS_NAO_NUCLEADOS_LABEL] = total_nao_nucleados
+    totals[MEMBROS_NUCLEADOS_LABEL] = total_nucleados
+    totals[MEMBROS_NAO_NUCLEADOS_LABEL] = total_nao_nucleados
     return totals
 
 
@@ -232,13 +232,13 @@ def count_confirmed_event_registrations(
     return queryset.count()
 
 
-def calculate_monthly_associates(
+def calculate_monthly_membros(
     organizacao: Any | None,
     *,
     months: int = 12,
     reference: datetime | None = None,
 ) -> list[dict[str, Any]]:
-    """Retorna evolução mensal de novos associados com desvio padrão diário."""
+    """Retorna evolução mensal de novos membros com desvio padrão diário."""
 
     periods = _generate_month_periods(months, reference=reference)
     baseline = _baseline_for_periods(periods, include_std=True)
@@ -248,7 +248,7 @@ def calculate_monthly_associates(
         return list(baseline.values())
 
     start = periods[0]
-    associados_qs = User.objects.filter(
+    membros_qs = User.objects.filter(
         organizacao_id=organizacao_id,
         is_associado=True,
         date_joined__isnull=False,
@@ -256,7 +256,7 @@ def calculate_monthly_associates(
     )
 
     daily_counts = (
-        associados_qs.annotate(day=TruncDay("date_joined"))
+        membros_qs.annotate(day=TruncDay("date_joined"))
         .values("day")
         .annotate(total=Count("id"))
     )

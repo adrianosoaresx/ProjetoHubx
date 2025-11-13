@@ -24,13 +24,13 @@ from feed.models import Bookmark
 from nucleos.models import Nucleo
 
 from .services import (
-    ASSOCIADOS_NUCLEADOS_LABEL,
+    MEMBROS_NUCLEADOS_LABEL,
     build_chart_payload,
     build_time_series_chart,
     calculate_event_status_totals,
     calculate_events_by_nucleo,
     calculate_membership_totals,
-    calculate_monthly_associates,
+    calculate_monthly_membros,
     calculate_monthly_events,
     calculate_monthly_event_registrations,
     calculate_monthly_nucleados,
@@ -77,7 +77,7 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
             eventos_por_nucleo, chart_type="bar"
         )
 
-        monthly_associates = calculate_monthly_associates(organizacao, months=months)
+        monthly_membros = calculate_monthly_membros(organizacao, months=months)
         monthly_nucleados = calculate_monthly_nucleados(organizacao, months=months)
         monthly_registrations = calculate_monthly_event_registrations(
             organizacao, months=months
@@ -86,11 +86,11 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
             organizacao, months=months
         )
 
-        associados_por_periodo_chart = build_time_series_chart(
-            monthly_associates,
+        membros_por_periodo_chart = build_time_series_chart(
+            monthly_membros,
             value_field="total",
             std_field="std_dev",
-            label=_("Associados"),
+            label=_("Membros"),
             color="#2563eb",
             value_format=".0f",
         )
@@ -122,9 +122,9 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
 
         context.update(
             {
-                "total_associados": sum(membership_totals.values()),
+                "total_membros": sum(membership_totals.values()),
                 "total_nucleados": membership_totals.get(
-                    ASSOCIADOS_NUCLEADOS_LABEL, 0
+                    MEMBROS_NUCLEADOS_LABEL, 0
                 ),
                 "inscricoes_confirmadas": confirmed_registrations,
                 "eventos_por_status": event_totals,
@@ -134,7 +134,7 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
                 "eventos_chart": eventos_chart,
                 "eventos_por_nucleo": eventos_por_nucleo_chart,
                 "membros_chart": membros_chart,
-                "associados_por_periodo_chart": associados_por_periodo_chart,
+                "membros_por_periodo_chart": membros_por_periodo_chart,
                 "nucleados_por_periodo_chart": nucleados_por_periodo_chart,
                 "inscricoes_por_periodo_chart": inscricoes_por_periodo_chart,
                 "valores_inscricoes_por_periodo_chart": valores_inscricoes_por_periodo_chart,
@@ -147,10 +147,10 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
         return context
 
 
-class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
-    """Dashboard direcionado a associados que não são coordenadores."""
+class MembroDashboardView(LoginRequiredMixin, TemplateView):
+    """Dashboard direcionado a membros que não são coordenadores."""
 
-    template_name = "dashboard/associado_dashboard.html"
+    template_name = "dashboard/membro_dashboard.html"
     CONNECTION_LIMIT = 6
     FAVORITES_LIMIT = 6
     EVENT_LIMIT = 6
@@ -594,7 +594,7 @@ class DashboardRouterView(LoginRequiredMixin, View):
         if tipo == UserType.COORDENADOR.value:
             return CoordenadorDashboardView.as_view()(request, *args, **kwargs)
         if tipo in {UserType.ASSOCIADO.value, UserType.NUCLEADO.value}:
-            return AssociadoDashboardView.as_view()(request, *args, **kwargs)
+            return MembroDashboardView.as_view()(request, *args, **kwargs)
         if tipo == UserType.CONSULTOR.value:
             return ConsultorDashboardView.as_view()(request, *args, **kwargs)
         raise PermissionDenied

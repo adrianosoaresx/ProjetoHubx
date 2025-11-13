@@ -66,7 +66,7 @@ def test_coordenador_list_membros(client):
     assert assoc.username in resp.content.decode()
 
 
-def test_associados_sections_grouping(client):
+def test_membros_sections_grouping(client):
     org = Organizacao.objects.create(nome="Org Filters", cnpj="11.111.111/1111-11")
     nucleo = Nucleo.objects.create(organizacao=org, nome="Núcleo Alpha")
     admin = create_user(
@@ -130,7 +130,7 @@ def test_associados_sections_grouping(client):
     content = resp.content.decode()
 
     def section_content(html: str, section: str) -> str:
-        marker = f'data-associados-section="{section}"'
+        marker = f'data-membros-section="{section}"'
         assert marker in html
         after_marker = html.split(marker, 1)[1]
         closing_index = after_marker.find("</details>")

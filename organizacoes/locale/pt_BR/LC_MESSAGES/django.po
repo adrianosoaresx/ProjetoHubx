@@ -83,7 +83,7 @@ msgid "Membros"
 msgstr ""
 
 #: templates/organizacoes/detail.html:64
-msgid "Nenhum usuário associado."
+msgid "Nenhum membro vinculado."
 msgstr ""
 
 #: templates/organizacoes/detail.html:68 templates/organizacoes/detail.html:82
@@ -97,7 +97,7 @@ msgid "Núcleos"
 msgstr ""
 
 #: templates/organizacoes/detail.html:78
-msgid "Nenhum núcleo associado."
+msgid "Nenhum núcleo vinculado."
 msgstr ""
 
 #: templates/organizacoes/detail.html:87
@@ -105,7 +105,7 @@ msgid "Eventos"
 msgstr ""
 
 #: templates/organizacoes/detail.html:92
-msgid "Nenhum evento associado."
+msgid "Nenhum evento vinculado."
 msgstr ""
 
 #: templates/organizacoes/detail.html:101
@@ -113,7 +113,7 @@ msgid "Empresas"
 msgstr ""
 
 #: templates/organizacoes/detail.html:106
-msgid "Nenhuma empresa associada."
+msgid "Nenhuma empresa vinculada."
 msgstr ""
 
 #: templates/organizacoes/detail.html:115
@@ -121,7 +121,7 @@ msgid "Posts"
 msgstr ""
 
 #: templates/organizacoes/detail.html:120
-msgid "Nenhum post associado."
+msgid "Nenhum post vinculado."
 msgstr ""
 
 #: templates/organizacoes/detail.html:130 templates/organizacoes/list.html:91

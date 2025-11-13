@@ -23,7 +23,7 @@ def test_dashboard_router_renders_admin_dashboard_for_management_roles(client, u
 
     page = response.content.decode()
     assert "Dashboard administrativo" in page
-    assert "Associados" in page
+    assert "Membros" in page
     assert "Nucleados" in page
     assert "Eventos ativos" in page
 
@@ -68,7 +68,7 @@ def test_dashboard_router_detects_consultor_by_nucleo_assignment(client):
 
 
 @pytest.mark.django_db
-def test_dashboard_router_renders_associado_dashboard(client):
+def test_dashboard_router_renders_membro_dashboard(client):
     organizacao = OrganizacaoFactory()
     user = UserFactory(
         user_type=UserType.ASSOCIADO,
@@ -82,7 +82,7 @@ def test_dashboard_router_renders_associado_dashboard(client):
 
     assert response.status_code == 200
     template_names = [template.name for template in response.templates if template.name]
-    assert "dashboard/associado_dashboard.html" in template_names
+    assert "dashboard/membro_dashboard.html" in template_names
 
     page = response.content.decode()
     assert "Meu dashboard" in page

@@ -20,7 +20,7 @@ class MembrosListViewTests(TestCase):
     def test_sem_nucleo_section_excludes_admin_and_operator(self):
         associado_sem_nucleo = UserFactory(
             username="associado-sem-nucleo",
-            contato="Associado Sem Núcleo",
+            contato="Membro Sem Núcleo",
             organizacao=self.organizacao,
             is_associado=True,
             user_type=UserType.ASSOCIADO.value,
@@ -42,17 +42,17 @@ class MembrosListViewTests(TestCase):
 
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
-        page_users = list(response.context["associados_sem_nucleo_page"].object_list)
+        page_users = list(response.context["membros_sem_nucleo_page"].object_list)
         self.assertIn(associado_sem_nucleo, page_users)
         self.assertNotIn(admin_sem_nucleo, page_users)
         self.assertNotIn(operador_sem_nucleo, page_users)
-        self.assertEqual(response.context["associados_sem_nucleo_count"], 1)
+        self.assertEqual(response.context["membros_sem_nucleo_count"], 1)
 
         api_response = self.client.get(self.api_url, {"section": "sem_nucleo"})
         self.assertEqual(api_response.status_code, 200)
         data = api_response.json()
         html = data["html"]
-        self.assertIn("Associado Sem Núcleo", html)
+        self.assertIn("Membro Sem Núcleo", html)
         self.assertNotIn("Admin Sem Núcleo", html)
         self.assertNotIn("Operador Sem Núcleo", html)
         self.assertEqual(data["count"], 1)

@@ -33,53 +33,53 @@
     </form>
 
     {% if tem_organizacao %}
-      {% if associados %}
+      {% if membros %}
         <div
           role="list"
           class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
         >
-          {% for associado in associados %}
+          {% for membro in membros %}
             <article
               role="listitem"
-              id="connection-{{ associado.id }}"
+              id="connection-{{ membro.id }}"
               data-connection-card
               class="card h-full transition-shadow duration-200 hover:shadow-lg focus-within:shadow-lg"
             >
               <div class="card-body flex h-full flex-col gap-4">
                 <div class="flex items-center gap-3">
-                  {% if associado.avatar %}
-                    <img src="{{ associado.avatar.url }}" alt="{{ associado.display_name|default:associado.username }}" class="h-12 w-12 rounded-full object-cover" loading="lazy" />
+                  {% if membro.avatar %}
+                    <img src="{{ membro.avatar.url }}" alt="{{ membro.display_name|default:membro.username }}" class="h-12 w-12 rounded-full object-cover" loading="lazy" />
                   {% else %}
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ associado.display_name|default:associado.username }}">
-                      {{ associado.username|first|upper }}
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ membro.display_name|default:membro.username }}">
+                      {{ membro.username|first|upper }}
                     </div>
                   {% endif %}
                   <div class="min-w-0 space-y-1">
-                    <p class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ associado.display_name }}</p>
-                    <p class="text-xs text-[var(--text-secondary)]">@{{ associado.username }}</p>
-                    {% if associado.nome_fantasia %}
-                      <p class="truncate text-xs text-[var(--text-secondary)]">{{ associado.nome_fantasia }}</p>
+                    <p class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ membro.display_name }}</p>
+                    <p class="text-xs text-[var(--text-secondary)]">@{{ membro.username }}</p>
+                    {% if membro.nome_fantasia %}
+                      <p class="truncate text-xs text-[var(--text-secondary)]">{{ membro.nome_fantasia }}</p>
                     {% endif %}
                   </div>
                 </div>
                 <div class="mt-auto grid gap-2 border-t border-[var(--border)] pt-3">
                   <a
-                    href="{% url 'accounts:perfil_publico_uuid' associado.public_id %}"
+                    href="{% url 'accounts:perfil_publico_uuid' membro.public_id %}"
                     class="btn btn-secondary btn-sm w-full justify-center"
-                    data-connection-link="connection-{{ associado.id }}"
+                    data-connection-link="connection-{{ membro.id }}"
                   >
                     {% trans "Ver perfil" %}
                   </a>
 
-                  {% if associado.id in conexoes_ids %}
-                    {% with associado_id=associado.id|stringformat:'s' %}
-                      {% with card_id='connection-'|add:associado_id %}
+                  {% if membro.id in conexoes_ids %}
+                    {% with membro_id=membro.id|stringformat:'s' %}
+                      {% with card_id='connection-'|add:membro_id %}
                         {% if search_form_hx_target %}
                           {% with query_value=form.q.value %}
                             <button
                               type="button"
                               class="btn btn-danger btn-sm w-full justify-center"
-                              hx-get="{% url 'conexoes:remover_conexao_modal' associado.id %}?target_id={{ search_form_hx_target }}&swap=innerHTML{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+                              hx-get="{% url 'conexoes:remover_conexao_modal' membro.id %}?target_id={{ search_form_hx_target }}&swap=innerHTML{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
                               hx-target="#modal"
                               hx-swap="innerHTML"
                               hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
@@ -92,7 +92,7 @@
                             <button
                               type="button"
                               class="btn btn-danger btn-sm w-full justify-center"
-                              hx-get="{% url 'conexoes:remover_conexao_modal' associado.id %}?target_id={{ card_id }}&swap=outerHTML&remove_target={{ card_id }}{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+                              hx-get="{% url 'conexoes:remover_conexao_modal' membro.id %}?target_id={{ card_id }}&swap=outerHTML&remove_target={{ card_id }}{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
                               hx-target="#modal"
                               hx-swap="innerHTML"
                               hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
@@ -103,11 +103,11 @@
                         {% endif %}
                       {% endwith %}
                     {% endwith %}
-                  {% elif associado.id in solicitacoes_enviadas_ids %}
+                  {% elif membro.id in solicitacoes_enviadas_ids %}
                     <button type="button" class="btn btn-secondary btn-sm w-full cursor-default justify-center opacity-70" disabled>
                       {% trans "Solicitação enviada" %}
                     </button>
-                  {% elif associado.id in solicitacoes_recebidas_ids %}
+                  {% elif membro.id in solicitacoes_recebidas_ids %}
                     <a
                       href="{{ solicitacoes_url }}"
                       class="btn btn-secondary btn-sm w-full justify-center"
@@ -120,9 +120,9 @@
                   {% else %}
                     <form
                       method="post"
-                      action="{% url 'conexoes:solicitar_conexao' associado.id %}"
+                      action="{% url 'conexoes:solicitar_conexao' membro.id %}"
                       {% if search_form_hx_target %}
-                        hx-post="{% url 'conexoes:solicitar_conexao' associado.id %}"
+                        hx-post="{% url 'conexoes:solicitar_conexao' membro.id %}"
                         hx-target="#{{ search_form_hx_target }}"
                         hx-swap="innerHTML"
                       {% endif %}
@@ -143,7 +143,7 @@
           {% endfor %}
         </div>
       {% else %}
-        <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum associado encontrado para os critérios informados." %}</p>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum membro encontrado para os critérios informados." %}</p>
       {% endif %}
     {% else %}
       <p class="text-sm text-[var(--text-secondary)]">{% trans "Você não está vinculado a uma organização no momento." %}</p>

@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% load i18n static %}
 
-{% block title %}{% trans 'Promover associado' %}{% endblock %}
+{% block title %}{% trans 'Promover membro' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_associados.html' with title=_('Promover associado') action_template='associados/hero_action.html' filter_target='#associados-grid' filter_indicator='#associados-loading' %}
+  {% include '_components/hero_membros.html' with title=_('Promover membro') action_template='membros/hero_action.html' filter_target='#membros-grid' filter_indicator='#membros-loading' %}
 {% endblock %}
 
 {% block content %}
 
 <article class="card">
   <header class="card-header">
-    <h2 class="text-xl font-semibold">{% trans 'Promover associado' %}</h2>
+    <h2 class="text-xl font-semibold">{% trans 'Promover membro' %}</h2>
   </header>
   <div class="card-body space-y-6">
     <form method="get" class="space-y-6" data-promover-search-form>
@@ -19,10 +19,10 @@
       <div>
         {% if form %}
           {% with placeholder_attr='placeholder:'|add:search_placeholder %}
-            {% include '_forms/field.html' with field=form.q|attr:"id:associado-search"|attr:"type:search"|attr:placeholder_attr|attr:"data-search-input:1" %}
+            {% include '_forms/field.html' with field=form.q|attr:"id:membro-search"|attr:"type:search"|attr:placeholder_attr|attr:"data-search-input:1" %}
           {% endwith %}
         {% else %}
-          {% include '_forms/field.html' with id='associado-search' name='q' type='search' value=search_term label=_('Buscar associado') placeholder=search_placeholder attrs='data-search-input="true"' %}
+          {% include '_forms/field.html' with id='membro-search' name='q' type='search' value=search_term label=_('Buscar membro') placeholder=search_placeholder attrs='data-search-input="true"' %}
         {% endif %}
       </div>
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
@@ -33,13 +33,13 @@
       </div>
     </form>
 
-    <div id="associados-grid">
-      {% include 'associados/partials/promover_carousel.html' with page=page_obj paginator=page_obj.paginator usuarios=associados empty_message=promover_empty_message current_filter=current_filter search_term=search_term fetch_url=promover_carousel_fetch_url has_search=has_search %}
+    <div id="membros-grid">
+      {% include 'membros/partials/promover_carousel.html' with page=page_obj paginator=page_obj.paginator usuarios=membros empty_message=promover_empty_message current_filter=current_filter search_term=search_term fetch_url=promover_carousel_fetch_url has_search=has_search %}
     </div>
 
     <div class="pt-4 border-t border-[var(--border)]">
-      <div id="associados-loading" class="htmx-indicator text-center text-sm text-[var(--text-secondary)]" role="status" aria-live="polite">
-        {% trans 'Carregando associados...' %}
+      <div id="membros-loading" class="htmx-indicator text-center text-sm text-[var(--text-secondary)]" role="status" aria-live="polite">
+        {% trans 'Carregando membros...' %}
       </div>
     </div>
   </div>
@@ -80,7 +80,7 @@
       });
     })();
     (function() {
-      const stateId = 'associados-filter-state';
+      const stateId = 'membros-filter-state';
 
       function parseClasses(value) {
         return value ? value.split(/\s+/).filter(Boolean) : [];
@@ -92,11 +92,11 @@
           return;
         }
         const currentFilter = stateEl.dataset.currentFilter || 'todos';
-        const buttons = document.querySelectorAll('[data-associados-filter-card]');
+        const buttons = document.querySelectorAll('[data-membros-filter-card]');
 
         buttons.forEach((button) => {
           const activeClasses = parseClasses(button.dataset.activeClass || '');
-          const isActive = button.dataset.associadosFilterCard === currentFilter;
+          const isActive = button.dataset.membrosFilterCard === currentFilter;
           button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
           activeClasses.forEach((cls) => {
             if (cls) {
@@ -108,7 +108,7 @@
 
       document.addEventListener('DOMContentLoaded', updateFilterButtons);
       document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.target && event.target.id === 'associados-grid') {
+        if (event.target && event.target.id === 'membros-grid') {
           updateFilterButtons();
         }
       });

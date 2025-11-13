@@ -11,11 +11,11 @@
   data-search-param="q"
   data-tipo-filter="{{ current_filter }}"
 >
-  {% include '_partials/htmx_filter_state.html' with state_id='associados-filter-state' state_value=current_filter hx_swap_oob='true' %}
+  {% include '_partials/htmx_filter_state.html' with state_id='membros-filter-state' state_value=current_filter hx_swap_oob='true' %}
   <div class="relative">
     <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
       <div class="flex transition-transform duration-500 ease-out" data-carousel-track>
-        {% include 'associados/partials/promover_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message %}
+        {% include 'membros/partials/promover_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message %}
       </div>
     </div>
     {% if page.paginator.count > 0 %}

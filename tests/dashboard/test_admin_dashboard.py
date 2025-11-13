@@ -8,8 +8,8 @@ from accounts.models import UserType
 from eventos.factories import EventoFactory
 from eventos.models import Evento, InscricaoEvento
 from dashboard.services import (
-    ASSOCIADOS_NAO_NUCLEADOS_LABEL,
-    ASSOCIADOS_NUCLEADOS_LABEL,
+    MEMBROS_NAO_NUCLEADOS_LABEL,
+    MEMBROS_NUCLEADOS_LABEL,
     EVENTOS_PUBLICOS_LABEL,
 )
 from dashboard.views import AdminDashboardView
@@ -48,7 +48,7 @@ def test_admin_dashboard_returns_expected_metrics():
 
     assert response.status_code == 200
     context = response.context_data
-    assert context["total_associados"] == 2
+    assert context["total_membros"] == 2
     assert context["total_nucleados"] == 1
     assert context["inscricoes_confirmadas"] == 1
 
@@ -73,14 +73,14 @@ def test_admin_dashboard_returns_expected_metrics():
 
     membros_chart = context["membros_chart"]
     assert membros_chart["labels"] == [
-        ASSOCIADOS_NUCLEADOS_LABEL,
-        ASSOCIADOS_NAO_NUCLEADOS_LABEL,
+        MEMBROS_NUCLEADOS_LABEL,
+        MEMBROS_NAO_NUCLEADOS_LABEL,
     ]
     assert membros_chart["series"] == [1, 1]
     assert membros_chart["figure"]["data"][0]["type"] == "pie"
     tooltip_customdata = membros_chart["figure"]["data"][1]["customdata"]
-    assert tooltip_customdata[0][0] == ASSOCIADOS_NUCLEADOS_LABEL
-    assert tooltip_customdata[1][0] == ASSOCIADOS_NAO_NUCLEADOS_LABEL
+    assert tooltip_customdata[0][0] == MEMBROS_NUCLEADOS_LABEL
+    assert tooltip_customdata[1][0] == MEMBROS_NAO_NUCLEADOS_LABEL
 
 
 @pytest.mark.django_db

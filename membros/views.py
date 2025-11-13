@@ -29,7 +29,7 @@ from .forms import OrganizacaoUserCreateForm
 
 User = get_user_model()
 
-ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE = 6
+MEMBRO_PROMOVER_CAROUSEL_PAGE_SIZE = 6
 
 
 class MembrosPermissionMixin(MembrosRequiredMixin, NoSuperadminMixin):
@@ -54,7 +54,7 @@ class MembrosPromocaoPermissionMixin(MembrosPermissionMixin):
 
 
 class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView):
-    template_name = "associados/usuario_form.html"
+    template_name = "membros/usuario_form.html"
     form_class = OrganizacaoUserCreateForm
     success_url = reverse_lazy("membros:membros_lista")
 
@@ -146,7 +146,7 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         return super().get_success_url()
 
 
-class AssociadoListDataMixin:
+class MembroListDataMixin:
     sections = ("sem_nucleo", "nucleados", "consultores", "coordenadores")
     paginate_by = 6
 
@@ -239,8 +239,8 @@ class AssociadoListDataMixin:
 
     def get_empty_message(self, section: str) -> str:
         messages = {
-            "sem_nucleo": _("Nenhum associado sem núcleo encontrado."),
-            "nucleados": _("Nenhum associado nucleado encontrado."),
+            "sem_nucleo": _("Nenhum membro sem núcleo encontrado."),
+            "nucleados": _("Nenhum membro nucleado encontrado."),
             "consultores": _("Nenhum consultor encontrado."),
             "coordenadores": _("Nenhum coordenador encontrado."),
         }
@@ -252,7 +252,7 @@ class AssociadoListDataMixin:
         if organizacao is None:
             return {
                 "total_usuarios": 0,
-                "total_associados": 0,
+                "total_membros": 0,
                 "total_nucleados": 0,
                 "total_consultores": 0,
                 "total_coordenadores": 0,
@@ -267,7 +267,7 @@ class AssociadoListDataMixin:
 
         excluded_user_types = {UserType.ADMIN.value, UserType.OPERADOR.value}
 
-        total_associados = (
+        total_membros = (
             base_queryset.filter(is_associado=True)
             .exclude(user_type__in=excluded_user_types)
             .annotate(has_active_participacao=Exists(active_participacao))
@@ -283,7 +283,7 @@ class AssociadoListDataMixin:
 
         return {
             "total_usuarios": base_queryset.count(),
-            "total_associados": total_associados,
+            "total_membros": total_membros,
             "total_nucleados": total_nucleados,
             "total_consultores": User.objects.filter(organizacao=organizacao)
             .filter(self.get_consultor_filter())
@@ -296,13 +296,13 @@ class AssociadoListDataMixin:
         }
 
 
-class AssociadoListView(
+class MembroListView(
     MembrosPermissionMixin,
     LoginRequiredMixin,
-    AssociadoListDataMixin,
+    MembroListDataMixin,
     TemplateView,
 ):
-    template_name = "associados/associado_list.html"
+    template_name = "membros/membro_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -320,16 +320,16 @@ class AssociadoListView(
         context.update(
             {
                 "search_term": self.get_search_term(),
-                "associados_fetch_url": reverse("membros:membros_lista_api"),
-                "associados_sem_nucleo_page": section_pages["sem_nucleo"]["page"],
-                "associados_sem_nucleo_count": section_pages["sem_nucleo"]["count"],
-                "associados_nucleados_page": section_pages["nucleados"]["page"],
-                "associados_nucleados_count": section_pages["nucleados"]["count"],
-                "associados_consultores_page": section_pages["consultores"]["page"],
-                "associados_consultores_count": section_pages["consultores"]["count"],
-                "associados_coordenadores_page": section_pages["coordenadores"]["page"],
-                "associados_coordenadores_count": section_pages["coordenadores"]["count"],
-                "associados_section_empty_messages": {
+                "membros_fetch_url": reverse("membros:membros_lista_api"),
+                "membros_sem_nucleo_page": section_pages["sem_nucleo"]["page"],
+                "membros_sem_nucleo_count": section_pages["sem_nucleo"]["count"],
+                "membros_nucleados_page": section_pages["nucleados"]["page"],
+                "membros_nucleados_count": section_pages["nucleados"]["count"],
+                "membros_consultores_page": section_pages["consultores"]["page"],
+                "membros_consultores_count": section_pages["consultores"]["count"],
+                "membros_coordenadores_page": section_pages["coordenadores"]["page"],
+                "membros_coordenadores_count": section_pages["coordenadores"]["count"],
+                "membros_section_empty_messages": {
                     section: self.get_empty_message(section)
                     for section in self.sections
                 },
@@ -340,10 +340,10 @@ class AssociadoListView(
         return context
 
 
-class AssociadoSectionListView(
+class MembroSectionListView(
     MembrosPermissionMixin,
     LoginRequiredMixin,
-    AssociadoListDataMixin,
+    MembroListDataMixin,
     View,
 ):
     http_method_names = ["get"]
@@ -359,7 +359,7 @@ class AssociadoSectionListView(
         )
 
         html = render_to_string(
-            "associados/_carousel_slide.html",
+            "membros/_carousel_slide.html",
             {
                 "usuarios": page_obj.object_list,
                 "page_number": page_obj.number,
@@ -378,10 +378,10 @@ class AssociadoSectionListView(
         )
 
 
-class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
-    template_name = "associados/promover_list.html"
-    context_object_name = "associados"
-    paginate_by = ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE
+class MembroPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
+    template_name = "membros/promover_list.html"
+    context_object_name = "membros"
+    paginate_by = MEMBRO_PROMOVER_CAROUSEL_PAGE_SIZE
 
     def get_queryset(self):
         User = get_user_model()
@@ -433,7 +433,7 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         )
 
         filtro_tipo = self.request.GET.get("tipo")
-        if filtro_tipo == "associados":
+        if filtro_tipo == "membros":
             base_queryset = base_queryset.filter(is_associado=True, nucleo__isnull=True)
         elif filtro_tipo == "nucleados":
             base_queryset = base_queryset.filter(is_associado=True, nucleo__isnull=False)
@@ -457,7 +457,7 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         if "page" in params:
             params.pop("page")
 
-        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
+        valid_filters = {"membros", "nucleados", "consultores", "coordenadores"}
 
         def build_url(filter_value: str | None) -> str:
             query_params = params.copy()
@@ -469,12 +469,12 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             return f"{self.request.path}?{query_string}" if query_string else self.request.path
 
         context["current_filter"] = current_filter
-        context["associados_filter_url"] = build_url("associados")
+        context["membros_filter_url"] = build_url("membros")
         context["nucleados_filter_url"] = build_url("nucleados")
         context["consultores_filter_url"] = build_url("consultores")
         context["coordenadores_filter_url"] = build_url("coordenadores")
         context["todos_filter_url"] = build_url(None)
-        context["is_associados_filter_active"] = current_filter == "associados"
+        context["is_membros_filter_active"] = current_filter == "membros"
         context["is_nucleados_filter_active"] = current_filter == "nucleados"
         context["is_consultores_filter_active"] = current_filter == "consultores"
         context["is_coordenadores_filter_active"] = current_filter == "coordenadores"
@@ -483,7 +483,7 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         User = get_user_model()
         if organizacao:
             context["total_usuarios"] = User.objects.filter(organizacao=organizacao).count()
-            context["total_associados"] = User.objects.filter(
+            context["total_membros"] = User.objects.filter(
                 organizacao=organizacao, is_associado=True, nucleo__isnull=True
             ).count()
             context["total_nucleados"] = User.objects.filter(
@@ -507,7 +507,7 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             )
         else:
             context["total_usuarios"] = 0
-            context["total_associados"] = 0
+            context["total_membros"] = 0
             context["total_nucleados"] = 0
             context["total_consultores"] = 0
             context["total_coordenadores"] = 0
@@ -520,7 +520,7 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         return context
 
     def get_current_filter(self) -> str:
-        valid_filters = {"associados", "nucleados", "consultores", "coordenadores"}
+        valid_filters = {"membros", "nucleados", "consultores", "coordenadores"}
         current_filter = self.request.GET.get("tipo") or ""
         if current_filter not in valid_filters:
             return "todos"
@@ -528,25 +528,25 @@ class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMix
 
     def get_empty_message(self) -> str:
         if getattr(self, "search_term", "").strip():
-            return _("Nenhum associado encontrado para a busca informada.")
-        return _("Nenhum associado disponível para promoção no momento.")
+            return _("Nenhum membro encontrado para a busca informada.")
+        return _("Nenhum membro disponível para promoção no momento.")
 
 
-class AssociadoPromoverCarouselView(MembrosPromocaoPermissionMixin, View):
+class MembroPromoverCarouselView(MembrosPromocaoPermissionMixin, View):
     def get(self, request, *args, **kwargs):
-        list_view = AssociadoPromoverListView()
+        list_view = MembroPromoverListView()
         list_view.request = request
         list_view.args = ()
         list_view.kwargs = {}
 
         queryset = list_view.get_queryset()
-        paginator = Paginator(queryset, ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE)
+        paginator = Paginator(queryset, MEMBRO_PROMOVER_CAROUSEL_PAGE_SIZE)
         page_obj = paginator.get_page(request.GET.get("page") or 1)
 
         empty_message = list_view.get_empty_message()
 
         html = render_to_string(
-            "associados/partials/promover_carousel_slide.html",
+            "membros/partials/promover_carousel_slide.html",
             {
                 "usuarios": page_obj.object_list,
                 "page_number": page_obj.number,
@@ -565,14 +565,14 @@ class AssociadoPromoverCarouselView(MembrosPromocaoPermissionMixin, View):
         )
 
 
-class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):
-    template_name = "associados/promover_form.html"
+class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):
+    template_name = "membros/promover_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.organizacao = getattr(request.user, "organizacao", None)
         if self.organizacao is None:
-            raise PermissionDenied(_("É necessário pertencer a uma organização para promover associados."))
-        self.associado = get_object_or_404(
+            raise PermissionDenied(_("É necessário pertencer a uma organização para promover membros."))
+        self.membro = get_object_or_404(
             User,
             pk=kwargs.get("pk"),
             organizacao=self.organizacao,
@@ -667,7 +667,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                     status="ativo",
                     papel_coordenador__in=set(coordenador_roles.values()),
                 )
-                .exclude(user=self.associado)
+                .exclude(user=self.membro)
                 .select_related("user", "nucleo")
             )
             for participacao in ocupados:
@@ -695,7 +695,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             existentes = defaultdict(set)
             if restricted_roles:
                 existentes_qs = ParticipacaoNucleo.objects.filter(
-                    user=self.associado,
+                    user=self.membro,
                     papel="coordenador",
                     status="ativo",
                     papel_coordenador__in=restricted_roles,
@@ -747,7 +747,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             consultores_ocupados = (
                 Nucleo.objects.filter(id__in=valid_consultor_ids)
                 .exclude(consultor__isnull=True)
-                .exclude(consultor=self.associado)
+                .exclude(consultor=self.membro)
                 .select_related("consultor")
             )
             for nucleo in consultores_ocupados:
@@ -762,7 +762,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         if remover_nucleado_ids and not form_errors:
             coordenador_ativos = set(
                 ParticipacaoNucleo.objects.filter(
-                    user=self.associado,
+                    user=self.membro,
                     nucleo_id__in=remover_nucleado_ids,
                     status="ativo",
                     papel="coordenador",
@@ -817,12 +817,12 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             participacoes_map = {
                 participacao.nucleo_id: participacao
                 for participacao in ParticipacaoNucleo.objects.select_for_update()
-                .filter(user=self.associado, nucleo_id__in=valid_action_ids)
+                .filter(user=self.membro, nucleo_id__in=valid_action_ids)
             }
 
             for nucleo_id in set(remover_consultor_ids) & valid_action_ids:
                 nucleo = nucleos_queryset.get(nucleo_id)
-                if nucleo and nucleo.consultor_id == self.associado.pk:
+                if nucleo and nucleo.consultor_id == self.membro.pk:
                     nucleo.consultor = None
                     nucleo.save(update_fields=["consultor"])
 
@@ -831,8 +831,8 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                     nucleo = nucleos_queryset.get(nucleo_id)
                     if not nucleo:
                         continue
-                    if nucleo.consultor_id != self.associado.pk:
-                        nucleo.consultor = self.associado
+                    if nucleo.consultor_id != self.membro.pk:
+                        nucleo.consultor = self.membro
                         nucleo.save(update_fields=["consultor"])
 
             for nucleo_id in valid_ids:
@@ -847,7 +847,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                 if not participacao:
                     participacao = ParticipacaoNucleo.objects.create(
                         nucleo=nucleo,
-                        user=self.associado,
+                        user=self.membro,
                         status="ativo",
                     )
                     participacoes_map[nucleo_id] = participacao
@@ -918,7 +918,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                     participacao.save(update_fields=list(update_fields))
 
         remaining_participacoes = ParticipacaoNucleo.objects.filter(
-            user=self.associado,
+            user=self.membro,
             status="ativo",
             status_suspensao=False,
         )
@@ -926,12 +926,12 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         has_participacao = remaining_participacoes.exists()
         has_consultor = Nucleo.objects.filter(
             organizacao=self.organizacao,
-            consultor=self.associado,
+            consultor=self.membro,
         ).exists()
 
         updates: list[str] = []
-        if self.associado.is_coordenador != has_coordenador:
-            self.associado.is_coordenador = has_coordenador
+        if self.membro.is_coordenador != has_coordenador:
+            self.membro.is_coordenador = has_coordenador
             updates.append("is_coordenador")
 
         allowed_types = {
@@ -940,7 +940,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
             UserType.CONSULTOR,
             UserType.COORDENADOR,
         }
-        if self.associado.user_type in allowed_types:
+        if self.membro.user_type in allowed_types:
             if has_coordenador:
                 target_type = UserType.COORDENADOR
             elif has_consultor:
@@ -949,12 +949,12 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                 target_type = UserType.NUCLEADO
             else:
                 target_type = UserType.ASSOCIADO
-            if self.associado.user_type != target_type:
-                self.associado.user_type = target_type
+            if self.membro.user_type != target_type:
+                self.membro.user_type = target_type
                 updates.append("user_type")
 
         if updates:
-            self.associado.save(update_fields=updates)
+            self.membro.save(update_fields=updates)
 
         context = self.get_context_data(
             selected_nucleado=[],
@@ -1004,7 +1004,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         role_labels = dict(ParticipacaoNucleo.PapelCoordenador.choices)
         participacoes_usuario = list(
             ParticipacaoNucleo.objects.filter(
-                user=self.associado,
+                user=self.membro,
                 status="ativo",
                 status_suspensao=False,
             ).values("nucleo_id", "papel", "papel_coordenador")
@@ -1033,7 +1033,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                 if not papel:
                     continue
                 unavailable_roles.add(papel)
-                is_target = participacao.user_id == self.associado.pk
+                is_target = participacao.user_id == self.membro.pk
                 coordenadores.append(
                     {
                         "papel": papel,
@@ -1058,7 +1058,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
                     "consultor_name": (
                         nucleo.consultor.display_name or nucleo.consultor.username if nucleo.consultor else ""
                     ),
-                    "is_current_consultor": nucleo.consultor_id == self.associado.pk,
+                    "is_current_consultor": nucleo.consultor_id == self.membro.pk,
                     "is_current_member": str(nucleo.pk) in current_memberships,
                     "is_current_coordinator": bool(
                         user_roles_by_nucleo.get(str(nucleo.pk), [])
@@ -1076,7 +1076,7 @@ class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMix
         ]
 
         return {
-            "associado": self.associado,
+            "membro": self.membro,
             "nucleos": nucleos,
             "coordenador_role_choices": ParticipacaoNucleo.PapelCoordenador.choices,
             "coordenador_role_labels": role_labels,

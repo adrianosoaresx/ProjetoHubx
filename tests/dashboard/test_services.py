@@ -11,14 +11,14 @@ from organizacoes.models import Organizacao
 
 
 @pytest.mark.django_db
-def test_calculate_monthly_associates_returns_expected_totals(django_user_model):
+def test_calculate_monthly_membros_returns_expected_totals(django_user_model):
     reference = timezone.make_aware(datetime(2024, 6, 1, 12, 0, 0))
     organizacao = Organizacao.objects.create(
         nome="Org",
         cnpj="12.345.678/0001-90",
     )
 
-    def create_associado(email: str, joined: datetime) -> None:
+    def create_membro(email: str, joined: datetime) -> None:
         django_user_model.objects.create_user(
             email=email,
             username=email.split("@")[0],
@@ -29,12 +29,12 @@ def test_calculate_monthly_associates_returns_expected_totals(django_user_model)
             date_joined=timezone.make_aware(joined),
         )
 
-    create_associado("abril@example.com", datetime(2024, 4, 10, 9, 0, 0))
-    create_associado("maio-a@example.com", datetime(2024, 5, 5, 8, 0, 0))
-    create_associado("maio-b@example.com", datetime(2024, 5, 5, 16, 0, 0))
-    create_associado("maio-c@example.com", datetime(2024, 5, 12, 11, 30, 0))
+    create_membro("abril@example.com", datetime(2024, 4, 10, 9, 0, 0))
+    create_membro("maio-a@example.com", datetime(2024, 5, 5, 8, 0, 0))
+    create_membro("maio-b@example.com", datetime(2024, 5, 5, 16, 0, 0))
+    create_membro("maio-c@example.com", datetime(2024, 5, 12, 11, 30, 0))
 
-    resultado = services.calculate_monthly_associates(
+    resultado = services.calculate_monthly_membros(
         organizacao, months=3, reference=reference
     )
 
