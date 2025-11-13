@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+import json
+
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -11,10 +13,8 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views.generic import FormView, TemplateView, View
-
-from core.utils import resolve_back_href
 
 # Project‑specific imports.  These may vary depending on your actual project
 # structure.  Adjust the module paths as necessary.
@@ -76,6 +76,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
     partial_templates: Dict[str, str] = {
         "seguranca": "configuracoes/_partials/seguranca.html",
         "preferencias": "configuracoes/_partials/preferencias.html",
+        "operadores": "configuracoes/_partials/operadores_panel.html",
     }
 
     def get_user(self) -> Any:
@@ -89,7 +90,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             self._user_cache = User.objects.select_related("configuracao").get(pk=self.request.user.pk)
         return self._user_cache
 
-    def get_form(self, section: str | None, data: Dict[str, Any] | None = None, files: Any | None = None) -> forms.Form:
+    def get_form(self, section: str | None, data: Dict[str, Any] | None = None, files: Any | None = None) -> forms.Form | None:
         """
         Instancia o formulário correto para a aba atual.  Para a aba de segurança,
         o formulário recebe o usuário como primeiro parâmetro.  Para a aba de
@@ -98,7 +99,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """
         section = section or "seguranca"
         if section not in self.form_classes:
-            raise Http404
+            return None  # type: ignore[return-value]
         form_class = self.form_classes[section]
         if form_class is None:
             raise Http404("O formulário para esta aba não está disponível.")
@@ -127,7 +128,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         # Redireciona seções externas para seus respectivos módulos.
         if section in {"informacoes", "redes"}:
             return section
-        if section not in {"seguranca", "preferencias"}:
+        if section not in {"seguranca", "preferencias", "operadores"}:
             raise Http404
         return section
 
@@ -137,6 +138,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         return {
             "seguranca": "seguranca-panel-content",
             "preferencias": "preferencias-panel-content",
+            "operadores": "operadores-panel-content",
         }
 
     def _augment_panel_context(self, context: Dict[str, Any], section: str) -> None:
@@ -145,6 +147,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         panel_ids = self.get_panel_target_ids()
         context.setdefault("seguranca_panel_target_id", panel_ids["seguranca"])
         context.setdefault("preferencias_panel_target_id", panel_ids["preferencias"])
+        context.setdefault("operadores_panel_target_id", panel_ids["operadores"])
+        context.setdefault("updated_preferences", False)
         context["hx_target_id"] = panel_ids.get(section, "settings-content")
 
     def _ensure_full_page_forms(self, context: Dict[str, Any]) -> None:
@@ -154,6 +158,39 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             if form_class is None:
                 continue
             context.setdefault(f"{section}_form", self.get_form(section))
+
+    def can_manage_operadores(self) -> bool:
+        user = self.request.user
+        if getattr(user, "is_superuser", False):
+            return True
+        user_type = getattr(user, "user_type", None)
+        user_type_value = getattr(user_type, "value", user_type)
+        allowed_types = {
+            getattr(getattr(UserType, "ROOT", "root"), "value", getattr(UserType, "ROOT", "root")),
+            getattr(getattr(UserType, "ADMIN", "admin"), "value", getattr(UserType, "ADMIN", "admin")),
+        }
+        return user_type_value in allowed_types
+
+    def get_operadores_queryset(self):
+        User = get_user_model()
+        operador_value = getattr(UserType.OPERADOR, "value", UserType.OPERADOR)  # type: ignore[attr-defined]
+        qs = User.objects.filter(user_type=operador_value)
+        user_org_id = getattr(self.request.user, "organizacao_id", None)
+        user_type_value = getattr(getattr(self.request.user, "user_type", None), "value", getattr(self.request.user, "user_type", None))
+        if user_org_id and user_type_value != getattr(getattr(UserType, "ROOT", "root"), "value", getattr(UserType, "ROOT", "root")):
+            qs = qs.filter(organizacao_id=user_org_id)
+        return qs.select_related("organizacao").order_by("contato", "username")
+
+    def get_operadores_context(self) -> Dict[str, Any]:
+        if not self.can_manage_operadores():
+            return {
+                "operadores": [],
+                "can_manage_operadores": False,
+            }
+        return {
+            "operadores": self.get_operadores_queryset(),
+            "can_manage_operadores": True,
+        }
 
     def render_response(self, request: HttpRequest, section: str, context: Dict[str, Any]) -> HttpResponse:
         """
@@ -170,6 +207,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         )
         if not is_htmx:
             self._ensure_full_page_forms(context)
+        if section == "operadores" or not is_htmx:
+            operadores_context = self.get_operadores_context()
+            context.setdefault("operadores", operadores_context.get("operadores", []))
+            context.setdefault("can_manage_operadores", operadores_context.get("can_manage_operadores", False))
         self._augment_panel_context(context, section)
         response = render(request, template, context)
         if is_htmx:
@@ -195,15 +236,28 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         if section in {"informacoes", "redes"}:
             return redirect("accounts:perfil_sections_info")
         form = self.get_form(section)
-        hero_title = _(["Segurança", "Preferências"][section == "preferencias"]) if section in {"seguranca", "preferencias"} else _("Configurações")
+        hero_titles = {
+            "seguranca": _("Segurança"),
+            "preferencias": _("Preferências"),
+            "operadores": _("Operadores"),
+        }
+        hero_subtitles = {
+            "seguranca": _("Personalize segurança, preferências e operadores da sua conta."),
+            "preferencias": _("Personalize segurança, preferências e operadores da sua conta."),
+            "operadores": _("Gerencie os operadores da sua organização."),
+        }
+        hero_title = hero_titles.get(section, _("Configurações"))
         context: Dict[str, Any] = {
-            f"{section}_form": form,
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
-            "hero_subtitle": _("Personalize segurança, preferências e operadores da sua conta."),
+            "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
         }
+        if form is not None:
+            context[f"{section}_form"] = form
+        if section == "operadores":
+            context.update(self.get_operadores_context())
         return self.render_response(request, section, context)
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
@@ -215,9 +269,12 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         section = self.resolve_section(request)
         if section in {"informacoes", "redes"}:
             return redirect("accounts:perfil_sections_info")
+        if section == "operadores":
+            return self.get(request, *args, **kwargs)
         # Instancia o formulário apropriado com os dados recebidos.
         form = self.get_form(section, request.POST, request.FILES)
-        if form.is_valid():
+        form_valid = form.is_valid()
+        if form_valid:
             # Persistir alterações conforme o tipo de formulário.
             if section == "preferencias" and atualizar_preferencias_usuario is not None:
                 form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)  # type: ignore
@@ -239,20 +296,28 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             # Erros de validação são exibidos no formulário parcial.
             messages.error(request, _("Corrija os erros abaixo."))
         # Reconstrói contexto com o formulário (válido ou com erros).
-        hero_title = _(["Segurança", "Preferências"][section == "preferencias"]) if section in {"seguranca", "preferencias"} else _("Configurações")
+        hero_titles = {
+            "seguranca": _("Segurança"),
+            "preferencias": _("Preferências"),
+        }
+        hero_subtitles = {
+            "seguranca": _("Personalize segurança, preferências e operadores da sua conta."),
+            "preferencias": _("Personalize segurança, preferências e operadores da sua conta."),
+        }
+        hero_title = hero_titles.get(section, _("Configurações"))
         context: Dict[str, Any] = {
-            f"{section}_form": form,
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
-            "hero_subtitle": _("Personalize segurança, preferências e operadores da sua conta."),
+            "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
         }
-        if section == "preferencias" and form.is_valid():
-            context["updated_preferences"] = True
+        if form is not None:
+            context[f"{section}_form"] = form
+        context["updated_preferences"] = section == "preferencias" and form_valid
         response = self.render_response(request, section, context)
         # Atualiza cookies de tema e idioma após salvar preferências com sucesso.
-        if section == "preferencias" and form.is_valid():
+        if section == "preferencias" and form_valid:
             if hasattr(form, "instance"):
                 tema = getattr(form.instance, "tema", None)
                 idioma = getattr(form.instance, "idioma", None)
@@ -276,14 +341,19 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
 
 class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
-    """Lista operadores da organização para usuários administradores."""
+    """Retorna o fragmento da lista de operadores para o painel de configurações."""
 
-    template_name = "configuracoes/operadores_list.html"
+    template_name = "configuracoes/_partials/operadores_lista.html"
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if UserType is None:  # type: ignore
             raise Http404
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if not _is_htmx(request):
+            return redirect(reverse("configuracoes:configuracoes_operadores"))
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -298,10 +368,7 @@ class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         context.update(
             {
                 "operadores": operadores,
-                "hero_title": _("Operadores"),
-                "hero_subtitle": _("Gerencie os operadores da sua organização."),
-                "hero_active_tab": "operadores",
-                "tab": "operadores",  # compatibilidade com templates que esperam ``tab``
+                "can_manage_operadores": True,
             }
         )
         return context
@@ -310,14 +377,19 @@ class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
 class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
     """Formulário para criação de usuários operadores."""
 
-    template_name = "configuracoes/operador_form.html"
+    template_name = "configuracoes/_partials/operador_form.html"
     form_class = OperadorCreateForm  # type: ignore[assignment]
-    success_url = reverse_lazy("configuracoes:operadores")
+    success_url = reverse_lazy("configuracoes:configuracoes_operadores")
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if OperadorCreateForm is None:  # type: ignore
             raise Http404("Formulário de operador não disponível.")
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if not _is_htmx(request):
+            return redirect(reverse("configuracoes:configuracoes_operadores"))
+        return super().get(request, *args, **kwargs)
 
     def get_form_class(self):  # type: ignore[override]
         if OperadorCreateForm is None:  # type: ignore
@@ -328,23 +400,11 @@ class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "hero_title": _("Adicionar operador"),
-                "hero_subtitle": _("Crie novos operadores para apoiar a gestão."),
-                "hero_active_tab": "operadores",
-                "tab": "operadores",  # compatibilidade com templates legados
+                "form_title": _("Adicionar operador"),
+                "form_description": _("Informe os dados básicos para criar um novo usuário operador."),
+                "form_action": self.request.get_full_path(),
             }
         )
-        fallback_url = str(self.success_url)
-        back_href = resolve_back_href(self.request, fallback=fallback_url)
-        context["back_href"] = back_href
-        context["back_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
-        }
-        context["cancel_component_config"] = {
-            "href": back_href,
-            "fallback_href": fallback_url,
-        }
         return context
 
     def form_valid(self, form: OperadorCreateForm) -> HttpResponse:  # type: ignore[override]
@@ -356,4 +416,8 @@ class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
             % {"username": getattr(saved_user, "username", "")},
         )
         self.object = saved_user  # type: ignore[assignment]
+        if _is_htmx(self.request):
+            response = HttpResponse(status=204)
+            response["HX-Trigger"] = json.dumps({"operadores:refresh": True, "modal:close": True})
+            return response
         return super().form_valid(form)

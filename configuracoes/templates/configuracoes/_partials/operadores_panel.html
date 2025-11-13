@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="space-y-4">
+  <p class="text-sm text-[var(--text-secondary)]">
+    {% trans 'Gerencie quem pode acessar e operar a sua organização.' %}
+  </p>
+  {% if can_manage_operadores %}
+    <div class="flex flex-wrap gap-3">
+      {% include 'configuracoes/_partials/operadores_action.html' %}
+    </div>
+    <div
+      data-operadores-list
+      hx-get="{% url 'configuracoes:operadores' %}"
+      hx-trigger="operadores:refresh from:#modal, operadores:refresh from:body"
+      hx-target="this"
+      hx-swap="innerHTML"
+      class="space-y-4"
+    >
+      {% include 'configuracoes/_partials/operadores_lista.html' with operadores=operadores %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning" role="alert">
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans 'Você não possui permissão para gerenciar operadores. Solicite acesso a um administrador.' %}
+      </p>
+    </div>
+  {% endif %}
+</div>

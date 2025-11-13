@@ -10,6 +10,7 @@ urlpatterns = [
     path("", ConfiguracoesView.as_view(), name="configuracoes"),
     path("seguranca/", ConfiguracoesView.as_view(), {"section": "seguranca"}, name="configuracoes_seguranca"),
     path("preferencias/", ConfiguracoesView.as_view(), {"section": "preferencias"}, name="configuracoes_preferencias"),
+    path("operadores/painel/", ConfiguracoesView.as_view(), {"section": "operadores"}, name="configuracoes_operadores"),
     path("operadores/", OperadorListView.as_view(), name="operadores"),
     path("operadores/novo/", OperadorCreateView.as_view(), name="operadores_adicionar"),
 ]
