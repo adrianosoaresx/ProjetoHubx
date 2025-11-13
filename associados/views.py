@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Prefetch, Q
+from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -205,10 +205,23 @@ class AssociadoListDataMixin:
         return queryset.distinct()
 
     def get_section_queryset(self, base_queryset, section: str):
+        active_participacao = ParticipacaoNucleo.objects.filter(
+            user=OuterRef("pk"),
+            status="ativo",
+            status_suspensao=False,
+        )
         if section == "sem_nucleo":
-            return base_queryset.filter(is_associado=True, nucleo__isnull=True)
+            return (
+                base_queryset.filter(is_associado=True)
+                .annotate(has_active_participacao=Exists(active_participacao))
+                .filter(has_active_participacao=False)
+            )
         if section == "nucleados":
-            return base_queryset.filter(is_associado=True, nucleo__isnull=False)
+            return (
+                base_queryset.filter(is_associado=True)
+                .annotate(has_active_participacao=Exists(active_participacao))
+                .filter(has_active_participacao=True)
+            )
         if section == "consultores":
             return base_queryset.filter(self.get_consultor_filter())
         if section == "coordenadores":
@@ -243,14 +256,30 @@ class AssociadoListDataMixin:
                 "total_coordenadores": 0,
             }
 
+        base_queryset = User.objects.filter(organizacao=organizacao)
+        active_participacao = ParticipacaoNucleo.objects.filter(
+            user=OuterRef("pk"),
+            status="ativo",
+            status_suspensao=False,
+        )
+
+        total_associados = (
+            base_queryset.filter(is_associado=True)
+            .annotate(has_active_participacao=Exists(active_participacao))
+            .filter(has_active_participacao=False)
+            .count()
+        )
+        total_nucleados = (
+            base_queryset.filter(is_associado=True)
+            .annotate(has_active_participacao=Exists(active_participacao))
+            .filter(has_active_participacao=True)
+            .count()
+        )
+
         return {
-            "total_usuarios": User.objects.filter(organizacao=organizacao).count(),
-            "total_associados": User.objects.filter(
-                organizacao=organizacao, is_associado=True, nucleo__isnull=True
-            ).count(),
-            "total_nucleados": User.objects.filter(
-                organizacao=organizacao, is_associado=True, nucleo__isnull=False
-            ).count(),
+            "total_usuarios": base_queryset.count(),
+            "total_associados": total_associados,
+            "total_nucleados": total_nucleados,
             "total_consultores": User.objects.filter(organizacao=organizacao)
             .filter(self.get_consultor_filter())
             .distinct()
