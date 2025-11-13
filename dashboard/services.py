@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict, defaultdict
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import datetime, date
 from decimal import Decimal
 from statistics import StatisticsError, pstdev
@@ -33,6 +33,22 @@ def _extract_organizacao_id(organizacao: Any | None) -> Any | None:
     if not organizacao:
         return None
     return getattr(organizacao, "id", organizacao)
+
+
+def _normalize_nucleo_ids(
+    nucleo_ids: Iterable[Any] | None,
+) -> list[Any] | None:
+    """Normaliza uma sequência de núcleos para seus respectivos IDs."""
+
+    if nucleo_ids is None:
+        return None
+
+    normalized: list[Any] = []
+    for item in nucleo_ids:
+        if item is None:
+            continue
+        normalized.append(getattr(item, "id", item))
+    return normalized
 
 
 def _normalize_reference(reference: datetime | None = None) -> datetime:
@@ -195,16 +211,25 @@ def calculate_events_by_nucleo(organizacao: Any | None) -> OrderedDict[str, int]
     return totals
 
 
-def count_confirmed_event_registrations(organizacao: Any | None) -> int:
+def count_confirmed_event_registrations(
+    organizacao: Any | None,
+    *,
+    nucleo_ids: Iterable[Any] | None = None,
+) -> int:
     """Conta inscrições confirmadas para eventos da organização."""
 
     organizacao_id = _extract_organizacao_id(organizacao)
     if not organizacao_id:
         return 0
-    return InscricaoEvento.objects.filter(
+
+    queryset = InscricaoEvento.objects.filter(
         evento__organizacao_id=organizacao_id,
         status="confirmada",
-    ).count()
+    )
+    normalized_nucleos = _normalize_nucleo_ids(nucleo_ids)
+    if normalized_nucleos:
+        queryset = queryset.filter(evento__nucleo_id__in=normalized_nucleos)
+    return queryset.count()
 
 
 def calculate_monthly_associates(
@@ -260,6 +285,7 @@ def calculate_monthly_nucleados(
     *,
     months: int = 12,
     reference: datetime | None = None,
+    nucleo_ids: Iterable[Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Retorna evolução mensal de nucleados ativos com desvio padrão diário."""
 
@@ -276,6 +302,9 @@ def calculate_monthly_nucleados(
         status="ativo",
         created_at__gte=start,
     )
+    normalized_nucleos = _normalize_nucleo_ids(nucleo_ids)
+    if normalized_nucleos:
+        participacoes_qs = participacoes_qs.filter(nucleo_id__in=normalized_nucleos)
 
     daily_counts = (
         participacoes_qs.annotate(day=TruncDay("created_at"))
@@ -307,6 +336,7 @@ def calculate_monthly_event_registrations(
     *,
     months: int = 12,
     reference: datetime | None = None,
+    nucleo_ids: Iterable[Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Retorna a contagem mensal de inscrições confirmadas."""
 
@@ -324,6 +354,9 @@ def calculate_monthly_event_registrations(
         data_confirmacao__isnull=False,
         data_confirmacao__gte=start,
     )
+    normalized_nucleos = _normalize_nucleo_ids(nucleo_ids)
+    if normalized_nucleos:
+        inscricoes_qs = inscricoes_qs.filter(evento__nucleo_id__in=normalized_nucleos)
 
     daily_counts = (
         inscricoes_qs.annotate(day=TruncDay("data_confirmacao"))
@@ -349,6 +382,7 @@ def calculate_monthly_registration_values(
     *,
     months: int = 12,
     reference: datetime | None = None,
+    nucleo_ids: Iterable[Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Retorna a soma mensal dos valores pagos com desvio padrão."""
 
@@ -366,7 +400,11 @@ def calculate_monthly_registration_values(
         valor_pago__isnull=False,
         data_confirmacao__isnull=False,
         data_confirmacao__gte=start,
-    ).values("data_confirmacao", "valor_pago")
+    )
+    normalized_nucleos = _normalize_nucleo_ids(nucleo_ids)
+    if normalized_nucleos:
+        inscricoes_qs = inscricoes_qs.filter(evento__nucleo_id__in=normalized_nucleos)
+    inscricoes_qs = inscricoes_qs.values("data_confirmacao", "valor_pago")
 
     grouped_values: dict[date, list[float]] = defaultdict(list)
     totals: dict[date, Decimal] = defaultdict(lambda: Decimal("0"))
@@ -385,6 +423,54 @@ def calculate_monthly_registration_values(
     for key, record in baseline.items():
         record["total"] = float(totals.get(key, Decimal("0")))
         record["std_dev"] = _calculate_std_dev(grouped_values.get(key, []))
+
+    return list(baseline.values())
+
+
+def calculate_monthly_events(
+    organizacao: Any | None,
+    *,
+    months: int = 12,
+    reference: datetime | None = None,
+    nucleo_ids: Iterable[Any] | None = None,
+    statuses: Iterable[Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna a contagem mensal de eventos considerando os filtros informados."""
+
+    periods = _generate_month_periods(months, reference=reference)
+    baseline = _baseline_for_periods(periods, include_std=False)
+
+    organizacao_id = _extract_organizacao_id(organizacao)
+    if not organizacao_id or not periods:
+        return list(baseline.values())
+
+    start = periods[0]
+    queryset = Evento.objects.filter(
+        organizacao_id=organizacao_id,
+        data_inicio__isnull=False,
+        data_inicio__gte=start,
+    )
+    normalized_nucleos = _normalize_nucleo_ids(nucleo_ids)
+    if normalized_nucleos:
+        queryset = queryset.filter(nucleo_id__in=normalized_nucleos)
+    if statuses:
+        queryset = queryset.filter(status__in=list(statuses))
+
+    daily_counts = (
+        queryset.annotate(day=TruncDay("data_inicio"))
+        .values("day")
+        .annotate(total=Count("id"))
+    )
+
+    for item in daily_counts:
+        day = item.get("day")
+        if not day:
+            continue
+        month_start = _month_start(day)
+        record = baseline.get(_period_key(month_start))
+        if not record:
+            continue
+        record["total"] += int(item.get("total") or 0)
 
     return list(baseline.values())
 

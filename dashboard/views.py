@@ -1,9 +1,15 @@
+from copy import deepcopy
+from decimal import Decimal
+import json
+from itertools import zip_longest
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Avg, Count, Q
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
+from django.utils.formats import number_format
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import TemplateView
@@ -15,6 +21,7 @@ from eventos.models import FeedbackNota, InscricaoEvento
 
 from accounts.models import UserType
 from feed.models import Bookmark
+from nucleos.models import Nucleo
 
 from .services import (
     ASSOCIADOS_NUCLEADOS_LABEL,
@@ -24,6 +31,7 @@ from .services import (
     calculate_events_by_nucleo,
     calculate_membership_totals,
     calculate_monthly_associates,
+    calculate_monthly_events,
     calculate_monthly_event_registrations,
     calculate_monthly_nucleados,
     calculate_monthly_registration_values,
@@ -65,7 +73,9 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
         eventos_por_nucleo = calculate_events_by_nucleo(organizacao)
         eventos_chart = build_chart_payload(event_totals)
         membros_chart = build_chart_payload(membership_totals)
-        eventos_por_nucleo_chart = build_chart_payload(eventos_por_nucleo)
+        eventos_por_nucleo_chart = build_chart_payload(
+            eventos_por_nucleo, chart_type="bar"
+        )
 
         monthly_associates = calculate_monthly_associates(organizacao, months=months)
         monthly_nucleados = calculate_monthly_nucleados(organizacao, months=months)
@@ -218,6 +228,356 @@ class AssociadoDashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class RoleDashboardMixin(LoginRequiredMixin):
+    """Compartilha utilitários entre dashboards segmentados por perfil."""
+
+    DEFAULT_MONTHS = 12
+    PERIOD_CHOICES: tuple[int, ...] = (3, 6, 12, 24)
+    role_type: UserType | None = None
+
+    def dispatch(self, request, *args, **kwargs):
+        tipo = getattr(request.user, "get_tipo_usuario", None)
+        if not self.role_type or tipo != self.role_type.value:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _resolve_months(self) -> int:
+        raw_months = self.request.GET.get("months")
+        if not raw_months:
+            return self.DEFAULT_MONTHS
+        try:
+            months = int(raw_months)
+        except (TypeError, ValueError):
+            return self.DEFAULT_MONTHS
+        if months not in self.PERIOD_CHOICES:
+            return self.DEFAULT_MONTHS
+        return months
+
+    def _format_currency(self, value: Decimal | None) -> str:
+        normalized = value or Decimal("0")
+        formatted = number_format(normalized, decimal_pos=2, force_grouping=True)
+        return f"R$ {formatted}"
+
+    def _build_events_vs_registrations_chart(
+        self,
+        monthly_events: list[dict[str, Any]],
+        monthly_registrations: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        events_chart = build_time_series_chart(
+            monthly_events,
+            value_field="total",
+            label=_("Eventos"),
+            color="#0ea5e9",
+            value_format=".0f",
+        )
+        registrations_chart = build_time_series_chart(
+            monthly_registrations,
+            value_field="total",
+            label=_("Inscrições confirmadas"),
+            color="#7c3aed",
+            value_format=".0f",
+        )
+
+        combined_points: list[dict[str, Any]] = []
+        for event_point, registration_point in zip_longest(
+            monthly_events, monthly_registrations, fillvalue={}
+        ):
+            period = event_point.get("period") or registration_point.get("period")
+            combined_points.append(
+                {
+                    "period": period,
+                    "eventos": event_point.get("total", 0),
+                    "inscricoes": registration_point.get("total", 0),
+                }
+            )
+
+        figure = deepcopy(events_chart.get("figure", {}))
+        figure.setdefault("data", [])
+        figure["data"].extend(
+            deepcopy(registrations_chart.get("figure", {}).get("data", []))
+        )
+        figure.setdefault("layout", {})
+        figure["layout"].setdefault("legend", {})
+        figure["layout"]["legend"].update(
+            {"orientation": "h", "y": -0.18, "x": 0.5, "xanchor": "center"}
+        )
+
+        return {"points": combined_points, "figure": figure, "type": "line"}
+
+    def _serialize_chart(self, payload: dict[str, Any]) -> str:
+        return json.dumps(payload.get("figure", {}), cls=DjangoJSONEncoder)
+
+
+class CoordenadorDashboardView(RoleDashboardMixin, TemplateView):
+    """Dashboard específico para usuários coordenadores."""
+
+    template_name = "dashboard/coordenadores_dashboard.html"
+    role_type = UserType.COORDENADOR
+    EVENT_LIST_LIMIT = 6
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        organizacao = getattr(user, "organizacao", None)
+        months = self._resolve_months()
+
+        nucleos_qs = (
+            Nucleo.objects.filter(
+                participacoes__user=user,
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
+            .annotate(
+                total_membros=Count(
+                    "participacoes",
+                    filter=Q(
+                        participacoes__status="ativo",
+                        participacoes__status_suspensao=False,
+                    ),
+                    distinct=True,
+                )
+            )
+            .order_by("nome")
+            .distinct()
+        )
+        nucleos = list(nucleos_qs)
+        nucleo_ids = [nucleo.id for nucleo in nucleos if nucleo.id]
+
+        eventos_base_qs = (
+            Evento.objects.filter(
+                organizacao=organizacao,
+                nucleo_id__in=nucleo_ids,
+            )
+            if nucleo_ids
+            else Evento.objects.none()
+        )
+        eventos_list = (
+            eventos_base_qs.filter(
+                status__in=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO]
+            )
+            .select_related("nucleo")
+            .annotate(
+                total_inscritos=Count(
+                    "inscricoes",
+                    filter=Q(inscricoes__status="confirmada"),
+                    distinct=True,
+                ),
+                valor_total_inscricoes=Sum(
+                    "inscricoes__valor_pago",
+                    filter=Q(inscricoes__status="confirmada"),
+                ),
+            )
+            .order_by("-data_inicio")[: self.EVENT_LIST_LIMIT]
+            if nucleo_ids
+            else []
+        )
+
+        inscricoes_qs = (
+            InscricaoEvento.objects.filter(
+                evento__organizacao=organizacao,
+                evento__nucleo_id__in=nucleo_ids,
+                status="confirmada",
+            )
+            if nucleo_ids
+            else InscricaoEvento.objects.none()
+        )
+        total_inscritos = inscricoes_qs.count()
+        valor_total_inscricoes = inscricoes_qs.aggregate(total=Sum("valor_pago"))["total"]
+
+        monthly_kwargs = {"months": months, "nucleo_ids": nucleo_ids}
+        monthly_events = calculate_monthly_events(
+            organizacao,
+            statuses=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO],
+            **monthly_kwargs,
+        )
+        monthly_registrations = calculate_monthly_event_registrations(
+            organizacao, **monthly_kwargs
+        )
+        monthly_nucleados = calculate_monthly_nucleados(organizacao, **monthly_kwargs)
+        monthly_registration_values = calculate_monthly_registration_values(
+            organizacao, **monthly_kwargs
+        )
+
+        eventos_inscricoes_chart = self._build_events_vs_registrations_chart(
+            monthly_events, monthly_registrations
+        )
+        nucleados_chart = build_time_series_chart(
+            monthly_nucleados,
+            value_field="total",
+            std_field="std_dev",
+            label=_("Nucleados ativos"),
+            color="#0ea5e9",
+            value_format=".0f",
+        )
+        valores_chart = build_time_series_chart(
+            monthly_registration_values,
+            value_field="total",
+            std_field="std_dev",
+            label=_("Receita das inscrições"),
+            color="#22c55e",
+            value_format=".2f",
+            value_prefix="R$ ",
+            yaxis_tickprefix="R$ ",
+        )
+
+        context.update(
+            {
+                "nucleos_coordenados": nucleos,
+                "eventos_coordenados": list(eventos_list),
+                "total_nucleos": len(nucleos),
+                "total_eventos": eventos_base_qs.filter(
+                    status=Evento.Status.ATIVO
+                ).count()
+                if nucleo_ids
+                else 0,
+                "total_inscritos": total_inscritos,
+                "valor_total_inscricoes": self._format_currency(valor_total_inscricoes),
+                "eventos_inscricoes_por_periodo_chart": eventos_inscricoes_chart,
+                "nucleados_por_periodo_chart": nucleados_chart,
+                "valores_inscricoes_por_periodo_chart": valores_chart,
+                "dashboard_period_months": months,
+                "dashboard_period_choices": self.PERIOD_CHOICES,
+                "dashboard_period_changed": "months" in self.request.GET,
+            }
+        )
+        return context
+
+
+class ConsultorDashboardView(RoleDashboardMixin, TemplateView):
+    """Dashboard para consultores de núcleos."""
+
+    template_name = "dashboard/consultor_dashboard.html"
+    role_type = UserType.CONSULTOR
+    EVENT_LIST_LIMIT = 6
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        organizacao = getattr(user, "organizacao", None)
+        months = self._resolve_months()
+
+        nucleos_qs = (
+            Nucleo.objects.filter(consultor=user)
+            .annotate(
+                total_membros=Count(
+                    "participacoes",
+                    filter=Q(
+                        participacoes__status="ativo",
+                        participacoes__status_suspensao=False,
+                    ),
+                    distinct=True,
+                )
+            )
+            .order_by("nome")
+        )
+        nucleos = list(nucleos_qs)
+        nucleo_ids = [nucleo.id for nucleo in nucleos if nucleo.id]
+
+        eventos_base_qs = (
+            Evento.objects.filter(
+                organizacao=organizacao,
+                nucleo_id__in=nucleo_ids,
+            )
+            if nucleo_ids
+            else Evento.objects.none()
+        )
+        eventos_list = (
+            eventos_base_qs.filter(
+                status__in=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO]
+            )
+            .select_related("nucleo")
+            .annotate(
+                total_inscritos=Count(
+                    "inscricoes",
+                    filter=Q(inscricoes__status="confirmada"),
+                    distinct=True,
+                ),
+                valor_total_inscricoes=Sum(
+                    "inscricoes__valor_pago",
+                    filter=Q(inscricoes__status="confirmada"),
+                ),
+            )
+            .order_by("-data_inicio")[: self.EVENT_LIST_LIMIT]
+            if nucleo_ids
+            else []
+        )
+
+        inscricoes_qs = (
+            InscricaoEvento.objects.filter(
+                evento__organizacao=organizacao,
+                evento__nucleo_id__in=nucleo_ids,
+                status="confirmada",
+            )
+            if nucleo_ids
+            else InscricaoEvento.objects.none()
+        )
+        total_inscritos = inscricoes_qs.count()
+        valor_total_inscricoes = inscricoes_qs.aggregate(total=Sum("valor_pago"))["total"]
+
+        monthly_kwargs = {"months": months, "nucleo_ids": nucleo_ids}
+        monthly_events = calculate_monthly_events(
+            organizacao,
+            statuses=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO],
+            **monthly_kwargs,
+        )
+        monthly_registrations = calculate_monthly_event_registrations(
+            organizacao, **monthly_kwargs
+        )
+        monthly_nucleados = calculate_monthly_nucleados(organizacao, **monthly_kwargs)
+        monthly_registration_values = calculate_monthly_registration_values(
+            organizacao, **monthly_kwargs
+        )
+
+        eventos_inscricoes_chart = self._build_events_vs_registrations_chart(
+            monthly_events, monthly_registrations
+        )
+        nucleados_chart = build_time_series_chart(
+            monthly_nucleados,
+            value_field="total",
+            std_field="std_dev",
+            label=_("Nucleados ativos"),
+            color="#0ea5e9",
+            value_format=".0f",
+        )
+        valores_chart = build_time_series_chart(
+            monthly_registration_values,
+            value_field="total",
+            std_field="std_dev",
+            label=_("Receita das inscrições"),
+            color="#22c55e",
+            value_format=".2f",
+            value_prefix="R$ ",
+            yaxis_tickprefix="R$ ",
+        )
+
+        context.update(
+            {
+                "nucleos_consultoria": nucleos,
+                "eventos_consultoria": list(eventos_list),
+                "total_nucleos_consultoria": len(nucleos),
+                "total_eventos_consultoria": eventos_base_qs.filter(
+                    status=Evento.Status.ATIVO
+                ).count()
+                if nucleo_ids
+                else 0,
+                "total_inscritos_consultoria": total_inscritos,
+                "valor_total_inscricoes_consultoria": self._format_currency(
+                    valor_total_inscricoes
+                ),
+                "eventos_inscricoes_chart": self._serialize_chart(
+                    eventos_inscricoes_chart
+                ),
+                "nucleados_chart": self._serialize_chart(nucleados_chart),
+                "receita_inscricoes_chart": self._serialize_chart(valores_chart),
+                "dashboard_period_months": months,
+                "dashboard_period_choices": self.PERIOD_CHOICES,
+                "dashboard_period_changed": "months" in self.request.GET,
+            }
+        )
+        return context
+
+
 class DashboardRouterView(LoginRequiredMixin, View):
     """Direciona o usuário para o dashboard apropriado conforme o perfil."""
 
@@ -229,6 +589,10 @@ class DashboardRouterView(LoginRequiredMixin, View):
             UserType.OPERADOR.value,
         }:
             return AdminDashboardView.as_view()(request, *args, **kwargs)
-        if tipo == UserType.ASSOCIADO.value:
+        if tipo == UserType.COORDENADOR.value:
+            return CoordenadorDashboardView.as_view()(request, *args, **kwargs)
+        if tipo in {UserType.ASSOCIADO.value, UserType.NUCLEADO.value}:
             return AssociadoDashboardView.as_view()(request, *args, **kwargs)
+        if tipo == UserType.CONSULTOR.value:
+            return ConsultorDashboardView.as_view()(request, *args, **kwargs)
         raise PermissionDenied
