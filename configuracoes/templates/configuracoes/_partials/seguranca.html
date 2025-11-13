@@ -1,10 +1,11 @@
 {% load widget_tweaks i18n %}
 
+{% with target_id=hx_target_id|default:'settings-content' %}
 <!-- HTMX fragment: formulário de segurança recarregado dinamicamente -->
 <form
   method="post"
   hx-post="{{ request.path }}"
-  hx-target="#settings-content"
+  hx-target="#{{ target_id }}"
   class="space-y-6"
 >
   {% csrf_token %}
@@ -56,6 +57,7 @@
       </div>
     {% endif %}
   </div>
+{% endwith %}
 </article>
 
 <article class="card" aria-labelledby="delete-account-heading">

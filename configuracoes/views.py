@@ -131,6 +131,30 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             raise Http404
         return section
 
+    def get_panel_target_ids(self) -> Dict[str, str]:
+        """Retorna os IDs utilizados como destino dos fragmentos HTMX."""
+
+        return {
+            "seguranca": "seguranca-panel-content",
+            "preferencias": "preferencias-panel-content",
+        }
+
+    def _augment_panel_context(self, context: Dict[str, Any], section: str) -> None:
+        """Adiciona ao contexto os IDs de destino para cada painel do acordeão."""
+
+        panel_ids = self.get_panel_target_ids()
+        context.setdefault("seguranca_panel_target_id", panel_ids["seguranca"])
+        context.setdefault("preferencias_panel_target_id", panel_ids["preferencias"])
+        context["hx_target_id"] = panel_ids.get(section, "settings-content")
+
+    def _ensure_full_page_forms(self, context: Dict[str, Any]) -> None:
+        """Garante que todos os formulários estejam disponíveis para o template completo."""
+
+        for section, form_class in self.form_classes.items():
+            if form_class is None:
+                continue
+            context.setdefault(f"{section}_form", self.get_form(section))
+
     def render_response(self, request: HttpRequest, section: str, context: Dict[str, Any]) -> HttpResponse:
         """
         Renderiza a resposta apropriada para a aba, retornando um fragmento HTMX
@@ -142,8 +166,11 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         template = (
             self.partial_templates.get(section, self.partial_templates["seguranca"])
             if is_htmx
-            else "configuracoes/configuracao_form.html"
+            else "configuracoes/configuracao.html"
         )
+        if not is_htmx:
+            self._ensure_full_page_forms(context)
+        self._augment_panel_context(context, section)
         response = render(request, template, context)
         if is_htmx:
             # Ajusta cabeçalho Vary para que a cache (se configurada) considere o header HX-Request.
@@ -174,7 +201,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
-            "hero_subtitle": "",
+            "hero_subtitle": _("Personalize segurança, preferências e operadores da sua conta."),
             "hero_active_tab": section,
         }
         return self.render_response(request, section, context)
@@ -218,7 +245,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
             "hero_title": hero_title,
-            "hero_subtitle": "",
+            "hero_subtitle": _("Personalize segurança, preferências e operadores da sua conta."),
             "hero_active_tab": section,
         }
         if section == "preferencias" and form.is_valid():
