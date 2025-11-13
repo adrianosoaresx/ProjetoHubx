@@ -27,13 +27,13 @@ organizacao_alterada.send(
 )
 ```
 
-O *payload* é consumido por `enviar_email_membros`, que encaminha mensagens aos usuários associados.
+O *payload* é consumido por `enviar_email_membros`, que encaminha mensagens aos membros da organização.
 
 ## Histórico
 
 A lista de alterações pode ser consultada em `/organizacoes/<id>/historico/` (apenas admins da organização ou superusuários). Os registros de log são imutáveis e preservam os dados relevantes de cada ação.
 
-## Recursos associados
+## Recursos de membros
 
 Endpoints para gerenciar recursos vinculados à organização. Apenas usuários com permissões administrativas da organização podem utilizar estas rotas.
 

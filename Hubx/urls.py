@@ -30,8 +30,8 @@ urlpatterns = [
         include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
     ),
     path(
-        "associados/",
-        include(("associados.urls", "associados"), namespace="associados"),
+        "membros/",
+        include(("membros.urls", "membros"), namespace="membros"),
     ),
     path(
         "dashboard/",

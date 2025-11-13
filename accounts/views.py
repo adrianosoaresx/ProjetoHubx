@@ -642,7 +642,7 @@ def excluir_conta(request):
             _("Conta de %(username)s excluída com sucesso.")
             % {"username": target_user.get_full_name()},
         )
-        redirect_url = reverse("associados:associados_lista")
+        redirect_url = reverse("membros:membros_lista")
 
     if is_htmx:
         response = HttpResponse(status=204)

@@ -1,4 +1,4 @@
-{% load i18n associados_extras lucide_icons %}
+{% load i18n membros_extras lucide_icons %}
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
 {% usuario_badges user as user_badges %}
 <article class="card card-with-cover group relative flex h-full flex-col overflow-hidden">
@@ -89,6 +89,6 @@
     {% include '_partials/cards/badge_list.html' with badges=user_badges container_classes='flex flex-wrap justify-center gap-2 pt-2' %}
   </div>
   <footer class="card-footer">
-    <a href="{% url 'associados:associado_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover' %}</a>
+    <a href="{% url 'membros:membro_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover' %}</a>
   </footer>
 </article>

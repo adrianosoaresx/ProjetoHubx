@@ -21,7 +21,7 @@ from django.views.generic import FormView, ListView, TemplateView, View
 from django.template.loader import render_to_string
 
 from accounts.models import UserType
-from core.permissions import AssociadosRequiredMixin, NoSuperadminMixin
+from core.permissions import MembrosRequiredMixin, NoSuperadminMixin
 from core.utils import resolve_back_href
 from nucleos.models import Nucleo, ParticipacaoNucleo
 
@@ -32,16 +32,16 @@ User = get_user_model()
 ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE = 6
 
 
-class AssociadosPermissionMixin(AssociadosRequiredMixin, NoSuperadminMixin):
-    """Combines permission checks for associados views."""
+class MembrosPermissionMixin(MembrosRequiredMixin, NoSuperadminMixin):
+    """Combines permission checks for membros views."""
 
     raise_exception = True
 
     def test_func(self):
-        return AssociadosRequiredMixin.test_func(self) and NoSuperadminMixin.test_func(self)
+        return MembrosRequiredMixin.test_func(self) and NoSuperadminMixin.test_func(self)
 
 
-class AssociadosPromocaoPermissionMixin(AssociadosPermissionMixin):
+class MembrosPromocaoPermissionMixin(MembrosPermissionMixin):
     """Restricts acesso às telas de promoção a admins e operadores."""
 
     allowed_roles = {UserType.ADMIN.value, UserType.OPERADOR.value}
@@ -56,7 +56,7 @@ class AssociadosPromocaoPermissionMixin(AssociadosPermissionMixin):
 class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView):
     template_name = "associados/usuario_form.html"
     form_class = OrganizacaoUserCreateForm
-    success_url = reverse_lazy("associados:associados_lista")
+    success_url = reverse_lazy("membros:membros_lista")
 
     def dispatch(self, request, *args, **kwargs):
         allowed_types = self.get_allowed_user_types()
@@ -86,7 +86,7 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        fallback_url = reverse("associados:associados_lista")
+        fallback_url = reverse("membros:membros_lista")
         back_href = resolve_back_href(self.request, fallback=fallback_url)
         context["back_href"] = back_href
         context["back_component_config"] = {
@@ -297,7 +297,7 @@ class AssociadoListDataMixin:
 
 
 class AssociadoListView(
-    AssociadosPermissionMixin,
+    MembrosPermissionMixin,
     LoginRequiredMixin,
     AssociadoListDataMixin,
     TemplateView,
@@ -320,7 +320,7 @@ class AssociadoListView(
         context.update(
             {
                 "search_term": self.get_search_term(),
-                "associados_fetch_url": reverse("associados:associados_lista_api"),
+                "associados_fetch_url": reverse("membros:membros_lista_api"),
                 "associados_sem_nucleo_page": section_pages["sem_nucleo"]["page"],
                 "associados_sem_nucleo_count": section_pages["sem_nucleo"]["count"],
                 "associados_nucleados_page": section_pages["nucleados"]["page"],
@@ -341,7 +341,7 @@ class AssociadoListView(
 
 
 class AssociadoSectionListView(
-    AssociadosPermissionMixin,
+    MembrosPermissionMixin,
     LoginRequiredMixin,
     AssociadoListDataMixin,
     View,
@@ -378,7 +378,7 @@ class AssociadoSectionListView(
         )
 
 
-class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
+class AssociadoPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, ListView):
     template_name = "associados/promover_list.html"
     context_object_name = "associados"
     paginate_by = ASSOCIADO_PROMOVER_CAROUSEL_PAGE_SIZE
@@ -515,7 +515,7 @@ class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequired
         context["has_search"] = bool(context["search_term"].strip())
         context["promover_empty_message"] = self.get_empty_message()
         context["promover_carousel_fetch_url"] = reverse(
-            "associados:associados_promover_carousel"
+            "membros:membros_promover_carousel"
         )
         return context
 
@@ -532,7 +532,7 @@ class AssociadoPromoverListView(AssociadosPromocaoPermissionMixin, LoginRequired
         return _("Nenhum associado disponível para promoção no momento.")
 
 
-class AssociadoPromoverCarouselView(AssociadosPromocaoPermissionMixin, View):
+class AssociadoPromoverCarouselView(MembrosPromocaoPermissionMixin, View):
     def get(self, request, *args, **kwargs):
         list_view = AssociadoPromoverListView()
         list_view.request = request
@@ -565,7 +565,7 @@ class AssociadoPromoverCarouselView(AssociadosPromocaoPermissionMixin, View):
         )
 
 
-class AssociadoPromoverFormView(AssociadosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):
+class AssociadoPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin, TemplateView):
     template_name = "associados/promover_form.html"
 
     def dispatch(self, request, *args, **kwargs):

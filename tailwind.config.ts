@@ -8,7 +8,7 @@ const config: Config = {
         "*.{js,ts,jsx,tsx,mdx}",
         "./templates/**/*.html",
         "./accounts/templates/**/*.html",
-        "./associados/templates/**/*.html",
+        "./membros/templates/**/*.html",
         "./configuracoes/templates/**/*.html",
         "./conexoes/templates/**/*.html",
         "./static/src/**/*.{js,ts}",

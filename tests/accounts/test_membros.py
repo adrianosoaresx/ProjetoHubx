@@ -20,7 +20,7 @@ def create_user(email: str, username: str, user_type: UserType, **extra):
     )
 
 
-def test_admin_list_associados(client):
+def test_admin_list_membros(client):
     admin = create_user("admin@example.com", "admin", UserType.ADMIN)
     assoc = create_user(
         "assoc@example.com",
@@ -29,23 +29,23 @@ def test_admin_list_associados(client):
         is_associado=True,
     )
     client.force_login(admin)
-    resp = client.get(reverse("associados:associados_lista"))
+    resp = client.get(reverse("membros:membros_lista"))
     assert resp.status_code == 200
     assert assoc.username in resp.content.decode()
 
 
-def test_search_associados(client):
+def test_search_membros(client):
     admin = create_user("a2@example.com", "a2", UserType.ADMIN)
     create_user("john@example.com", "john", UserType.ASSOCIADO, is_associado=True)
     create_user("jane@example.com", "jane", UserType.ASSOCIADO, is_associado=True)
     client.force_login(admin)
-    resp = client.get(reverse("associados:associados_lista"), {"q": "john"})
+    resp = client.get(reverse("membros:membros_lista"), {"q": "john"})
     content = resp.content.decode()
     assert "john" in content
     assert "jane" not in content
 
 
-def test_coordenador_list_associados(client):
+def test_coordenador_list_membros(client):
     org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
     coord = create_user(
         "coord@example.com",
@@ -61,7 +61,7 @@ def test_coordenador_list_associados(client):
         organizacao=org,
     )
     client.force_login(coord)
-    resp = client.get(reverse("associados:associados_lista"))
+    resp = client.get(reverse("membros:membros_lista"))
     assert resp.status_code == 200
     assert assoc.username in resp.content.decode()
 
@@ -124,7 +124,7 @@ def test_associados_sections_grouping(client):
     )
 
     client.force_login(admin)
-    resp = client.get(reverse("associados:associados_lista"))
+    resp = client.get(reverse("membros:membros_lista"))
 
     assert resp.status_code == 200
     content = resp.content.decode()

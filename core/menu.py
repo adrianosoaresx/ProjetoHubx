@@ -311,7 +311,7 @@ def _get_menu_items() -> List[MenuItem]:
 
     nucleos_children = []
 
-    associados_children = []
+    membros_children = []
 
     eventos_children = []
 
@@ -361,12 +361,12 @@ def _get_menu_items() -> List[MenuItem]:
             children=conexoes_children,
         ),
         MenuItem(
-            "associados",
-            reverse("associados:associados_lista"),
-            "Associados",
+            "membros",
+            reverse("membros:membros_lista"),
+            "Membros",
             ICON_USERS,
             ["admin", "operador"],
-            children=associados_children,
+            children=membros_children,
         ),
         MenuItem(
             "nucleos",
