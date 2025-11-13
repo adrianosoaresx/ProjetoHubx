@@ -8,10 +8,6 @@
             {% lucide 'user-plus' class='w-4 h-4' aria_hidden='true' %}
             <span>{% trans 'Adicionar membro' %}</span>
           </a>
-          <a href="{% url 'membros:membros_promover' %}" class="btn btn-secondary flex items-center gap-2">
-            {% lucide 'user-round-cog' class='w-4 h-4' aria_hidden='true' %}
-            <span>{% trans 'Promover membro' %}</span>
-          </a>
         </div>
       {% endif %}
     {% endif %}
