@@ -332,7 +332,15 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("dashboard:admin_dashboard"),
             label="Dashboard",
             icon=ICON_DASHBOARD,
-            permissions=["admin", "operador", "root", "associado"],
+            permissions=[
+                "admin",
+                "operador",
+                "root",
+                "associado",
+                "coordenador",
+                "nucleado",
+                "consultor",
+            ],
         ),
         MenuItem(
             id="portfolio",
@@ -438,8 +446,14 @@ def _resolve_dashboard_path(user) -> str:
             raw_user_type = raw_user_type.value
         tipo_usuario = raw_user_type
 
-    if tipo_usuario == UserType.ASSOCIADO.value:
+    if tipo_usuario in {UserType.ASSOCIADO.value, UserType.NUCLEADO.value}:
         return reverse("dashboard:associado_dashboard")
+
+    if tipo_usuario == UserType.COORDENADOR.value:
+        return reverse("dashboard:coordenador_dashboard")
+
+    if tipo_usuario == UserType.CONSULTOR.value:
+        return reverse("dashboard:consultor_dashboard")
 
     if tipo_usuario in {
         UserType.ADMIN.value,
