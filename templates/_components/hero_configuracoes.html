@@ -45,7 +45,7 @@
             </a>
             {% if request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
               <a
-                href="{% url 'configuracoes:operadores' %}"
+                href="{% url 'configuracoes:configuracoes_operadores' %}"
                 class="{{ button_base_classes }} {% if active_tab == 'operadores' %}btn-primary{% else %}btn-secondary{% endif %}"
                 aria-current="{% if active_tab == 'operadores' %}page{% else %}false{% endif %}"
               >

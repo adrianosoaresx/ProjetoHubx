@@ -2,6 +2,11 @@
 <a
   href="{% url 'configuracoes:operadores_adicionar' %}"
   class="btn btn-primary flex items-center gap-2 text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]"
+  hx-get="{% url 'configuracoes:operadores_adicionar' %}"
+  hx-target="#modal"
+  hx-trigger="click"
+  hx-swap="innerHTML"
+  hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
 >
   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
