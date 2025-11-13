@@ -74,8 +74,10 @@ def test_post_preferencias_from_seguranca_route_only_validates_preferencias_form
     preferencias_form = response.context["preferencias_form"]
     seguranca_form = response.context["seguranca_form"]
     assert preferencias_form.is_bound
+    assert preferencias_form.is_valid()
     assert not preferencias_form.errors
     assert not seguranca_form.is_bound
+    assert "old_password" not in seguranca_form.errors
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
@@ -93,7 +95,9 @@ def test_post_seguranca_from_preferencias_route_only_validates_password_form(adm
     seguranca_form = response.context["seguranca_form"]
     preferencias_form = response.context["preferencias_form"]
     assert seguranca_form.is_bound
+    assert seguranca_form.is_valid()
     assert not seguranca_form.errors
     assert not preferencias_form.is_bound
+    assert not preferencias_form.errors
 
 
