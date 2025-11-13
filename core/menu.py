@@ -413,7 +413,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem("organizacoes", reverse("organizacoes:list"), "Organizações", ICON_ORGS, ["root"]),
         MenuItem(
             "configuracoes",
-            reverse("configuracoes:configuracoes_seguranca"),
+            reverse("configuracoes:configuracoes"),
             "Configurações",
             ICON_CONFIG,
             ["authenticated"],
