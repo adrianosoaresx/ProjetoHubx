@@ -165,11 +165,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             return True
         user_type = getattr(user, "user_type", None)
         user_type_value = getattr(user_type, "value", user_type)
-        allowed_types = {
-            getattr(getattr(UserType, "ROOT", "root"), "value", getattr(UserType, "ROOT", "root")),
-            getattr(getattr(UserType, "ADMIN", "admin"), "value", getattr(UserType, "ADMIN", "admin")),
-        }
-        return user_type_value in allowed_types
+        admin_value = getattr(getattr(UserType, "ADMIN", "admin"), "value", getattr(UserType, "ADMIN", "admin"))
+        return user_type_value == admin_value
 
     def get_operadores_queryset(self):
         User = get_user_model()
@@ -236,21 +233,15 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         if section in {"informacoes", "redes"}:
             return redirect("accounts:perfil_sections_info")
         form = self.get_form(section)
-        hero_titles = {
-            "seguranca": _("Segurança"),
-            "preferencias": _("Preferências"),
-            "operadores": _("Operadores"),
-        }
         hero_subtitles = {
             "seguranca": _("Personalize segurança, preferências e operadores da sua conta."),
             "preferencias": _("Personalize segurança, preferências e operadores da sua conta."),
             "operadores": _("Gerencie os operadores da sua organização."),
         }
-        hero_title = hero_titles.get(section, _("Configurações"))
         context: Dict[str, Any] = {
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
-            "hero_title": hero_title,
+            "hero_title": _("Configurações"),
             "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
         }
@@ -296,19 +287,14 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             # Erros de validação são exibidos no formulário parcial.
             messages.error(request, _("Corrija os erros abaixo."))
         # Reconstrói contexto com o formulário (válido ou com erros).
-        hero_titles = {
-            "seguranca": _("Segurança"),
-            "preferencias": _("Preferências"),
-        }
         hero_subtitles = {
             "seguranca": _("Personalize segurança, preferências e operadores da sua conta."),
             "preferencias": _("Personalize segurança, preferências e operadores da sua conta."),
         }
-        hero_title = hero_titles.get(section, _("Configurações"))
         context: Dict[str, Any] = {
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
-            "hero_title": hero_title,
+            "hero_title": _("Configurações"),
             "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
         }

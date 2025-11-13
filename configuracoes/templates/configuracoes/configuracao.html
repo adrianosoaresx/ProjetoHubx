@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Configurações' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle hero_active_tab=hero_active_tab tab=tab %}
+  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle hero_active_tab=hero_active_tab tab=tab can_manage_operadores=can_manage_operadores %}
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
           type="button"
           class="flex w-full items-center justify-between gap-4 p-4 text-left"
           data-accordion-button
-          aria-expanded="{% if tab == 'seguranca' %}true{% else %}false{% endif %}"
+          aria-expanded="false"
           aria-controls="{{ seguranca_panel_target_id }}"
         >
           <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
@@ -33,7 +33,7 @@
         aria-labelledby="accordion-heading-seguranca"
         class="border-t border-[var(--border)] p-4 space-y-6"
         data-accordion-panel
-        {% if tab != 'seguranca' %}hidden{% endif %}
+        hidden
       >
         {% include 'configuracoes/_partials/seguranca.html' with hx_target_id=seguranca_panel_target_id %}
       </div>
@@ -45,7 +45,7 @@
           type="button"
           class="flex w-full items-center justify-between gap-4 p-4 text-left"
           data-accordion-button
-          aria-expanded="{% if tab == 'preferencias' %}true{% else %}false{% endif %}"
+          aria-expanded="false"
           aria-controls="{{ preferencias_panel_target_id }}"
         >
           <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
@@ -63,41 +63,43 @@
         aria-labelledby="accordion-heading-preferencias"
         class="border-t border-[var(--border)] p-4 space-y-6"
         data-accordion-panel
-        {% if tab != 'preferencias' %}hidden{% endif %}
+        hidden
       >
         {% include 'configuracoes/_partials/preferencias.html' with hx_target_id=preferencias_panel_target_id %}
       </div>
     </article>
 
-    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
-      <h2 id="accordion-heading-operadores">
-        <button
-          type="button"
-          class="flex w-full items-center justify-between gap-4 p-4 text-left"
-          data-accordion-button
-          aria-expanded="{% if tab == 'operadores' %}true{% else %}false{% endif %}"
-          aria-controls="{{ operadores_panel_target_id }}"
+    {% if can_manage_operadores %}
+      <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
+        <h2 id="accordion-heading-operadores">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-4 p-4 text-left"
+            data-accordion-button
+            aria-expanded="false"
+            aria-controls="{{ operadores_panel_target_id }}"
+          >
+            <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
+              {% lucide 'users' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
+              {% trans 'Operadores' %}
+            </span>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
+              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+          </button>
+        </h2>
+        <div
+          id="{{ operadores_panel_target_id }}"
+          role="region"
+          aria-labelledby="accordion-heading-operadores"
+          class="border-t border-[var(--border)] p-4 space-y-4"
+          data-accordion-panel
+          hidden
         >
-          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
-            {% lucide 'users' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
-            {% trans 'Operadores' %}
-          </span>
-          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
-            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-          </span>
-        </button>
-      </h2>
-      <div
-        id="{{ operadores_panel_target_id }}"
-        role="region"
-        aria-labelledby="accordion-heading-operadores"
-        class="border-t border-[var(--border)] p-4 space-y-4"
-        data-accordion-panel
-        {% if tab != 'operadores' %}hidden{% endif %}
-      >
-        {% include 'configuracoes/_partials/operadores_panel.html' with operadores=operadores can_manage_operadores=can_manage_operadores %}
-      </div>
-    </article>
+          {% include 'configuracoes/_partials/operadores_panel.html' with operadores=operadores can_manage_operadores=can_manage_operadores %}
+        </div>
+      </article>
+    {% endif %}
   </section>
 
   <div id="modal" aria-live="polite"></div>
