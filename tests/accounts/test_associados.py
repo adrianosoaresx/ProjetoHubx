@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from accounts.models import UserType
 from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
+from nucleos.models import Nucleo, ParticipacaoNucleo
 
 pytestmark = pytest.mark.django_db
 
@@ -90,6 +90,25 @@ def test_associados_sections_grouping(client):
         organizacao=org,
         nucleo=nucleo,
     )
+    ParticipacaoNucleo.objects.create(
+        user=nucleado,
+        nucleo=nucleo,
+        status="ativo",
+        status_suspensao=False,
+    )
+    nucleado_sem_campo = create_user(
+        "assoc-participacao@example.com",
+        "assoc-participacao",
+        UserType.ASSOCIADO,
+        is_associado=True,
+        organizacao=org,
+    )
+    ParticipacaoNucleo.objects.create(
+        user=nucleado_sem_campo,
+        nucleo=nucleo,
+        status="ativo",
+        status_suspensao=False,
+    )
     consultor = create_user(
         "consultor@example.com",
         "consultor",
@@ -121,11 +140,13 @@ def test_associados_sections_grouping(client):
     sem_nucleo_section = section_content(content, "sem-nucleo")
     assert associado.username in sem_nucleo_section
     assert nucleado.username not in sem_nucleo_section
+    assert nucleado_sem_campo.username not in sem_nucleo_section
     assert consultor.username not in sem_nucleo_section
     assert coordenador.username not in sem_nucleo_section
 
     nucleados_section = section_content(content, "nucleados")
     assert nucleado.username in nucleados_section
+    assert nucleado_sem_campo.username in nucleados_section
     assert associado.username not in nucleados_section
     assert consultor.username not in nucleados_section
     assert coordenador.username not in nucleados_section
