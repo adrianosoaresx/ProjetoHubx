@@ -20,6 +20,9 @@
   <div class="card-body space-y-6">
     <form method="post" class="space-y-6" data-promover-form data-user-role-map="{{ user_role_map_json|default:'{}'|escapejs }}" data-restricted-roles="{{ restricted_roles|join:',' }}">
       {% csrf_token %}
+      {% if origin_section %}
+        <input type="hidden" name="section" value="{{ origin_section }}">
+      {% endif %}
       {% if form_errors %}
         <div class="alert alert-error" role="alert">
           <ul class="list-disc list-inside space-y-1">
@@ -308,6 +311,13 @@
       </fieldset>
 
       <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        {% url 'membros:membros_lista' as membros_lista_url %}
+        <a
+          href="{{ membros_lista_url }}{% if origin_section %}?section={{ origin_section|urlencode }}#membros-section-{{ origin_section|urlencode }}{% endif %}"
+          class="btn btn-secondary"
+        >
+          {% trans 'Cancelar' %}
+        </a>
         <button type="submit" class="btn btn-primary">{% trans 'Salvar promoção' %}</button>
       </div>
     </form>
