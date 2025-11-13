@@ -148,6 +148,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         context.setdefault("seguranca_panel_target_id", panel_ids["seguranca"])
         context.setdefault("preferencias_panel_target_id", panel_ids["preferencias"])
         context.setdefault("operadores_panel_target_id", panel_ids["operadores"])
+        context.setdefault("updated_preferences", False)
         context["hx_target_id"] = panel_ids.get(section, "settings-content")
 
     def _ensure_full_page_forms(self, context: Dict[str, Any]) -> None:
@@ -272,7 +273,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             return self.get(request, *args, **kwargs)
         # Instancia o formulário apropriado com os dados recebidos.
         form = self.get_form(section, request.POST, request.FILES)
-        if form.is_valid():
+        form_valid = form.is_valid()
+        if form_valid:
             # Persistir alterações conforme o tipo de formulário.
             if section == "preferencias" and atualizar_preferencias_usuario is not None:
                 form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)  # type: ignore
@@ -312,11 +314,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         }
         if form is not None:
             context[f"{section}_form"] = form
-        if section == "preferencias" and form.is_valid():
-            context["updated_preferences"] = True
+        context["updated_preferences"] = section == "preferencias" and form_valid
         response = self.render_response(request, section, context)
         # Atualiza cookies de tema e idioma após salvar preferências com sucesso.
-        if section == "preferencias" and form.is_valid():
+        if section == "preferencias" and form_valid:
             if hasattr(form, "instance"):
                 tema = getattr(form.instance, "tema", None)
                 idioma = getattr(form.instance, "idioma", None)
