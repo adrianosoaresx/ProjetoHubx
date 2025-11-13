@@ -255,23 +255,74 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     def organizacao_display(self, value):
         self.organizacao = value
 
+    def _get_prefetched_related(self, related_name: str):
+        cache = getattr(self, "_prefetched_objects_cache", None)
+        if cache and related_name in cache:
+            return cache[related_name]
+        return None
+
+    def _has_active_participacao(self, papel: str | None = None) -> bool:
+        participacoes_prefetched = self._get_prefetched_related("participacoes")
+        if participacoes_prefetched is not None:
+            for participacao in participacoes_prefetched:
+                if participacao.status != "ativo" or getattr(
+                    participacao, "status_suspensao", False
+                ):
+                    continue
+                if papel is None or participacao.papel == papel:
+                    return True
+            return False
+
+        participacoes_manager = getattr(self, "participacoes", None)
+        if participacoes_manager is None:
+            return False
+
+        filters: dict[str, object] = {"status": "ativo", "status_suspensao": False}
+        if papel is not None:
+            filters["papel"] = papel
+        return participacoes_manager.filter(**filters).exists()
+
+    def _has_consultoria_vinculo(self) -> bool:
+        consultoria_prefetched = self._get_prefetched_related("nucleos_consultoria")
+        if consultoria_prefetched is not None:
+            return any(True for _ in consultoria_prefetched)
+
+        consultoria_manager = getattr(self, "nucleos_consultoria", None)
+        if consultoria_manager is None:
+            return False
+        return consultoria_manager.exists()
+
     @property
     def get_tipo_usuario(self):
         if self.is_superuser:
             return UserType.ROOT.value
+
         explicit_roles = {
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
             UserType.CONSULTOR.value,
+            UserType.COORDENADOR.value,
         }
         if self.user_type in explicit_roles:
             return self.user_type
-        if self.is_associado and self.nucleo and self.is_coordenador:
+
+        if self._has_consultoria_vinculo():
+            return UserType.CONSULTOR.value
+
+        if getattr(self, "is_coordenador", False) or self._has_active_participacao(
+            "coordenador"
+        ):
             return UserType.COORDENADOR.value
-        if self.is_associado and self.nucleo and not self.is_coordenador:
+
+        if self._has_active_participacao("membro"):
             return UserType.NUCLEADO.value
-        if self.is_associado and not self.nucleo:
+
+        if getattr(self, "nucleo_id", None):
+            return UserType.NUCLEADO.value
+
+        if getattr(self, "is_associado", False) or self.user_type == UserType.ASSOCIADO.value:
             return UserType.ASSOCIADO.value
+
         return self.user_type
 
     def save(self, *args, **kwargs):
