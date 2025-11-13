@@ -165,3 +165,31 @@ def test_dashboard_visible_for_legacy_associado_user():
 
     assert dashboard_item is not None
     assert dashboard_item.path == reverse("dashboard:associado_dashboard")
+
+
+@pytest.mark.django_db
+def test_dashboard_visible_for_consultor_user_type_instance(monkeypatch):
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email="consultor-enum@example.com",
+        username="consultor_enum",
+        password="test-pass",
+        user_type=UserType.CONSULTOR,
+    )
+
+    # Simula cenário em que o tipo de usuário é retornado como enumeração
+    monkeypatch.setattr(
+        user.__class__,
+        "get_tipo_usuario",
+        property(lambda self: UserType.CONSULTOR),
+    )
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+
+    dashboard_item = next((item for item in menu if item.id == "admin-dashboard"), None)
+
+    assert dashboard_item is not None
+    assert dashboard_item.path == reverse("dashboard:consultor_dashboard")
