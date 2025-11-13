@@ -23,8 +23,8 @@
             </div>
           {% endif %}
         </div>
-        {% with show_operadores=request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-          {% if show_operadores %}
+        {% with user=request.user %}
+          {% if user.is_superuser or user.user_type == 'root' or user.user_type == 'admin' %}
             <nav class="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start" aria-label="{% trans 'Seções de configuração' %}">
               {% with button_base_classes='btn flex items-center gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/80 dark:focus-visible:ring-slate-500/70' %}
                 <a
