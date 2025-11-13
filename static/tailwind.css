@@ -3526,6 +3526,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   background-color: var(--background-secondary);
 }
 
+.bg-\[var\(--bg-card\)\] {
+  background-color: var(--bg-card);
+}
+
 .bg-\[var\(--bg-emphasis\)\] {
   background-color: var(--bg-emphasis);
 }
