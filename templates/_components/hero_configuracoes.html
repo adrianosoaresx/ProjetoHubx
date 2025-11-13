@@ -23,22 +23,6 @@
             </div>
           {% endif %}
         </div>
-        {% with user=request.user %}
-          {% if can_manage_operadores %}
-            <nav class="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start" aria-label="{% trans 'Seções de configuração' %}">
-              {% with button_base_classes='btn flex items-center gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/80 dark:focus-visible:ring-slate-500/70' %}
-                <a
-                  href="{% url 'configuracoes:configuracoes_operadores' %}"
-                  class="{{ button_base_classes }} {% if active_tab == 'operadores' %}btn-primary{% else %}btn-secondary{% endif %}"
-                  aria-current="{% if active_tab == 'operadores' %}page{% else %}false{% endif %}"
-                >
-                  {% lucide 'users' class='h-4 w-4' aria_hidden='true' %}
-                  <span>{% trans 'Operadores' %}</span>
-                </a>
-              {% endwith %}
-            </nav>
-          {% endif %}
-        {% endwith %}
       {% endwith %}
       {% if helper_text %}
         <p class="mt-6 text-base text-white/80">{{ helper_text }}</p>
