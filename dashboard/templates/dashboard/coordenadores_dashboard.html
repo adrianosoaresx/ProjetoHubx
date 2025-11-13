@@ -37,79 +37,98 @@
             {% include "_partials/cards/total_card.html" with label=_("Receita de inscrições") valor=valor_total_inscricoes icon_name="wallet" %}
           </div>
 
-          <div class="grid gap-6 md:grid-cols-2">
-            <article class="card" aria-labelledby="coordenador-nucleos-title">
-              <div class="card-body space-y-4">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
-                    {% lucide 'layers' class='h-5 w-5' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h3 id="coordenador-nucleos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Núcleos que coordena" %}</h3>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos sob sua responsabilidade." %}</p>
-                  </div>
-                </div>
-                <ul class="space-y-3" aria-live="polite">
-                  {% for nucleo in nucleos_coordenados %}
-                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</span>
-                        {% if nucleo.cidade or nucleo.estado %}
-                          <span class="text-xs text-[var(--text-muted)]">{{ nucleo.cidade }}{% if nucleo.cidade and nucleo.estado %} · {% endif %}{{ nucleo.estado }}</span>
-                        {% endif %}
-                        {% if nucleo.total_membros or nucleo.total_membros == 0 %}
-                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Membros ativos" %}: {{ nucleo.total_membros }}</span>
-                        {% endif %}
-                      </div>
-                    </li>
-                  {% empty %}
-                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      {% trans "Você ainda não coordena nenhum núcleo." %}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </article>
+        </div>
+      </details>
+    </section>
 
-            <article class="card" aria-labelledby="coordenador-eventos-title">
-              <div class="card-body space-y-4">
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
-                    {% lucide 'calendar-days' class='h-5 w-5' aria_hidden='true' %}
-                  </span>
-                  <div class="space-y-1">
-                    <h3 id="coordenador-eventos-title" class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Eventos do seu núcleo" %}</h3>
-                    <p class="text-sm text-[var(--text-secondary)]">{% trans "Atividades em andamento ou planejadas." %}</p>
-                  </div>
-                </div>
-                <ul class="space-y-3" aria-live="polite">
-                  {% for evento in eventos_coordenados %}
-                    <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                      <div class="flex flex-col gap-1">
-                        <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_('Evento sem título') }}</span>
-                        <span class="text-xs text-[var(--text-muted)]">
-                          {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}
-                          {% if evento.nucleo %}
-                            · {{ evento.nucleo.nome }}
-                          {% endif %}
-                        </span>
-                        {% if evento.total_inscritos or evento.total_inscritos == 0 %}
-                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</span>
-                        {% endif %}
-                        {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
-                          <span class="text-xs text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</span>
-                        {% endif %}
-                      </div>
-                    </li>
-                  {% empty %}
-                    <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                      {% trans "Ainda não há eventos vinculados aos núcleos que você coordena." %}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </article>
+    <section aria-labelledby="coordenador-nucleos-accordion-title" class="space-y-6">
+      <details class="card group" aria-labelledby="coordenador-nucleos-accordion-title">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
+              {% lucide 'layers' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="coordenador-nucleos-accordion-title" class="text-xl font-semibold text-[var(--text-primary)]">
+                {% trans "Núcleos que coordena" %}
+              </h2>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% trans "Grupos sob sua responsabilidade." %}
+              </p>
+            </div>
           </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <ul class="space-y-3" aria-live="polite">
+            {% for nucleo in nucleos_coordenados %}
+              <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</span>
+                  {% if nucleo.cidade or nucleo.estado %}
+                    <span class="text-xs text-[var(--text-muted)]">{{ nucleo.cidade }}{% if nucleo.cidade and nucleo.estado %} · {% endif %}{{ nucleo.estado }}</span>
+                  {% endif %}
+                  {% if nucleo.total_membros or nucleo.total_membros == 0 %}
+                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Membros ativos" %}: {{ nucleo.total_membros }}</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                {% trans "Você ainda não coordena nenhum núcleo." %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+
+      <details class="card group" aria-labelledby="coordenador-eventos-accordion-title">
+        <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
+              {% lucide 'calendar-days' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <h2 id="coordenador-eventos-accordion-title" class="text-xl font-semibold text-[var(--text-primary)]">
+                {% trans "Eventos do seu núcleo" %}
+              </h2>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% trans "Atividades em andamento ou planejadas." %}
+              </p>
+            </div>
+          </div>
+          <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div class="card-body">
+          <ul class="space-y-3" aria-live="polite">
+            {% for evento in eventos_coordenados %}
+              <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_('Evento sem título') }}</span>
+                  <span class="text-xs text-[var(--text-muted)]">
+                    {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}
+                    {% if evento.nucleo %}
+                      · {{ evento.nucleo.nome }}
+                    {% endif %}
+                  </span>
+                  {% if evento.total_inscritos or evento.total_inscritos == 0 %}
+                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</span>
+                  {% endif %}
+                  {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
+                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% empty %}
+              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+                {% trans "Ainda não há eventos vinculados aos núcleos que você coordena." %}
+              </li>
+            {% endfor %}
+          </ul>
         </div>
       </details>
     </section>
