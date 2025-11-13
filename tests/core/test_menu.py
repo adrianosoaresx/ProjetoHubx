@@ -69,9 +69,36 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
 @pytest.mark.parametrize(
     ("user_type", "expected_visibility"),
     [
-        (UserType.ASSOCIADO, {"associados": False, "tokens": False}),
-        (UserType.COORDENADOR, {"associados": False, "tokens": False}),
-        (UserType.ADMIN, {"associados": True, "tokens": True}),
+        (
+            UserType.ASSOCIADO,
+            {
+                "associados": False,
+                "tokens": False,
+                "nucleos": True,
+                "eventos": True,
+                "feed": True,
+            },
+        ),
+        (
+            UserType.COORDENADOR,
+            {
+                "associados": False,
+                "tokens": False,
+                "nucleos": True,
+                "eventos": True,
+                "feed": True,
+            },
+        ),
+        (
+            UserType.ADMIN,
+            {
+                "associados": True,
+                "tokens": False,
+                "nucleos": True,
+                "eventos": True,
+                "feed": True,
+            },
+        ),
     ],
 )
 def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
@@ -110,6 +137,25 @@ def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
         assert tokens_item is not None
         child_ids = {child.id for child in tokens_item.children or []}
         assert {"tokens_gerar", "tokens_listar"} <= child_ids
+
+
+@pytest.mark.django_db
+def test_consultor_can_view_nucleos_eventos_and_feed():
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email="consultor-menu@example.com",
+        username="consultor_menu",
+        password="test-pass",
+        user_type=UserType.CONSULTOR,
+    )
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+    menu_ids = {item.id for item in menu}
+
+    assert {"nucleos", "eventos", "feed"} <= menu_ids
 
 
 @pytest.mark.django_db
