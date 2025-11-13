@@ -8,97 +8,58 @@
 {% endblock %}
 
 {% block content %}
-  <section class="space-y-4" data-accordion data-accordion-single="true">
-    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
-      <h2 id="accordion-heading-seguranca">
-        <button
-          type="button"
-          class="flex w-full items-center justify-between gap-4 p-4 text-left"
-          data-accordion-button
-          aria-expanded="false"
-          aria-controls="{{ seguranca_panel_target_id }}"
-        >
-          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
-            {% lucide 'shield-check' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
-            {% trans 'Segurança' %}
+  <section class="space-y-4">
+    <details class="card group" data-accordion-item {% if tab == 'seguranca' %}open{% endif %}>
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+            {% lucide 'shield-check' class='h-6 w-6' aria_hidden='true' %}
           </span>
-          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
-            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-          </span>
-        </button>
-      </h2>
-      <div
-        id="{{ seguranca_panel_target_id }}"
-        role="region"
-        aria-labelledby="accordion-heading-seguranca"
-        class="border-t border-[var(--border)] p-4 space-y-6"
-        data-accordion-panel
-        hidden
-      >
+          <span class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Segurança' %}</span>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
+      <div id="{{ seguranca_panel_target_id }}" class="card-body space-y-6" data-accordion-panel>
         {% include 'configuracoes/_partials/seguranca.html' with hx_target_id=seguranca_panel_target_id %}
       </div>
-    </article>
+    </details>
 
-    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
-      <h2 id="accordion-heading-preferencias">
-        <button
-          type="button"
-          class="flex w-full items-center justify-between gap-4 p-4 text-left"
-          data-accordion-button
-          aria-expanded="false"
-          aria-controls="{{ preferencias_panel_target_id }}"
-        >
-          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
-            {% lucide 'sliders-horizontal' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
-            {% trans 'Preferências' %}
+    <details class="card group" data-accordion-item {% if tab == 'preferencias' %}open{% endif %}>
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
+            {% lucide 'sliders-horizontal' class='h-6 w-6' aria_hidden='true' %}
           </span>
-          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
-            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-          </span>
-        </button>
-      </h2>
-      <div
-        id="{{ preferencias_panel_target_id }}"
-        role="region"
-        aria-labelledby="accordion-heading-preferencias"
-        class="border-t border-[var(--border)] p-4 space-y-6"
-        data-accordion-panel
-        hidden
-      >
+          <span class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Preferências' %}</span>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
+      <div id="{{ preferencias_panel_target_id }}" class="card-body space-y-6" data-accordion-panel>
         {% include 'configuracoes/_partials/preferencias.html' with hx_target_id=preferencias_panel_target_id %}
       </div>
-    </article>
+    </details>
 
     {% if can_manage_operadores %}
-      <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
-        <h2 id="accordion-heading-operadores">
-          <button
-            type="button"
-            class="flex w-full items-center justify-between gap-4 p-4 text-left"
-            data-accordion-button
-            aria-expanded="false"
-            aria-controls="{{ operadores_panel_target_id }}"
-          >
-            <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
-              {% lucide 'users' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
-              {% trans 'Operadores' %}
+      <details class="card group" data-accordion-item {% if tab == 'operadores' %}open{% endif %}>
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-center gap-3">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/15">
+              {% lucide 'users' class='h-6 w-6' aria_hidden='true' %}
             </span>
-            <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
-              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-            </span>
-          </button>
-        </h2>
-        <div
-          id="{{ operadores_panel_target_id }}"
-          role="region"
-          aria-labelledby="accordion-heading-operadores"
-          class="border-t border-[var(--border)] p-4 space-y-4"
-          data-accordion-panel
-          hidden
-        >
+            <span class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Operadores' %}</span>
+          </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </summary>
+        <div id="{{ operadores_panel_target_id }}" class="card-body space-y-4" data-accordion-panel>
           {% include 'configuracoes/_partials/operadores_panel.html' with operadores=operadores can_manage_operadores=can_manage_operadores %}
         </div>
-      </article>
+      </details>
     {% endif %}
   </section>
 
