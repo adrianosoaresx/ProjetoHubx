@@ -17,8 +17,8 @@ def test_view_get_autenticado(admin_client):
     resp = admin_client.get(reverse("configuracoes:configuracoes"))
     assert resp.status_code == 200
     assert isinstance(resp.context["seguranca_form"], PasswordChangeForm)
-    assert "preferencias_form" not in resp.context
-    assert "configuracoes/configuracao_form.html" in [t.name for t in resp.templates]
+    assert "preferencias_form" in resp.context
+    assert "configuracoes/configuracao.html" in [t.name for t in resp.templates]
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
@@ -27,7 +27,7 @@ def test_configuracoes_non_htmx_renders_full_template(admin_client):
 
     assert response.status_code == 200
     template_names = [template.name for template in response.templates if template.name]
-    assert template_names[0] == "configuracoes/configuracao_form.html"
+    assert template_names[0] == "configuracoes/configuracao.html"
 
 
 

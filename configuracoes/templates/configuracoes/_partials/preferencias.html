@@ -1,8 +1,9 @@
 {% load widget_tweaks i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
 
+{% with target_id=hx_target_id|default:'settings-content' %}
 <!-- HTMX fragment: formulário de preferências renderizado dentro do card principal -->
-<form method="post" hx-post="{{ request.path }}" hx-target="#settings-content" class="space-y-6">
+<form method="post" hx-post="{{ request.path }}" hx-target="#{{ target_id }}" class="space-y-6">
   {% csrf_token %}
   {% if preferencias_form.non_field_errors %}
     <div class="alert alert-error" role="alert">
@@ -146,3 +147,4 @@
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="btn btn-primary">{% trans 'Salvar Alterações' %}</button>
   </div>
 </form>
+{% endwith %}

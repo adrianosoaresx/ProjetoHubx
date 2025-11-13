@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load i18n static lucide_icons %}
+
+{% block title %}{% trans 'Configurações' %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle hero_active_tab=hero_active_tab tab=tab %}
+{% endblock %}
+
+{% block content %}
+  <section class="space-y-4" data-accordion data-accordion-single="true">
+    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
+      <h2 id="accordion-heading-seguranca">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-4 p-4 text-left"
+          data-accordion-button
+          aria-expanded="{% if tab == 'seguranca' %}true{% else %}false{% endif %}"
+          aria-controls="{{ seguranca_panel_target_id }}"
+        >
+          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
+            {% lucide 'shield-check' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
+            {% trans 'Segurança' %}
+          </span>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </button>
+      </h2>
+      <div
+        id="{{ seguranca_panel_target_id }}"
+        role="region"
+        aria-labelledby="accordion-heading-seguranca"
+        class="border-t border-[var(--border)] p-4 space-y-6"
+        data-accordion-panel
+        {% if tab != 'seguranca' %}hidden{% endif %}
+      >
+        {% include 'configuracoes/_partials/seguranca.html' with hx_target_id=seguranca_panel_target_id %}
+      </div>
+    </article>
+
+    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
+      <h2 id="accordion-heading-preferencias">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-4 p-4 text-left"
+          data-accordion-button
+          aria-expanded="{% if tab == 'preferencias' %}true{% else %}false{% endif %}"
+          aria-controls="{{ preferencias_panel_target_id }}"
+        >
+          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
+            {% lucide 'sliders-horizontal' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
+            {% trans 'Preferências' %}
+          </span>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </button>
+      </h2>
+      <div
+        id="{{ preferencias_panel_target_id }}"
+        role="region"
+        aria-labelledby="accordion-heading-preferencias"
+        class="border-t border-[var(--border)] p-4 space-y-6"
+        data-accordion-panel
+        {% if tab != 'preferencias' %}hidden{% endif %}
+      >
+        {% include 'configuracoes/_partials/preferencias.html' with hx_target_id=preferencias_panel_target_id %}
+      </div>
+    </article>
+
+    <article class="border border-[var(--border)] rounded-lg bg-[var(--bg-card)] shadow-sm" data-accordion-item>
+      <h2 id="accordion-heading-operadores">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-4 p-4 text-left"
+          data-accordion-button
+          aria-expanded="{% if tab == 'operadores' %}true{% else %}false{% endif %}"
+          aria-controls="accordion-panel-operadores"
+        >
+          <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
+            {% lucide 'users' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
+            {% trans 'Operadores' %}
+          </span>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200" data-accordion-icon>
+            {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+          </span>
+        </button>
+      </h2>
+      <div
+        id="accordion-panel-operadores"
+        role="region"
+        aria-labelledby="accordion-heading-operadores"
+        class="border-t border-[var(--border)] p-4 space-y-4"
+        data-accordion-panel
+        {% if tab != 'operadores' %}hidden{% endif %}
+      >
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% trans 'Gerencie quem pode acessar e operar a sua organização.' %}
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'configuracoes:operadores' %}" class="btn btn-secondary">
+            {% trans 'Ver operadores' %}
+          </a>
+          {% if request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
+            {% include 'configuracoes/_partials/operadores_action.html' %}
+          {% endif %}
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <div id="modal" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% if tab == 'preferencias' %}
+    <script src="{% static 'configuracoes/preferencias.js' %}"></script>
+  {% endif %}
+  <script>
+    (function () {
+      const accordions = document.querySelectorAll('[data-accordion]');
+      const togglePanel = (button, expand) => {
+        if (!button) return;
+        const controls = button.getAttribute('aria-controls');
+        const panel = controls ? document.getElementById(controls) : null;
+        button.setAttribute('aria-expanded', String(expand));
+        const icon = button.querySelector('[data-accordion-icon]');
+        if (icon) {
+          icon.classList.toggle('rotate-180', expand);
+        }
+        if (panel) {
+          panel.toggleAttribute('hidden', !expand);
+        }
+      };
+      accordions.forEach((accordion) => {
+        const buttons = accordion.querySelectorAll('[data-accordion-button]');
+        buttons.forEach((button) => {
+          const isExpanded = button.getAttribute('aria-expanded') === 'true';
+          const icon = button.querySelector('[data-accordion-icon]');
+          if (icon) {
+            icon.classList.toggle('rotate-180', isExpanded);
+          }
+        });
+        buttons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+            const nextState = !isExpanded;
+            if (nextState && accordion.dataset.accordionSingle !== 'false') {
+              buttons.forEach((other) => {
+                if (other !== button) {
+                  togglePanel(other, false);
+                }
+              });
+            }
+            togglePanel(button, nextState);
+          });
+        });
+      });
+    })();
+  </script>
+{% endblock %}
