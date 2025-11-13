@@ -97,7 +97,7 @@ class HeroActionTemplateTests(TestCase):
     def render_template(self, user):
         request = self.factory.get("/")
         request.user = user
-        return render_to_string("associados/hero_action.html", request=request)
+        return render_to_string("membros/hero_action.html", request=request)
 
     def test_root_without_organizacao_does_not_render_cta(self):
         root_user = get_user_model().objects.create_user(
@@ -109,7 +109,7 @@ class HeroActionTemplateTests(TestCase):
 
         rendered = self.render_template(root_user)
 
-        self.assertNotIn("Adicionar associado", rendered)
+        self.assertNotIn("Adicionar membro", rendered)
 
     def test_admin_with_organizacao_renders_cta(self):
         organizacao = OrganizacaoFactory()
@@ -123,4 +123,4 @@ class HeroActionTemplateTests(TestCase):
 
         rendered = self.render_template(admin_user)
 
-        self.assertIn("Adicionar associado", rendered)
+        self.assertIn("Adicionar membro", rendered)
