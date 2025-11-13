@@ -211,8 +211,10 @@ class AssociadoListDataMixin:
             status_suspensao=False,
         )
         if section == "sem_nucleo":
+            excluded_user_types = {UserType.ADMIN.value, UserType.OPERADOR.value}
             return (
                 base_queryset.filter(is_associado=True)
+                .exclude(user_type__in=excluded_user_types)
                 .annotate(has_active_participacao=Exists(active_participacao))
                 .filter(has_active_participacao=False)
             )
@@ -263,8 +265,11 @@ class AssociadoListDataMixin:
             status_suspensao=False,
         )
 
+        excluded_user_types = {UserType.ADMIN.value, UserType.OPERADOR.value}
+
         total_associados = (
             base_queryset.filter(is_associado=True)
+            .exclude(user_type__in=excluded_user_types)
             .annotate(has_active_participacao=Exists(active_participacao))
             .filter(has_active_participacao=False)
             .count()
