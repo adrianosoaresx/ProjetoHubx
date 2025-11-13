@@ -85,3 +85,14 @@ class TestUsuarioBadges:
         assert badges[0]["icon"] == "id-card"
         assert "Associado" in badges[0]["label"]
         assert "#6366f1" in badges[0]["style"]
+
+    def test_admin_excludes_nucleado_badges(self):
+        nucleo = NucleoFactory()
+        admin = UserFactory(organizacao=nucleo.organizacao, user_type=UserType.ADMIN.value)
+        admin.nucleo = None
+        admin.save(update_fields=["nucleo"])
+        ParticipacaoNucleo.objects.create(user=admin, nucleo=nucleo, status="ativo")
+
+        badges = usuario_badges(admin)
+
+        assert all(badge["type"] != "nucleado" for badge in badges)

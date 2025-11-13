@@ -148,6 +148,9 @@ def usuario_badges(user):
     if getattr(user, "user_type", "") == UserType.ASSOCIADO.value and "associado" not in types_present and not badges:
         badges.append(_make_badge(_("Associado"), "associado"))
 
+    if getattr(user, "user_type", "") == UserType.ADMIN.value:
+        badges = [badge for badge in badges if badge.get("type") != "nucleado"]
+
     return [
         {
             "label": badge["label"],
