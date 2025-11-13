@@ -8,9 +8,9 @@
 {% endblock %}
 
 {% block content %}
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-10">
-    <section aria-labelledby="coordenador-metricas-title" class="space-y-6">
-      <details class="card group" open>
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 md:gap-8">
+    <section aria-labelledby="coordenador-metricas-title" class="flex flex-col gap-6">
+      <details class="card group">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
@@ -41,7 +41,7 @@
       </details>
     </section>
 
-    <section aria-labelledby="coordenador-nucleos-accordion-title" class="space-y-6">
+    <section aria-labelledby="coordenador-nucleos-accordion-title" class="flex flex-col gap-6">
       <details class="card group" aria-labelledby="coordenador-nucleos-accordion-title">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
@@ -133,8 +133,8 @@
       </details>
     </section>
 
-    <section aria-labelledby="coordenador-visualizacoes-title" class="space-y-6">
-      <details class="card group" {% if dashboard_period_changed %}open{% endif %}>
+    <section aria-labelledby="coordenador-visualizacoes-title" class="flex flex-col gap-6">
+      <details class="card group">
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
           <div class="flex items-start gap-3">
             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">
