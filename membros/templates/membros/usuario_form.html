@@ -4,14 +4,14 @@
 {% block title %}{% trans 'Adicionar usuário' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_associados.html' with title=_('Adicionar associado') subtitle=_('Cadastre novos membros para a sua organização.') total_usuarios=None total_associados=None total_nucleados=None action_template=None %}
+  {% include '_components/hero_membros.html' with title=_('Adicionar membro') subtitle=_('Cadastre novos membros para a sua organização.') total_usuarios=None total_membros=None total_nucleados=None action_template=None %}
 {% endblock %}
 
 {% block content %}
 
 <article class="card">
   <header class="card-header">
-    <h2 class="text-xl font-semibold">{% trans "Adicionar associado" %}</h2>
+    <h2 class="text-xl font-semibold">{% trans "Adicionar membro" %}</h2>
   </header>
   <div class="card-body space-y-6">
     <form method="post" class="space-y-6">
@@ -63,7 +63,7 @@
               class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
               data-accordion-toggle
               aria-expanded="{% if form.razao_social.errors or form.nome_fantasia.errors or form.cnpj.errors or form.cpf.errors or form.area_atuacao.errors or form.descricao_atividade.errors %}true{% else %}false{% endif %}"
-              aria-controls="associado-company-panel"
+              aria-controls="membro-company-panel"
             >
               <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações da empresa" %}</span>
               <svg
@@ -82,7 +82,7 @@
               </svg>
             </button>
             <div
-              id="associado-company-panel"
+              id="membro-company-panel"
               class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.razao_social.errors and not form.nome_fantasia.errors and not form.cnpj.errors and not form.cpf.errors and not form.area_atuacao.errors and not form.descricao_atividade.errors %}hidden{% endif %}"
               data-accordion-panel
             >
@@ -129,7 +129,7 @@
               class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
               data-accordion-toggle
               aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors %}true{% else %}false{% endif %}"
-              aria-controls="associado-contact-panel"
+              aria-controls="membro-contact-panel"
             >
               <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações de contato" %}</span>
               <svg
@@ -148,7 +148,7 @@
               </svg>
             </button>
             <div
-              id="associado-contact-panel"
+              id="membro-contact-panel"
               class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors %}hidden{% endif %}"
               data-accordion-panel
             >
@@ -209,10 +209,10 @@
         {% endwith %}
       </div>
 
-      {% url 'membros:membros_lista' as associados_list_url %}
+      {% url 'membros:membros_lista' as membros_list_url %}
       <div class="flex flex-wrap justify-end gap-3 pt-4 border-t border-[var(--border)]">
         <a href="{% url 'membros:membros_lista' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
-        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar associado' %}">{% trans 'Salvar' %}</button>
+        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar membro' %}">{% trans 'Salvar' %}</button>
       </div>
     </form>
   </div>

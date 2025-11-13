@@ -6,7 +6,7 @@
     {% if user.cover %}
       <img
         src="{{ user.cover.url|default:user.cover }}"
-        alt="{% trans 'Capa do associado' %}"
+        alt="{% trans 'Capa do membro' %}"
         class="h-28 w-full object-cover object-center"
         loading="lazy"
       />

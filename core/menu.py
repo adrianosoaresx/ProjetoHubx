@@ -456,7 +456,7 @@ def _resolve_dashboard_path(user) -> str:
         tipo_usuario = raw_user_type
 
     if tipo_usuario in {UserType.ASSOCIADO.value, UserType.NUCLEADO.value}:
-        return reverse("dashboard:associado_dashboard")
+        return reverse("dashboard:membro_dashboard")
 
     if tipo_usuario == UserType.COORDENADOR.value:
         return reverse("dashboard:coordenador_dashboard")

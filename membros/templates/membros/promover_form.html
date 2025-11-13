@@ -2,10 +2,10 @@
 {% extends 'base.html' %}
 {% load i18n string_filters membros_extras lucide_icons %}
 
-{% block title %}{% trans 'Promover associado' %}{% endblock %}
+{% block title %}{% trans 'Promover membro' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_associados.html' with title=_('Promover associado') total_usuarios=None total_associados=None total_nucleados=None action_template=None %}
+  {% include '_components/hero_membros.html' with title=_('Promover membro') total_usuarios=None total_membros=None total_nucleados=None action_template=None %}
 {% endblock %}
 
 {% block content %}
@@ -13,8 +13,8 @@
 <article class="card">
   <header class="card-header">
     <div>
-      <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Promover associado' %}</h2>
-      <p class="mt-1 text-sm text-[var(--text-secondary)]">{% blocktrans with name=associado.display_name|default:associado.username %}Defina como {{ name }} será promovido(a).{% endblocktrans %}</p>
+      <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Promover membro' %}</h2>
+      <p class="mt-1 text-sm text-[var(--text-secondary)]">{% blocktrans with name=membro.display_name|default:membro.username %}Defina como {{ name }} será promovido(a).{% endblocktrans %}</p>
     </div>
   </header>
   <div class="card-body space-y-6">
@@ -37,8 +37,8 @@
       {% endif %}
 
       <div class="space-y-4">
-        {% include '_forms/field.html' with id='associado-nome' name='associado_nome' type='text' label=_('Associado') value=associado.display_name|default:associado.username extra_classes='bg-[var(--bg-secondary)]' attrs='readonly' %}
-        {% usuario_badges associado as usuario_badges_list %}
+        {% include '_forms/field.html' with id='membro-nome' name='membro_nome' type='text' label=_('Membro') value=membro.display_name|default:membro.username extra_classes='bg-[var(--bg-secondary)]' attrs='readonly' %}
+        {% usuario_badges membro as usuario_badges_list %}
         {% if usuario_badges_list %}
         <div class="flex flex-wrap gap-2">
           {% for badge in usuario_badges_list %}
@@ -51,7 +51,7 @@
         {% endif %}
       </div>
       <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-tertiary)]/60 px-4 py-3 text-sm text-[var(--text-secondary)]">
-        <p>{% trans 'Defina abaixo em quais núcleos o associado atuará e quais papéis deverá assumir.' %}</p>
+        <p>{% trans 'Defina abaixo em quais núcleos o membro atuará e quais papéis deverá assumir.' %}</p>
         <ul class="mt-2 list-disc list-inside space-y-1">
           <li>{% trans 'É possível combinar mais de um papel por núcleo.' %}</li>
           <li>{% trans 'Ao escolher coordenador, selecione também o papel correspondente.' %}</li>
@@ -143,7 +143,7 @@
                       </span>
                       <div class="space-y-1 text-center">
                         <span class="block text-sm font-medium text-[var(--error)]">{% trans 'Remover promoção de nucleado' %}</span>
-                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Interrompe a participação ativa do associado neste núcleo.' %}</span>
+                        <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Interrompe a participação ativa do membro neste núcleo.' %}</span>
                       </div>
                     </div>
                   </label>
@@ -288,7 +288,7 @@
                           <span class="inline-flex items-center rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{{ coordenador_role_labels|get_item:coord.papel }}</span>
                           <span>{{ coord.user_name }}</span>
                           {% if coord.is_target_user %}
-                            <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--success)]">{% trans 'Associado selecionado' %}</span>
+                            <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--success)]">{% trans 'Membro selecionado' %}</span>
                           {% endif %}
                         </li>
                       {% endfor %}

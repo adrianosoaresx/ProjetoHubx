@@ -164,9 +164,9 @@ def test_consultor_can_view_nucleos_eventos_and_feed():
     [
         (UserType.ADMIN, "dashboard:admin_dashboard_admin"),
         (UserType.OPERADOR, "dashboard:admin_dashboard_admin"),
-        (UserType.ASSOCIADO, "dashboard:associado_dashboard"),
+        (UserType.ASSOCIADO, "dashboard:membro_dashboard"),
         (UserType.COORDENADOR, "dashboard:coordenador_dashboard"),
-        (UserType.NUCLEADO, "dashboard:associado_dashboard"),
+        (UserType.NUCLEADO, "dashboard:membro_dashboard"),
         (UserType.CONSULTOR, "dashboard:consultor_dashboard"),
     ],
 )
@@ -190,11 +190,11 @@ def test_dashboard_menu_points_to_role_specific_view(user_type, expected_url_nam
 
 
 @pytest.mark.django_db
-def test_dashboard_visible_for_legacy_associado_user():
+def test_dashboard_visible_for_legacy_membro_user():
     user_model = get_user_model()
     user = user_model.objects.create_user(
-        email="legacy-associado@example.com",
-        username="legacy_associado",
+        email="legacy-membro@example.com",
+        username="legacy_membro",
         password="test-pass",
         user_type=UserType.CONVIDADO,
         is_associado=True,
@@ -210,7 +210,7 @@ def test_dashboard_visible_for_legacy_associado_user():
     dashboard_item = next((item for item in menu if item.id == "admin-dashboard"), None)
 
     assert dashboard_item is not None
-    assert dashboard_item.path == reverse("dashboard:associado_dashboard")
+    assert dashboard_item.path == reverse("dashboard:membro_dashboard")
 
 
 @pytest.mark.django_db

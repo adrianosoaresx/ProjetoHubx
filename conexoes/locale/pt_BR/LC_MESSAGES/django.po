@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PROJECT package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: ProjetoHubx\n"
@@ -35,8 +34,8 @@ msgid "Adicione novas conexões"
 msgstr "Adicione novas conexões"
 
 #: conexoes/templates/conexoes/busca.html:7
-msgid "Adicione associados da sua organização para se conectar"
-msgstr "Adicione associados da sua organização para se conectar"
+msgid "Adicione membros da sua organização para se conectar"
+msgstr "Adicione membros da sua organização para se conectar"
 
 #: conexoes/templates/conexoes/busca.html:7
 #: conexoes/templates/conexoes/partiais/search_card.html:13
@@ -111,8 +110,8 @@ msgid "Conectar"
 msgstr ""
 
 #: conexoes/templates/conexoes/partiais/search_card.html:133
-msgid "Nenhum associado encontrado para os critérios informados."
-msgstr ""
+msgid "Nenhum membro encontrado para os critérios informados."
+msgstr "Nenhum membro encontrado para os critérios informados."
 
 #: conexoes/templates/conexoes/partiais/search_card.html:136
 msgid "Você não está vinculado a uma organização no momento."

@@ -4,7 +4,7 @@
   {% for nucleo in nucleos %}
     <li>{{ nucleo.nome }}</li>
   {% empty %}
-    <li class="list-none text-[var(--text-muted)]">{% trans 'Nenhum núcleo associado.' %}</li>
+    <li class="list-none text-[var(--text-muted)]">{% trans 'Nenhum núcleo vinculado.' %}</li>
   {% endfor %}
 </ul>
 {% if request.user.user_type == 'root' %}

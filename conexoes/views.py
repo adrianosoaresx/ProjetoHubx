@@ -570,10 +570,10 @@ def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | Non
             query = ""
     organizacao = getattr(user, "organizacao", None)
 
-    associados = User.objects.none()
+    membros = User.objects.none()
 
     if organizacao:
-        associados = (
+        membros = (
             User.objects.filter(organizacao=organizacao, is_associado=True)
             .exclude(pk=user.pk)
             .select_related("organizacao", "nucleo")
@@ -601,9 +601,9 @@ def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | Non
             )
             if digits:
                 filters |= Q(cnpj_digits__icontains=digits)
-            associados = associados.filter(filters)
+            membros = membros.filter(filters)
 
-        associados = associados.order_by("nome_fantasia", "contato", "username")
+        membros = membros.order_by("nome_fantasia", "contato", "username")
 
     conexoes_ids = set()
     solicitacoes_enviadas_ids = set()
@@ -621,7 +621,7 @@ def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | Non
         solicitacoes_recebidas_ids -= conexoes_ids
 
     return {
-        "associados": associados,
+        "membros": membros,
         "q": query,
         "tem_organizacao": bool(organizacao),
         "conexoes_ids": conexoes_ids,

@@ -1,11 +1,11 @@
 {% load i18n %}
 {# Parcial HTMX renderizada dentro de cartões; aplica espaçamento e paginação compatíveis com o layout padrão. #}
 <div class="space-y-4">
-  {% if associados %}
+  {% if membros %}
     <div role="list" class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {% for user in associados %}
+      {% for user in membros %}
         <div role="listitem">
-          {% include 'associados/_promover_card.html' with user=user %}
+          {% include 'membros/_promover_card.html' with user=user %}
         </div>
       {% endfor %}
     </div>
@@ -15,9 +15,9 @@
   {% else %}
     <p class="text-sm text-[var(--text-secondary)]">
       {% if has_search %}
-        {% trans 'Nenhum associado encontrado para a busca informada.' %}
+        {% trans 'Nenhum membro encontrado para a busca informada.' %}
       {% else %}
-        {% trans 'Nenhum associado disponível para promoção no momento.' %}
+        {% trans 'Nenhum membro disponível para promoção no momento.' %}
       {% endif %}
     </p>
   {% endif %}

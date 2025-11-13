@@ -34,7 +34,7 @@
         </summary>
         <div class="card-body space-y-6">
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {% include "_partials/cards/total_card.html" with label=_("Associados") valor=total_associados icon_name="users" %}
+            {% include "_partials/cards/total_card.html" with label=_("Membros") valor=total_membros icon_name="users" %}
             {% include "_partials/cards/total_card.html" with label=_("Nucleados") valor=total_nucleados icon_name="network" %}
             {% include "_partials/cards/total_card.html" with label=_("Eventos ativos") valor=eventos_ativos icon_name="activity" %}
           </div>
@@ -45,7 +45,7 @@
                 <div
                   id="membros-chart"
                   role="img"
-                  aria-label="{% trans 'Gráfico de pizza apresentando a proporção de associados nucleados e não nucleados.' %}"
+                  aria-label="{% trans 'Gráfico de pizza apresentando a proporção de membros nucleados e não nucleados.' %}"
                   class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
                 ></div>
                 {{ membros_chart.figure|json_script:"membros-chart-data" }}
@@ -54,7 +54,7 @@
                     {% trans "Distribuição de membros" %}
                   </h3>
                   <p class="text-sm text-[var(--text-muted)]">
-                    {% trans "Comparativo entre associados nucleados e não nucleados." %}
+                    {% trans "Comparativo entre membros nucleados e não nucleados." %}
                   </p>
                 </figcaption>
               </div>
@@ -125,21 +125,21 @@
           </form>
 
           <div class="grid gap-6">
-            <figure class="card" aria-labelledby="associados-periodo-chart-title">
+            <figure class="card" aria-labelledby="membros-periodo-chart-title">
               <div class="card-body space-y-6">
                   <div
-                    id="associados-periodo-chart"
+                    id="membros-periodo-chart"
                     role="img"
-                    aria-label="{% trans 'Gráfico linear exibindo a evolução mensal de associados com faixa de desvio padrão.' %}"
+                    aria-label="{% trans 'Gráfico linear exibindo a evolução mensal de membros com faixa de desvio padrão.' %}"
                     class="h-80 w-full rounded-md border border-[var(--border)] bg-[var(--bg-primary)]"
                   ></div>
-                  {{ associados_por_periodo_chart.figure|json_script:"associados-periodo-chart-data" }}
+                  {{ membros_por_periodo_chart.figure|json_script:"membros-periodo-chart-data" }}
                   <figcaption class="space-y-1">
-                    <h3 id="associados-periodo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
-                      {% trans "Associados por período" %}
+                    <h3 id="membros-periodo-chart-title" class="text-lg font-semibold text-[var(--text-primary)]">
+                      {% trans "Membros por período" %}
                     </h3>
                     <p class="text-sm text-[var(--text-muted)]">
-                      {% trans "Total de novos associados em cada mês e variação diária." %}
+                      {% trans "Total de novos membros em cada mês e variação diária." %}
                     </p>
                   </figcaption>
                 </div>
@@ -357,7 +357,7 @@
 
       renderPlotlyChart("membros-chart", "membros-chart-data");
       renderPlotlyChart("eventos-nucleo-chart", "eventos-nucleo-chart-data");
-      renderPlotlyChart("associados-periodo-chart", "associados-periodo-chart-data");
+      renderPlotlyChart("membros-periodo-chart", "membros-periodo-chart-data");
       renderPlotlyChart("valores-inscricoes-periodo-chart", "valores-inscricoes-periodo-chart-data");
       renderPlotlyChart("inscricoes-periodo-chart", "inscricoes-periodo-chart-data");
       renderPlotlyChart("nucleados-periodo-chart", "nucleados-periodo-chart-data");

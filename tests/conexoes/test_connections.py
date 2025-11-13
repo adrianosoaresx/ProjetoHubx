@@ -67,7 +67,7 @@ def test_perfil_conexoes_solicitacoes_partial_htmx(client):
 
 
 @pytest.mark.django_db
-def test_buscar_pessoas_lista_associados_da_organizacao(client):
+def test_buscar_pessoas_lista_membros_da_organizacao(client):
     organizacao = OrganizacaoFactory()
     outra_org = OrganizacaoFactory()
     user = User.objects.create_user(
@@ -77,7 +77,7 @@ def test_buscar_pessoas_lista_associados_da_organizacao(client):
         organizacao=organizacao,
         is_associado=True,
     )
-    associado_a = User.objects.create_user(
+    membro_a = User.objects.create_user(
         email="a@exemplo.com",
         username="assoc-a",
         password="x",
@@ -98,9 +98,9 @@ def test_buscar_pessoas_lista_associados_da_organizacao(client):
     response = client.get(url, HTTP_HX_REQUEST="true")
 
     assert response.status_code == 200
-    associados = list(response.context["associados"])
-    assert associado_a in associados
-    assert user not in associados
+    membros = list(response.context["membros"])
+    assert membro_a in membros
+    assert user not in membros
 
 
 @pytest.mark.django_db
@@ -117,7 +117,7 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
     cnpj_generator = CNPJ()
     cnpj_valido = cnpj_generator.generate(mask=True)
 
-    associado_nome = User.objects.create_user(
+    membro_nome = User.objects.create_user(
         email="nome@example.com",
         username="assoc-nome",
         password="x",
@@ -125,7 +125,7 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
         is_associado=True,
         contato="Ana Silva",
     )
-    associado_razao = User.objects.create_user(
+    membro_razao = User.objects.create_user(
         email="razao@example.com",
         username="assoc-razao",
         password="x",
@@ -133,7 +133,7 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
         is_associado=True,
         razao_social="Empresa Exemplo Ltda",
     )
-    associado_cnpj = User.objects.create_user(
+    membro_cnpj = User.objects.create_user(
         email="cnpj@example.com",
         username="assoc-cnpj",
         password="x",
@@ -146,13 +146,13 @@ def test_buscar_pessoas_filtra_por_nome_razao_social_e_cnpj(client):
     url = reverse("conexoes:perfil_conexoes_buscar")
 
     resp_nome = client.get(url, {"q": "Ana"}, HTTP_HX_REQUEST="true")
-    assert list(resp_nome.context["associados"]) == [associado_nome]
+    assert list(resp_nome.context["membros"]) == [membro_nome]
 
     resp_razao = client.get(url, {"q": "Empresa Exemplo"}, HTTP_HX_REQUEST="true")
-    assert list(resp_razao.context["associados"]) == [associado_razao]
+    assert list(resp_razao.context["membros"]) == [membro_razao]
 
     resp_cnpj = client.get(url, {"q": cnpj_valido.replace(".", "").replace("/", "").replace("-", "")}, HTTP_HX_REQUEST="true")
-    assert list(resp_cnpj.context["associados"]) == [associado_cnpj]
+    assert list(resp_cnpj.context["membros"]) == [membro_cnpj]
 
 
 @pytest.mark.django_db

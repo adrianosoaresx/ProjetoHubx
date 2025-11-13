@@ -6,11 +6,11 @@
         <div class="flex flex-wrap gap-3">
           <a href="{% url 'membros:membros_adicionar' %}?tipo=associado" class="btn btn-primary flex items-center gap-2">
             {% lucide 'user-plus' class='w-4 h-4' aria_hidden='true' %}
-            <span>{% trans 'Adicionar associado' %}</span>
+            <span>{% trans 'Adicionar membro' %}</span>
           </a>
           <a href="{% url 'membros:membros_promover' %}" class="btn btn-secondary flex items-center gap-2">
             {% lucide 'user-round-cog' class='w-4 h-4' aria_hidden='true' %}
-            <span>{% trans 'Promover associado' %}</span>
+            <span>{% trans 'Promover membro' %}</span>
           </a>
         </div>
       {% endif %}
