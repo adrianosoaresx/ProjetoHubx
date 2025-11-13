@@ -72,7 +72,7 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
         (
             UserType.ASSOCIADO,
             {
-                "associados": False,
+                "membros": False,
                 "tokens": False,
                 "nucleos": True,
                 "eventos": True,
@@ -82,7 +82,7 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
         (
             UserType.COORDENADOR,
             {
-                "associados": False,
+                "membros": False,
                 "tokens": False,
                 "nucleos": True,
                 "eventos": True,
@@ -92,7 +92,7 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
         (
             UserType.ADMIN,
             {
-                "associados": True,
+                "membros": True,
                 "tokens": False,
                 "nucleos": True,
                 "eventos": True,

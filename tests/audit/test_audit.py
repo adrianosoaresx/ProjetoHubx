@@ -67,7 +67,7 @@ def test_log_audit_creates_entry(root_user) -> None:
     log_audit(
         root_user,
         "EXPORT_PDF",
-        "Associados",
+        "Membros",
         "1",
         hash_ip("127.0.0.1"),
         "SUCCESS",
