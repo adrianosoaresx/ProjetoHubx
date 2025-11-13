@@ -1856,6 +1856,12 @@ a:focus {
   color: var(--success);
 }
 
+.alert-warning {
+  border-color: var(--warning);
+  background-color: var(--warning-light);
+  color: var(--warning-foreground);
+}
+
 .alert-error {
   border-color: var(--error);
   background-color: var(--error-light);
@@ -3399,6 +3405,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .whitespace-pre-line {
   white-space: pre-line;
+}
+
+.break-words {
+  overflow-wrap: break-word;
 }
 
 .break-all {
@@ -5104,10 +5114,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-ring-color: var(--color-primary-500);
 }
 
-.focus-visible\:ring-white\/80:focus-visible {
-  --tw-ring-color: rgb(255 255 255 / 0.8);
-}
-
 .focus-visible\:ring-offset-2:focus-visible {
   --tw-ring-offset-width: 2px;
 }
@@ -5325,10 +5331,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .dark\:ring-white\/10:is(.dark *) {
   --tw-ring-color: rgb(255 255 255 / 0.1);
-}
-
-.dark\:focus-visible\:ring-slate-500\/70:focus-visible:is(.dark *) {
-  --tw-ring-color: rgb(100 116 139 / 0.7);
 }
 
 @media (min-width: 640px) {
@@ -5649,10 +5651,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:items-center {
     align-items: center;
-  }
-
-  .md\:justify-start {
-    justify-content: flex-start;
   }
 
   .md\:justify-end {
