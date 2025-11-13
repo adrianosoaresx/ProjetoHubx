@@ -569,11 +569,9 @@ class ConsultorDashboardView(RoleDashboardMixin, TemplateView):
                 "valor_total_inscricoes_consultoria": self._format_currency(
                     valor_total_inscricoes
                 ),
-                "eventos_inscricoes_chart": self._serialize_chart(
-                    eventos_inscricoes_chart
-                ),
-                "nucleados_chart": self._serialize_chart(nucleados_chart),
-                "receita_inscricoes_chart": self._serialize_chart(valores_chart),
+                "eventos_inscricoes_chart": eventos_inscricoes_chart,
+                "nucleados_chart": nucleados_chart,
+                "receita_inscricoes_chart": valores_chart,
                 "dashboard_period_months": months,
                 "dashboard_period_choices": self.PERIOD_CHOICES,
                 "dashboard_period_changed": "months" in self.request.GET,
