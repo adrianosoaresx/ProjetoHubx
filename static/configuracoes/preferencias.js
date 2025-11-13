@@ -127,11 +127,18 @@ function initPreferencias() {
 
   toggleFields();
 
+  const setTheme =
+    typeof window !== 'undefined' && typeof window.HubxSetTheme === 'function'
+      ? window.HubxSetTheme
+      : (temaValue) => {
+          localStorage.setItem('tema', temaValue);
+          document.documentElement.classList.toggle('dark', temaValue === 'escuro');
+        };
+
   if (temaSelectEl) {
     const applyTheme = () => {
       const temaValue = temaSelectEl.value;
-      localStorage.setItem('tema', temaValue);
-      document.documentElement.classList.toggle('dark', temaValue === 'escuro');
+      setTheme(temaValue);
     };
     temaSelectEl.onchange = applyTheme;
   }
@@ -140,8 +147,7 @@ function initPreferencias() {
     const temaValue = temaInput?.value;
     const idiomaValue = idiomaInput?.value;
     if (temaValue) {
-      localStorage.setItem('tema', temaValue);
-      document.documentElement.classList.toggle('dark', temaValue === 'escuro');
+      setTheme(temaValue);
     }
     if (idiomaValue) {
       localStorage.setItem('idioma', idiomaValue);

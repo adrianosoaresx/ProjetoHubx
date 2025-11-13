@@ -84,8 +84,29 @@
   <script>
     (function () {
 
+      function updateThemeMeta(theme) {
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (!metaTheme) {
+          return;
+        }
+
+        const variable = theme === 'escuro' ? '--primary-dark' : '--primary';
+        const color = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+        if (color) {
+          metaTheme.setAttribute('content', color);
+        }
+      }
+
       function applyTheme(theme) {
         document.documentElement.classList.toggle('dark', theme === 'escuro');
+        updateThemeMeta(theme);
+      }
+
+      function updatePressed(theme) {
+        document.querySelectorAll('[data-theme-option]').forEach(btn => {
+          const active = btn.getAttribute('data-theme-option') === theme;
+          btn.setAttribute('aria-pressed', String(active));
+        });
       }
 
       function setTheme(theme) {
@@ -98,13 +119,6 @@
         return localStorage.getItem('tema') || 'claro';
       }
 
-      function updatePressed(theme) {
-        document.querySelectorAll('[data-theme-option]').forEach(btn => {
-          const active = btn.getAttribute('data-theme-option') === theme;
-          btn.setAttribute('aria-pressed', String(active));
-        });
-      }
-
       const current = getTheme();
       applyTheme(current);
       updatePressed(current);
@@ -113,6 +127,18 @@
         btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-option')));
       });
 
+      document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (target instanceof HTMLSelectElement && target.id === 'id_tema') {
+          setTheme(target.value);
+        }
+      });
+
+      window.HubxSetTheme = setTheme;
+      window.HubxApplyTheme = applyTheme;
+      window.HubxGetTheme = getTheme;
+      window.HubxUpdateThemeButtons = updatePressed;
+    
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
         localStorage.setItem('idioma', langMatch[1]);
