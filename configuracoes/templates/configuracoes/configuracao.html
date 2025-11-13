@@ -76,7 +76,7 @@
           class="flex w-full items-center justify-between gap-4 p-4 text-left"
           data-accordion-button
           aria-expanded="{% if tab == 'operadores' %}true{% else %}false{% endif %}"
-          aria-controls="accordion-panel-operadores"
+          aria-controls="{{ operadores_panel_target_id }}"
         >
           <span class="flex items-center gap-3 text-lg font-semibold text-[var(--text-primary)]">
             {% lucide 'users' class='h-5 w-5 text-[var(--primary)]' aria_hidden='true' %}
@@ -88,24 +88,14 @@
         </button>
       </h2>
       <div
-        id="accordion-panel-operadores"
+        id="{{ operadores_panel_target_id }}"
         role="region"
         aria-labelledby="accordion-heading-operadores"
         class="border-t border-[var(--border)] p-4 space-y-4"
         data-accordion-panel
         {% if tab != 'operadores' %}hidden{% endif %}
       >
-        <p class="text-sm text-[var(--text-secondary)]">
-          {% trans 'Gerencie quem pode acessar e operar a sua organização.' %}
-        </p>
-        <div class="flex flex-wrap gap-3">
-          <a href="{% url 'configuracoes:operadores' %}" class="btn btn-secondary">
-            {% trans 'Ver operadores' %}
-          </a>
-          {% if request.user.is_superuser or request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-            {% include 'configuracoes/_partials/operadores_action.html' %}
-          {% endif %}
-        </div>
+        {% include 'configuracoes/_partials/operadores_panel.html' with operadores=operadores can_manage_operadores=can_manage_operadores %}
       </div>
     </article>
   </section>
@@ -120,6 +110,21 @@
   {% endif %}
   <script>
     (function () {
+      const modalContainer = document.getElementById('modal');
+      const handleModalClose = () => {
+        if (!modalContainer) {
+          return;
+        }
+        modalContainer.innerHTML = '';
+        if (window.HubxModalTrigger && typeof window.HubxModalTrigger.focus === 'function') {
+          window.HubxModalTrigger.focus();
+          window.HubxModalTrigger = null;
+        }
+      };
+      if (modalContainer) {
+        modalContainer.addEventListener('modal:close', handleModalClose);
+      }
+      document.body.addEventListener('modal:close', handleModalClose);
       const accordions = document.querySelectorAll('[data-accordion]');
       const togglePanel = (button, expand) => {
         if (!button) return;
