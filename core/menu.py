@@ -403,7 +403,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             "feed",
             feed_url,
-            "Feed",
+            "Vitrine de Negócios",
             ICON_FEED,
             [
                 "admin",
