@@ -47,6 +47,27 @@ def test_dashboard_router_renders_consultor_dashboard(client):
 
 
 @pytest.mark.django_db
+def test_dashboard_router_detects_consultor_by_nucleo_assignment(client):
+    organizacao = OrganizacaoFactory()
+    user = UserFactory(
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=False,
+    )
+    NucleoFactory(organizacao=organizacao, consultor=user)
+
+    client.force_login(user)
+    response = client.get(reverse("dashboard:admin_dashboard"))
+
+    assert response.status_code == 200
+    template_names = [template.name for template in response.templates if template.name]
+    assert "dashboard/consultor_dashboard.html" in template_names
+
+    page = response.content.decode()
+    assert "Dashboard do consultor" in page
+
+
+@pytest.mark.django_db
 def test_dashboard_router_renders_associado_dashboard(client):
     organizacao = OrganizacaoFactory()
     user = UserFactory(
@@ -100,3 +121,33 @@ def test_dashboard_router_renders_coordenador_dashboard(client):
     assert "Dashboard do coordenador" in page
     assert "Núcleos coordenados" in page
     assert "Eventos ativos" in page
+
+
+@pytest.mark.django_db
+def test_dashboard_router_detects_coordenador_from_participacao(client):
+    organizacao = OrganizacaoFactory()
+    nucleo = NucleoFactory(organizacao=organizacao)
+    user = UserFactory(
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
+        is_associado=False,
+        is_coordenador=False,
+    )
+    ParticipacaoNucleo.objects.create(
+        user=user,
+        nucleo=nucleo,
+        papel="coordenador",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+        status="ativo",
+        status_suspensao=False,
+    )
+
+    client.force_login(user)
+    response = client.get(reverse("dashboard:admin_dashboard"))
+
+    assert response.status_code == 200
+    template_names = [template.name for template in response.templates if template.name]
+    assert "dashboard/coordenadores_dashboard.html" in template_names
+
+    page = response.content.decode()
+    assert "Dashboard do coordenador" in page
