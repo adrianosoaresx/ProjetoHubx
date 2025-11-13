@@ -6,7 +6,7 @@ from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 
 
-class AssociadoListViewTests(TestCase):
+class MembrosListViewTests(TestCase):
     def setUp(self):
         self.organizacao = OrganizacaoFactory()
         self.admin = UserFactory(
@@ -14,8 +14,8 @@ class AssociadoListViewTests(TestCase):
             organizacao=self.organizacao,
         )
         self.client.force_login(self.admin)
-        self.list_url = reverse("associados:associados_lista")
-        self.api_url = reverse("associados:associados_lista_api")
+        self.list_url = reverse("membros:membros_lista")
+        self.api_url = reverse("membros:membros_lista_api")
 
     def test_sem_nucleo_section_excludes_admin_and_operator(self):
         associado_sem_nucleo = UserFactory(

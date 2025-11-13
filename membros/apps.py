@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class AssociadosConfig(AppConfig):
+class MembrosConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "associados"
-    verbose_name = "Associados"
+    name = "membros"
+    verbose_name = "Membros"

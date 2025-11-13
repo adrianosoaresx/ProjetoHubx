@@ -67,7 +67,7 @@ class GerenteRequiredMixin(UserPassesTestMixin):
         }
 
 
-class AssociadosRequiredMixin(UserPassesTestMixin):
+class MembrosRequiredMixin(UserPassesTestMixin):
     """Permite acesso a administradores, coordenadores e operadores."""
 
     raise_exception = True

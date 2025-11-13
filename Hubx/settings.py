@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "portfolio.apps.PortfolioConfig",
     "conexoes.apps.ConexoesConfig",
-    "associados.apps.AssociadosConfig",
+    "membros.apps.MembrosConfig",
     "organizacoes",
     "tokens.apps.TokensConfig",
     "nucleos",

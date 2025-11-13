@@ -5,7 +5,7 @@ from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from nucleos.models import ParticipacaoNucleo
 
-from associados.templatetags.associados_extras import usuario_badges, usuario_tipo_badge
+from membros.templatetags.membros_extras import usuario_badges, usuario_tipo_badge
 
 
 @pytest.mark.django_db
