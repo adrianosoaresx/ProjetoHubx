@@ -119,6 +119,9 @@ def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
         (UserType.ADMIN, "dashboard:admin_dashboard_admin"),
         (UserType.OPERADOR, "dashboard:admin_dashboard_admin"),
         (UserType.ASSOCIADO, "dashboard:associado_dashboard"),
+        (UserType.COORDENADOR, "dashboard:coordenador_dashboard"),
+        (UserType.NUCLEADO, "dashboard:associado_dashboard"),
+        (UserType.CONSULTOR, "dashboard:consultor_dashboard"),
     ],
 )
 def test_dashboard_menu_points_to_role_specific_view(user_type, expected_url_name):
