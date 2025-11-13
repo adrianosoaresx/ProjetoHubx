@@ -21,8 +21,8 @@ from nucleos.models import ParticipacaoNucleo
 User = get_user_model()
 
 
-MEMBROS_NUCLEADOS_LABEL = gettext("Membros nucleados")
-MEMBROS_NAO_NUCLEADOS_LABEL = gettext("Membros não nucleados")
+MEMBROS_NUCLEADOS_LABEL = gettext("Nucleados")
+MEMBROS_NAO_NUCLEADOS_LABEL = gettext("Associados sem núcleo")
 EVENTOS_PUBLICOS_LABEL = gettext("Eventos públicos")
 SEM_NUCLEO_LABEL = gettext("Sem núcleo")
 
