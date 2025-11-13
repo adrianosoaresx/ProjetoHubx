@@ -304,6 +304,12 @@ class MembroListView(
 ):
     template_name = "membros/membro_list.html"
 
+    def get_open_section(self) -> str:
+        section = (self.request.GET.get("section") or "").strip()
+        if section in self.sections:
+            return section
+        return ""
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         base_queryset = self.get_filtered_queryset()
@@ -333,6 +339,7 @@ class MembroListView(
                     section: self.get_empty_message(section)
                     for section in self.sections
                 },
+                "open_section": self.get_open_section(),
             }
         )
 
@@ -364,6 +371,7 @@ class MembroSectionListView(
                 "usuarios": page_obj.object_list,
                 "page_number": page_obj.number,
                 "empty_message": self.get_empty_message(section),
+                "section": section,
             },
             request=request,
         )
@@ -577,7 +585,14 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
             pk=kwargs.get("pk"),
             organizacao=self.organizacao,
         )
+        self.origin_section = self._resolve_origin_section(request)
         return super().dispatch(request, *args, **kwargs)
+
+    def _resolve_origin_section(self, request) -> str:
+        section = (request.GET.get("section") or request.POST.get("section") or "").strip()
+        if section in MembroListDataMixin.sections:
+            return section
+        return ""
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1091,4 +1106,5 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
             "form_errors": form_errors,
             "success_message": success_message,
             "user_role_map_json": json.dumps(dict(user_role_map)),
+            "origin_section": getattr(self, "origin_section", ""),
         }

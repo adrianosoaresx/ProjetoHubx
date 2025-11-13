@@ -48,7 +48,7 @@
       ></p>
     </div>
 
-    <details class="card group" data-membros-section="sem-nucleo">
+    <details class="card group" data-membros-section="sem-nucleo" id="membros-section-sem_nucleo" {% if open_section == 'sem_nucleo' %}open{% endif %}>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
@@ -74,7 +74,7 @@
       </div>
     </details>
 
-    <details class="card group" data-membros-section="nucleados">
+    <details class="card group" data-membros-section="nucleados" id="membros-section-nucleados" {% if open_section == 'nucleados' %}open{% endif %}>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-500)] shadow-lg shadow-[var(--color-success-500)]/15">
@@ -100,7 +100,7 @@
       </div>
     </details>
 
-    <details class="card group" data-membros-section="consultores">
+    <details class="card group" data-membros-section="consultores" id="membros-section-consultores" {% if open_section == 'consultores' %}open{% endif %}>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
@@ -126,7 +126,7 @@
       </div>
     </details>
 
-    <details class="card group" data-membros-section="coordenadores">
+    <details class="card group" data-membros-section="coordenadores" id="membros-section-coordenadores" {% if open_section == 'coordenadores' %}open{% endif %}>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
           <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20">

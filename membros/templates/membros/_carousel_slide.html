@@ -14,8 +14,9 @@
             {% include '_components/card_usuario.html' with user=user %}
           </div>
           {% if show_promote_button %}
+            {% url 'membros:membro_promover_form' user.pk as promote_url %}
             <a
-              href="{% url 'membros:membro_promover_form' user.pk %}"
+              href="{{ promote_url }}{% if section %}?section={{ section|urlencode }}{% endif %}"
               class="btn btn-secondary w-full text-center"
             >
               {% trans 'Promover' %}
@@ -42,8 +43,9 @@
               {% include '_components/card_usuario.html' with user=user %}
             </div>
             {% if show_promote_button %}
+              {% url 'membros:membro_promover_form' user.pk as promote_url %}
               <a
-                href="{% url 'membros:membro_promover_form' user.pk %}"
+                href="{{ promote_url }}{% if section %}?section={{ section|urlencode }}{% endif %}"
                 class="btn btn-secondary w-full text-center"
               >
                 {% trans 'Promover' %}
