@@ -80,4 +80,19 @@
     <h3 class="text-base text-center font-semibold [var(--text-primary)] group-hover:underline">{{ title }}</h3>
     {% include details %}
   </div>
+
+  {% if footer_template or footer_cta_url %}
+    <footer class="card-footer">
+      {% if footer_template %}
+        {% include footer_template %}
+      {% else %}
+        <a
+          href="{{ footer_cta_url }}"
+          class="{{ footer_cta_class|default:'btn btn-primary w-full text-center' }}"
+        >
+          {{ footer_cta_label|default:_('Saiba mais') }}
+        </a>
+      {% endif %}
+    </footer>
+  {% endif %}
 </article>
