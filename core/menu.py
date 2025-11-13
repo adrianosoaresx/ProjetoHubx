@@ -338,8 +338,11 @@ def _get_menu_items() -> List[MenuItem]:
                 "root",
                 "associado",
                 "coordenador",
+                UserType.COORDENADOR,
                 "nucleado",
+                UserType.NUCLEADO,
                 "consultor",
+                UserType.CONSULTOR,
             ],
         ),
         MenuItem(
