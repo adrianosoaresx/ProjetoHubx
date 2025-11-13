@@ -4,11 +4,11 @@
     {% if organizacao_id %}
       {% if tipo == 'admin' or tipo == 'operador' or tipo == 'root' %}
         <div class="flex flex-wrap gap-3">
-          <a href="{% url 'associados:associados_adicionar' %}?tipo=associado" class="btn btn-primary flex items-center gap-2">
+          <a href="{% url 'membros:membros_adicionar' %}?tipo=associado" class="btn btn-primary flex items-center gap-2">
             {% lucide 'user-plus' class='w-4 h-4' aria_hidden='true' %}
             <span>{% trans 'Adicionar associado' %}</span>
           </a>
-          <a href="{% url 'associados:associados_promover' %}" class="btn btn-secondary flex items-center gap-2">
+          <a href="{% url 'membros:membros_promover' %}" class="btn btn-secondary flex items-center gap-2">
             {% lucide 'user-round-cog' class='w-4 h-4' aria_hidden='true' %}
             <span>{% trans 'Promover associado' %}</span>
           </a>

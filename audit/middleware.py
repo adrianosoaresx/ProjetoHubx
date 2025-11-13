@@ -8,7 +8,7 @@ from .services import hash_ip, log_audit_async
 from tokens.utils import get_client_ip
 
 
-AUDITED_PATH_PREFIXES: tuple[str, ...] = ("/associados/",)
+AUDITED_PATH_PREFIXES: tuple[str, ...] = ("/membros/",)
 
 
 class AuditMiddleware:

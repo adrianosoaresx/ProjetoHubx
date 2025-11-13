@@ -1,4 +1,4 @@
-{% load i18n lucide_icons associados_extras %}
+{% load i18n lucide_icons membros_extras %}
 {% url 'accounts:perfil_publico_uuid' usuario.public_id as profile_url %}
 {% with usuario.id|stringformat:'s' as usuario_id %}
   {% with 'connection-'|add:usuario_id as card_identifier %}

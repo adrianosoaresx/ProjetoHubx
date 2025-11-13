@@ -294,8 +294,8 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
         user.save(update_fields=["organizacao"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=["get"], url_path="associados")
-    def associados(self, request, organizacao_pk: str | None = None):
+    @action(detail=False, methods=["get"], url_path="membros")
+    def membros(self, request, organizacao_pk: str | None = None):
         qs = self.get_queryset().filter(user_type=UserType.ASSOCIADO.value)
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)

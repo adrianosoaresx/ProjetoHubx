@@ -78,11 +78,11 @@ def test_log_audit_creates_entry(root_user) -> None:
 
 def test_middleware_logs_success_and_failure(client, admin_user, cliente_user) -> None:
     client.force_login(admin_user)
-    client.get(reverse("associados:associados_lista"))
+    client.get(reverse("membros:membros_lista"))
     assert AuditLog.objects.filter(user=admin_user, status="SUCCESS").exists()
 
     client.force_login(cliente_user)
-    client.get(reverse("associados:associados_lista"))
+    client.get(reverse("membros:membros_lista"))
     assert AuditLog.objects.filter(user=cliente_user, status="FAILURE").exists()
 
 

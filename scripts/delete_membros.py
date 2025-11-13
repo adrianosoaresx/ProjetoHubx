@@ -1,4 +1,4 @@
-"""Script para remover definitivamente usuários associados e seus relacionamentos.
+"""Script para remover definitivamente membros e seus relacionamentos.
 
 Este utilitário inicializa o ambiente Django, localiza todos os usuários que
 possuem ``is_associado=True`` (incluindo nucleados e coordenadores) e realiza a
@@ -10,7 +10,7 @@ removidos do banco de dados em vez de apenas marcados como deletados.
 Para executar:
 
 ```
-python scripts/delete_associados.py
+python scripts/delete_membros.py
 ```
 
 O script imprime um resumo das remoções enquanto executa.

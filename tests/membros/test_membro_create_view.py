@@ -17,11 +17,11 @@ class OrganizacaoUserCreateViewTests(TestCase):
             user_type=UserType.ADMIN,
             organizacao=self.organizacao,
         )
-        self.url = reverse("associados:associados_adicionar")
+        self.url = reverse("membros:membros_adicionar")
 
     def test_form_contains_hidden_next_with_back_href(self):
         self.client.force_login(self.admin)
-        referer = "/associados/"
+        referer = "/membros/"
         response = self.client.get(self.url, HTTP_REFERER=referer)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["back_href"], referer)
@@ -44,8 +44,8 @@ class OrganizacaoUserCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         cancel_config = response.context["cancel_component_config"]
-        self.assertEqual(cancel_config["href"], "/associados/")
-        self.assertEqual(cancel_config["fallback_href"], "/associados/")
+        self.assertEqual(cancel_config["href"], "/membros/")
+        self.assertEqual(cancel_config["fallback_href"], "/membros/")
 
 
     def test_success_redirects_to_next_when_valid(self):
@@ -84,7 +84,7 @@ class OrganizacaoUserCreateViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/associados/")
+        self.assertEqual(response.url, "/membros/")
         self.assertTrue(
             get_user_model().objects.filter(email="outro@example.com").exists()
         )
