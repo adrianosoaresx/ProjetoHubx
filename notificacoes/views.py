@@ -15,7 +15,11 @@ from django.utils.translation import gettext_lazy as _
 
 from core.utils import resolve_back_href
 
-from .forms import HistoricoNotificacaoFilterForm, NotificationTemplateForm
+from .forms import (
+    HistoricoNotificacaoFilterForm,
+    NotificationLogFilterForm,
+    NotificationTemplateForm,
+)
 from .models import (
     Canal,
     Frequencia,
@@ -119,27 +123,31 @@ def edit_template(request, codigo: str):
 @login_required
 @staff_member_required
 def list_logs(request):
+    form = NotificationLogFilterForm(request.GET or None)
     logs = NotificationLog.objects.select_related("user", "template").order_by("-data_envio")
-    inicio = request.GET.get("inicio")
-    fim = request.GET.get("fim")
-    canal = request.GET.get("canal")
-    status = request.GET.get("status")
-    template_codigo = request.GET.get("template")
-    if inicio:
-        logs = logs.filter(data_envio__date__gte=inicio)
-    if fim:
-        logs = logs.filter(data_envio__date__lte=fim)
-    if canal in Canal.values:
-        logs = logs.filter(canal=canal)
-    if status in NotificationStatus.values:
-        logs = logs.filter(status=status)
-    if template_codigo:
-        logs = logs.filter(template__codigo=template_codigo)
+
+    if form.is_valid():
+        inicio = form.cleaned_data.get("inicio")
+        fim = form.cleaned_data.get("fim")
+        canal = form.cleaned_data.get("canal")
+        status = form.cleaned_data.get("status")
+        template = form.cleaned_data.get("template")
+
+        if inicio:
+            logs = logs.filter(data_envio__date__gte=inicio)
+        if fim:
+            logs = logs.filter(data_envio__date__lte=fim)
+        if canal in Canal.values:
+            logs = logs.filter(canal=canal)
+        if status in NotificationStatus.values:
+            logs = logs.filter(status=status)
+        if template:
+            logs = logs.filter(template=template)
 
     paginator = Paginator(logs, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
-    context = {"logs": page_obj}
+    context = {"logs": page_obj, "form": form}
     template_name = (
         "notificacoes/logs_table.html" if request.headers.get("HX-Request") else "notificacoes/logs_list.html"
     )
