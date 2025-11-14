@@ -1,6 +1,5 @@
 import re
 
-import pyotp
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
@@ -11,8 +10,9 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
+
+from .auth import validate_totp
 
 from .models import AREA_ATUACAO_CHOICES, AccountToken, SecurityEvent
 from .tasks import send_confirmation_email
@@ -456,12 +456,14 @@ class EmailLoginForm(forms.Form):
         if not user.check_password(password):
             authenticate(self.request, username=email, password=password)
             raise forms.ValidationError("Credenciais inválidas.")
-        if user.two_factor_enabled and TOTPDevice.objects.filter(usuario=user).exists():
-            if not totp:
-                raise forms.ValidationError("Código de verificação obrigatório.")
-            if not pyotp.TOTP(user.two_factor_secret).verify(totp):
-                authenticate(self.request, username=email, password=password, totp=totp)
-                raise forms.ValidationError("Código de verificação inválido.")
+        error = validate_totp(
+            user,
+            totp,
+            email=user.email,
+            ip=get_client_ip(self.request) if self.request else None,
+        )
+        if error:
+            raise forms.ValidationError(error)
         auth_user = authenticate(self.request, username=email, password=password, totp=totp)
         if auth_user is None:
             raise forms.ValidationError("Credenciais inválidas.")
