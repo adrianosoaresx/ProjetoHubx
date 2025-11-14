@@ -3,6 +3,8 @@ import pytest
 pytestmark = pytest.mark.skip(reason="legacy tests")
 from django.utils import timezone
 
+import hashlib
+
 import pyotp
 import pytest
 from django.utils import timezone
@@ -59,12 +61,27 @@ def test_codigo_autenticacao_is_expirado():
     assert valid.is_expirado() is False
 
 
-def test_totpdevice_secret_hashed():
+def test_totpdevice_secret_base32_preserved():
     user = UserFactory()
     secret = pyotp.random_base32()
     device = TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
-    assert device.secret != secret
-    assert len(device.secret) == 64
+    assert device.secret == secret
+    code = pyotp.TOTP(secret).now()
+    assert len(code) == 6
+
+
+def test_totpdevice_gerar_totp_with_legacy_hash():
+    user = UserFactory(two_factor_secret=pyotp.random_base32())
+    device = TOTPDevice.objects.create(usuario=user, secret=user.two_factor_secret, confirmado=True)
+    # Simula segredo legado (hash SHA-256) ainda armazenado no dispositivo; o
+    # ``save`` deve reidratar o valor Base32 do usuário automaticamente.
+    device.secret = hashlib.sha256(user.two_factor_secret.encode()).hexdigest()
+    device.save(update_fields=["secret"])
+    device.refresh_from_db()
+    assert device.secret == user.two_factor_secret
+
+    totp = device.gerar_totp()
+    assert totp.isdigit() and len(totp) == 6
 
 
 def test_user_two_factor_secret_totp():
