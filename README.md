@@ -168,6 +168,7 @@ npm run build
 - **Gerar Token de Convite**: admins podem gerar um código único válido por 30 dias (`/tokens/convites/gerar/`).
 - **Códigos de Autenticação**: geração e validação de OTP numérico para ações sensíveis (`/tokens/codigo/gerar/`).
 - **2FA (TOTP)**: ativação opcional via aplicativo autenticador; exibe URL `otpauth://` para configuração inicial.
+- **Segredo TOTP**: armazenado cifrado no formato Base32 (sem hashing irreversível) para permitir geração e verificação dos códigos.
 
 ### Autenticação em Dois Fatores (2FA)
 - **Ativar 2FA**: Gera um segredo TOTP e valida o código enviado.

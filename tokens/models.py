@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import random
@@ -262,23 +263,64 @@ class TOTPDevice(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="totp_device",
     )
-    # ``secret`` é armazenado como hash para evitar recuperação do valor bruto
+    # ``secret`` é persistido cifrado em Base32 para permitir geração/validação TOTP
     secret = EncryptedCharField(max_length=128)
     confirmado = models.BooleanField(default=False)
+
+    @staticmethod
+    def _normalize_base32_secret(secret: str) -> str:
+        normalized = secret.strip().replace(" ", "").upper()
+        if not normalized:
+            raise ValueError("Segredo TOTP não pode ser vazio.")
+        try:
+            padding = "=" * ((8 - len(normalized) % 8) % 8)
+            base64.b32decode(normalized + padding, casefold=True)
+        except binascii.Error as exc:
+            raise ValueError("Segredo TOTP inválido: não está em Base32.") from exc
+        return normalized
+
+    @staticmethod
+    def _is_sha256_hash(secret: str) -> bool:
+        if not secret or len(secret) != 64:
+            return False
+        try:
+            int(secret, 16)
+        except ValueError:
+            return False
+        return True
 
     def save(self, *args, **kwargs):
         if not self.secret:
             self.secret = pyotp.random_base32()
 
-        # Para novos registros, persistimos apenas o hash SHA-256 do segredo,
-        # evitando que o valor original seja recuperado do banco de dados.
-        if self.secret and len(self.secret) != 64:
-            self.secret = hashlib.sha256(self.secret.encode()).hexdigest()
+        if self.secret:
+            if self._is_sha256_hash(self.secret):
+                user = getattr(self, "usuario", None)
+                user_secret = getattr(user, "two_factor_secret", None) if user else None
+                if user_secret:
+                    self.secret = self._normalize_base32_secret(user_secret)
+            else:
+                # Mantemos o segredo no formato Base32 canônico para permitir
+                # a geração/verificação dos códigos TOTP.
+                self.secret = self._normalize_base32_secret(self.secret)
 
         super().save(*args, **kwargs)
 
+    def _get_active_secret(self) -> str:
+        secret = self.secret or ""
+        if self._is_sha256_hash(secret) and getattr(self, "usuario", None):
+            user_secret = getattr(self.usuario, "two_factor_secret", None)
+            if user_secret:
+                secret = user_secret
+        if not secret:
+            raise ValueError("Segredo TOTP não configurado.")
+        if self._is_sha256_hash(secret):
+            raise ValueError("Segredo TOTP está armazenado em formato legado incompatível.")
+        return self._normalize_base32_secret(secret)
+
     def gerar_totp(self) -> str:
-        return pyotp.TOTP(self.secret).now()
+        secret = self._get_active_secret()
+        return pyotp.TOTP(secret).now()
 
     class Meta:
         ordering = ["-created_at"]
