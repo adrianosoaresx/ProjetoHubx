@@ -369,13 +369,6 @@ def _get_menu_items() -> List[MenuItem]:
             children=membros_children,
         ),
         MenuItem(
-            "notificacoes_templates",
-            reverse("notificacoes:templates_list"),
-            "Templates de Notificações",
-            ICON_ALERT,
-            ["admin", "root", UserType.ADMIN, UserType.ROOT],
-        ),
-        MenuItem(
             "nucleos",
             nucleos_url,
             "Núcleos",
