@@ -11,6 +11,7 @@ from configuracoes.services import get_configuracao_conta
 from pathlib import Path
 
 from django.contrib.auth.forms import PasswordChangeForm
+from notificacoes.models import NotificationTemplate, Canal
 
 pytestmark = pytest.mark.django_db
 
@@ -32,6 +33,22 @@ def test_configuracoes_non_htmx_renders_full_template(admin_client):
     template_names = [template.name for template in response.templates if template.name]
     assert template_names[0] == "configuracoes/configuracao.html"
 
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_admin_user_can_view_notification_templates(admin_client):
+    NotificationTemplate.objects.create(
+        codigo="boas-vindas",
+        assunto="Assunto",
+        corpo="Corpo",
+        canal=Canal.EMAIL,
+    )
+
+    response = admin_client.get(reverse("configuracoes:configuracoes"))
+
+    assert response.status_code == 200
+    assert response.context["can_view_notification_templates"] is True
+    content = response.content.decode()
+    assert "Você não possui permissão para visualizar os templates de notificação." not in content
 
 
 
