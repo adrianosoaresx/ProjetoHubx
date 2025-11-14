@@ -43,21 +43,6 @@
       </div>
     </details>
 
-    {% if can_manage_operadores %}
-      <article class="card">
-        <header class="card-header flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/15">
-              {% lucide 'users' class='h-6 w-6' aria_hidden='true' %}
-            </span>
-            <span class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Operadores' %}</span>
-          </div>
-        </header>
-        <div id="{{ operadores_panel_target_id }}" class="card-body space-y-4">
-          {% include 'configuracoes/_partials/operadores_panel.html' with operadores=operadores can_manage_operadores=can_manage_operadores %}
-        </div>
-      </article>
-    {% endif %}
   </section>
 
   <div id="modal" aria-live="polite"></div>
