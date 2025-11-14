@@ -259,6 +259,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             context.setdefault("operadores", operadores_context.get("operadores", []))
             context.setdefault("can_manage_operadores", operadores_context.get("can_manage_operadores", False))
         self._augment_panel_context(context, section)
+        requested_panel = self.request.GET.get("panel")
+        context.setdefault("open_notificacoes_panel", requested_panel == "notificacoes")
         response = render(request, template, context)
         if is_htmx:
             # Ajusta cabeçalho Vary para que a cache (se configurada) considere o header HX-Request.
