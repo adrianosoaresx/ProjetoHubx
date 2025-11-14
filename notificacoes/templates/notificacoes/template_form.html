@@ -4,9 +4,9 @@
 
 {% block hero %}
   {% if form.instance.pk %}
-    {% include '_components/hero.html' with title=_('Editar Template') %}
+    {% include '_components/hero.html' with title=_('Editar template de notificação') subtitle=_('Atualize o conteúdo e os canais utilizados nas comunicações automáticas.') neural_background='configuracao' %}
   {% else %}
-    {% include '_components/hero.html' with title=_('Cadastrar Template') %}
+    {% include '_components/hero.html' with title=_('Novo template de notificação') subtitle=_('Defina as mensagens padrão que serão enviadas aos usuários.') neural_background='configuracao' %}
   {% endif %}
 {% endblock %}
 

@@ -69,11 +69,13 @@ def create_template(request):
         if form.is_valid():
             form.save()
             messages.success(request, _("Template criado com sucesso."))
-            return redirect("notificacoes:templates_list")
+            settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+            return redirect(settings_notifications_url)
     else:
         form = NotificationTemplateForm()
 
-    fallback_url = reverse("notificacoes:templates_list")
+    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    fallback_url = settings_notifications_url
     back_href = resolve_back_href(request, fallback=fallback_url)
     context = {
         "form": form,
@@ -99,11 +101,13 @@ def edit_template(request, codigo: str):
         if form.is_valid():
             form.save()
             messages.success(request, _("Template atualizado com sucesso."))
-            return redirect("notificacoes:templates_list")
+            settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+            return redirect(settings_notifications_url)
     else:
         form = NotificationTemplateForm(instance=template)
 
-    fallback_url = reverse("notificacoes:templates_list")
+    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    fallback_url = settings_notifications_url
     back_href = resolve_back_href(request, fallback=fallback_url)
     context = {
         "form": form,
