@@ -5,6 +5,7 @@ from django.urls import reverse
 from unittest.mock import patch
 
 from accounts.factories import UserFactory
+from accounts.models import UserType
 from notificacoes.models import NotificationTemplate
 
 
@@ -40,6 +41,37 @@ def test_list_templates_requires_view_permission(client):
     _, _, context = mock_render.call_args[0]
     page_obj = context["page_obj"]
     assert page_obj.paginator.count == initial_count
+
+
+def test_admin_user_has_access_without_explicit_permission(client):
+    user = UserFactory(user_type=UserType.ADMIN.value)
+    user.is_staff = True
+    user.save(update_fields=["user_type", "is_staff"])
+    client.force_login(user)
+
+    url = reverse("notificacoes:templates_list")
+
+    with patch("notificacoes.views.render", return_value=HttpResponse("OK")) as mock_render:
+        response = client.get(url)
+
+    assert response.status_code == 200
+    mock_render.assert_called_once()
+
+
+def test_root_user_has_access_without_explicit_permission(client):
+    user = UserFactory(user_type=UserType.CONVIDADO.value)
+    user.is_staff = True
+    user.is_superuser = True
+    user.save(update_fields=["user_type", "is_staff", "is_superuser"])
+    client.force_login(user)
+
+    url = reverse("notificacoes:templates_list")
+
+    with patch("notificacoes.views.render", return_value=HttpResponse("OK")) as mock_render:
+        response = client.get(url)
+
+    assert response.status_code == 200
+    mock_render.assert_called_once()
 
 
 def test_list_templates_paginates_results(client, user_with_view_permission):
