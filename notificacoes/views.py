@@ -4,7 +4,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse
@@ -29,12 +29,13 @@ from .models import (
     NotificationStatus,
     NotificationTemplate,
 )
+from .permissions import notifications_permission_required
 
 logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required("notificacoes.view_notificationtemplate", raise_exception=True)
+@notifications_permission_required("notificacoes.view_notificationtemplate")
 def list_templates(request):
     templates = NotificationTemplate.objects.all().order_by("-created_at")
     paginator = Paginator(templates, 20)
@@ -47,7 +48,7 @@ def list_templates(request):
 
 
 @login_required
-@permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
+@notifications_permission_required("notificacoes.change_notificationtemplate")
 def toggle_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
     if request.method == "POST":
@@ -61,7 +62,7 @@ def toggle_template(request, codigo: str):
 
 
 @login_required
-@permission_required("notificacoes.add_notificationtemplate", raise_exception=True)
+@notifications_permission_required("notificacoes.add_notificationtemplate")
 def create_template(request):
     if request.method == "POST":
         form = NotificationTemplateForm(request.POST)
@@ -90,7 +91,7 @@ def create_template(request):
 
 
 @login_required
-@permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
+@notifications_permission_required("notificacoes.change_notificationtemplate")
 def edit_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
     if request.method == "POST":
@@ -190,7 +191,7 @@ def historico_notificacoes(request):
 
 
 @login_required
-@permission_required("notificacoes.delete_notificationtemplate", raise_exception=True)
+@notifications_permission_required("notificacoes.delete_notificationtemplate")
 def delete_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
 
