@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpRequest, HttpResponse
+from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -23,6 +24,7 @@ try:
     from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta  # type: ignore
     from accounts.models import AccountToken, UserType  # type: ignore
     from tokens.utils import get_client_ip  # type: ignore
+    from notificacoes.models import NotificationTemplate  # type: ignore
 except Exception:
     ConfiguracaoContaForm = None  # type: ignore
     OperadorCreateForm = None  # type: ignore
@@ -38,6 +40,7 @@ except Exception:
         OPERADOR = "operador"
     def get_client_ip(request: HttpRequest) -> str:  # type: ignore
         return "0.0.0.0"
+    NotificationTemplate = None  # type: ignore
 
 from core.permissions import AdminRequiredMixin
 
@@ -146,6 +149,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "seguranca": "seguranca-panel-content",
             "preferencias": "preferencias-panel-content",
             "operadores": "operadores-panel-content",
+            "notificacoes": "notificacoes-panel-content",
         }
 
     def _augment_panel_context(self, context: Dict[str, Any], section: str) -> None:
@@ -155,6 +159,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         context.setdefault("seguranca_panel_target_id", panel_ids["seguranca"])
         context.setdefault("preferencias_panel_target_id", panel_ids["preferencias"])
         context.setdefault("operadores_panel_target_id", panel_ids["operadores"])
+        context.setdefault("notificacoes_panel_target_id", panel_ids["notificacoes"])
         context.setdefault("updated_preferences", False)
         context["hx_target_id"] = panel_ids.get(section, "settings-content")
 
@@ -196,6 +201,28 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "can_manage_operadores": True,
         }
 
+    def get_notification_templates_context(self) -> Dict[str, Any]:
+        if NotificationTemplate is None:  # type: ignore[truthy-function]
+            return {
+                "notification_templates_page": None,
+                "can_view_notification_templates": False,
+            }
+        user = self.request.user
+        can_view = user.has_perm("notificacoes.view_notificationtemplate")
+        if not can_view:
+            return {
+                "notification_templates_page": None,
+                "can_view_notification_templates": False,
+            }
+        templates_qs = NotificationTemplate.objects.all().order_by("-created_at")
+        paginator = Paginator(templates_qs, 20)
+        page_number = self.request.GET.get("notification_templates_page") or 1
+        templates_page = paginator.get_page(page_number)
+        return {
+            "notification_templates_page": templates_page,
+            "can_view_notification_templates": True,
+        }
+
     def render_response(self, request: HttpRequest, section: str, context: Dict[str, Any]) -> HttpResponse:
         """
         Renderiza a resposta apropriada para a aba, retornando um fragmento HTMX
@@ -211,6 +238,12 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         )
         if not is_htmx:
             self._ensure_full_page_forms(context)
+            notificacoes_context = self.get_notification_templates_context()
+            for key, value in notificacoes_context.items():
+                context.setdefault(key, value)
+        else:
+            context.setdefault("notification_templates_page", None)
+            context.setdefault("can_view_notification_templates", False)
         if section == "operadores" or not is_htmx:
             operadores_context = self.get_operadores_context()
             context.setdefault("operadores", operadores_context.get("operadores", []))

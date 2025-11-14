@@ -1,0 +1,68 @@
+{% load i18n %}
+<article class="card">
+  <header class="card-header flex flex-wrap items-start justify-between gap-4">
+    <div class="space-y-1">
+      <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Templates de Notificação' %}</h2>
+      <p class="text-sm text-[var(--text-secondary)]">{% trans 'Gerencie as mensagens utilizadas nos envios.' %}</p>
+    </div>
+    {% include 'notificacoes/hero_action.html' %}
+  </header>
+  <div class="card-body space-y-6">
+    {% if page_obj %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-[var(--border)] text-sm">
+          <caption class="sr-only">{% trans 'Lista de templates de notificação' %}</caption>
+          <thead class="bg-[var(--bg-tertiary)]">
+            <tr>
+              <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Código' %}</th>
+              <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Assunto' %}</th>
+              <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
+              <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Ativo' %}</th>
+              <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Ações' %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]" id="templates_table">
+            {% for tpl in page_obj %}
+            <tr>
+              <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
+              <td class="px-4 py-2">{{ tpl.assunto }}</td>
+              <td class="px-4 py-2">{{ tpl.get_canal_display }}</td>
+              <td class="px-4 py-2">{{ tpl.ativo|yesno:_('Sim,Não') }}</td>
+              <td class="px-4 py-2">
+                <div class="flex flex-wrap items-center gap-3">
+                  <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="btn btn-secondary btn-sm">{% trans 'Editar' %}</a>
+                  <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}">
+                    {% csrf_token %}
+                    {% if tpl.ativo %}
+                      <button type="submit" class="btn btn-secondary btn-sm">{% trans 'Desativar' %}</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-secondary btn-sm">{% trans 'Ativar' %}</button>
+                    {% endif %}
+                  </form>
+                  <a
+                    href="{% url 'notificacoes:template_delete' tpl.codigo %}"
+                    hx-get="{% url 'notificacoes:template_delete' tpl.codigo %}"
+                    hx-target="#modal"
+                    hx-trigger="click"
+                    hx-swap="innerHTML"
+                    hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                    class="btn btn-danger btn-sm"
+                    aria-haspopup="dialog"
+                  >{% trans 'Excluir' %}</a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if page_obj.has_other_pages %}
+        {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
+      {% endif %}
+    {% else %}
+      <div class="space-y-4 text-center">
+        <p class="text-[var(--text-secondary)]">{% trans 'Nenhum template cadastrado.' %}</p>
+      </div>
+    {% endif %}
+  </div>
+</article>
