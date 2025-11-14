@@ -3,7 +3,13 @@ from __future__ import annotations  # pragma: no cover
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import Canal, Frequencia, NotificationTemplate
+from .models import (
+    Canal,
+    Frequencia,
+    NotificationStatus,
+    NotificationTemplate,
+    CANAL_LOG_CHOICES,
+)
 
 
 class NotificationTemplateForm(forms.ModelForm):
@@ -65,3 +71,37 @@ class HistoricoNotificacaoFilterForm(forms.Form):
     def clean_ordenacao(self) -> str:
         ordenacao = self.cleaned_data["ordenacao"]
         return ordenacao or "-enviado_em"
+
+
+class NotificationLogFilterForm(forms.Form):
+    inicio = forms.DateField(
+        label=_("Data inicial"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    fim = forms.DateField(
+        label=_("Data final"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    canal = forms.ChoiceField(
+        label=_("Canal"),
+        required=False,
+        choices=[("", _("Todos os canais"))] + list(CANAL_LOG_CHOICES),
+    )
+    status = forms.ChoiceField(
+        label=_("Status"),
+        required=False,
+        choices=[("", _("Todos os status"))] + list(NotificationStatus.choices),
+    )
+    template = forms.ModelChoiceField(
+        label=_("Template"),
+        required=False,
+        queryset=NotificationTemplate.objects.none(),
+        to_field_name="codigo",
+    )
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["template"].queryset = NotificationTemplate.objects.order_by("codigo")
+        self.fields["template"].empty_label = _("Todos os templates")
