@@ -465,7 +465,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
 
 
 class Ativar2FAView(LoginRequiredMixin, View):
-    template_name = "tokens/ativar_2fa.html"
+    template_name = "configuracoes/seguranca/ativar_2fa.html"
 
     def _get_qr_code(self, user):
         otp_uri = pyotp.totp.TOTP(user.two_factor_secret).provisioning_uri(name=user.email, issuer_name="Hubx")
@@ -525,7 +525,7 @@ class Ativar2FAView(LoginRequiredMixin, View):
 
 
 class Desativar2FAView(LoginRequiredMixin, View):
-    template_name = "tokens/desativar_2fa.html"
+    template_name = "configuracoes/seguranca/desativar_2fa.html"
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name)

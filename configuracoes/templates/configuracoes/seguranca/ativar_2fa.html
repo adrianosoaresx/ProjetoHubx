@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{% trans "Ativar 2FA" %} | Hubx{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with
+    title=_('Segurança da conta')
+    subtitle=_('Proteja sua conta habilitando a autenticação em duas etapas.')
+    hero_active_tab='seguranca'
+    tab='seguranca'
+  %}
+{% endblock %}
+
+{% block content %}
+  <section class="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:flex-row">
+    <article class="card w-full">
+      <header class="card-header space-y-2">
+        <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{% trans "Ativar autenticação em duas etapas" %}</h1>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% blocktrans %}
+            Utilize um aplicativo autenticador para escanear o QR Code ou insira a chave manualmente.
+            Depois, informe o código de 6 dígitos gerado para finalizar a configuração.
+          {% endblocktrans %}
+        </p>
+      </header>
+
+      <div class="card-body space-y-6">
+        <div class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-100)] p-6 text-center">
+          <img
+            src="data:image/png;base64,{{ qr_code }}"
+            alt="{% trans 'QR Code para configurar autenticação em duas etapas' %}"
+            class="h-48 w-48 rounded-lg border border-[var(--border-strong)] bg-white p-3 shadow"
+          />
+          <div class="space-y-1">
+            <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Chave secreta" %}</p>
+            <code class="inline-block rounded bg-[var(--surface-200)] px-3 py-2 text-sm font-mono tracking-wide text-[var(--text-primary)]">
+              {{ secret }}
+            </code>
+          </div>
+        </div>
+
+        <form method="post" class="space-y-6" autocomplete="off">
+          {% csrf_token %}
+          {% include '_forms/field.html' with field=form.codigo_totp %}
+          <div class="flex flex-wrap justify-between gap-3 border-t border-[var(--border)] pt-4">
+            <a href="{% url 'configuracoes:configuracoes' %}" class="btn btn-outline">
+              {% trans "Voltar" %}
+            </a>
+            <button type="submit" class="btn btn-primary">
+              {% trans "Ativar 2FA" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </article>
+  </section>
+{% endblock %}

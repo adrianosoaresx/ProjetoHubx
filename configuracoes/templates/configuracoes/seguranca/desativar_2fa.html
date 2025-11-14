@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Desativar 2FA" %} | Hubx{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with
+    title=_('Segurança da conta')
+    subtitle=_('Gerencie a autenticação em duas etapas da sua conta.')
+    hero_active_tab='seguranca'
+    tab='seguranca'
+  %}
+{% endblock %}
+
+{% block content %}
+  <section class="mx-auto w-full max-w-3xl">
+    <article class="card">
+      <header class="card-header space-y-2">
+        <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{% trans "Desativar autenticação em duas etapas" %}</h1>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% blocktrans %}
+            A autenticação em duas etapas adiciona uma camada extra de segurança. Desativá-la deixará sua conta protegida apenas pela senha.
+          {% endblocktrans %}
+        </p>
+      </header>
+      <div class="card-body space-y-6">
+        <div class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] p-4">
+          <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Antes de continuar" %}</h2>
+          <ul class="mt-2 list-disc space-y-2 pl-5 text-sm text-[var(--text-secondary)]">
+            <li>{% trans "Você precisará apenas da sua senha para entrar após desativar o 2FA." %}</li>
+            <li>{% trans "Considere manter o 2FA ativo para evitar acessos não autorizados." %}</li>
+          </ul>
+        </div>
+
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <p class="text-sm text-[var(--text-secondary)]">
+            {% trans "Tem certeza de que deseja desativar a autenticação em duas etapas?" %}
+          </p>
+          <div class="flex flex-wrap justify-between gap-3 border-t border-[var(--border)] pt-4">
+            <a href="{% url 'configuracoes:configuracoes' %}" class="btn btn-outline">
+              {% trans "Cancelar" %}
+            </a>
+            <button type="submit" class="btn btn-danger">
+              {% trans "Desativar 2FA" %}
+            </button>
+          </div>
+        </form>
+      </div>
+    </article>
+  </section>
+{% endblock %}

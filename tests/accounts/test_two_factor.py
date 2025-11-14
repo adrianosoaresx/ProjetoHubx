@@ -18,7 +18,10 @@ def test_enable_2fa_flow(client):
 
     resp = client.get(reverse("tokens:ativar_2fa"))
     assert resp.status_code == 200
-    assert any(template.name == "tokens/ativar_2fa.html" for template in resp.templates)
+    assert any(
+        template.name == "configuracoes/seguranca/ativar_2fa.html"
+        for template in resp.templates
+    )
     user.refresh_from_db()
     totp = pyotp.TOTP(user.two_factor_secret).now()
     resp = client.post(reverse("tokens:ativar_2fa"), {"codigo_totp": totp})
@@ -89,7 +92,10 @@ def test_disable_2fa_flow(client):
     client.force_login(user)
     resp_page = client.get(reverse("tokens:desativar_2fa"))
     assert resp_page.status_code == 200
-    assert any(template.name == "tokens/desativar_2fa.html" for template in resp_page.templates)
+    assert any(
+        template.name == "configuracoes/seguranca/desativar_2fa.html"
+        for template in resp_page.templates
+    )
 
     resp = client.post(reverse("tokens:desativar_2fa"))
     assert resp.status_code == 302
