@@ -421,7 +421,9 @@ class EmailLoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput, label="Senha")
     totp = forms.CharField(
-        label="TOTP", required=False, help_text=_("Deixe em branco se não tiver 2FA")
+        label=_("Código do aplicativo autenticador (2FA)"),
+        required=False,
+        help_text=_("Deixe em branco se não tiver 2FA"),
     )
 
     def __init__(self, request=None, *args, **kwargs):
