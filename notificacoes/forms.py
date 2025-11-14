@@ -105,3 +105,16 @@ class NotificationLogFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["template"].queryset = NotificationTemplate.objects.order_by("codigo")
         self.fields["template"].empty_label = _("Todos os templates")
+
+
+class MetricsFilterForm(forms.Form):
+    inicio = forms.DateField(
+        label=_("Data inicial"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    fim = forms.DateField(
+        label=_("Data final"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
