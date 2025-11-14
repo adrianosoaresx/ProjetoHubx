@@ -17,6 +17,7 @@ from core.utils import resolve_back_href
 
 from .forms import (
     HistoricoNotificacaoFilterForm,
+    MetricsFilterForm,
     NotificationLogFilterForm,
     NotificationTemplateForm,
 )
@@ -254,12 +255,16 @@ def delete_template(request, codigo: str):
 @staff_member_required
 def metrics_dashboard(request):
     logs = NotificationLog.objects.filter(data_envio__isnull=False)
-    inicio = request.GET.get("inicio")
-    fim = request.GET.get("fim")
-    if inicio:
-        logs = logs.filter(data_envio__date__gte=inicio)
-    if fim:
-        logs = logs.filter(data_envio__date__lte=fim)
+    form = MetricsFilterForm(request.GET or None)
+
+    if form.is_valid():
+        inicio = form.cleaned_data.get("inicio")
+        fim = form.cleaned_data.get("fim")
+
+        if inicio:
+            logs = logs.filter(data_envio__date__gte=inicio)
+        if fim:
+            logs = logs.filter(data_envio__date__lte=fim)
     total_por_canal = {
         item["canal"]: item["total"]
         for item in logs.filter(status=NotificationStatus.ENVIADA).values("canal").annotate(total=Count("id"))
@@ -273,6 +278,7 @@ def metrics_dashboard(request):
         "total_por_canal": total_por_canal,
         "falhas_por_canal": falhas_por_canal,
         "templates_total": templates_total,
+        "form": form,
     }
     logger.info("metrics_view", extra={"user": request.user.id})
     return render(request, "notificacoes/metrics.html", context)
