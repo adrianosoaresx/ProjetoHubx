@@ -16,7 +16,7 @@
         {% include 'notificacoes/hero_action.html' %}
       </header>
       <div class="card-body space-y-6">
-        {% if templates %}
+        {% if page_obj %}
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-[var(--border)] text-sm">
               <caption class="sr-only">{% trans 'Lista de templates de notificação' %}</caption>
@@ -30,7 +30,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--border)]" id="templates_table">
-                {% for tpl in templates %}
+                {% for tpl in page_obj %}
                 <tr>
                   <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
                   <td class="px-4 py-2">{{ tpl.assunto }}</td>
@@ -64,8 +64,8 @@
               </tbody>
             </table>
           </div>
-          {% if templates.has_other_pages %}
-            {% include '_partials/pagination.html' with page_obj=templates querystring=request.GET.urlencode %}
+          {% if page_obj.has_other_pages %}
+            {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
           {% endif %}
         {% else %}
           <div class="space-y-4 text-center">
