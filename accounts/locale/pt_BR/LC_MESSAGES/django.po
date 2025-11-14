@@ -135,6 +135,10 @@ msgstr ""
 msgid "Código 2FA"
 msgstr ""
 
+#: accounts/forms.py:424
+msgid "Código do aplicativo autenticador (2FA)"
+msgstr "Código do aplicativo autenticador (2FA)"
+
 #: templates/login/login.html:66
 msgid "Esqueceu sua senha?"
 msgstr ""
