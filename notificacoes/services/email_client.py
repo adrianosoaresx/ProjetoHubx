@@ -9,7 +9,7 @@ def send_email(user, subject: str, body: str) -> None:
     """Enviar e-mail usando backend configurado."""
     if not getattr(settings, "EMAIL_DELIVERY_ENABLED", True):
         logger.info("email_desativado", extra={"user": getattr(user, "id", None)})
-    return
+        return
     try:
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email])
     except Exception as exc:  # pragma: no cover - falha de integração
