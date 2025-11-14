@@ -31,8 +31,14 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required("notificacoes.view_notificationtemplate", raise_exception=True)
 def list_templates(request):
-    templates = NotificationTemplate.objects.all()
-    return render(request, "notificacoes/templates_list.html", {"templates": templates})
+    templates = NotificationTemplate.objects.all().order_by("-created_at")
+    paginator = Paginator(templates, 20)
+    templates_page = paginator.get_page(request.GET.get("page"))
+    context = {
+        "templates_page": templates_page,
+        "page_obj": templates_page,
+    }
+    return render(request, "notificacoes/templates_list.html", context)
 
 
 @login_required
