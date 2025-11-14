@@ -180,6 +180,17 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         admin_value = getattr(getattr(UserType, "ADMIN", "admin"), "value", getattr(UserType, "ADMIN", "admin"))
         return user_type_value == admin_value
 
+    def can_view_notification_templates(self) -> bool:
+        user = self.request.user
+        if getattr(user, "is_superuser", False):
+            return True
+        user_type = getattr(user, "user_type", None)
+        user_type_value = getattr(user_type, "value", user_type)
+        admin_value = getattr(getattr(UserType, "ADMIN", "admin"), "value", getattr(UserType, "ADMIN", "admin"))
+        if user_type_value == admin_value:
+            return True
+        return user.has_perm("notificacoes.view_notificationtemplate")
+
     def get_operadores_queryset(self):
         User = get_user_model()
         operador_value = getattr(UserType.OPERADOR, "value", UserType.OPERADOR)  # type: ignore[attr-defined]
@@ -207,8 +218,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
                 "notification_templates_page": None,
                 "can_view_notification_templates": False,
             }
-        user = self.request.user
-        can_view = user.has_perm("notificacoes.view_notificationtemplate")
+        can_view = self.can_view_notification_templates()
         if not can_view:
             return {
                 "notification_templates_page": None,
