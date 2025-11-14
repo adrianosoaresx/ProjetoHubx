@@ -77,6 +77,7 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
                 "nucleos": True,
                 "eventos": True,
                 "feed": True,
+                "notificacoes_templates": False,
             },
         ),
         (
@@ -87,6 +88,7 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
                 "nucleos": True,
                 "eventos": True,
                 "feed": True,
+                "notificacoes_templates": False,
             },
         ),
         (
@@ -97,6 +99,18 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
                 "nucleos": True,
                 "eventos": True,
                 "feed": True,
+                "notificacoes_templates": True,
+            },
+        ),
+        (
+            UserType.ROOT,
+            {
+                "membros": False,
+                "tokens": False,
+                "nucleos": False,
+                "eventos": False,
+                "feed": False,
+                "notificacoes_templates": True,
             },
         ),
     ],
@@ -110,9 +124,13 @@ def test_main_menu_visibility_by_user_type(user_type, expected_visibility):
         user_type=user_type,
     )
 
-    if user_type is UserType.ADMIN:
+    if user_type in {UserType.ADMIN, UserType.ROOT}:
         user.is_staff = True
-        user.save(update_fields=["is_staff"])
+        update_fields = ["is_staff"]
+        if user_type is UserType.ROOT:
+            user.is_superuser = True
+            update_fields.append("is_superuser")
+        user.save(update_fields=update_fields)
 
     request = RequestFactory().get("/")
     request.user = user
