@@ -43,6 +43,29 @@
       </div>
     </details>
 
+    <details class="card group" data-accordion-item>
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
+            {% lucide 'bell-ring' class='h-6 w-6' aria_hidden='true' %}
+          </span>
+          <span class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Notificações' %}</span>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+        </span>
+      </summary>
+      <div id="{{ notificacoes_panel_target_id }}" class="card-body space-y-6" data-accordion-panel>
+        {% if can_view_notification_templates %}
+          {% include 'notificacoes/partials/templates_panel.html' with page_obj=notification_templates_page templates_page=notification_templates_page %}
+        {% else %}
+          <div class="alert alert-warning" role="alert">
+            <p class="text-sm text-[var(--text-secondary)]">{% trans 'Você não possui permissão para visualizar os templates de notificação.' %}</p>
+          </div>
+        {% endif %}
+      </div>
+    </details>
+
   </section>
 
   <div id="modal" aria-live="polite"></div>
