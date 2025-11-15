@@ -336,7 +336,7 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             )
 
         context.setdefault("page_title", _("Vitrine") + " | Hubx")
-        context.setdefault("hero_title", _("Vitrine"))
+        context.setdefault("hero_title", _("Vitrine de negócios"))
         context.setdefault("hero_action_template", "feed/hero_actions.html")
 
         return context
