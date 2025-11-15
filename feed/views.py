@@ -335,8 +335,8 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
                 Organizacao.objects.filter(pk=org.pk) if org else Organizacao.objects.none()
             )
 
-        context.setdefault("page_title", _("Vitrine de Negócios") + " | Hubx")
-        context.setdefault("hero_title", _("Vitrine de Negócios"))
+        context.setdefault("page_title", _("Vitrine") + " | Hubx")
+        context.setdefault("hero_title", _("Vitrine"))
         context.setdefault("hero_action_template", "feed/hero_actions.html")
 
         return context
