@@ -85,7 +85,7 @@ def create_template(request):
             "fallback_href": fallback_url,
         },
         "cancel_component_config": {
-            "href": fallback_url,
+            "href": back_href,
             "fallback_href": fallback_url,
             "prevent_history": True,
         },
@@ -119,7 +119,7 @@ def edit_template(request, codigo: str):
             "fallback_href": fallback_url,
         },
         "cancel_component_config": {
-            "href": fallback_url,
+            "href": back_href,
             "fallback_href": fallback_url,
             "aria_label": _("Cancelar edição"),
             "prevent_history": True,

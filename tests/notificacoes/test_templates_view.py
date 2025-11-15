@@ -110,3 +110,82 @@ def test_edit_template_codigo_unchanged(client):
     template.refresh_from_db()
     assert template.codigo == "orig"
     assert template.assunto == "novo assunto"
+
+
+def _grant_permission(user, codename: str) -> None:
+    perm = Permission.objects.get(codename=codename)
+    user.user_permissions.add(perm)
+
+
+@pytest.mark.parametrize(
+    "referer",
+    [
+        "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+        None,
+    ],
+)
+def test_create_template_cancel_component_uses_back_href(client, referer):
+    user = UserFactory()
+    _grant_permission(user, "add_notificationtemplate")
+    client.force_login(user)
+
+    url = reverse("notificacoes:template_create")
+    request_kwargs = {}
+    if referer:
+        request_kwargs["HTTP_REFERER"] = referer
+
+    response = client.get(url, **request_kwargs)
+
+    assert response.status_code == 200
+
+    expected_fallback = (
+        f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    )
+
+    cancel_config = response.context["cancel_component_config"]
+    expected_href = referer or expected_fallback
+
+    assert cancel_config["href"] == expected_href
+    assert cancel_config["fallback_href"] == expected_fallback
+    assert cancel_config.get("prevent_history") is True
+
+
+@pytest.mark.parametrize(
+    "referer",
+    [
+        "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+        None,
+    ],
+)
+def test_edit_template_cancel_component_uses_back_href(client, referer):
+    user = UserFactory()
+    _grant_permission(user, "change_notificationtemplate")
+    client.force_login(user)
+
+    template = NotificationTemplate.objects.create(
+        codigo="edit-cancel",
+        assunto="a",
+        corpo="b",
+        canal="email",
+        ativo=True,
+    )
+
+    url = reverse("notificacoes:template_edit", args=[template.codigo])
+    request_kwargs = {}
+    if referer:
+        request_kwargs["HTTP_REFERER"] = referer
+
+    response = client.get(url, **request_kwargs)
+
+    assert response.status_code == 200
+
+    expected_fallback = (
+        f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    )
+
+    cancel_config = response.context["cancel_component_config"]
+    expected_href = referer or expected_fallback
+
+    assert cancel_config["href"] == expected_href
+    assert cancel_config["fallback_href"] == expected_fallback
+    assert cancel_config.get("prevent_history") is True
