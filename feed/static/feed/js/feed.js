@@ -162,6 +162,108 @@ function bindFeedEvents(root = document) {
     });
   }
 
+  const linkPreviewWrapper = root.querySelector('[data-link-preview]');
+  if (textarea && linkPreviewWrapper) {
+    const statusEl = linkPreviewWrapper.querySelector('[data-link-preview-status]');
+    const cardEl = linkPreviewWrapper.querySelector('[data-link-preview-card]');
+    const titleEl = linkPreviewWrapper.querySelector('[data-link-preview-title]');
+    const descriptionEl = linkPreviewWrapper.querySelector('[data-link-preview-description]');
+    const imageEl = linkPreviewWrapper.querySelector('[data-link-preview-image]');
+    const imageWrapperEl = linkPreviewWrapper.querySelector('[data-link-preview-image-wrapper]');
+    const urlEl = linkPreviewWrapper.querySelector('[data-link-preview-url]');
+    const hostEl = linkPreviewWrapper.querySelector('[data-link-preview-host]');
+    let currentPreviewUrl = '';
+    let debounceId;
+
+    const setStatus = (text) => {
+      if (!statusEl) return;
+      statusEl.textContent = text || '';
+      statusEl.classList.toggle('hidden', !text);
+    };
+
+    const hidePreview = () => {
+      linkPreviewWrapper.classList.add('hidden');
+      if (cardEl) cardEl.classList.add('hidden');
+      if (imageEl) {
+        imageEl.removeAttribute('src');
+      }
+      if (imageWrapperEl) {
+        imageWrapperEl.classList.add('hidden');
+      }
+      setStatus('');
+      currentPreviewUrl = '';
+    };
+
+    const renderPreview = (data) => {
+      if (!cardEl) return;
+      linkPreviewWrapper.classList.remove('hidden');
+      cardEl.classList.remove('hidden');
+      setStatus('');
+      if (titleEl) titleEl.textContent = data.title || data.url || '';
+      if (descriptionEl) descriptionEl.textContent = data.description || '';
+      if (urlEl) urlEl.href = data.url || '#';
+      if (hostEl) hostEl.textContent = data.site_name || '';
+      if (imageEl && imageWrapperEl) {
+        if (data.image) {
+          imageEl.src = data.image;
+          imageWrapperEl.classList.remove('hidden');
+        } else {
+          imageEl.removeAttribute('src');
+          imageWrapperEl.classList.add('hidden');
+        }
+      }
+    };
+
+    const fetchPreview = async (url) => {
+      if (!url) {
+        hidePreview();
+        return;
+      }
+      const loadingText = linkPreviewWrapper.dataset.loadingText || '';
+      const errorText = linkPreviewWrapper.dataset.errorText || '';
+      linkPreviewWrapper.classList.remove('hidden');
+      if (cardEl) cardEl.classList.add('hidden');
+      setStatus(loadingText);
+      try {
+        const response = await fetch(`/api/feed/posts/link-preview/?url=${encodeURIComponent(url)}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('link preview failed');
+        }
+        const data = await response.json();
+        currentPreviewUrl = url;
+        renderPreview(data);
+      } catch (err) {
+        currentPreviewUrl = '';
+        setStatus(errorText);
+        if (cardEl) cardEl.classList.add('hidden');
+      }
+    };
+
+    const handleUrlChange = () => {
+      const match = (textarea.value || '').match(/https?:\/\/[\w.-]+(?:\.[\w.-]+)*(?::\d+)?[^\s]*/i);
+      const url = match ? match[0] : '';
+      if (!url) {
+        hidePreview();
+        return;
+      }
+      if (url === currentPreviewUrl) {
+        linkPreviewWrapper.classList.remove('hidden');
+        return;
+      }
+      if (debounceId) {
+        clearTimeout(debounceId);
+      }
+      debounceId = window.setTimeout(() => fetchPreview(url), 400);
+    };
+
+    textarea.addEventListener('input', handleUrlChange);
+    handleUrlChange();
+  }
+
   // Tags: chips input
   const tagsInput = root.querySelector('#tags-input');
   const chipsContainer = root.querySelector('#tags-chips');
