@@ -4,9 +4,7 @@ import time
 
 import sentry_sdk
 import structlog
-from asgiref.sync import async_to_sync
 from celery import shared_task  # type: ignore
-from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -16,7 +14,7 @@ from audit.services import log_audit
 from configuracoes.models import ConfiguracaoConta
 
 from .models import Canal, HistoricoNotificacao, NotificationLog, NotificationStatus
-from .services import metrics
+from .services import broadcast_notification, metrics
 from .services.email_client import send_email
 from .services.push_client import send_push
 from .services.whatsapp_client import send_whatsapp
@@ -35,6 +33,7 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
     if log.status != NotificationStatus.PENDENTE:
         logger.info("log_invalido", log_id=str(log.id), status=log.status)
         return
+    config: ConfiguracaoConta | None = getattr(user, "configuracao", None)
     try:
         if canal == Canal.EMAIL:
             send_email(user, subject, body)
@@ -42,28 +41,6 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
             send_push(user, body)
         elif canal == Canal.WHATSAPP:
             send_whatsapp(user, body)
-        config = getattr(user, "configuracao", None)
-        if config and config.receber_notificacoes_push and config.frequencia_notificacoes_push == "imediata":
-            try:
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    f"notificacoes_{user.id}",
-                    {
-                        "type": "notification.message",
-                        "event": "notification_message",
-                        "titulo": subject,
-                        "mensagem": body,
-                        "canal": canal,
-                        "timestamp": timezone.now().isoformat(),
-                    },
-                )
-            except Exception as ws_exc:  # pragma: no cover - camada WS é best-effort
-                logger.warning(
-                    "ws_notify_failed",
-                    user_id=user.id,
-                    canal=canal,
-                    error=str(ws_exc),
-                )
         log.status = NotificationStatus.ENVIADA
         metrics.notificacoes_enviadas_total.labels(canal=canal).inc()
     except Exception as exc:  # pragma: no cover - integração externa
@@ -99,6 +76,8 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         log.data_envio = timezone.now()
         log.erro = None
         log.save(update_fields=["status", "data_envio", "erro"])
+        if config and config.receber_notificacoes_push and config.frequencia_notificacoes_push == "imediata":
+            broadcast_notification(log, subject, body)
     finally:
         duration = time.perf_counter() - start
         metrics.notificacao_task_duration_seconds.labels(task="enviar_notificacao_async").observe(duration)
@@ -117,9 +96,12 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
 def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: str) -> None:
     for canal in canais:
         start = time.perf_counter()
-        logs = NotificationLog.objects.filter(user=config.user, canal=canal, status=NotificationStatus.PENDENTE)
-        if not logs.exists():
+        logs_qs = NotificationLog.objects.filter(
+            user=config.user, canal=canal, status=NotificationStatus.PENDENTE
+        )
+        if not logs_qs.exists():
             continue
+        logs = list(logs_qs)
         mensagens = [log.corpo_renderizado or log.template.corpo for log in logs]
         body = "\n".join(mensagens)
         subject = _("Resumo de notificações")
@@ -131,7 +113,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             elif canal == Canal.PUSH:
                 send_push(config.user, body)
         except Exception as exc:
-            logs.update(
+            logs_qs.update(
                 status=NotificationStatus.FALHA,
                 data_envio=agora,
                 erro=str(exc),
@@ -149,7 +131,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             )
             continue
 
-        logs.update(status=NotificationStatus.ENVIADA, data_envio=agora, erro=None)
+        logs_qs.update(status=NotificationStatus.ENVIADA, data_envio=agora, erro=None)
         envio = agora.replace(second=0, microsecond=0)
         data_ref = agora.date()
         historico, created = HistoricoNotificacao.objects.update_or_create(
@@ -168,26 +150,11 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
                 tipo_frequencia=tipo,
             )
         if config.receber_notificacoes_push and config.frequencia_notificacoes_push == tipo:
-            try:
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    f"notificacoes_{config.user.id}",
-                    {
-                        "type": "notification.message",
-                        "event": "notification_message",
-                        "titulo": subject,
-                        "mensagem": body,
-                        "canal": canal,
-                        "timestamp": envio.isoformat(),
-                    },
-                )
-            except Exception as ws_exc:  # pragma: no cover - camada WS é best-effort
-                logger.warning(
-                    "ws_notify_failed",
-                    user_id=config.user.id,
-                    canal=canal,
-                    error=str(ws_exc),
-                )
+            for log in logs:
+                log.status = NotificationStatus.ENVIADA
+                log.data_envio = envio
+                log.erro = None
+                broadcast_notification(log, subject, body)
         duration = time.perf_counter() - start
         metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(duration)
         logger.info(
