@@ -4,15 +4,15 @@
 {% block title %}{% trans 'Notificações pendentes' %} | HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_notificacoes.html' with title=_('Notificações push pendentes') subtitle=_('Revise envios já realizados e marque como lidos para organizar sua central.') helper_text=_('Exibindo apenas notificações enviadas via Push que aguardam leitura.') %}
+  {% include '_components/hero_notificacoes.html' with title=_('Notificações') subtitle=_('Revise envios já realizados e marque como lidos.') %}
 {% endblock %}
 
 {% block content %}
   <div class="max-w-6xl mx-auto px-4 py-10">
     <article class="card">
       <header class="card-header space-y-1">
-        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Notificações push enviadas' %}</h2>
-        <p class="text-sm text-[var(--text-secondary)]">{% trans 'Logs filtrados por canal Push e status Enviada.' %}</p>
+        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Notificações' %}</h2>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans 'Lista de notificações pendentes' %}</p>
       </header>
       <div class="card-body space-y-4">
         <div class="overflow-x-auto">
