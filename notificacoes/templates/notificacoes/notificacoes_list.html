@@ -27,7 +27,7 @@
               </tr>
             </thead>
             <tbody id="pending-push-logs-body" class="divide-y divide-[var(--border)]">
-              {% with push_logs=push_logs|default:logs %}
+              {% with push_logs=push_logs %}
                 {% for log in push_logs %}
                   {% if log.canal == 'push' and log.status == 'enviada' %}
                     <tr id="notification-log-{{ log.id }}" data-log-row>
