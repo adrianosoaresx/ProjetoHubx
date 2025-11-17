@@ -1,17 +1,5 @@
 {% load i18n %}
-{% with hero_title=title|default:_('Central de notificações')
-        hero_subtitle=subtitle|default:_('Receba alertas, comunicados e atualizações importantes em tempo real.')
-        hero_helper_text=helper_text
-        hero_alignment=alignment|default:'responsive-left'
-        hero_container_classes=container_classes|default:'max-w-7xl mx-auto w-full px-4 py-12 md:py-16'
-        hero_content_classes=content_classes|default:'flex flex-col gap-6 md:flex-row md:items-center md:justify-between'
-        hero_title_classes=title_classes|default:'text-4xl md:text-5xl font-bold text-white'
-        hero_subtitle_classes=subtitle_classes|default:'text-lg text-white/90'
-        hero_helper_classes=helper_classes|default:'mt-6 text-base text-white/80'
-        hero_section_classes=section_classes|default:'bg-gradient-to-br from-[var(--hero-from)] to-[var(--hero-to)] text-white'
-        hero_action_template=action_template|default:''
-        hero_actions=actions|default:''
-        hero_style=style|default:'' %}
+{% with hero_title=title|default:_('Central de notificações') hero_subtitle=subtitle|default:_('Receba alertas, comunicados e atualizações importantes em tempo real.') hero_helper_text=helper_text hero_alignment=alignment|default:'responsive-left' hero_container_classes=container_classes|default:'max-w-7xl mx-auto w-full px-4 py-12 md:py-16' hero_content_classes=content_classes|default:'flex flex-col gap-6 md:flex-row md:items-center md:justify-between' hero_title_classes=title_classes|default:'text-4xl md:text-5xl font-bold text-white' hero_subtitle_classes=subtitle_classes|default:'text-lg text-white/90' hero_helper_classes=helper_classes|default:'mt-6 text-base text-white/80' hero_section_classes=section_classes|default:'bg-gradient-to-br from-[var(--hero-from)] to-[var(--hero-to)] text-white' hero_action_template=action_template|default:'' hero_actions=actions|default:'' hero_style=style|default:'' %}
 
   {% include '_components/hero.html' with title=hero_title subtitle=hero_subtitle helper_text=hero_helper_text neural_background='notificacoes' alignment=hero_alignment container_classes=hero_container_classes content_classes=hero_content_classes title_classes=hero_title_classes subtitle_classes=hero_subtitle_classes helper_classes=hero_helper_classes section_classes=hero_section_classes action_template=hero_action_template actions=hero_actions style=hero_style %}
 
