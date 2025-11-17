@@ -13,6 +13,7 @@ class Canal(models.TextChoices):
     EMAIL = "email", _("E-mail")
     PUSH = "push", _("Push")
     WHATSAPP = "whatsapp", _("WhatsApp")
+    APP = "app", _("In-app")
     TODOS = "todos", _("Todos")
 
 

@@ -17,7 +17,7 @@
       <div class="card-body space-y-4">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-[var(--border)] text-sm" aria-describedby="pending-notifications-description">
-            <caption class="sr-only">{% trans 'Notificações push pendentes de leitura' %}</caption>
+            <caption class="sr-only">{% trans 'Notificações pendentes de leitura' %}</caption>
             <thead class="bg-[var(--bg-tertiary)]">
               <tr>
                 <th scope="col" class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Assunto' %}</th>
@@ -27,9 +27,9 @@
               </tr>
             </thead>
             <tbody id="pending-push-logs-body" class="divide-y divide-[var(--border)]">
-              {% with push_logs=push_logs %}
-                {% for log in push_logs %}
-                  {% if log.canal == 'push' and log.status == 'enviada' %}
+                {% with push_logs=push_logs %}
+                  {% for log in push_logs %}
+                    {% if log.status == 'enviada' %}
                     <tr id="notification-log-{{ log.id }}" data-log-row>
                       <td class="px-4 py-3 align-top font-medium text-[var(--text-primary)]">{{ log.template.assunto }}</td>
                       <td class="px-4 py-3 align-top text-[var(--text-secondary)] prose prose-sm max-w-none">{{ log.corpo_renderizado|safe }}</td>
@@ -51,7 +51,7 @@
                   {% endif %}
                 {% endfor %}
                 <tr id="empty-push-logs-row" class="{% if push_logs %}hidden{% endif %}">
-                  <td colspan="4" class="px-4 py-6 text-center text-[var(--text-secondary)]">{% trans 'Nenhuma notificação push enviada foi encontrada.' %}</td>
+                  <td colspan="4" class="px-4 py-6 text-center text-[var(--text-secondary)]">{% trans 'Nenhuma notificação enviada foi encontrada.' %}</td>
                 </tr>
               {% endwith %}
             </tbody>
@@ -68,7 +68,7 @@
             }
           })();
         </script>
-        <p id="pending-notifications-description" class="sr-only">{% trans 'A tabela apresenta notificações enviadas via Push aguardando confirmação de leitura.' %}</p>
+        <p id="pending-notifications-description" class="sr-only">{% trans 'A tabela apresenta notificações enviadas aguardando confirmação de leitura.' %}</p>
       </div>
     </article>
   </div>

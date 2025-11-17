@@ -9,7 +9,7 @@ def push_notification_count(request):
 
     count = NotificationLog.objects.filter(
         user=request.user,
-        canal=Canal.PUSH,
+        canal__in=[Canal.PUSH, Canal.APP],
         status=NotificationStatus.ENVIADA,
     ).count()
     return {"push_notification_pending_count": count}

@@ -5,6 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.template import Context, Template
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..models import (
@@ -16,6 +17,7 @@ from ..models import (
     PushSubscription,
 )
 from ..tasks import enviar_notificacao_async
+from .broadcast import broadcast_notification
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +67,7 @@ def enviar_para_usuario(
 
     canais: list[str] = []
     canais_desabilitados: list[str] = []
+    onesignal_enabled = getattr(settings, "ONESIGNAL_ENABLED", False)
 
     if template.canal in {Canal.EMAIL, Canal.TODOS}:
         if prefs.email:
@@ -73,10 +76,16 @@ def enviar_para_usuario(
             canais_desabilitados.append(Canal.EMAIL)
 
     if template.canal in {Canal.PUSH, Canal.TODOS}:
-        if prefs.push and getattr(settings, "ONESIGNAL_ENABLED", False):
-            canais.append(Canal.PUSH)
+        if prefs.push:
+            if onesignal_enabled:
+                canais.append(Canal.PUSH)
+            else:
+                canais.append(Canal.APP)
         else:
             canais_desabilitados.append(Canal.PUSH)
+
+    if template.canal == Canal.APP:
+        canais.append(Canal.APP)
 
     if template.canal in {Canal.WHATSAPP, Canal.TODOS}:
         if prefs.whatsapp:
@@ -106,4 +115,12 @@ def enviar_para_usuario(
             destinatario=_get_destinatario(user, canal),
             corpo_renderizado=body,
         )
+
+        if canal == Canal.APP:
+            log.status = NotificationStatus.ENVIADA
+            log.data_envio = timezone.now()
+            log.save(update_fields=["status", "data_envio"])
+            broadcast_notification(log, subject, body)
+            continue
+
         enviar_notificacao_async.delay(subject, body, str(log.id))
