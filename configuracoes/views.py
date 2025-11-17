@@ -296,6 +296,9 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "hero_title": _("Configurações"),
             "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
+            "action_href": "",
+            "action_label": "",
+            "action_variant": "primary",
         }
         if form is not None:
             context[f"{section}_form"] = form
