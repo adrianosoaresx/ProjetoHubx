@@ -2,11 +2,14 @@ import asyncio
 import os
 
 import pytest
+from unittest.mock import AsyncMock
+from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
 from channels.testing import WebsocketCommunicator
 
 from Hubx.asgi import application
-from notificacoes.models import Canal, NotificationLog, NotificationTemplate, PushSubscription
+from notificacoes.models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, PushSubscription
+from notificacoes.services.broadcast import broadcast_notification
 from notificacoes.tasks import enviar_notificacao_async
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
@@ -43,6 +46,24 @@ def test_consumer_receives_message_with_subscription(admin_user, monkeypatch):
     asyncio.run(inner())
 
 
+def test_broadcast_notification_sends_group_message(admin_user, monkeypatch):
+    channel_layer = get_channel_layer()
+    channel_layer.group_send = AsyncMock()
+    monkeypatch.setattr("notificacoes.services.broadcast.get_channel_layer", lambda: channel_layer)
+
+    template = NotificationTemplate.objects.create(codigo="t-broadcast", assunto="A", corpo="B", canal=Canal.PUSH)
+    log = NotificationLog.objects.create(
+        user=admin_user, template=template, canal=Canal.PUSH, status=NotificationStatus.ENVIADA
+    )
+
+    broadcast_notification(log, "Titulo", "Mensagem")
+
+    channel_layer.group_send.assert_awaited_once()
+    group_name, payload = channel_layer.group_send.call_args.args
+    assert group_name == f"notificacoes_{admin_user.id}"
+    assert "total" in payload
+
+
 def test_consumer_receives_message_without_subscription(admin_user, monkeypatch):
     async def inner():
         monkeypatch.setattr("notificacoes.tasks.send_push", lambda u, m: None)
@@ -65,5 +86,32 @@ def test_consumer_rejects_anonymous():
         communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
         connected, _ = await communicator.connect()
         assert not connected
+
+    asyncio.run(inner())
+
+
+def test_broadcast_payload_total_matches_sent_notifications(admin_user, monkeypatch):
+    async def inner():
+        communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+
+        template = NotificationTemplate.objects.create(codigo="t-payload", assunto="A", corpo="B", canal=Canal.PUSH)
+        NotificationLog.objects.create(
+            user=admin_user, template=template, canal=Canal.PUSH, status=NotificationStatus.ENVIADA
+        )
+        NotificationLog.objects.create(
+            user=admin_user, template=template, canal=Canal.PUSH, status=NotificationStatus.PENDENTE
+        )
+        log = NotificationLog.objects.create(
+            user=admin_user, template=template, canal=Canal.PUSH, status=NotificationStatus.ENVIADA
+        )
+
+        await sync_to_async(broadcast_notification)(log, "Titulo", "Mensagem")
+        message = await communicator.receive_json_from()
+
+        assert message["total"] == 2
+        await communicator.disconnect()
 
     asyncio.run(inner())

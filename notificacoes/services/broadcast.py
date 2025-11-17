@@ -26,15 +26,15 @@ def broadcast_notification(log: NotificationLog, titulo: str, mensagem: str) -> 
         logger.warning("channel_layer_unavailable", user_id=log.user_id)
         return
 
-    total_pendentes: int = NotificationLog.objects.filter(
-        user_id=log.user_id, status=NotificationStatus.PENDENTE
+    total_enviadas: int = NotificationLog.objects.filter(
+        user_id=log.user_id, status=NotificationStatus.ENVIADA
     ).count()
     payload: dict[str, Any] = {
         "type": "notification.message",
         "event": "notification_message",
         "titulo": titulo,
         "mensagem": mensagem,
-        "total": total_pendentes,
+        "total": total_enviadas,
         "canal": log.canal,
         "timestamp": timezone.now().isoformat(),
     }
