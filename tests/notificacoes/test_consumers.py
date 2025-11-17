@@ -115,3 +115,30 @@ def test_broadcast_payload_total_matches_sent_notifications(admin_user, monkeypa
         await communicator.disconnect()
 
     asyncio.run(inner())
+
+
+def test_consumer_payload_includes_dropdown_fields(admin_user):
+    async def inner():
+        communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+
+        template = NotificationTemplate.objects.create(codigo="t-payload-extra", assunto="A", corpo="B", canal=Canal.PUSH)
+        log = NotificationLog.objects.create(
+            user=admin_user,
+            template=template,
+            canal=Canal.PUSH,
+            status=NotificationStatus.ENVIADA,
+        )
+
+        await sync_to_async(broadcast_notification)(log, "Titulo", "Mensagem")
+        message = await communicator.receive_json_from()
+
+        assert message["event"] == "notification_message"
+        assert message["total"] == 1
+        assert message["canal"] == Canal.PUSH
+        assert "timestamp" in message
+        await communicator.disconnect()
+
+    asyncio.run(inner())

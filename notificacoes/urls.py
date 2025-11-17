@@ -7,6 +7,7 @@ app_name = "notificacoes"
 urlpatterns = [
     path("minhas/", views.notificacoes_list, name="notificacoes-list"),
     path("minhas/contagem/", views.push_notification_count, name="push-notification-count"),
+    path("minhas/dropdown/", views.notifications_dropdown, name="notifications-dropdown"),
     path("templates/", views.list_templates, name="templates_list"),
     path("templates/novo/", views.create_template, name="template_create"),
     path("templates/<slug:codigo>/editar/", views.edit_template, name="template_edit"),
