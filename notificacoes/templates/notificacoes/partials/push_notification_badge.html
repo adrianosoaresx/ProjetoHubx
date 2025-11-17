@@ -3,10 +3,10 @@
 <span
   id="push-notification-badge"
   class="absolute -top-1 -right-1 min-w-[1.25rem] rounded-full bg-[var(--error)] px-1.5 text-[10px] leading-4 text-[var(--text-inverse)] text-center font-semibold shadow {% if not count %}hidden{% endif %}"
-  aria-hidden="true"
+  aria-live="polite"
   {% if request.user.is_authenticated %}
   hx-get="{% url 'notificacoes:push-notification-count' %}"
-  hx-trigger="load, every 60s"
+  hx-trigger="every 60s"
   hx-target="#push-notification-badge"
   hx-swap="outerHTML"
   {% endif %}
