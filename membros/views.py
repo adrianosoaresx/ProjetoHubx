@@ -360,6 +360,10 @@ class MembroSectionListView(
         if section not in self.sections:
             return JsonResponse({"error": _("Seção inválida.")}, status=400)
 
+        show_promote_button = (
+            (request.GET.get("show_promote_button") or "").lower() in {"1", "true", "on", "yes"}
+        )
+
         base_queryset = self.get_filtered_queryset()
         page_obj, paginator = self.get_section_page(
             base_queryset, section, page_number=request.GET.get("page")
@@ -372,6 +376,7 @@ class MembroSectionListView(
                 "page_number": page_obj.number,
                 "empty_message": self.get_empty_message(section),
                 "section": section,
+                "show_promote_button": show_promote_button,
             },
             request=request,
         )
