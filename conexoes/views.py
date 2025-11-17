@@ -18,12 +18,25 @@ from django.views import View
 
 from accounts.models import UserType
 from accounts.utils import is_htmx_or_ajax
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .forms import ConnectionsSearchForm
 
 User = get_user_model()
 
 ROOT_CONNECTIONS_FORBIDDEN_MESSAGE = _("Recursos de conexão não estão disponíveis para usuários root.")
+CONNECTION_NOTIFICATION_TEMPLATES = {
+    "request": "connection_request",
+    "accepted": "connection_accepted",
+    "declined": "connection_declined",
+}
+
+
+def _get_display_name(user):
+    name = getattr(user, "get_display_name", lambda: None)() or user.get_full_name()
+    if name:
+        return name
+    return getattr(user, "username", str(user))
 
 
 def _deny_root_connections_access(request):
@@ -651,6 +664,11 @@ def solicitar_conexao(request, id):
     else:
         other_user.followers.add(request.user)
         messages.success(request, _("Solicitação de conexão enviada."))
+        enviar_para_usuario(
+            other_user,
+            CONNECTION_NOTIFICATION_TEMPLATES["request"],
+            {"solicitante": _get_display_name(request.user)},
+        )
 
     q = request.POST.get("q", "").strip()
 
@@ -762,6 +780,11 @@ def aceitar_conexao(request, id):
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
     messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
+    enviar_para_usuario(
+        other_user,
+        CONNECTION_NOTIFICATION_TEMPLATES["accepted"],
+        {"solicitado": _get_display_name(request.user)},
+    )
     if is_htmx_or_ajax(request):
         return HttpResponse(status=204)
     return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes")
@@ -787,6 +810,11 @@ def recusar_conexao(request, id):
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
+    enviar_para_usuario(
+        other_user,
+        CONNECTION_NOTIFICATION_TEMPLATES["declined"],
+        {"solicitado": _get_display_name(request.user)},
+    )
     if is_htmx_or_ajax(request):
         return HttpResponse(status=204)
     return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes")
