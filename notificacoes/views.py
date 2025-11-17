@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from urllib.parse import urlparse
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -74,20 +75,19 @@ def create_template(request):
     else:
         form = NotificationTemplateForm()
 
-    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    panel_slug = request.GET.get("panel", "notificacoes")
+    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel={panel_slug}#notificacoes"
     fallback_url = settings_notifications_url
     back_href = resolve_back_href(request, fallback=fallback_url)
+    referer_path = urlparse(request.META.get("HTTP_REFERER", "")).path
+    if referer_path == request.path or f"panel={panel_slug}" not in back_href:
+        back_href = fallback_url
     context = {
         "form": form,
         "back_href": back_href,
         "back_component_config": {
             "href": back_href,
             "fallback_href": fallback_url,
-        },
-        "cancel_component_config": {
-            "href": back_href,
-            "fallback_href": fallback_url,
-            "prevent_history": True,
         },
     }
     return render(request, "notificacoes/template_form.html", context)
@@ -107,9 +107,13 @@ def edit_template(request, codigo: str):
     else:
         form = NotificationTemplateForm(instance=template)
 
-    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    panel_slug = request.GET.get("panel", "notificacoes")
+    settings_notifications_url = f"{reverse('configuracoes:configuracoes')}?panel={panel_slug}#notificacoes"
     fallback_url = settings_notifications_url
     back_href = resolve_back_href(request, fallback=fallback_url)
+    referer_path = urlparse(request.META.get("HTTP_REFERER", "")).path
+    if referer_path == request.path or f"panel={panel_slug}" not in back_href:
+        back_href = fallback_url
     context = {
         "form": form,
         "template": template,
@@ -117,12 +121,6 @@ def edit_template(request, codigo: str):
         "back_component_config": {
             "href": back_href,
             "fallback_href": fallback_url,
-        },
-        "cancel_component_config": {
-            "href": back_href,
-            "fallback_href": fallback_url,
-            "aria_label": _("Cancelar edição"),
-            "prevent_history": True,
         },
     }
     return render(request, "notificacoes/template_form.html", context)

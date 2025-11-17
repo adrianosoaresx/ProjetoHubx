@@ -1,5 +1,8 @@
+import re
+
 import pytest
 from django.contrib.auth.models import Permission
+from django.test import override_settings
 from django.urls import reverse
 
 from accounts.factories import UserFactory
@@ -118,13 +121,17 @@ def _grant_permission(user, codename: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "referer",
+    "referer, expected_href",
     [
-        "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
-        None,
+        (
+            "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+            "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+        ),
+        ("/notificacoes/templates/", None),
+        (None, None),
     ],
 )
-def test_create_template_cancel_component_uses_back_href(client, referer):
+def test_create_template_back_href_prioritizes_notifications_panel(client, referer, expected_href):
     user = UserFactory()
     _grant_permission(user, "add_notificationtemplate")
     client.force_login(user)
@@ -142,22 +149,21 @@ def test_create_template_cancel_component_uses_back_href(client, referer):
         f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
     )
 
-    cancel_config = response.context["cancel_component_config"]
-    expected_href = referer or expected_fallback
-
-    assert cancel_config["href"] == expected_href
-    assert cancel_config["fallback_href"] == expected_fallback
-    assert cancel_config.get("prevent_history") is True
+    assert response.context["back_href"] == (expected_href or expected_fallback)
 
 
 @pytest.mark.parametrize(
-    "referer",
+    "referer, expected_href",
     [
-        "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
-        None,
+        (
+            "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+            "/configuracoes/?panel=notificacoes&notification_templates_page=2#notificacoes",
+        ),
+        ("/notificacoes/templates/", None),
+        (None, None),
     ],
 )
-def test_edit_template_cancel_component_uses_back_href(client, referer):
+def test_edit_template_back_href_prioritizes_notifications_panel(client, referer, expected_href):
     user = UserFactory()
     _grant_permission(user, "change_notificationtemplate")
     client.force_login(user)
@@ -183,9 +189,54 @@ def test_edit_template_cancel_component_uses_back_href(client, referer):
         f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
     )
 
-    cancel_config = response.context["cancel_component_config"]
-    expected_href = referer or expected_fallback
+    assert response.context["back_href"] == (expected_href or expected_fallback)
 
-    assert cancel_config["href"] == expected_href
-    assert cancel_config["fallback_href"] == expected_fallback
-    assert cancel_config.get("prevent_history") is True
+
+def test_create_template_back_href_ignores_self_referer(client):
+    user = UserFactory()
+    _grant_permission(user, "add_notificationtemplate")
+    client.force_login(user)
+
+    url = reverse("notificacoes:template_create")
+    response = client.get(url, HTTP_REFERER=url)
+
+    assert response.status_code == 200
+
+    expected_fallback = (
+        f"{reverse('configuracoes:configuracoes')}?panel=notificacoes#notificacoes"
+    )
+    assert response.context["back_href"] == expected_fallback
+
+
+def test_create_template_respects_panel_querystring(client):
+    user = UserFactory()
+    _grant_permission(user, "add_notificationtemplate")
+    client.force_login(user)
+
+    url = reverse("notificacoes:template_create")
+    response = client.get(url, {"panel": "painel-personalizado"})
+
+    assert response.status_code == 200
+
+    expected_fallback = (
+        f"{reverse('configuracoes:configuracoes')}?panel=painel-personalizado#notificacoes"
+    )
+    assert response.context["back_href"] == expected_fallback
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_cancel_link_keeps_notifications_panel_open(admin_client):
+    url = reverse("notificacoes:template_create")
+    response = admin_client.get(url, HTTP_REFERER="/notificacoes/templates/")
+
+    assert response.status_code == 200
+
+    back_href = response.context["back_href"]
+    settings_response = admin_client.get(back_href)
+
+    assert settings_response.status_code == 200
+
+    content = settings_response.content.decode()
+    match = re.search(r"<details[^>]*id=\"notificacoes\"[^>]*>", content)
+    assert match is not None
+    assert "open" in match.group(0)
