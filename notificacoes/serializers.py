@@ -37,6 +37,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "data_leitura",
             "erro",
             "destinatario",
+            "context",
         ]
         read_only_fields = [
             "id",
@@ -50,6 +51,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "data_leitura",
             "erro",
             "destinatario",
+            "context",
         ]
 
 
