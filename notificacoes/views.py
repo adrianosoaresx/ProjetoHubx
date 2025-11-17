@@ -33,6 +33,7 @@ from .models import (
 from .permissions import notifications_permission_required
 
 logger = logging.getLogger(__name__)
+DROPDOWN_LIMIT = 5
 
 
 @login_required
@@ -55,6 +56,18 @@ def push_notification_count(request):
         ).count()
     }
     return render(request, "notificacoes/partials/push_notification_badge.html", context)
+
+
+@login_required
+def notifications_dropdown(request):
+    logs = (
+        NotificationLog.objects.select_related("template")
+        .filter(user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA)
+        .order_by("-data_envio", "-created_at")[:DROPDOWN_LIMIT]
+    )
+
+    context = {"logs": logs}
+    return render(request, "notificacoes/partials/notifications_dropdown.html", context)
 
 
 @login_required

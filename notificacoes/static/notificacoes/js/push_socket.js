@@ -7,17 +7,19 @@
   let notificationCount = 0;
 
   const bellLink = document.querySelector("[data-notification-bell]");
+  const getDropdownManager = () => window.HubxNotificationDropdown;
+
   if (bellLink) {
     notificationCount = parseInt(bellLink.dataset.notificationCount || "0", 10) || 0;
   }
 
-    const isWebSocketSupported = "WebSocket" in window;
+  const isWebSocketSupported = "WebSocket" in window;
 
-    const getLabelTemplate = (count) => {
-      if (!bellLink) return "";
-      const template = count === 1 ? bellLink.dataset.notificationLabelOne : bellLink.dataset.notificationLabelOther;
-      return template ? template.replace("__count__", formatCount(count)) : "";
-    };
+  const getLabelTemplate = (count) => {
+    if (!bellLink) return "";
+    const template = count === 1 ? bellLink.dataset.notificationLabelOne : bellLink.dataset.notificationLabelOther;
+    return template ? template.replace("__count__", formatCount(count)) : "";
+  };
 
   const applyCount = (count) => {
     notificationCount = count;
@@ -40,6 +42,13 @@
       const srText = bellLink.querySelector("[data-notification-sr]");
       if (srText && label) srText.textContent = label;
     }
+  };
+
+  const refreshDropdownIfOpen = () => {
+    const manager = getDropdownManager();
+    if (!manager || typeof manager.refresh !== "function") return;
+    if (typeof manager.isOpen === "function" && !manager.isOpen()) return;
+    manager.refresh();
   };
 
   const RETRY_DELAY_MS = 5000;
@@ -71,6 +80,7 @@
       if (data.event !== "notification_message") return;
       const nextCount = typeof data.total === "number" ? data.total : notificationCount + 1;
       applyCount(nextCount);
+      refreshDropdownIfOpen();
 
       const container = document.getElementById("messages");
       const div = document.createElement("div");
