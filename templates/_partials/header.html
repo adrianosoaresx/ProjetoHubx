@@ -48,16 +48,18 @@
         <span class="sr-only">{% trans "Escuro" %}</span>
       </button>
     </div>
-    {% with pending_notifications=push_notification_pending_count|default:0 %}
-    {% blocktrans count notification_count=pending_notifications asvar notification_label %}
-    Notificações pendentes: {{ notification_count }}
-    {% plural %}
-    Notificações pendentes: {{ notification_count }}
-    {% endblocktrans %}
+    {% with pending_notifications=push_notification_pending_count|default:0 count_placeholder="__count__" %}
+    {% blocktrans count notification_count=pending_notifications asvar notification_label %}Notificações pendentes: {{ notification_count }}{% plural %}Notificações pendentes: {{ notification_count }}{% endblocktrans %}
+    {% blocktrans count notification_count=1 asvar notification_label_one %}Notificações pendentes: {{ count_placeholder }}{% plural %}Notificações pendentes: {{ count_placeholder }}{% endblocktrans %}
+    {% blocktrans count notification_count=2 asvar notification_label_other %}Notificações pendentes: {{ count_placeholder }}{% plural %}Notificações pendentes: {{ count_placeholder }}{% endblocktrans %}
     <a
       href="{% url 'notificacoes:notificacoes-list' %}"
       class="relative inline-flex h-10 w-10 items-center justify-center rounded text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
       aria-label="{{ notification_label }}"
+      data-notification-bell
+      data-notification-count="{{ pending_notifications }}"
+      data-notification-label-one="{{ notification_label_one|escape }}"
+      data-notification-label-other="{{ notification_label_other|escape }}"
     >
       <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10 21a1 1 0 0 0 2 0" />
@@ -69,7 +71,7 @@
       {% plural %}
       Você tem {{ notification_count }} notificações pendentes
       {% endblocktrans %}
-      <span class="sr-only">{{ notification_text }}</span>
+      <span class="sr-only" data-notification-sr>{{ notification_text }}</span>
     </a>
     {% endwith %}
     {% if request.user.is_authenticated %}
