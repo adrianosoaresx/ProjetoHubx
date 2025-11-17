@@ -38,6 +38,12 @@ Aplique utilitários Tailwind diretamente nas tags para garantir consistência e
 - Ícones meramente decorativos devem incluir `aria-hidden="true"`.
 - Quando o ícone transmitir significado, forneça um `aria-label` no elemento ou um texto auxiliar escondido com `sr-only`.
 
+### Badges e labels traduzidos
+
+- Contadores dinâmicos (ex.: sino de notificações) devem expor `aria-live="polite"` para avisar leitores de tela sem interromper o foco. Use `sr-only` para repetir o rótulo traduzido ao lado do valor visual.
+- Gere todos os textos de contagem com `{% blocktrans %}` para manter pluralização correta. Ao atualizar o número via JavaScript, recicle os templates de label armazenados em `data-*` (como `data-notification-label-one/other`) para que o `aria-label` e o texto invisível permaneçam localizados.
+- Mesmo quando houver WebSocket, mantenha atributos HTMX (`hx-get`, `hx-trigger`) como *fallback* de atualização do badge. Isso garante sincronização de contadores em ambientes sem WebSocket ou com JS bloqueado.
+
 ## Paleta de cores oficial
 
 A identidade do Hubx usa um gradiente de marca e tokens de cores para garantir

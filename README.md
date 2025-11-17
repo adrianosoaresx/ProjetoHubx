@@ -79,6 +79,14 @@ Instale-o no sistema operacional (ex.: `sudo apt-get install ffmpeg` no Debian/U
 
 ---
 
+## 🔔 Notificações em tempo real e fallback
+
+- O contador do sino usa WebSocket para receber broadcasts com o total de pendências e atualizar o `aria-label` traduzido exibido no cabeçalho. Quando WebSockets não estão disponíveis, o badge segue fazendo *polling* via HTMX (`hx-get` a cada 60s) para manter o mesmo número e texto de apoio.
+- Para desativar WebSockets, defina `WEBSOCKETS_ENABLED=0` (o `start_server.py` já faz isso ao usar `runserver`). Ao rodar com ASGI (`uvicorn`/`daphne`), use `WEBSOCKETS_ENABLED=1` para habilitar o script `push_socket.js` incluído em `base.html`.
+- Diagnóstico rápido: verifique no console do navegador se há logs de "WebSocket desabilitado ou indisponível"; confirme que o badge continua atualizando pelo atributo `hx-trigger="every 60s"`. Em ambientes de produção, garanta que o Channel Layer esteja configurado e que `WEBSOCKETS_ENABLED` corresponda ao modo do servidor.
+
+---
+
 ### 🧯 Erro comum: `No module named 'channels'`
 
 Se ao executar:
