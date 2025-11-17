@@ -40,6 +40,7 @@
     const ownership = root.dataset.ownership || '';
     const statusFilter = root.dataset.statusFilter || '';
     const tipoFilter = root.dataset.tipoFilter || '';
+    const showPromoteButton = root.dataset.showPromoteButton === 'true';
 
     url.searchParams.set('page', String(page));
     if (section) {
@@ -74,6 +75,9 @@
     }
     if (tipoFilter) {
       url.searchParams.set('tipo', tipoFilter);
+    }
+    if (showPromoteButton) {
+      url.searchParams.set('show_promote_button', 'true');
     }
     return url;
   }

@@ -56,3 +56,20 @@ class MembrosListViewTests(TestCase):
         self.assertNotIn("Admin Sem Núcleo", html)
         self.assertNotIn("Operador Sem Núcleo", html)
         self.assertEqual(data["count"], 1)
+
+    def test_api_keeps_promote_button_when_requested(self):
+        UserFactory(
+            username="associado-sem-nucleo",
+            contato="Membro Sem Núcleo",
+            organizacao=self.organizacao,
+            is_associado=True,
+            user_type=UserType.ASSOCIADO.value,
+        )
+
+        response = self.client.get(
+            self.api_url,
+            {"section": "sem_nucleo", "show_promote_button": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+        html = response.json()["html"]
+        self.assertIn("Promover", html)

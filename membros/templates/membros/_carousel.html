@@ -9,6 +9,7 @@
   data-backend-total-pages="{{ page.paginator.num_pages }}"
   data-search-term="{{ search_term }}"
   data-search-param="q"
+  {% if show_promote_button %}data-show-promote-button="true"{% endif %}
 >
   <div class="relative">
     <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
