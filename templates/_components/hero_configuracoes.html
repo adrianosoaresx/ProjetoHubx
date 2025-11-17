@@ -17,7 +17,10 @@
             <p class="text-lg text-white/90">{{ subtitle }}</p>
           {% endif %}
         </div>
-        {% with hero_action_href=hero_action_href|default:action_href|default:'' hero_action_label=hero_action_label|default:action_label|default:'' hero_action_variant=hero_action_variant|default:action_variant|default:'primary' %}
+        {% with resolved_action_href=hero_action_href|default_if_none:'' resolved_action_label=hero_action_label|default_if_none:'' resolved_action_variant=hero_action_variant|default_if_none:'' %}
+          {% firstof resolved_action_href action_href '' as hero_action_href %}
+          {% firstof resolved_action_label action_label '' as hero_action_label %}
+          {% firstof resolved_action_variant action_variant 'primary' as hero_action_variant %}
           {% if action_template %}
             <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
               {% include action_template %}
