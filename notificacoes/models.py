@@ -78,6 +78,7 @@ class NotificationLog(TimeStampedModel):
     destinatario: models.CharField = models.CharField(max_length=254, blank=True)
     template: models.ForeignKey = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
     canal: models.CharField = models.CharField(max_length=20, choices=CANAL_LOG_CHOICES)
+    context: models.JSONField = models.JSONField(default=dict, blank=True)
     status: models.CharField = models.CharField(
         max_length=20, choices=NotificationStatus.choices, default=NotificationStatus.PENDENTE
     )

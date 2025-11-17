@@ -21,6 +21,13 @@
     return template ? template.replace("__count__", formatCount(count)) : "";
   };
 
+  const notifyExternalUpdate = () => {
+    window.HubxNotifications = {
+      decrement: () => applyCount(Math.max(0, notificationCount - 1)),
+      setCount: (value) => applyCount(Math.max(0, Number(value) || 0)),
+    };
+  };
+
   const applyCount = (count) => {
     notificationCount = count;
     const formatted = formatCount(notificationCount);
@@ -42,6 +49,8 @@
       const srText = bellLink.querySelector("[data-notification-sr]");
       if (srText && label) srText.textContent = label;
     }
+
+    notifyExternalUpdate();
   };
 
   const refreshDropdownIfOpen = () => {

@@ -102,6 +102,7 @@ def enviar_para_usuario(
             status=NotificationStatus.FALHA,
             erro=_("Canal %(canal)s desabilitado pelo usuário") % {"canal": canal},
             corpo_renderizado=body,
+            context=context,
         )
 
     if not canais:
@@ -114,6 +115,7 @@ def enviar_para_usuario(
             canal=canal,
             destinatario=_get_destinatario(user, canal),
             corpo_renderizado=body,
+            context=context,
         )
 
         if canal == Canal.APP:
