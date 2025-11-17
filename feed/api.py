@@ -3,7 +3,10 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from math import ceil
+from urllib.parse import urljoin, urlparse
 
+import requests
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
@@ -359,6 +362,72 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Post) -> None:
         instance.soft_delete()
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="link-preview",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def link_preview(self, request):
+        if is_ratelimited(
+            request,
+            group="feed_link_preview",
+            key="user",
+            rate=_read_rate(None, request),
+            method="GET",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
+
+        target_url = (request.query_params.get("url") or "").strip()
+        parsed = urlparse(target_url)
+        if not target_url:
+            return Response({"detail": _("URL é obrigatória.")}, status=status.HTTP_400_BAD_REQUEST)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            return Response({"detail": _("URL inválida.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            response = requests.get(
+                target_url,
+                timeout=5,
+                headers={"User-Agent": "HubxLinkPreview/1.0"},
+            )
+            response.raise_for_status()
+        except requests.RequestException:
+            return Response(
+                {"detail": _("Não foi possível carregar a URL informada.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        def _extract_meta(names):
+            for name in names:
+                tag = soup.find("meta", attrs={"property": name}) or soup.find("meta", attrs={"name": name})
+                if tag:
+                    content = tag.get("content") or tag.get("value")
+                    if content:
+                        return content.strip()
+            return None
+
+        title = _extract_meta(["og:title", "twitter:title"]) or (soup.title.string.strip() if soup.title and soup.title.string else None)
+        description = _extract_meta(["og:description", "twitter:description", "description"]) or ""
+        image = _extract_meta(["og:image", "twitter:image"])
+        site_name = _extract_meta(["og:site_name"]) or parsed.netloc
+
+        if image:
+            image = urljoin(target_url, image)
+
+        data = {
+            "url": target_url,
+            "title": title or target_url,
+            "description": description,
+            "image": image,
+            "site_name": site_name,
+        }
+
+        return Response(data)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def bookmark(self, request, pk=None):
