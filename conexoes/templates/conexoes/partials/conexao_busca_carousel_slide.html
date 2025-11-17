@@ -1,0 +1,48 @@
+{% load i18n %}
+{% if items %}
+  {% for membro in items %}
+    {% with membro_id=membro.id|stringformat:'s' %}
+      {% with card_id='connection-'|add:membro_id %}
+        <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
+          <div role="listitem" class="flex h-full flex-col gap-4" id="{{ card_id }}">
+            <div class="flex-1">
+              {% include '_components/card_usuario.html' with user=membro card_id=card_id %}
+            </div>
+            {% include 'conexoes/partials/conexao_busca_actions.html' with membro=membro card_id=card_id %}
+          </div>
+        </div>
+      {% endwith %}
+    {% endwith %}
+  {% endfor %}
+
+  {% for membro in items %}
+    {% if forloop.counter0|divisibleby:3 %}
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
+    {% endif %}
+        {% with membro_id=membro.id|stringformat:'s' %}
+          {% with card_id='connection-'|add:membro_id|add:'-desktop' %}
+            <div role="listitem" class="flex h-full flex-col gap-4" id="{{ card_id }}">
+              <div class="flex-1">
+                {% include '_components/card_usuario.html' with user=membro card_id=card_id %}
+              </div>
+              {% include 'conexoes/partials/conexao_busca_actions.html' with membro=membro card_id=card_id %}
+            </div>
+          {% endwith %}
+        {% endwith %}
+        {% if forloop.last and not forloop.counter|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+        {% if forloop.last and forloop.counter|add:"-1"|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+    {% if forloop.counter|divisibleby:3 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm italic text-[var(--text-secondary)]">{{ empty_message|default:_('Nenhum membro encontrado para os critérios informados.') }}</p>
+    </div>
+  </div>
+{% endif %}

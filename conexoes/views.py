@@ -329,8 +329,20 @@ def _profile_search_hx_context(query: str):
     }
 
 
-def _build_search_page_context(request, query: str, form: ConnectionsSearchForm | None):
-    context = _build_conexoes_busca_context(request.user, query, form=form)
+def _build_search_page_context(
+    request, query: str, form: ConnectionsSearchForm | None, *, page_number: int | None = None
+):
+    if page_number is None:
+        try:
+            page_number = int(request.GET.get("page") or 1)
+        except (TypeError, ValueError):
+            page_number = 1
+    if page_number < 1:
+        page_number = 1
+
+    context = _build_conexoes_busca_context(
+        request.user, query, form=form, page_number=page_number
+    )
     dashboard_url = reverse("conexoes:perfil_sections_conexoes")
     total_conexoes, total_solicitacoes, total_solicitacoes_enviadas = _connection_totals(request.user)
 
@@ -350,6 +362,8 @@ def _build_search_page_context(request, query: str, form: ConnectionsSearchForm 
             "solicitacoes_hx_get": None,
             "solicitacoes_hx_target": None,
             "solicitacoes_hx_push_url": None,
+            "membros_carousel_fetch_url": reverse("conexoes:conexoes_busca_carousel_api"),
+            "membros_aria_label": _("Resultados da busca de conexões"),
             "total_conexoes": total_conexoes,
             "total_solicitacoes": total_solicitacoes,
             "total_solicitacoes_enviadas": total_solicitacoes_enviadas,
@@ -539,6 +553,64 @@ class ConexaoListCarouselView(LoginRequiredMixin, View):
         )
 
 
+class ConexaoBuscaCarouselView(LoginRequiredMixin, View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        response = _deny_root_connections_access(request)
+        if response:
+            return response
+
+        try:
+            page_number = int(request.GET.get("page") or 1)
+        except (TypeError, ValueError):
+            page_number = 1
+        if page_number < 1:
+            page_number = 1
+
+        search_form = ConnectionsSearchForm(
+            request.GET or None,
+            placeholder=_("Buscar por nome, razão social ou CNPJ..."),
+            label=_("Adicionar conexão"),
+            aria_label=_("Buscar por nome, razão social ou CNPJ"),
+        )
+        if search_form.is_valid():
+            query = search_form.cleaned_data.get("q", "")
+        else:
+            query = ""
+
+        base_context = _build_search_page_context(
+            request, query, search_form, page_number=page_number
+        )
+        page_obj = base_context.get("membros_page")
+        if page_obj is None:
+            return JsonResponse({"error": _("Seção não disponível.")}, status=404)
+
+        html = render_to_string(
+            "conexoes/partials/conexao_busca_carousel_slide.html",
+            {
+                **base_context,
+                "items": getattr(page_obj, "object_list", []),
+                "page_number": getattr(page_obj, "number", 1),
+                "empty_message": base_context.get("membros_empty_message"),
+            },
+            request=request,
+        )
+
+        paginator = getattr(page_obj, "paginator", None)
+        total_pages = paginator.num_pages if paginator else 1
+        total_count = paginator.count if paginator else len(getattr(page_obj, "object_list", []))
+
+        return JsonResponse(
+            {
+                "html": html,
+                "page": getattr(page_obj, "number", 1),
+                "total_pages": total_pages,
+                "count": total_count,
+            }
+        )
+
+
 @login_required
 def perfil_conexoes_buscar(request):
     response = _deny_root_connections_access(request)
@@ -564,7 +636,13 @@ def perfil_conexoes_buscar(request):
     return render(request, "conexoes/busca.html", context)
 
 
-def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | None = None):
+def _build_conexoes_busca_context(
+    user,
+    query,
+    form: ConnectionsSearchForm | None = None,
+    *,
+    page_number: int = 1,
+):
     if form is None:
         form = ConnectionsSearchForm(
             data={"q": query},
@@ -633,8 +711,24 @@ def _build_conexoes_busca_context(user, query, form: ConnectionsSearchForm | Non
         solicitacoes_enviadas_ids -= conexoes_ids
         solicitacoes_recebidas_ids -= conexoes_ids
 
+    try:
+        parsed_page = int(page_number)
+    except (TypeError, ValueError):
+        parsed_page = 1
+    if parsed_page < 1:
+        parsed_page = 1
+
+    paginator = Paginator(membros, CONEXOES_CAROUSEL_PAGE_SIZE)
+    page_obj = paginator.get_page(parsed_page)
+
+    empty_message = _("Nenhum membro encontrado para os critérios informados.")
+    if not organizacao:
+        empty_message = _("Você não está vinculado a uma organização no momento.")
+
     return {
         "membros": membros,
+        "membros_page": page_obj,
+        "membros_empty_message": empty_message,
         "q": query,
         "tem_organizacao": bool(organizacao),
         "conexoes_ids": conexoes_ids,

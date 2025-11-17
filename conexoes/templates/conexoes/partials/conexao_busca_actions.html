@@ -1,0 +1,77 @@
+{% load i18n %}
+{% with membro_id=membro.id|stringformat:'s' %}
+  {% with card_identifier=card_id|default:'connection-'|add:membro_id %}
+    <div class="mt-auto grid gap-2 border-t border-[var(--border)] pt-3">
+      <a
+        href="{% url 'accounts:perfil_publico_uuid' membro.public_id %}"
+        class="btn btn-secondary btn-sm w-full justify-center"
+        data-connection-link="{{ card_identifier }}"
+      >
+        {% trans "Ver perfil" %}
+      </a>
+
+      {% if membro.id in conexoes_ids %}
+        {% if search_form_hx_target %}
+          {% with query_value=form.q.value %}
+            <button
+              type="button"
+              class="btn btn-danger btn-sm w-full justify-center"
+              hx-get="{% url 'conexoes:remover_conexao_modal' membro.id %}?target_id={{ search_form_hx_target }}&swap=innerHTML{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+              hx-target="#modal"
+              hx-swap="innerHTML"
+              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+            >
+              {% trans "Desconectar" %}
+            </button>
+          {% endwith %}
+        {% else %}
+          {% with query_value=form.q.value %}
+            <button
+              type="button"
+              class="btn btn-danger btn-sm w-full justify-center"
+              hx-get="{% url 'conexoes:remover_conexao_modal' membro.id %}?target_id={{ card_identifier }}&swap=outerHTML&remove_target={{ card_identifier }}{% if query_value %}&q={{ query_value|urlencode }}{% endif %}"
+              hx-target="#modal"
+              hx-swap="innerHTML"
+              hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+            >
+              {% trans "Desconectar" %}
+            </button>
+          {% endwith %}
+        {% endif %}
+      {% elif membro.id in solicitacoes_enviadas_ids %}
+        <button type="button" class="btn btn-secondary btn-sm w-full cursor-default justify-center opacity-70" disabled>
+          {% trans "Solicitação enviada" %}
+        </button>
+      {% elif membro.id in solicitacoes_recebidas_ids %}
+        <a
+          href="{{ solicitacoes_url }}"
+          class="btn btn-secondary btn-sm w-full justify-center"
+          {% if solicitacoes_hx_get %}hx-get="{{ solicitacoes_hx_get }}"{% endif %}
+          {% if solicitacoes_hx_target %}hx-target="#{{ solicitacoes_hx_target }}"{% endif %}
+          {% if solicitacoes_hx_push_url %}hx-push-url="{{ solicitacoes_hx_push_url }}"{% endif %}
+        >
+          {% trans "Responder solicitação" %}
+        </a>
+      {% else %}
+        <form
+          method="post"
+          action="{% url 'conexoes:solicitar_conexao' membro.id %}"
+          {% if search_form_hx_target %}
+            hx-post="{% url 'conexoes:solicitar_conexao' membro.id %}"
+            hx-target="#{{ search_form_hx_target }}"
+            hx-swap="innerHTML"
+          {% endif %}
+          class="w-full"
+        >
+          {% csrf_token %}
+          {% if form.q.value %}
+            <input type="hidden" name="q" value="{{ form.q.value }}" />
+          {% endif %}
+          <button type="submit" class="btn btn-primary btn-sm w-full justify-center">
+            {% trans "Conectar" %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  {% endwith %}
+{% endwith %}
