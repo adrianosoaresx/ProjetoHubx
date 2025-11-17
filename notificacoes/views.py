@@ -36,6 +36,28 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+def notificacoes_list(request):
+    push_logs = (
+        NotificationLog.objects.select_related("template")
+        .filter(user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA)
+        .order_by("-data_envio")
+    )
+
+    context = {"push_logs": push_logs}
+    return render(request, "notificacoes/notificacoes_list.html", context)
+
+
+@login_required
+def push_notification_count(request):
+    context = {
+        "push_notification_pending_count": NotificationLog.objects.filter(
+            user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA
+        ).count()
+    }
+    return render(request, "notificacoes/partials/push_notification_badge.html", context)
+
+
+@login_required
 @notifications_permission_required("notificacoes.view_notificationtemplate")
 def list_templates(request):
     templates = NotificationTemplate.objects.all().order_by("-created_at")

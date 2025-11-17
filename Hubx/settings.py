@@ -143,6 +143,7 @@ TEMPLATES = [
                 "core.context_processors.htmx_version",
                 "core.context_processors.menu_items",
                 "core.context_processors.back_navigation",
+                "notificacoes.context_processors.push_notification_count",
             ],
             # Torna os filtros/tags do widget_tweaks disponíveis globalmente
             # evitando a necessidade de `{% load widget_tweaks %}` em cada template.
