@@ -9,29 +9,28 @@
       {% if breadcrumb_template %}
         <div class="mb-4">{% include breadcrumb_template %}</div>
       {% endif %}
-      {% with active_tab=hero_active_tab|default:tab|default:'' %}
-        <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div class="space-y-3 md:max-w-3xl">
-            <h1 class="text-4xl md:text-5xl font-bold text-white">{{ title }}</h1>
-            {% if subtitle %}
-              <p class="text-lg text-white/90">{{ subtitle }}</p>
-            {% endif %}
-          </div>
-          {% with hero_action_href=hero_action_href|default:action_href|default:'' hero_action_label=hero_action_label|default:action_label|default:'' hero_action_variant=hero_action_variant|default:action_variant|default:'primary' %}
-            {% if action_template %}
-              <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
-                {% include action_template %}
-              </div>
-            {% elif hero_action_href and hero_action_label %}
-              <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
-                <a href="{{ hero_action_href }}" class="btn btn-{{ hero_action_variant }}">
-                  {{ hero_action_label }}
-                </a>
-              </div>
-            {% endif %}
-          {% endwith %}
+      {% firstof hero_active_tab tab '' as active_tab %}
+      <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div class="space-y-3 md:max-w-3xl">
+          <h1 class="text-4xl md:text-5xl font-bold text-white">{{ title }}</h1>
+          {% if subtitle %}
+            <p class="text-lg text-white/90">{{ subtitle }}</p>
+          {% endif %}
         </div>
-      {% endwith %}
+        {% with hero_action_href=hero_action_href|default:action_href|default:'' hero_action_label=hero_action_label|default:action_label|default:'' hero_action_variant=hero_action_variant|default:action_variant|default:'primary' %}
+          {% if action_template %}
+            <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
+              {% include action_template %}
+            </div>
+          {% elif hero_action_href and hero_action_label %}
+            <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
+              <a href="{{ hero_action_href }}" class="btn btn-{{ hero_action_variant }}">
+                {{ hero_action_label }}
+              </a>
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
       {% if helper_text %}
         <p class="mt-6 text-base text-white/80">{{ helper_text }}</p>
       {% endif %}
