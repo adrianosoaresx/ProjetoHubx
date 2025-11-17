@@ -594,6 +594,121 @@
   </svg>
 </div>
 
+  {% elif background == "notificacoes" %}
+<!-- Notificações Background -->
+<div class="neural-bg-base neural-bg-notificacoes">
+  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="notificacoes-node" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1"/>
+        <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:0.5"/>
+      </radialGradient>
+      <linearGradient id="notificacoes-line" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:0.9"/>
+        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.6"/>
+      </linearGradient>
+      <filter id="notificacoes-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Soft mesh inspired by conexões -->
+    <g opacity="0.18" stroke="#0ea5e9" stroke-width="1" fill="none">
+      <path d="M0,120 Q200,100 400,120 T800,120"/>
+      <path d="M0,240 Q200,220 400,240 T800,240"/>
+      <path d="M0,360 Q200,340 400,360 T800,360"/>
+      <path d="M0,480 Q200,460 400,480 T800,480"/>
+      <path d="M120,0 Q100,200 120,400 T120,600"/>
+      <path d="M320,0 Q300,200 320,400 T320,600"/>
+      <path d="M520,0 Q500,200 520,400 T520,600"/>
+      <path d="M720,0 Q700,200 720,400 T720,600"/>
+    </g>
+
+    <!-- Notification hubs -->
+    <g>
+      <circle cx="200" cy="170" r="16" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="16;18;16" dur="3.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="400" cy="120" r="18" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="18;21;18" dur="3.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="620" cy="190" r="15" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="15;17;15" dur="3.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="250" cy="360" r="14" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="14;16;14" dur="3.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="480" cy="420" r="17" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="17;19;17" dur="3.7s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="680" cy="360" r="14" fill="url(#notificacoes-node)" filter="url(#notificacoes-glow)">
+        <animate attributeName="r" values="14;16;14" dur="3.3s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Bell and alert icons -->
+    <g fill="#e0f2fe" opacity="0.8">
+      <path d="M190 140c0-24 18-40 40-40s40 16 40 40v18l12 16c2 3 0 6-4 6h-96c-4 0-6-3-4-6l12-16Z" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="opacity" values="0.8;0.5;0.8" dur="5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M388 90c0-22 16-36 36-36s36 14 36 36v16l11 15c2 3 0 6-4 6h-86c-4 0-6-3-4-6l11-15Z" fill="#e0f2fe" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="opacity" values="0.7;0.4;0.7" dur="5.5s" repeatCount="indefinite"/>
+      </path>
+      <polygon points="595,205 645,205 670,250 620,310 570,250" fill="#e0f2fe" stroke="#3b82f6" stroke-width="3" stroke-linejoin="round">
+        <animate attributeName="opacity" values="0.75;0.45;0.75" dur="6s" repeatCount="indefinite"/>
+      </polygon>
+    </g>
+
+    <!-- Connecting lines -->
+    <g stroke="url(#notificacoes-line)" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.65">
+      <path d="M200,170 L400,120">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="3.5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,120 L620,190">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="3.7s" repeatCount="indefinite"/>
+      </path>
+      <path d="M250,360 L480,420">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="3.9s" repeatCount="indefinite"/>
+      </path>
+      <path d="M480,420 L680,360">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="4.1s" repeatCount="indefinite"/>
+      </path>
+      <path d="M200,170 L250,360">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M620,190 L680,360">
+        <animate attributeName="stroke-opacity" values="0.65;0.9;0.65" dur="4.2s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- Floating signals -->
+    <g>
+      <circle cx="320" cy="260" r="6" fill="#0ea5e9" opacity="0.7">
+        <animateMotion dur="5.5s" repeatCount="indefinite">
+          <path d="M0,0 L80,-40 L160,0 L120,80 L40,120 Z"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.7;0.3;0.7" dur="5.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="520" cy="300" r="5" fill="#38bdf8" opacity="0.7">
+        <animateMotion dur="6s" repeatCount="indefinite">
+          <path d="M0,0 L-60,60 L0,140 L80,100 Z"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.7;0.35;0.7" dur="6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="640" cy="460" r="4" fill="#93c5fd" opacity="0.6">
+        <animateMotion dur="6.5s" repeatCount="indefinite">
+          <path d="M0,0 L-40,-60 L-120,-20 L-80,60 Z"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.6;0.25;0.6" dur="6.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </svg>
+</div>
+
   {% elif background == "membros" %}
 <!-- Membros Background -->
 <div class="neural-bg-base neural-bg-membros">
