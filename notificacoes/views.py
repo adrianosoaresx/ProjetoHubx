@@ -40,7 +40,11 @@ DROPDOWN_LIMIT = 5
 def notificacoes_list(request):
     push_logs = (
         NotificationLog.objects.select_related("template")
-        .filter(user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA)
+        .filter(
+            user=request.user,
+            canal__in=[Canal.PUSH, Canal.APP],
+            status=NotificationStatus.ENVIADA,
+        )
         .order_by("-data_envio")
     )
 
@@ -52,7 +56,9 @@ def notificacoes_list(request):
 def push_notification_count(request):
     context = {
         "push_notification_pending_count": NotificationLog.objects.filter(
-            user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA
+            user=request.user,
+            canal__in=[Canal.PUSH, Canal.APP],
+            status=NotificationStatus.ENVIADA,
         ).count()
     }
     return render(request, "notificacoes/partials/push_notification_badge.html", context)
@@ -62,7 +68,11 @@ def push_notification_count(request):
 def notifications_dropdown(request):
     logs = (
         NotificationLog.objects.select_related("template")
-        .filter(user=request.user, canal=Canal.PUSH, status=NotificationStatus.ENVIADA)
+        .filter(
+            user=request.user,
+            canal__in=[Canal.PUSH, Canal.APP],
+            status=NotificationStatus.ENVIADA,
+        )
         .order_by("-data_envio", "-created_at")[:DROPDOWN_LIMIT]
     )
 
