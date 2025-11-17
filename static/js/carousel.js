@@ -40,7 +40,9 @@
     const ownership = root.dataset.ownership || '';
     const statusFilter = root.dataset.statusFilter || '';
     const tipoFilter = root.dataset.tipoFilter || '';
-    const showPromoteButton = root.dataset.showPromoteButton === 'true';
+    const showPromoteButton =
+      root.hasAttribute('data-show-promote-button') &&
+      (root.dataset.showPromoteButton || 'true').toLowerCase() !== 'false';
 
     url.searchParams.set('page', String(page));
     if (section) {
