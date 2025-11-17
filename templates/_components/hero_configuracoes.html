@@ -17,11 +17,19 @@
               <p class="text-lg text-white/90">{{ subtitle }}</p>
             {% endif %}
           </div>
-          {% if action_template %}
-            <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
-              {% include action_template %}
-            </div>
-          {% endif %}
+          {% with hero_action_href=hero_action_href|default:action_href|default:'' hero_action_label=hero_action_label|default:action_label|default:'' hero_action_variant=hero_action_variant|default:action_variant|default:'primary' %}
+            {% if action_template %}
+              <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
+                {% include action_template %}
+              </div>
+            {% elif hero_action_href and hero_action_label %}
+              <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end md:self-start">
+                <a href="{{ hero_action_href }}" class="btn btn-{{ hero_action_variant }}">
+                  {{ hero_action_label }}
+                </a>
+              </div>
+            {% endif %}
+          {% endwith %}
         </div>
       {% endwith %}
       {% if helper_text %}

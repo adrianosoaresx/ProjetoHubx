@@ -61,6 +61,32 @@ mesmo fundo neural utilizado nos módulos especializados.
 %}
 ```
 
+## hero_configuracoes.html
+
+Variação especializada para a área de configurações. Usa o mesmo plano de
+fundo neural do módulo e aceita chamadas simples com os parâmetros padrão
+(`title`, `subtitle`, `helper_text`, etc.). Além do `action_template`, agora é
+possível enviar pares simples de ação:
+
+- `hero_action_href`: URL do CTA primário.
+- `hero_action_label`: texto do botão.
+- `hero_action_variant`: sufixo utilizado na classe `btn btn-{variant}`. O
+  valor padrão é `primary`.
+
+Quando ambos `hero_action_href` e `hero_action_label` estão preenchidos, o
+componente renderiza automaticamente o botão com as classes `btn btn-...`, sem
+exigir uma partial específica.
+
+```django
+{% include '_components/hero_configuracoes.html' with
+    title=_('Templates de notificação')
+    subtitle=_('Gerencie envios automáticos e mensagens padrão.')
+    hero_active_tab='notificacoes'
+    hero_action_href=templates_url
+    hero_action_label=_('Adicionar template')
+%}
+```
+
 ## back_button.html
 
 Botão/link de retorno que prioriza o histórico do navegador. Quando houver

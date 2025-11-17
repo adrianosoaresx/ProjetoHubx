@@ -1,51 +1,73 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Incluir template' %}{% endif %} | HubX{% endblock %}
+{% block title %}
+  {% with is_edit=form.instance.pk %}
+    {% if is_edit %}{% trans 'Editar Template' %}{% else %}{% trans 'Incluir template' %}{% endif %} | HubX
+  {% endwith %}
+{% endblock %}
 
 {% block hero %}
-  {% if form.instance.pk %}
-    {% include '_components/hero.html' with title=_('Editar Template') subtitle=_('Atualize o conteúdo e os canais utilizados nas comunicações automáticas.') neural_background='configuracao' %}
-  {% else %}
-    {% include '_components/hero.html' with title=_('Incluir template') subtitle=_('Defina as mensagens padrão que serão enviadas aos usuários.') neural_background='configuracao' %}
-  {% endif %}
+  {% with is_edit=form.instance.pk %}
+    {% if is_edit %}
+      {% url 'notificacoes:template_edit' form.instance.pk as hero_action_href %}
+      {% include '_components/hero_configuracoes.html' with
+        title=_('Editar Template')
+        subtitle=_('Atualize o conteúdo e os canais utilizados nas comunicações automáticas.')
+        hero_active_tab='notificacoes'
+        hero_action_href=hero_action_href
+        hero_action_label=_('Editar template')
+      %}
+    {% else %}
+      {% url 'notificacoes:template_create' as hero_action_href %}
+      {% include '_components/hero_configuracoes.html' with
+        title=_('Incluir template')
+        subtitle=_('Defina as mensagens padrão que serão enviadas aos usuários.')
+        hero_active_tab='notificacoes'
+        hero_action_href=hero_action_href
+        hero_action_label=_('Adicionar template')
+      %}
+    {% endif %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}
-  <div class="max-w-3xl mx-auto px-4 py-10">
-    <article class="card">
-      <header class="card-header space-y-1">
-        {% if form.instance.pk %}
-          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Editar Template' %}</h2>
-          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Atualize as informações do template de notificação.' %}</p>
-        {% else %}
-          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Incluir Template' %}</h2>
-          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Defina os detalhes do novo template de notificação.' %}</p>
-        {% endif %}
-      </header>
-      <div class="card-body space-y-6">
-        <form method="post" class="space-y-6">
-          {% csrf_token %}
-          {% if form.non_field_errors %}
-            <div class="alert alert-error" role="alert">
-              <ul class="space-y-1">
-                {% for error in form.non_field_errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              </ul>
-            </div>
+  {% with is_edit=form.instance.pk %}
+    <div class="max-w-3xl mx-auto px-4 py-10">
+      <article class="card">
+        <header class="card-header space-y-1">
+          {% if is_edit %}
+            <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Editar Template' %}</h2>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans 'Atualize as informações do template de notificação.' %}</p>
+          {% else %}
+            <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans 'Incluir Template' %}</h2>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans 'Defina os detalhes do novo template de notificação.' %}</p>
           {% endif %}
-          {% for hidden_field in form.hidden_fields %}
-            {{ hidden_field }}
-          {% endfor %}
-          {% for field in form.visible_fields %}
-            {% include '_forms/field.html' with field=field %}
-          {% endfor %}
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            {% include '_components/cancel_button.html' with config=cancel_component_config href=cancel_component_config.href|default:back_href fallback_href=cancel_component_config.fallback_href|default:back_href %}
-            <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
-          </div>
-        </form>
-      </div>
-    </article>
-  </div>
+        </header>
+        <div class="card-body space-y-6">
+          <form method="post" class="space-y-6">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-error" role="alert">
+                <ul class="space-y-1">
+                  {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+            {% for hidden_field in form.hidden_fields %}
+              {{ hidden_field }}
+            {% endfor %}
+            {% for field in form.visible_fields %}
+              {% include '_forms/field.html' with field=field %}
+            {% endfor %}
+            <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+              {% include '_components/cancel_button.html' with config=cancel_component_config href=cancel_component_config.href|default:back_href fallback_href=cancel_component_config.fallback_href|default:back_href %}
+              <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
+            </div>
+          </form>
+        </div>
+      </article>
+    </div>
+  {% endwith %}
 {% endblock %}
