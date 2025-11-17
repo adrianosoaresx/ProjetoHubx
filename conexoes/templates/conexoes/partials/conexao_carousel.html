@@ -1,4 +1,5 @@
 {% load i18n lucide_icons %}
+{% with slide_template=slide_template|default:'conexoes/partials/conexao_carousel_slide.html' %}
 <div
   class="space-y-4"
   data-carousel-root="conexoes"
@@ -19,7 +20,7 @@
         role="list"
         aria-label="{{ aria_label }}"
       >
-        {% include 'conexoes/partials/conexao_carousel_slide.html' with items=page.object_list page_number=page.number section=section empty_message=empty_message empty_cta=empty_cta %}
+        {% include slide_template with items=page.object_list page_number=page.number section=section empty_message=empty_message empty_cta=empty_cta %}
       </div>
     </div>
     {% if page.paginator.count > 0 %}
@@ -48,3 +49,4 @@
     {% endif %}
   </div>
 </div>
+{% endwith %}
