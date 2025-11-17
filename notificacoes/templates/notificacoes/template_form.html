@@ -7,11 +7,11 @@
 {% block hero %}
   {% if template %}
     {% url 'notificacoes:template_edit' template.codigo as hero_action_href %}
-    {% include '_components/hero_configuracoes.html' with title=_('Editar Template') subtitle=_('Atualize o conteúdo e os canais utilizados nas comunicações automáticas.') hero_active_tab='notificacoes' hero_action_href=hero_action_href hero_action_label=_('Editar template') %}
+    {% include '_components/hero_configuracoes.html' with title=_('Editar Template') subtitle=_('Atualize o conteúdo e os canais utilizados nas comunicações automáticas.') hero_active_tab='notificacoes'  %}
 
   {% else %}
     {% url 'notificacoes:template_create' as hero_action_href %}
-    {% include '_components/hero_configuracoes.html' with title=_('Incluir template') subtitle=_('Defina as mensagens padrão que serão enviadas aos usuários.') hero_active_tab='notificacoes' hero_action_href=hero_action_href hero_action_label=_('Adicionar template') %}
+    {% include '_components/hero_configuracoes.html' with title=_('Incluir template') subtitle=_('Defina as mensagens padrão que serão enviadas aos usuários.') hero_active_tab='notificacoes'  %}
 
   {% endif %}
 {% endblock %}
