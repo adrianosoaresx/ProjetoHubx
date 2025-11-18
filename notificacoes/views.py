@@ -86,7 +86,7 @@ def notifications_dropdown(request):
         if template_code.startswith("feed_"):
             post_id = context.get("post_id")
             if post_id:
-                target_url = f"/post/{post_id}#post-{post_id}"
+                target_url = f"{reverse('feed:post_detail', kwargs={'pk': post_id})}#post-{post_id}"
         elif template_code.startswith("connection_"):
             actor_id = context.get("actor_id") or context.get("user_id")
             if actor_id:
