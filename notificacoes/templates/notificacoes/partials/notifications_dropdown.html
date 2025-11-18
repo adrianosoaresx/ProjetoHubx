@@ -12,13 +12,13 @@
   {% if logs %}
     <ul class="divide-y divide-[var(--border)]" role="none">
       {% for log in logs %}
-        {% url 'notificacoes:notificacoes-list' as target_url %}
-        {% if log.template.codigo|startswith:'feed_' and log.context.post_id %}
-          {% url 'feed:post_detail' log.context.post_id as target_url %}
-        {% elif log.template.codigo|startswith:'connection_' %}
-          {% url 'conexoes:perfil_sections_conexoes' as target_url %}
-        {% endif %}
-        <li class="py-3 flex gap-3" role="menuitem" tabindex="0" data-notification-item>
+        <li
+          class="py-3 flex gap-3"
+          role="menuitem"
+          tabindex="0"
+          data-notification-item
+          data-target-url="{{ log.target_url }}"
+        >
           <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)]" aria-hidden="true">
             {% if log.canal == 'email' %}
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -37,14 +37,14 @@
             {% endif %}
           </span>
           <div class="flex-1 min-w-0 space-y-1">
-            <a href="{{ target_url }}" class="block space-y-1 group focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded">
+            <a href="{{ log.target_url }}" class="block space-y-1 group focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded">
               <p class="text-sm font-semibold text-[var(--text-primary)] leading-tight group-hover:text-[var(--primary)]">{{ log.template.assunto }}</p>
               <p class="text-xs text-[var(--text-secondary)] leading-snug">{{ log.corpo_renderizado|default:log.template.corpo|striptags|truncatechars:140 }}</p>
               <p class="text-[11px] text-[var(--text-muted)]">{{ log.data_envio|default:log.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
             </a>
             <div class="flex flex-wrap gap-2 pt-1">
               <a
-                href="{{ target_url }}"
+                href="{{ log.target_url }}"
                 class="text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] focus:outline-none focus:underline"
               >
                 {% trans "Ver detalhes" %}
