@@ -761,7 +761,10 @@ def solicitar_conexao(request, id):
         enviar_para_usuario(
             other_user,
             CONNECTION_NOTIFICATION_TEMPLATES["request"],
-            {"solicitante": _get_display_name(request.user)},
+            {
+                "solicitante": _get_display_name(request.user),
+                "actor_id": str(request.user.id),
+            },
         )
 
     q = request.POST.get("q", "").strip()
@@ -877,7 +880,10 @@ def aceitar_conexao(request, id):
     enviar_para_usuario(
         other_user,
         CONNECTION_NOTIFICATION_TEMPLATES["accepted"],
-        {"solicitado": _get_display_name(request.user)},
+        {
+            "solicitado": _get_display_name(request.user),
+            "actor_id": str(request.user.id),
+        },
     )
     if is_htmx_or_ajax(request):
         return HttpResponse(status=204)
@@ -907,7 +913,10 @@ def recusar_conexao(request, id):
     enviar_para_usuario(
         other_user,
         CONNECTION_NOTIFICATION_TEMPLATES["declined"],
-        {"solicitado": _get_display_name(request.user)},
+        {
+            "solicitado": _get_display_name(request.user),
+            "actor_id": str(request.user.id),
+        },
     )
     if is_htmx_or_ajax(request):
         return HttpResponse(status=204)
