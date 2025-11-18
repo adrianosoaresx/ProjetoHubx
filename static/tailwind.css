@@ -3399,8 +3399,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
   width: 2rem;
 }
 
-.w-\[min\(22rem\2c calc\(100vw-2rem\)\)\] {
-  width: min(22rem,calc(100vw - 2rem));
+.w-\[min\(24rem\2c calc\(100vw-1rem\)\)\] {
+  width: min(24rem,calc(100vw - 1rem));
 }
 
 .w-auto {
@@ -3455,8 +3455,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
   max-width: 10rem;
 }
 
-.max-w-\[calc\(100vw-1\.5rem\)\] {
-  max-width: calc(100vw - 1.5rem);
+.max-w-\[calc\(100vw-0\.75rem\)\] {
+  max-width: calc(100vw - 0.75rem);
 }
 
 .max-w-full {
@@ -5790,8 +5790,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
     width: 1.75rem;
   }
 
-  .sm\:w-96 {
-    width: 24rem;
+  .sm\:w-\[25rem\] {
+    width: 25rem;
   }
 
   .sm\:w-auto {
