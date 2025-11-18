@@ -5510,6 +5510,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   border-color: var(--accent);
 }
 
+.group:hover .group-hover\:text-\[var\(--primary\)\] {
+  color: var(--primary);
+}
+
 .group:hover .group-hover\:underline {
   text-decoration-line: underline;
 }
