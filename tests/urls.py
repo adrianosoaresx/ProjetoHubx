@@ -14,7 +14,10 @@ urlpatterns = [
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("core/", include(("core.urls", "core"), namespace="core")),
-    path("api/notificacoes/", include("notificacoes.api_urls")),
+    path(
+        "api/notificacoes/",
+        include(("notificacoes.api_urls", "notificacoes_api"), namespace="notificacoes_api"),
+    ),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
