@@ -66,7 +66,7 @@ def push_notification_count(request):
 
 @login_required
 def notifications_dropdown(request):
-    logs = (
+    logs = list(
         NotificationLog.objects.select_related("template")
         .filter(
             user=request.user,
@@ -75,6 +75,24 @@ def notifications_dropdown(request):
         )
         .order_by("-data_envio", "-created_at")[:DROPDOWN_LIMIT]
     )
+
+    default_target_url = reverse("notificacoes:notificacoes-list")
+
+    for log in logs:
+        context = log.context or {}
+        template_code = getattr(log.template, "codigo", "") or ""
+        target_url = default_target_url
+
+        if template_code.startswith("feed_"):
+            post_id = context.get("post_id")
+            if post_id:
+                target_url = f"/post/{post_id}#post-{post_id}"
+        elif template_code.startswith("connection_"):
+            actor_id = context.get("actor_id") or context.get("user_id")
+            if actor_id:
+                target_url = f"/perfil/{actor_id}"
+
+        log.target_url = target_url
 
     context = {"logs": logs}
     return render(request, "notificacoes/partials/notifications_dropdown.html", context)
