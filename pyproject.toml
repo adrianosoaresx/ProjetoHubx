@@ -16,3 +16,10 @@ skip_glob = ["*/.venv/*", "*/migrations/*", "*/static/*"]
 line-length = 120
 extend-select = ["I"]
 extend-exclude = [".venv", "migrations", "static"]
+
+[project]
+name = "projetohubx"
+version = "0.0.0"
+dependencies = [
+    "openai>=1.63.0",
+]

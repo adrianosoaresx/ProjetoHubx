@@ -58,7 +58,7 @@ db.sqlite3
 # Variáveis de ambiente / segredos
 .env
 .env.*
-!.env.example              # mantenha apenas o exemplo
+!.env.example
 
 # Arquivos gerados pelo collectstatic
 /staticfiles/
