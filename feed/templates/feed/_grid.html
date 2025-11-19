@@ -93,19 +93,24 @@
              data-loading-text="{% trans 'Carregando pré-visualização do link…' %}"
              data-error-text="{% trans 'Não foi possível carregar os dados do link.' %}">
           <p class="text-xs text-[var(--text-secondary)]" data-link-preview-status></p>
-          <div class="flex gap-4 rounded-2xl border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] p-3 shadow-sm {% if not preview %}hidden{% endif %}" data-link-preview-card>
+          <a data-link-preview-card
+             data-link-preview-url
+             target="_blank"
+             rel="noopener"
+             href="{{ preview.url|default:'#' }}"
+             class="flex gap-4 rounded-2xl border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] p-3 shadow-sm {% if not preview %}hidden{% endif %}">
             <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--bg-secondary)] {% if not preview.image %}hidden{% endif %}" data-link-preview-image-wrapper>
               <img data-link-preview-image alt="{% trans 'Imagem de pré-visualização do link' %}" class="h-full w-full object-cover" loading="lazy"{% if preview.image %} src="{{ preview.image }}"{% endif %}>
             </div>
             <div class="flex-1 space-y-1 min-w-0">
-              <a data-link-preview-url target="_blank" rel="noopener" class="block text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]" href="{{ preview.url|default:'#' }}">
-                <span data-link-preview-title class="block truncate">{% if preview %}{{ preview.title|default:preview.url }}{% endif %}</span>
-              </a>
+              <span data-link-preview-title class="block truncate text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]">
+                {% if preview %}{{ preview.title|default:preview.url }}{% endif %}
+              </span>
               <p data-link-preview-description class="text-xs text-[var(--text-secondary)] overflow-hidden"
                  style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">{% if preview.description %}{{ preview.description }}{% endif %}</p>
               <p data-link-preview-host class="text-[10px] text-[var(--text-muted)] truncate">{% if preview.site_name %}{{ preview.site_name }}{% endif %}</p>
             </div>
-          </div>
+          </a>
         </div>
       {% endwith %}
       {% endif %}
