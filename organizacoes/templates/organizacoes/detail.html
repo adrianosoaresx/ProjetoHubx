@@ -70,6 +70,49 @@
             </dd>
           </div>
           <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'Presença digital' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)] space-y-3">
+              {% if object.icone_site %}
+                <img
+                  src="{{ object.icone_site.url }}"
+                  alt="{% blocktrans with nome=object.nome %}Ícone do site de {{ nome }}{% endblocktrans %}"
+                  class="h-12 w-12 rounded-full border border-[var(--border)] bg-white object-contain"
+                  loading="lazy"
+                >
+              {% endif %}
+              <div class="space-y-1">
+                <p class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Site oficial' %}</p>
+                {% if object.site %}
+                  <a
+                    href="{{ object.site }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-[var(--text-primary)] hover:underline"
+                  >
+                    <span class="truncate" title="{{ object.site }}">{{ object.site }}</span>
+                  </a>
+                {% else %}
+                  <p class="text-sm text-[var(--text-secondary)]">{% trans 'Site não informado.' %}</p>
+                {% endif %}
+              </div>
+              <div class="space-y-1">
+                <p class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Feed de notícias' %}</p>
+                {% if object.feed_noticias %}
+                  <a
+                    href="{{ object.feed_noticias }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-[var(--text-primary)] hover:underline"
+                  >
+                    <span class="truncate" title="{{ object.feed_noticias }}">{{ object.feed_noticias }}</span>
+                  </a>
+                {% else %}
+                  <p class="text-sm text-[var(--text-secondary)]">{% trans 'Feed de notícias não informado.' %}</p>
+                {% endif %}
+              </div>
+            </dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
             <dt class="text-[var(--text-secondary)]">{% trans 'Identificador' %}</dt>
             <dd class="font-medium text-[var(--text-primary)]">#{{ object.id }}</dd>
           </div>
