@@ -1,19 +1,34 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import logging
+import time
 from typing import Any, Iterable
 
 from django.shortcuts import get_object_or_404
+from django.core.cache import cache
 from rest_framework import mixins, serializers, status, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
 
 from ai_chat.settings import get_ai_chat_settings
+from core.cache import get_cache_version
 from openai import OpenAI
 
 from .models import ChatMessage, ChatSession
 from . import services as chat_services
+from .metrics import (
+    chat_openai_errors_total,
+    chat_openai_latency_seconds,
+    chat_tool_errors_total,
+    chat_tool_latency_seconds,
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 SYSTEM_MESSAGE = {
@@ -195,6 +210,16 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         return session
 
 
+class ChatRolePermission(IsAuthenticated):
+    message = "Você não tem permissão para acessar o assistente."
+
+    def has_permission(self, request, view):  # type: ignore[override]
+        if not super().has_permission(request, view):
+            return False
+        role = getattr(request.user, "get_tipo_usuario", None)
+        return role in {"admin", "coordenador", "consultor", "root"}
+
+
 class ChatRateThrottle(SimpleRateThrottle):
     scope = "ai_chat"
 
@@ -206,7 +231,7 @@ class ChatRateThrottle(SimpleRateThrottle):
 
 class ChatSessionViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = ChatSessionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ChatRolePermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -220,8 +245,25 @@ class ChatSessionViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
 
 class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    ALLOWED_TOOLS_BY_ROLE = {
+        "admin": set(TOOL_WRAPPERS.keys()),
+        "root": set(TOOL_WRAPPERS.keys()),
+        "coordenador": set(TOOL_WRAPPERS.keys()),
+        "consultor": {
+            "get_future_events_context",
+            "get_organizacao_description",
+            "get_organizacao_nucleos_context",
+        },
+    }
+    HEAVY_TOOLS = {
+        "get_membership_totals",
+        "get_event_status_totals",
+        "get_monthly_members",
+        "get_nucleo_metrics",
+    }
+
     serializer_class = ChatMessageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ChatRolePermission]
     throttle_classes = [ChatRateThrottle]
 
     def get_queryset(self):
@@ -230,9 +272,57 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             organizacao_id=getattr(user, "organizacao_id", None), session__usuario=user
         )
 
+    def _get_user_role(self) -> str:
+        role = getattr(self.request.user, "get_tipo_usuario", "") or ""
+        return str(role)
+
+    def _get_allowed_tools(self, role: str) -> set[str]:
+        return self.ALLOWED_TOOLS_BY_ROLE.get(role, set())
+
+    def _filter_tool_definitions(self, role: str) -> list[dict[str, Any]]:
+        allowed = self._get_allowed_tools(role)
+        return [tool for tool in _build_tool_definitions() if tool["function"]["name"] in allowed]
+
+    def _build_tool_cache_key(self, name: str, args: dict[str, Any]) -> str:
+        version = get_cache_version(f"ai_chat_tool_{name}")
+        args_payload = json.dumps(args, sort_keys=True, default=str)
+        hashed_args = hashlib.md5(args_payload.encode()).hexdigest()
+        return f"ai_chat_tool_{name}_v{version}_{hashed_args}"
+
     def _get_client(self) -> OpenAI:
         settings = get_ai_chat_settings()
         return OpenAI(api_key=settings.api_key, timeout=settings.request_timeout)
+
+    def _call_openai(self, client: OpenAI, *, phase: str, session: ChatSession, **kwargs):
+        start = time.monotonic()
+        try:
+            response = client.chat.completions.create(**kwargs)
+        except Exception:
+            duration = time.monotonic() - start
+            chat_openai_latency_seconds.labels(phase=phase).observe(duration)
+            chat_openai_errors_total.labels(phase=phase).inc()
+            logger.exception(
+                "Erro ao chamar OpenAI",
+                extra={
+                    "phase": phase,
+                    "session_id": str(session.pk),
+                    "user_id": str(getattr(session.usuario, "pk", "")),
+                },
+            )
+            raise
+
+        duration = time.monotonic() - start
+        chat_openai_latency_seconds.labels(phase=phase).observe(duration)
+        logger.info(
+            "Chamada ao OpenAI concluída",
+            extra={
+                "phase": phase,
+                "session_id": str(session.pk),
+                "user_id": str(getattr(session.usuario, "pk", "")),
+                "duration_ms": round(duration * 1000, 2),
+            },
+        )
+        return response
 
     def _serialize_history(self, messages: Iterable[ChatMessage]) -> list[dict[str, Any]]:
         serialized: list[dict[str, Any]] = [SYSTEM_MESSAGE]
@@ -248,6 +338,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         tool_calls: Iterable[Any],
         session: ChatSession,
         assistant_message_content: str,
+        role: str,
     ) -> tuple[list[dict[str, Any]], list[ChatMessage]]:
         history_messages: list[dict[str, Any]] = [
             {
@@ -277,13 +368,41 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 args = {}
             args.setdefault("organizacao_id", str(session.organizacao_id))
             function = TOOL_WRAPPERS.get(call.function.name)
-            if not function:
+            allowed_tools = self._get_allowed_tools(role)
+            if call.function.name not in allowed_tools:
+                result = {"error": "Você não tem permissão para usar esta função."}
+            elif not function:
                 result = {"error": f"Função {call.function.name} não suportada."}
             else:
-                try:
-                    result = function(**args)
-                except Exception as exc:  # pragma: no cover - logging/edge
-                    result = {"error": str(exc)}
+                cache_key = None
+                result = None
+                if call.function.name in self.HEAVY_TOOLS:
+                    cache_key = self._build_tool_cache_key(call.function.name, args)
+                    cached = cache.get(cache_key)
+                    if cached is not None:
+                        result = cached
+
+                if result is None:
+                    start = time.monotonic()
+                    try:
+                        result = function(**args)
+                    except Exception:  # pragma: no cover - logging/edge
+                        chat_tool_errors_total.labels(function=call.function.name).inc()
+                        logger.exception(
+                            "Erro ao executar ferramenta interna",  # pragma: no cover - logging/edge
+                            extra={
+                                "function": call.function.name,
+                                "session_id": str(session.pk),
+                                "user_id": str(getattr(session.usuario, "pk", "")),
+                            },
+                        )
+                        result = {"error": "Não foi possível concluir a operação solicitada."}
+                    finally:
+                        duration = time.monotonic() - start
+                        chat_tool_latency_seconds.labels(function=call.function.name).observe(duration)
+
+                if cache_key and result is not None:
+                    cache.set(cache_key, result, 300)
 
             history_messages.append(
                 {
@@ -314,66 +433,104 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             ChatSession, pk=session.pk, organizacao=request.user.organizacao, usuario=request.user
         )
 
-        user_message = ChatMessage.objects.create(
-            session=session,
-            organizacao=session.organizacao,
-            role=ChatMessage.Role.USER,
-            content=user_message_text,
-        )
-
-        history = self._serialize_history(session.messages.all())
-        history.append({"role": "user", "content": user_message_text})
-
-        client = self._get_client()
-        settings = get_ai_chat_settings()
-        tools = _build_tool_definitions()
-
-        first_response = client.chat.completions.create(
-            model=settings.model,
-            messages=history,
-            tools=tools,
-            tool_choice="auto",
-            max_tokens=settings.max_output_tokens,
-        )
-
-        assistant_message = first_response.choices[0].message
-        stored_tool_messages: list[ChatMessage] = []
-        history_extensions: list[dict[str, Any]] = []
-
-        if assistant_message.tool_calls:
-            history_extensions, stored_tool_messages = self._execute_tool_calls(
-                assistant_message.tool_calls,
-                session,
-                assistant_message.content or "",
+        role = self._get_user_role()
+        if role not in self.ALLOWED_TOOLS_BY_ROLE:
+            raise PermissionDenied("Seu perfil não tem acesso ao assistente no momento.")
+        try:
+            user_message = ChatMessage.objects.create(
+                session=session,
+                organizacao=session.organizacao,
+                role=ChatMessage.Role.USER,
+                content=user_message_text,
             )
-        elif assistant_message.content:
-            history_extensions = [
-                {"role": "assistant", "content": assistant_message.content, "tool_calls": []}
-            ]
 
-        final_history = history + history_extensions
+            history = self._serialize_history(session.messages.all())
+            history.append({"role": "user", "content": user_message_text})
 
-        final_response = client.chat.completions.create(
-            model=settings.model,
-            messages=final_history,
-            tools=tools,
-            tool_choice="none",
-            max_tokens=settings.max_output_tokens,
-        )
-        final_message = final_response.choices[0].message
+            client = self._get_client()
+            settings = get_ai_chat_settings()
+            tools = self._filter_tool_definitions(role)
 
-        stored_messages = [user_message, *stored_tool_messages]
-        assistant_db_message = ChatMessage.objects.create(
-            session=session,
-            organizacao=session.organizacao,
-            role=ChatMessage.Role.ASSISTANT,
-            content=final_message.content or "",
-        )
-        stored_messages.append(assistant_db_message)
+            try:
+                first_response = self._call_openai(
+                    client,
+                    phase="analysis",
+                    session=session,
+                    model=settings.model,
+                    messages=history,
+                    tools=tools,
+                    tool_choice="auto",
+                    max_tokens=settings.max_output_tokens,
+                )
+            except Exception:
+                return Response(
+                    {
+                        "detail": "Não foi possível gerar uma resposta agora. Tente novamente em instantes.",
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
 
-        output = {
-            "session": ChatSessionSerializer(session, context=self.get_serializer_context()).data,
-            "messages": ChatMessageSerializer(stored_messages, many=True, context=self.get_serializer_context()).data,
-        }
-        headers = self.get_success_headers(serializer.data)
-        return Response(output, status=status.HTTP_201_CREATED, headers=headers)
+            assistant_message = first_response.choices[0].message
+            stored_tool_messages: list[ChatMessage] = []
+            history_extensions: list[dict[str, Any]] = []
+
+            if assistant_message.tool_calls:
+                history_extensions, stored_tool_messages = self._execute_tool_calls(
+                    assistant_message.tool_calls,
+                    session,
+                    assistant_message.content or "",
+                    role,
+                )
+            elif assistant_message.content:
+                history_extensions = [
+                    {"role": "assistant", "content": assistant_message.content, "tool_calls": []}
+                ]
+
+            final_history = history + history_extensions
+
+            try:
+                final_response = self._call_openai(
+                    client,
+                    phase="final",
+                    session=session,
+                    model=settings.model,
+                    messages=final_history,
+                    tools=tools,
+                    tool_choice="none",
+                    max_tokens=settings.max_output_tokens,
+                )
+            except Exception:
+                return Response(
+                    {
+                        "detail": "Não foi possível finalizar a resposta agora. Tente novamente em breve.",
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+            final_message = final_response.choices[0].message
+
+            stored_messages = [user_message, *stored_tool_messages]
+            assistant_db_message = ChatMessage.objects.create(
+                session=session,
+                organizacao=session.organizacao,
+                role=ChatMessage.Role.ASSISTANT,
+                content=final_message.content or "",
+            )
+            stored_messages.append(assistant_db_message)
+
+            output = {
+                "session": ChatSessionSerializer(session, context=self.get_serializer_context()).data,
+                "messages": ChatMessageSerializer(stored_messages, many=True, context=self.get_serializer_context()).data,
+            }
+            headers = self.get_success_headers(serializer.data)
+            return Response(output, status=status.HTTP_201_CREATED, headers=headers)
+        except PermissionDenied:
+            raise
+        except Exception:
+            logger.exception(
+                "Erro inesperado ao processar mensagem do chat",
+                extra={"session_id": str(session.pk), "user_id": str(getattr(request.user, "pk", ""))},
+            )
+            return Response(
+                {"detail": "Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
