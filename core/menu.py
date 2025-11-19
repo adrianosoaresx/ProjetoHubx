@@ -355,6 +355,13 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["authenticated"],
         ),
         MenuItem(
+            id="ai-chat",
+            path=reverse("ai_chat:chat"),
+            label="Chat IA",
+            icon=ICON_CHAT,
+            permissions=["authenticated"],
+        ),
+        MenuItem(
             id="conexoes",
             path=conexoes_dashboard_url,
             label="Conexões",
@@ -557,6 +564,8 @@ def _filter_items(items: List[MenuItem], user) -> List[MenuItem]:
     filtered: List[MenuItem] = []
     for item in items:
         filtered_children = _filter_items(item.children, user) if item.children else []
+        if item.id == "ai-chat" and not getattr(user, "organizacao_id", None):
+            continue
         if _user_has_permission(user, item):
             filtered_item = replace(item, children=filtered_children or None)
             filtered.append(filtered_item)

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Chat IA • HubX{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .chat-message { animation: fade-in 0.18s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-4">
+  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-lg font-semibold">{% trans "Chat com IA" %}</p>
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Envie perguntas sobre sua organização e receba respostas contextualizadas." %}</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full px-3 py-1">
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{% trans "Beta" %}</span>
+      <span>{% trans "Envio via HTMX/Ajax; planejamos migrar para WebSockets conforme ADR 0001." %}</span>
+    </div>
+  </div>
+
+  {% if missing_organization %}
+    <div class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--bg-elevated)] p-6 text-[var(--text-secondary)]">
+      {% trans "Associe-se a uma organização para iniciar uma sessão de chat." %}
+    </div>
+  {% else %}
+    <div class="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-sm min-h-[70vh] overflow-hidden">
+      <div id="chat-history" class="space-y-4 max-h-[calc(80vh-88px)] overflow-y-auto p-4 md:p-6 pb-28" aria-live="polite">
+        {% include "ai_chat/_messages.html" with messages=messages %}
+        {% if not messages %}
+          <div class="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-dashed border-[var(--border)] rounded-xl p-4">
+            {% trans "Envie a primeira mensagem para começar. Respostas podem incluir gráficos interativos quando disponíveis." %}
+          </div>
+        {% endif %}
+      </div>
+
+      <form
+        id="chat-form"
+        hx-post="{% url 'ai_chat:send_message' session_id=session.id %}"
+        hx-target="#chat-history"
+        hx-swap="beforeend"
+        hx-indicator="#chat-loading"
+        class="absolute left-0 right-0 bottom-0 border-t border-[var(--border)] bg-[var(--bg-primary)]/95 backdrop-blur px-4 py-3 md:px-6"
+      >
+        {% csrf_token %}
+        <div class="flex items-end gap-3">
+          <label for="chat-message" class="sr-only">{% trans "Mensagem" %}</label>
+          <textarea
+            id="chat-message"
+            name="message"
+            rows="2"
+            required
+            placeholder="{% trans 'Pergunte sobre eventos, núcleos ou estatísticas...' %}"
+            class="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          ></textarea>
+          <button type="submit" class="btn btn-primary whitespace-nowrap px-4 py-3 text-sm font-semibold flex items-center gap-2">
+            <span id="chat-loading" class="htmx-indicator hidden animate-spin h-4 w-4 rounded-full border-2 border-white/30 border-l-white"></span>
+            {% trans "Enviar" %}
+          </button>
+        </div>
+        <p class="mt-2 text-xs text-[var(--text-secondary)]">
+          {% trans "Streaming simples via HTMX. Um upgrade para WebSockets será ativado quando estável." %}
+        </p>
+      </form>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
+  <script>
+    (function () {
+      const historyEl = document.getElementById('chat-history');
+      const formEl = document.getElementById('chat-form');
+      const textareaEl = document.getElementById('chat-message');
+
+      function scrollToLatest() {
+        if (!historyEl) return;
+        historyEl.scrollTo({ top: historyEl.scrollHeight, behavior: 'smooth' });
+      }
+
+      function renderPlotlyCharts() {
+        if (!window.Plotly) {
+          setTimeout(renderPlotlyCharts, 120);
+          return;
+        }
+        document.querySelectorAll('[data-plotly-script]').forEach((container) => {
+          if (container.dataset.rendered === 'true') return;
+          const scriptId = container.getAttribute('data-plotly-script');
+          const scriptEl = scriptId ? document.getElementById(scriptId) : null;
+          if (!scriptEl) return;
+          try {
+            const figure = JSON.parse(scriptEl.textContent || '{}');
+            Plotly.newPlot(container, figure.data, figure.layout, { displayModeBar: false, responsive: true });
+            container.dataset.rendered = 'true';
+          } catch (err) {
+            console.error('Erro ao renderizar gráfico', err);
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        renderPlotlyCharts();
+        scrollToLatest();
+      });
+
+      document.body.addEventListener('htmx:afterSwap', (event) => {
+        if (event.target && event.target.id === 'chat-history') {
+          renderPlotlyCharts();
+          scrollToLatest();
+          if (formEl) {
+            formEl.reset();
+          }
+          if (textareaEl) {
+            textareaEl.focus();
+          }
+        }
+      });
+    })();
+  </script>
+{% endblock %}
