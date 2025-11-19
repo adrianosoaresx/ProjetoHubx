@@ -3,10 +3,6 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from math import ceil
-from urllib.parse import urljoin, urlparse
-
-import requests
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
@@ -28,6 +24,12 @@ from rest_framework.response import Response
 
 from core.cache import get_cache_version
 from feed.application.denunciar_post import DenunciarPost
+from feed.services.link_preview import (
+    InvalidLinkPreviewURLError,
+    LinkPreviewRequestError,
+    MissingLinkPreviewURLError,
+    extract_link_preview,
+)
 
 from .models import Bookmark, Comment, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post
@@ -380,51 +382,24 @@ class PostViewSet(viewsets.ModelViewSet):
         ):
             return ratelimit_exceeded(request, None)
 
-        target_url = (request.query_params.get("url") or "").strip()
-        parsed = urlparse(target_url)
-        if not target_url:
-            return Response({"detail": _("URL é obrigatória.")}, status=status.HTTP_400_BAD_REQUEST)
-        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            return Response({"detail": _("URL inválida.")}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
-            response = requests.get(
-                target_url,
-                timeout=5,
-                headers={"User-Agent": "HubxLinkPreview/1.0"},
-            )
-            response.raise_for_status()
-        except requests.RequestException:
+            preview = extract_link_preview(request.query_params.get("url") or "")
+        except MissingLinkPreviewURLError:
+            return Response({"detail": _("URL é obrigatória.")}, status=status.HTTP_400_BAD_REQUEST)
+        except InvalidLinkPreviewURLError:
+            return Response({"detail": _("URL inválida.")}, status=status.HTTP_400_BAD_REQUEST)
+        except LinkPreviewRequestError:
             return Response(
                 {"detail": _("Não foi possível carregar a URL informada.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        def _extract_meta(names):
-            for name in names:
-                tag = soup.find("meta", attrs={"property": name}) or soup.find("meta", attrs={"name": name})
-                if tag:
-                    content = tag.get("content") or tag.get("value")
-                    if content:
-                        return content.strip()
-            return None
-
-        title = _extract_meta(["og:title", "twitter:title"]) or (soup.title.string.strip() if soup.title and soup.title.string else None)
-        description = _extract_meta(["og:description", "twitter:description", "description"]) or ""
-        image = _extract_meta(["og:image", "twitter:image"])
-        site_name = _extract_meta(["og:site_name"]) or parsed.netloc
-
-        if image:
-            image = urljoin(target_url, image)
-
         data = {
-            "url": target_url,
-            "title": title or target_url,
-            "description": description,
-            "image": image,
-            "site_name": site_name,
+            "url": preview.url,
+            "title": preview.title,
+            "description": preview.description,
+            "image": preview.image,
+            "site_name": preview.site_name,
         }
 
         return Response(data)
