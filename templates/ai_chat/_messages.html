@@ -1,20 +1,16 @@
 {% load i18n %}
 {% for message in messages %}
-  <article class="chat-message flex {{ 'justify-end' if message.is_user }}">
+  <article class="chat-message flex{% if message.is_user %} justify-end{% endif %}">
     <div class="w-full max-w-4xl space-y-2">
       <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-        <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold {{
-          'bg-primary/10 text-primary' if message.is_user else 'bg-[var(--bg-secondary)] text-[var(--text-primary)]' if not message.is_tool else 'bg-amber-100 text-amber-700'
-        }}">
+        <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold{% if message.is_user %} bg-primary/10 text-primary{% elif not message.is_tool %} bg-[var(--bg-secondary)] text-[var(--text-primary)]{% else %} bg-amber-100 text-amber-700{% endif %}">
           {% if message.role == 'assistant' %}{% trans "Assistente" %}
           {% elif message.role == 'tool' %}{% trans "Ferramenta" %}
           {% else %}{% trans "Você" %}{% endif %}
         </span>
         <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"d/m/Y H:i" }}</time>
       </div>
-      <div class="rounded-2xl px-4 py-3 shadow-sm border border-[var(--border)] {{
-        'bg-primary text-white border-primary/60' if message.is_user else 'bg-[var(--bg-secondary)]' if not message.is_tool else 'bg-amber-50 border-amber-200'
-      }}">
+      <div class="rounded-2xl px-4 py-3 shadow-sm border border-[var(--border)]{% if message.is_user %} bg-primary text-white border-primary/60{% elif not message.is_tool %} bg-[var(--bg-secondary)]{% else %} bg-amber-50 border-amber-200{% endif %}">
         {% if message.is_tool %}
           <pre class="whitespace-pre-wrap break-words text-sm">{{ message.content }}</pre>
         {% else %}
