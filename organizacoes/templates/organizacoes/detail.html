@@ -81,6 +81,14 @@
                 >
               {% endif %}
               <div class="space-y-1">
+                <p class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Nome no site' %}</p>
+                {% if object.nome_site %}
+                  <p class="text-sm text-[var(--text-primary)]">{{ object.nome_site }}</p>
+                {% else %}
+                  <p class="text-sm text-[var(--text-secondary)]">{% trans 'Nome do site não informado.' %}</p>
+                {% endif %}
+              </div>
+              <div class="space-y-1">
                 <p class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Site oficial' %}</p>
                 {% if object.site %}
                   <a

@@ -19,6 +19,7 @@ class OrganizacaoFactory(DjangoModelFactory):
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_telefone = factory.Faker("phone_number", locale="pt_BR")
     chave_pix = factory.Faker("bothify", text="###############")
+    nome_site = factory.Sequence(lambda n: f"hubx{n:04d}"[:12])
     site = factory.Faker("url")
     feed_noticias = factory.Faker("url")
     icone_site = ImageField(color="blue")

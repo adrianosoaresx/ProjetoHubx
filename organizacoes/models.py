@@ -35,6 +35,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     contato_email = models.EmailField(_("Email do contato"), blank=True)
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
     chave_pix = models.CharField(_("Chave Pix"), max_length=255, blank=True)
+    nome_site = models.CharField(_("Nome do site"), max_length=12, blank=True)
     site = models.URLField(_("Site"), blank=True)
     icone_site = models.ImageField(_("Ícone do site"), upload_to="organizacoes/icones/", blank=True, null=True)
     feed_noticias = models.URLField(_("Feed de notícias"), blank=True)
