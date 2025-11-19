@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -72,12 +73,23 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
         ordering = ["created_at"]
         verbose_name = "Mensagem de Chat"
         verbose_name_plural = "Mensagens de Chat"
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(organizacao=models.F("session__organizacao")),
-                name="chatmessage_organizacao_matches_session",
-            )
-        ]
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.get_role_display()} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
+
+    def clean(self) -> None:
+        super().clean()
+        if (
+            self.session_id
+            and self.organizacao_id
+            and self.session.organizacao_id != self.organizacao_id
+        ):
+            raise ValidationError(
+                {"organizacao": _("A organização da sessão e da mensagem devem ser iguais.")}
+            )
+
+    def save(self, *args, **kwargs):  # pragma: no cover - comportamento simples
+        if self.session_id and not self.organizacao_id:
+            self.organizacao = self.session.organizacao
+        self.full_clean()
+        super().save(*args, **kwargs)
