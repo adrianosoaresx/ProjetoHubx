@@ -6,6 +6,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 
 from accounts.models import UserType
 
@@ -439,6 +440,39 @@ def _get_menu_items() -> List[MenuItem]:
     ]
 
 
+def _build_organizacao_site_menu_item(user) -> MenuItem | None:
+    if not getattr(user, "is_authenticated", False):
+        return None
+
+    organizacao = getattr(user, "organizacao", None)
+    if not organizacao:
+        return None
+
+    nome_site = (getattr(organizacao, "nome_site", "") or "").strip()
+    site_url = (getattr(organizacao, "site", "") or "").strip()
+    if not nome_site or not site_url:
+        return None
+
+    icone_field = getattr(organizacao, "icone_site", None)
+    if icone_field and getattr(icone_field, "url", None):
+        icon_html = format_html(
+            '<img src="{}" alt="{}" class="w-6 h-6 object-contain rounded" loading="lazy" />',
+            icone_field.url,
+            nome_site,
+        )
+    else:
+        icon_html = ICON_LINK
+
+    return MenuItem(
+        id="organizacao-site",
+        path=site_url,
+        label=nome_site,
+        icon=icon_html,
+        permissions=["authenticated"],
+        classes="flex items-center gap-x-2 hover:text-primary transition",
+    )
+
+
 def _resolve_dashboard_path(user) -> str:
     """Retorna a URL correta do dashboard conforme o perfil do usuário."""
 
@@ -582,6 +616,13 @@ def build_menu(request) -> List[MenuItem]:
     dashboard_path = _resolve_dashboard_path(user)
     _apply_dashboard_path(items, dashboard_path)
     filtered = _filter_items(items, user)
+    org_site_item = _build_organizacao_site_menu_item(user)
+    if org_site_item:
+        logout_index = next(
+            (idx for idx, item in enumerate(filtered) if item.id == "logout"),
+            len(filtered),
+        )
+        filtered.insert(logout_index, org_site_item)
     current_full_path = request.get_full_path()
     path_queries = defaultdict(set)
     _collect_path_queries(filtered, path_queries)
