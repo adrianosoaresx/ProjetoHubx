@@ -575,8 +575,28 @@ function bindFeedEvents(root = document) {
 
 }
 
+function focusPostFromHash(root = document) {
+  const hash = window.location.hash || '';
+  if (!hash.startsWith('#post-')) {
+    return;
+  }
+
+  const target = root.querySelector(hash);
+  if (!target) {
+    return;
+  }
+
+  try {
+    target.focus({ preventScroll: true });
+  } catch (error) {
+    target.focus();
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   bindFeedEvents();
+  focusPostFromHash();
 });
 
 document.addEventListener("htmx:load", (e) => {

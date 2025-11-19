@@ -4,7 +4,11 @@
 
 <section id="feed-grid" class="grid grid-cols-1 auto-rows-[1fr] gap-4 sm:gap-6 lg:grid-cols-2">
   {% for post in posts %}
-  <article class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] p-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl">
+  <article
+    id="post-{{ post.id }}"
+    class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] p-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl"
+    tabindex="-1"
+  >
     <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent-light)] to-[var(--accent)] opacity-80 transition-opacity duration-300 group-hover:opacity-100"></span>
     <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
       <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
