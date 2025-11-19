@@ -61,6 +61,41 @@ Após a criação de um post, uma tarefa Celery envia notificações para usuár
 mesma organização. Métricas Prometheus acompanham a quantidade de posts e
 notificações enviadas.
 
+## Integração com feeds de notícias das organizações
+
+Organizações podem configurar um feed RSS/Atom em `Organizações → Editar → Feed
+de notícias`. Quando preenchido, a tarefa
+`organizacoes.tasks.publicar_feed_noticias_task` cria posts automaticamente a
+partir das entradas mais recentes:
+
+- **Agendamento**: executada diariamente às 04:00 via Celery Beat
+  (`CELERY_BEAT_SCHEDULE["publicar_feed_noticias_diario"]`). O bloqueio
+  `_FEED_LOCK_TIMEOUT` (10 minutos) impede execuções simultâneas por
+  organização.
+- **Autor das postagens**: o autor é escolhido em ordem de preferência: primeiro
+  um administrador ativo da organização, depois quem criou a organização e, por
+  fim, o membro ativo mais antigo (`_select_author`).
+- **Limite e tags**: cada execução importa até `max_items=3` posts por
+  organização, marcados com a tag `"notícias"` e publicados no `tipo_feed`
+  configurável (padrão: `global`).
+- **Timeouts**: o download de imagens para thumbnails usa `requests` com
+  `timeout=5s`. O bloqueio de cache expira após 10 minutos.
+- **Observabilidade**: logs incluem `organizacao` e `external_id` para rastrear
+  cada item; o counter Prometheus `feed_posts_created_total` é incrementado a
+  cada criação bem-sucedida. Falhas inesperadas são enviadas ao Sentry via
+  `capture_exception`.
+- **Alertas sugeridos**: monitore aumentos em logs com `Erro ao processar feed
+  de notícias` ou `Erro ao publicar item do feed` por `organizacao`, e crie
+  alertas para quedas abruptas no `feed_posts_created_total` ou aumento de
+  exceções consecutivas.
+
+Após um deploy, execute manualmente a tarefa para popular o histórico inicial,
+se desejado:
+
+```bash
+python manage.py shell -c "from organizacoes.services import publicar_feed_noticias; publicar_feed_noticias()"
+```
+
 ## Comments
 
 `/api/feed/comments/` permite criar e remover comentários em posts. Autenticação é
