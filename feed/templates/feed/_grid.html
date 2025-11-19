@@ -80,8 +80,25 @@
       </header>
 
       {% if post.conteudo %}
-      <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)] sm:p-4">
+      <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)] sm:p-4"
+           id="post-content-{{ post.id }}" data-post-content>
         {{ post.conteudo|linebreaksbr }}
+      </div>
+      <div class="space-y-2 hidden" data-link-preview data-link-preview-source="#post-content-{{ post.id }}" data-loading-text="{% trans 'Carregando pré-visualização do link…' %}"
+           data-error-text="{% trans 'Não foi possível carregar os dados do link.' %}">
+        <p class="text-xs text-[var(--text-secondary)]" data-link-preview-status></p>
+        <div class="flex gap-4 rounded-2xl border border-[var(--border-secondary)] bg-[var(--bg-tertiary)] p-3 shadow-sm hidden" data-link-preview-card>
+          <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--bg-secondary)]" data-link-preview-image-wrapper>
+            <img data-link-preview-image alt="{% trans 'Imagem de pré-visualização do link' %}" class="h-full w-full object-cover" loading="lazy">
+          </div>
+          <div class="flex-1 space-y-1 min-w-0">
+            <a data-link-preview-url target="_blank" rel="noopener" class="text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]">
+              <span data-link-preview-title class="truncate"></span>
+            </a>
+            <p data-link-preview-description class="text-xs text-[var(--text-secondary)] overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;"></p>
+            <p data-link-preview-host class="text-[10px] text-[var(--text-muted)] truncate"></p>
+          </div>
+        </div>
       </div>
       {% endif %}
 

@@ -22,8 +22,25 @@
         </div>
       </div>
 
-      <div class="text-sm text-[var(--text-primary)]">
+      <div class="text-sm text-[var(--text-primary)]" id="post-content-inline-{{ post.id }}" data-post-content>
   {{ post.conteudo|linebreaks }}
+      </div>
+
+      <div class="space-y-2 hidden" data-link-preview data-link-preview-source="#post-content-inline-{{ post.id }}" data-loading-text="{% trans 'Carregando pré-visualização do link…' %}"
+           data-error-text="{% trans 'Não foi possível carregar os dados do link.' %}">
+        <p class="text-xs text-[var(--text-secondary)]" data-link-preview-status></p>
+        <div class="flex gap-4 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] p-3 hidden" data-link-preview-card>
+          <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--bg-tertiary)]" data-link-preview-image-wrapper>
+            <img data-link-preview-image alt="{% trans 'Imagem de pré-visualização do link' %}" class="h-full w-full object-cover" loading="lazy">
+          </div>
+          <div class="flex-1 space-y-1 min-w-0">
+            <a data-link-preview-url target="_blank" rel="noopener" class="text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]">
+              <span data-link-preview-title class="truncate"></span>
+            </a>
+            <p data-link-preview-description class="text-xs text-[var(--text-secondary)] overflow-hidden" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;"></p>
+            <p data-link-preview-host class="text-[10px] text-[var(--text-muted)] truncate"></p>
+          </div>
+        </div>
       </div>
 
       {% if post.pdf %}
