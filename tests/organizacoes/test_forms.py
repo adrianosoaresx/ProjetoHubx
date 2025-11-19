@@ -27,6 +27,9 @@ def test_form_fields():
         "contato_email",
         "contato_telefone",
         "chave_pix",
+        "site",
+        "icone_site",
+        "feed_noticias",
         "avatar",
         "cover",
     ]

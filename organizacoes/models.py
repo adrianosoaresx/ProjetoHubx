@@ -35,6 +35,9 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     contato_email = models.EmailField(_("Email do contato"), blank=True)
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
     chave_pix = models.CharField(_("Chave Pix"), max_length=255, blank=True)
+    site = models.URLField(_("Site"), blank=True)
+    icone_site = models.ImageField(_("Ícone do site"), upload_to="organizacoes/icones/", blank=True, null=True)
+    feed_noticias = models.URLField(_("Feed de notícias"), blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     inativa = models.BooleanField(default=False)
@@ -60,7 +63,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
         self.cnpj = validate_cnpj(self.cnpj)
         allowed_exts = {f".{ext.lower()}" for ext in settings.ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS}
         max_size = settings.ORGANIZACOES_MAX_IMAGE_SIZE
-        for field in ["avatar", "cover"]:
+        for field in ["avatar", "cover", "icone_site"]:
             file = getattr(self, field)
             if file:
                 ext = os.path.splitext(file.name)[1].lower()

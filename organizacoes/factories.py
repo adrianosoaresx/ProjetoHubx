@@ -1,5 +1,5 @@
 import factory
-from factory.django import DjangoModelFactory
+from factory.django import DjangoModelFactory, ImageField
 
 from .models import Organizacao
 
@@ -19,3 +19,6 @@ class OrganizacaoFactory(DjangoModelFactory):
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_telefone = factory.Faker("phone_number", locale="pt_BR")
     chave_pix = factory.Faker("bothify", text="###############")
+    site = factory.Faker("url")
+    feed_noticias = factory.Faker("url")
+    icone_site = ImageField(color="blue")

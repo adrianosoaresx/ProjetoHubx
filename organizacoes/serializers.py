@@ -33,6 +33,9 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_email",
             "contato_telefone",
             "chave_pix",
+            "site",
+            "icone_site",
+            "feed_noticias",
             "avatar",
             "cover",
             "inativa",
@@ -76,6 +79,9 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_email",
             "inativa",
             "chave_pix",
+            "site",
+            "icone_site",
+            "feed_noticias",
         ]
         for campo in campos_relevantes:
             if campo in validated_data:
