@@ -5,7 +5,11 @@ from typing import Any, Dict
 
 from django.db.models import Model
 
-from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
+from organizacoes.models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
+from organizacoes.services.news_feed_publisher import (
+    publicar_feed_da_organizacao,
+    publicar_feed_noticias,
+)
 
 
 def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
@@ -43,3 +47,11 @@ def registrar_log(
         acao=acao,
         detalhes=detalhes or {},
     )
+
+
+__all__ = [
+    "serialize_organizacao",
+    "registrar_log",
+    "publicar_feed_da_organizacao",
+    "publicar_feed_noticias",
+]
