@@ -19,6 +19,7 @@ class OrganizacaoForm(forms.ModelForm):
             "contato_email",
             "contato_telefone",
             "chave_pix",
+            "nome_site",
             "site",
             "icone_site",
             "feed_noticias",
