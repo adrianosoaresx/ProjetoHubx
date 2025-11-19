@@ -8,3 +8,7 @@ def test_publicar_feed_noticias_agendado_diariamente():
     assert isinstance(schedule["schedule"], crontab)
     assert schedule["schedule"].minute == {0}
     assert schedule["schedule"].hour == {4}
+
+
+def test_publicar_feed_schedule_entry_exists():
+    assert "publicar_feed_noticias_diario" in settings.CELERY_BEAT_SCHEDULE
