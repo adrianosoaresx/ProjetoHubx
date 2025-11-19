@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.fields import EncryptedCharField
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
+from organizacoes.models import Organizacao
 
 NOTIFICACAO_FREQ_CHOICES = [
     ("imediata", _("Imediata")),
@@ -41,6 +42,7 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="configuracao",
     )
+    chat_habilitado = models.BooleanField(default=True)
     receber_notificacoes_email = models.BooleanField(default=True)
     frequencia_notificacoes_email = models.CharField(
         max_length=8,
@@ -81,6 +83,21 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
     class Meta:
         ordering = ["-updated_at"]
         constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
+
+
+class ConfiguracaoChatOrganizacao(TimeStampedModel, SoftDeleteModel):
+    organizacao = models.OneToOneField(
+        Organizacao,
+        on_delete=models.CASCADE,
+        related_name="configuracao_chat",
+    )
+    chat_habilitado = models.BooleanField(default=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        ordering = ["-updated_at"]
 
 
 class ConfiguracaoContaLog(TimeStampedModel):
