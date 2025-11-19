@@ -84,8 +84,8 @@ def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     sinal quando a task completar.
     """
 
-    from .models import PendingUpload
-    from .tasks import finalize_upload, upload_media as upload_media_task
+    from feed.models import PendingUpload
+    from feed.tasks import finalize_upload, upload_media as upload_media_task
 
     if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
         file.seek(0)

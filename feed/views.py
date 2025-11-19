@@ -408,6 +408,8 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["selected_tipo_feed"] = selected_tipo
         context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
         context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
+        form = context.get("form")
+        context["link_preview_data"] = getattr(form, "link_preview_data", {}) if form else {}
         back_origin = self._get_back_origin()
         fallback_map = self._get_back_fallback_map()
         explicit_fallback = fallback_map.get(back_origin)
@@ -640,6 +642,7 @@ def post_update(request, pk):
         or ", ".join(post.tags.order_by("nome").values_list("nome", flat=True)),
         "tags_disponiveis": Tag.objects.all(),
         "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
+        "link_preview_data": form.link_preview_data,
     }
     return render(request, "feed/post_form.html", context)
 
