@@ -323,6 +323,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "testar_notificacao": "5/minute",
+        "ai_chat": "30/minute",
     },
 }
 

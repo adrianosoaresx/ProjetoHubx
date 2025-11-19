@@ -80,6 +80,10 @@ urlpatterns = [
         "api/eventos/",
         include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
     ),
+    path(
+        "api/ai-chat/",
+        include(("ai_chat.api_urls", "ai_chat_api"), namespace="ai_chat_api"),
+    ),
     path("", include("django_prometheus.urls")),
 ]
 
