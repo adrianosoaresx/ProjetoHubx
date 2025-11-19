@@ -113,7 +113,7 @@
                 <div class="space-y-2">
                   {% include '_forms/field.html' with field=conteudo_field %}
                   <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
-                  <div class="space-y-2 hidden" data-link-preview data-loading-text="{% trans 'Gerando visualização do link…' %}"
+                  <div class="space-y-2 hidden" data-link-preview data-link-preview-source="textarea[name='conteudo']" data-loading-text="{% trans 'Gerando visualização do link…' %}"
                        data-error-text="{% trans 'Não foi possível gerar a pré-visualização do link.' %}">
                     <p class="text-xs text-[var(--text-secondary)]" data-link-preview-status></p>
                     <div class="flex gap-4 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] p-3 hidden" data-link-preview-card>
