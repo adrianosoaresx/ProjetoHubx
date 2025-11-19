@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from accounts.models import UserType
 from core.menu import MenuItem, build_menu
+from organizacoes.models import Organizacao
 
 
 @pytest.mark.django_db
@@ -257,3 +258,32 @@ def test_dashboard_visible_for_consultor_user_type_instance(monkeypatch):
 
     assert dashboard_item is not None
     assert dashboard_item.path == reverse("dashboard:consultor_dashboard")
+
+
+@pytest.mark.django_db
+def test_organizacao_site_menu_opens_in_new_tab():
+    organizacao = Organizacao.objects.create(
+        nome="Org Hubx",
+        cnpj="00.000.000/0001-90",
+        nome_site="Org Oficial",
+        site="https://org.example.com",
+    )
+
+    user_model = get_user_model()
+    user = user_model.objects.create_user(
+        email="org-menu@example.com",
+        username="org_menu",
+        password="test-pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+
+    request = RequestFactory().get("/")
+    request.user = user
+
+    menu = build_menu(request)
+
+    org_site_item = next((item for item in menu if item.id == "organizacao-site"), None)
+
+    assert org_site_item is not None
+    assert org_site_item.target == "_blank"

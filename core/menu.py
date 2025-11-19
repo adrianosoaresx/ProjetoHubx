@@ -20,6 +20,7 @@ class MenuItem:
     permissions: List[str] | None = None
     classes: str = "flex items-center gap-x-2 hover:text-primary transition"
     children: List["MenuItem"] | None = None
+    target: str | None = None
 
 
 # Icons as raw HTML so they can be injected into the template safely
@@ -470,6 +471,7 @@ def _build_organizacao_site_menu_item(user) -> MenuItem | None:
         icon=icon_html,
         permissions=["authenticated"],
         classes="flex items-center gap-x-2 hover:text-primary transition",
+        target="_blank",
     )
 
 
