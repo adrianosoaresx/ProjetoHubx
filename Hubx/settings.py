@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "audit",
     "webhooks.apps.WebhooksConfig",
     "dashboard.apps.DashboardConfig",
+    "ai_chat.apps.AiChatConfig",
 ]
 
 MIDDLEWARE = [

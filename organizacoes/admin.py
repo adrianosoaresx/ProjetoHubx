@@ -6,3 +6,4 @@ from .models import Organizacao
 @admin.register(Organizacao)
 class OrganizacaoAdmin(admin.ModelAdmin):
     list_display = ["nome", "cnpj", "avatar", "cover"]
+    search_fields = ["nome", "cnpj"]
