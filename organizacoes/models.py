@@ -106,6 +106,26 @@ class OrganizacaoChangeLog(TimeStampedModel, SoftDeleteModel):
         raise RuntimeError("Logs não podem ser removidos")
 
 
+class OrganizacaoFeedSync(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organizacao = models.ForeignKey(
+        Organizacao,
+        on_delete=models.CASCADE,
+        related_name="feeds_sincronizados",
+    )
+    external_id = models.CharField(max_length=512)
+    title = models.CharField(max_length=255, blank=True)
+    link = models.URLField(blank=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("organizacao", "external_id")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.organizacao} - {self.external_id}"
+
+
 class OrganizacaoAtividadeLog(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
