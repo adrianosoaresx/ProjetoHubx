@@ -18,6 +18,7 @@ urlpatterns = [
     path("portfolio/", include(("portfolio.urls", "portfolio"), namespace="portfolio")),
     path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
+    path("ai-chat/", include(("ai_chat.urls", "ai_chat"), namespace="ai_chat")),
     # CRUD de Empresas, Organizações e Núcleos (front‑end)
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
