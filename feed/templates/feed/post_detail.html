@@ -187,3 +187,10 @@
 </script>
 {% endif %}
 {% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  {% if request.user.user_type != 'root' %}
+    <script src="{% static 'feed/js/feed.js' %}"></script>
+  {% endif %}
+{% endblock %}
