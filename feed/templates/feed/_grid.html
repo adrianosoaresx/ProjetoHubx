@@ -80,7 +80,7 @@
       </header>
 
       {% if post.conteudo %}
-      <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-3 text-sm leading-relaxed text-[var(--text-primary)] shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)] sm:p-4"
+      <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-3 text-sm leading-relaxed text-[var(--text-primary)] break-words shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)] sm:p-4"
            id="post-content-{{ post.id }}" data-post-content>
         {{ post.conteudo|linebreaksbr }}
       </div>
