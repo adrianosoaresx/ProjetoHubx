@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from celery import shared_task
 from django.dispatch import Signal, receiver
 from django.utils.translation import gettext_lazy as _
@@ -13,6 +14,9 @@ from .metrics import (
     membros_notificados_total,
 )
 from .models import Organizacao
+from .services import publicar_feed_noticias
+
+logger = logging.getLogger(__name__)
 
 organizacao_alterada = Signal()  # args: organizacao, acao
 
@@ -53,3 +57,12 @@ def _notify_members(sender, organizacao: Organizacao, acao: str, **kwargs) -> No
         enviar_email_membros.delay(organizacao.pk, acao)
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
+
+
+@shared_task
+def publicar_feed_noticias_task(max_items: int = 3, tipo_feed: str = "global") -> int:
+    """Publica posts a partir dos feeds de notícias configurados nas organizações."""
+
+    created = publicar_feed_noticias(max_items=max_items, tipo_feed=tipo_feed)
+    logger.info("Tarefa de publicação de feed de notícias finalizada", extra={"posts_criados": len(created)})
+    return len(created)
