@@ -90,12 +90,6 @@ class Migration(migrations.Migration):
                 "verbose_name": "Mensagem de Chat",
                 "verbose_name_plural": "Mensagens de Chat",
                 "ordering": ["created_at"],
-                "constraints": [
-                    models.CheckConstraint(
-                        condition=models.Q(("organizacao", models.F("session__organizacao"))),
-                        name="chatmessage_organizacao_matches_session",
-                    )
-                ],
             },
         ),
     ]
