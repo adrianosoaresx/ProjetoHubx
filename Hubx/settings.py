@@ -362,6 +362,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "webhooks.tasks.remover_eventos_antigos",
         "schedule": crontab(minute=0, hour=0),
     },
+    # 04:00 para evitar horários de pico das aplicações web
+    "publicar_feed_noticias_diario": {
+        "task": "organizacoes.tasks.publicar_feed_noticias_task",
+        "schedule": crontab(minute=0, hour=4),
+    },
     "executar_feed_plugins": {  # executa plugins do feed periodicamente
         "task": "feed.tasks.executar_plugins",
         "schedule": crontab(minute="*" if FEED_PLUGINS_INTERVAL_MINUTES == 1 else f"*/{FEED_PLUGINS_INTERVAL_MINUTES}"),

@@ -13,9 +13,11 @@ import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.utils import timezone
+from sentry_sdk import capture_exception
 
 from accounts.models import UserType
 from feed.models import Post, Tag
@@ -25,6 +27,7 @@ from feed.tasks import POSTS_CREATED, notify_new_post
 from organizacoes.models import Organizacao, OrganizacaoFeedSync
 
 logger = logging.getLogger(__name__)
+_FEED_LOCK_TIMEOUT = 60 * 10  # evita execuções duplicadas próximas (10 minutos)
 
 
 @dataclass(slots=True)
@@ -234,9 +237,22 @@ def publicar_feed_noticias(max_items: int = 3, tipo_feed: str = "global") -> Lis
     orgs = Organizacao.objects.filter(feed_noticias__isnull=False).exclude(feed_noticias="").filter(inativa=False)
 
     for org in orgs:
+        lock_key = f"organizacoes:feed_noticias:{org.pk}"
+        if not cache.add(lock_key, True, timeout=_FEED_LOCK_TIMEOUT):
+            logger.info("Feed de notícias já em processamento", extra={"organizacao": str(org.id)})
+            continue
         try:
-            created.extend(publicar_feed_da_organizacao(org, max_items=max_items, tipo_feed=tipo_feed))
-        except Exception:
+            created_posts = publicar_feed_da_organizacao(org, max_items=max_items, tipo_feed=tipo_feed)
+        except Exception as exc:
             logger.exception("Erro ao processar feed de notícias", extra={"organizacao": str(org.id)})
+            capture_exception(exc)
+        else:
+            created.extend(created_posts)
+            logger.info(
+                "Feed de notícias processado",
+                extra={"organizacao": str(org.id), "posts_criados": len(created_posts)},
+            )
+        finally:
+            cache.delete(lock_key)
 
     return created
