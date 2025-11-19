@@ -72,6 +72,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
     evento = models.ForeignKey("eventos.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
+    link_preview = models.JSONField(default=dict, blank=True)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()

@@ -19,7 +19,10 @@ Listings are cached for 60 seconds per usuário e parâmetros de busca. Qualqu
 edição ou remoção de post limpa o cache automaticamente.
 
 Deleting a post performs a *soft delete* (`deleted=True`). Media URLs are exposed via
-`image_url`, `pdf_url` and `video_url` fields.
+`image_url`, `pdf_url` and `video_url` fields. Sempre que um link for detectado no
+conteúdo, o payload retorna também um objeto `link_preview` somente leitura com as
+chaves `url`, `title`, `description`, `image` e `site_name` contendo os metadados
+armazenados.
 
 Exemplo de listagem filtrada:
 
@@ -37,6 +40,13 @@ finalizado.
 
 Posts contendo palavras proibidas são marcados para moderação e só aparecem
 após aprovação.
+
+### Link preview persistido
+
+O endpoint `GET /api/feed/posts/link-preview/` continua disponível para gerar
+pré-visualizações em tempo real, porém as respostas dos posts passam a incluir o
+campo `link_preview` já persistido no modelo. Clientes podem exibir cartões sem
+realizar chamadas adicionais sempre que o campo não estiver vazio.
 
 ### Busca
 
@@ -78,6 +88,17 @@ Os dados alimentam métricas Prometheus de visualizações e tempo de leitura.
 
 Integração com S3 requer credenciais com permissão de `s3:PutObject` e
 `s3:GetObject` no *bucket* configurado em `AWS_STORAGE_BUCKET_NAME`.
+
+### Populando prévias de links existentes
+
+Para preencher o novo campo em posts antigos execute:
+
+```bash
+python manage.py populate_post_link_previews --limit 200
+```
+
+Use `--dry-run` para conferir os registros que seriam alterados e `--force` caso
+precise recalcular prévias já armazenadas.
 
 ## Plugins
 

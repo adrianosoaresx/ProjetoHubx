@@ -229,6 +229,13 @@ class PostForm(forms.ModelForm):
         self._ai_decision = "aceito"
         return cleaned_data
 
+    @property
+    def link_preview_data(self) -> dict:
+        """Retorna o preview salvo sem permitir edição direta via formulário."""
+
+        value = getattr(self.instance, "link_preview", None)
+        return value if isinstance(value, dict) else {}
+
     def save(self, commit: bool = True):  # type: ignore[override]
         post = super().save(commit)
         if getattr(self, "_video_preview_key", None):

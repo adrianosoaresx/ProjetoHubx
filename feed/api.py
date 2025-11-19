@@ -106,6 +106,7 @@ class PostSerializer(serializers.ModelSerializer):
             "pdf_url",
             "video_url",
             "video_preview_url",
+            "link_preview",
             "nucleo",
             "evento",
             "tags",
@@ -114,7 +115,15 @@ class PostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at", "video_preview"]
+        read_only_fields = [
+            "id",
+            "autor",
+            "organizacao",
+            "created_at",
+            "updated_at",
+            "video_preview",
+            "link_preview",
+        ]
 
     def validate(self, attrs):
         tipo_feed = attrs.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
