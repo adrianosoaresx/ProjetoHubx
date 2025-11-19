@@ -25,7 +25,7 @@ class LinkPreviewApiTest(TestCase):
         res = self.client.get("/api/feed/posts/link-preview/", {"url": "ftp://example.com"})
         self.assertEqual(res.status_code, 400)
 
-    @patch("feed.api.requests.get")
+    @patch("feed.services.link_preview.requests.get")
     def test_extracts_basic_metadata(self, mock_get):
         html = """
         <html>
@@ -53,7 +53,7 @@ class LinkPreviewApiTest(TestCase):
         self.assertEqual(res.data["image"], "https://example.com/image.jpg")
         self.assertEqual(res.data["site_name"], "Example Site")
 
-    @patch("feed.api.requests.get", side_effect=requests.RequestException)
+    @patch("feed.services.link_preview.requests.get", side_effect=requests.RequestException)
     def test_handles_request_errors(self, mock_get):  # noqa: ARG002
         res = self.client.get("/api/feed/posts/link-preview/", {"url": "https://example.com"})
         self.assertEqual(res.status_code, 400)
