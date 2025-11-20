@@ -265,20 +265,18 @@
         submitButton.classList.toggle('hidden', isLoading);
       }
 
-      document.body.addEventListener('htmx:request', (event) => {
-        if (event.target && event.target.id === 'chat-form') {
+      if (formEl) {
+        formEl.addEventListener('htmx:beforeRequest', () => {
           setLoadingState(true);
-        }
-      });
+        });
 
-      document.body.addEventListener('htmx:afterRequest', (event) => {
-        if (event.target && event.target.id === 'chat-form') {
+        formEl.addEventListener('htmx:afterRequest', () => {
           setLoadingState(false);
           if (textareaEl) {
             textareaEl.focus();
           }
-        }
-      });
+        });
+      }
     })();
   </script>
 {% endblock %}
