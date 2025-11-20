@@ -33,8 +33,8 @@
   {% else %}
     <div class="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-sm min-h-[70vh] overflow-hidden">
       <div id="chat-history" class="space-y-4 max-h-[calc(80vh-88px)] overflow-y-auto p-4 md:p-6 pb-28" aria-live="polite">
-        {% include "ai_chat/_messages.html" with messages=messages %}
-        {% if not messages %}
+        {% include "ai_chat/_messages.html" with chat_messages=chat_messages %}
+        {% if not chat_messages %}
           <div class="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-dashed border-[var(--border)] rounded-xl p-4">
             {% trans "Envie a primeira mensagem para começar. Respostas podem incluir gráficos interativos quando disponíveis." %}
           </div>

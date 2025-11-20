@@ -95,7 +95,7 @@ class ChatPageView(LoginRequiredMixin, TemplateView):
         context.update(
             {
                 "session": session,
-                "messages": [_serialize_message(msg) for msg in session.messages.all()],
+                "chat_messages": [_serialize_message(msg) for msg in session.messages.all()],
             }
         )
         return context
@@ -137,6 +137,6 @@ def send_message(request: HttpRequest, session_id: str) -> HttpResponse:
         if isinstance(message, dict) and message.get("id")
     ]
     queryset = ChatMessage.objects.filter(id__in=message_ids).order_by("created_at")
-    context = {"messages": [_serialize_message(msg) for msg in queryset]}
+    context = {"chat_messages": [_serialize_message(msg) for msg in queryset]}
 
     return render(request, "ai_chat/_messages.html", context)
