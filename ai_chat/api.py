@@ -324,9 +324,20 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         )
         return response
 
-    def _serialize_history(self, messages: Iterable[ChatMessage]) -> list[dict[str, Any]]:
-        serialized: list[dict[str, Any]] = [SYSTEM_MESSAGE]
-        for msg in messages:
+    def _build_session_context(self, session: ChatSession) -> dict[str, str]:
+        organizacao = session.organizacao
+        return {
+            "role": "system",
+            "content": (
+                "Contexto da organização atual: utilize sempre os dados desta organização ao "
+                "responder ou chamar ferramentas. "
+                f"ID da organização: {organizacao.pk}. Nome: {organizacao.nome}."
+            ),
+        }
+
+    def _serialize_history(self, session: ChatSession) -> list[dict[str, Any]]:
+        serialized: list[dict[str, Any]] = [SYSTEM_MESSAGE, self._build_session_context(session)]
+        for msg in session.messages.all():
             payload: dict[str, Any] = {"role": msg.role, "content": msg.content}
             if msg.tool_call_id:
                 payload["tool_call_id"] = msg.tool_call_id
@@ -444,7 +455,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 content=user_message_text,
             )
 
-            history = self._serialize_history(session.messages.all())
+            history = self._serialize_history(session)
             history.append({"role": "user", "content": user_message_text})
 
             client = self._get_client()
