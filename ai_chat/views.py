@@ -140,3 +140,19 @@ def send_message(request: HttpRequest, session_id: str) -> HttpResponse:
     context = {"chat_messages": [_serialize_message(msg) for msg in queryset]}
 
     return render(request, "ai_chat/_messages.html", context)
+
+
+@login_required
+@require_POST
+def clear_session_messages(request: HttpRequest, session_id: str) -> HttpResponse:
+    session = get_object_or_404(
+        ChatSession,
+        pk=session_id,
+        usuario=request.user,
+        organizacao=getattr(request.user, "organizacao", None),
+        status=ChatSession.Status.ACTIVE,
+    )
+
+    session.messages.all().delete()
+
+    return render(request, "ai_chat/_messages.html", {"chat_messages": []})

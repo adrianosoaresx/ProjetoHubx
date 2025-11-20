@@ -20,9 +20,31 @@
       <p class="text-lg font-semibold">{% trans "Chat com IA" %}</p>
       <p class="text-sm text-[var(--text-secondary)]">{% trans "Envie perguntas sobre sua organização e receba respostas contextualizadas." %}</p>
     </div>
-    <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full px-3 py-1">
-      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{% trans "Beta" %}</span>
-      <span>{% trans "Envio via HTMX/Ajax; planejamos migrar para WebSockets conforme ADR 0001." %}</span>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full px-3 py-1">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{% trans "Beta" %}</span>
+        <span>{% trans "Envio via HTMX/Ajax; planejamos migrar para WebSockets conforme ADR 0001." %}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="hidden" id="clear-history-csrf" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+        <button
+          id="clear-history-button"
+          type="button"
+          class="btn btn-ghost btn-sm border border-[var(--border)] text-sm"
+          hx-post="{% url 'ai_chat:clear_messages' session_id=session.id %}"
+          hx-target="#chat-history"
+          hx-swap="innerHTML"
+          hx-include="#clear-history-csrf"
+          hx-confirm="{% trans 'Deseja limpar o histórico desta sessão?' %}"
+          hx-disabled-elt="this"
+          hx-on::htmx:beforeRequest="this.setAttribute('aria-busy','true');"
+          hx-on::htmx:afterRequest="this.setAttribute('aria-busy','false');"
+          aria-busy="false"
+          title="{% trans 'Limpar histórico de mensagens' %}"
+        >
+          {% trans "Limpar histórico" %}
+        </button>
+      </div>
     </div>
   </div>
 
