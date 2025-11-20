@@ -482,9 +482,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     role,
                 )
             elif assistant_message.content:
-                history_extensions = [
-                    {"role": "assistant", "content": assistant_message.content, "tool_calls": []}
-                ]
+                history_extensions = [{"role": "assistant", "content": assistant_message.content}]
 
             final_history = history + history_extensions
 
