@@ -40,7 +40,7 @@
           hx-target="#chat-history"
           hx-swap="innerHTML"
           hx-include="#clear-history-csrf"
-          hx-confirm="{% trans 'Deseja limpar o histórico desta sessão?' %}"
+          hx-trigger="confirmed"
           hx-disabled-elt="this"
           hx-on::htmx:beforeRequest="this.setAttribute('aria-busy','true');"
           hx-on::htmx:afterRequest="this.setAttribute('aria-busy','false');"
@@ -111,6 +111,45 @@
     </div>
   {% endif %}
 </div>
+
+<div
+  id="clear-history-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="clear-history-title"
+  tabindex="-1"
+>
+  <div class="mx-4 w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)] shadow-2xl">
+    <div class="flex items-start gap-3 p-6">
+      <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L4.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div class="space-y-2 text-sm">
+        <p id="clear-history-title" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Limpar histórico" %}</p>
+        <p class="text-[var(--text-secondary)]">{% trans "Deseja limpar o histórico desta sessão? Esta ação não poderá ser desfeita." %}</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 border-t border-[var(--border)] bg-[var(--bg-secondary)] px-6 py-4">
+      <button
+        type="button"
+        id="cancel-clear-history"
+        class="btn btn-ghost btn-sm text-[var(--text-secondary)]"
+      >
+        {% trans "Cancelar" %}
+      </button>
+      <button
+        type="button"
+        id="confirm-clear-history"
+        class="btn btn-primary btn-sm"
+      >
+        {% trans "Limpar" %}
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -123,10 +162,34 @@
       const submitButton = document.getElementById('chat-submit');
       const submitLabel = document.getElementById('chat-submit-label');
       const submitSpinner = document.getElementById('chat-spinner');
+      const clearHistoryButton = document.getElementById('clear-history-button');
+      const clearHistoryModal = document.getElementById('clear-history-modal');
+      const confirmClearHistory = document.getElementById('confirm-clear-history');
+      const cancelClearHistory = document.getElementById('cancel-clear-history');
 
       function scrollToLatest() {
         if (!historyEl) return;
         historyEl.scrollTo({ top: historyEl.scrollHeight, behavior: 'smooth' });
+      }
+
+      function openClearHistoryModal() {
+        if (!clearHistoryModal) return;
+        clearHistoryModal.classList.remove('hidden');
+        clearHistoryModal.classList.add('flex');
+        clearHistoryModal.focus();
+      }
+
+      function closeClearHistoryModal() {
+        if (!clearHistoryModal) return;
+        clearHistoryModal.classList.add('hidden');
+        clearHistoryModal.classList.remove('flex');
+      }
+
+      function confirmClearHistoryAction() {
+        if (window.htmx && clearHistoryButton) {
+          htmx.trigger(clearHistoryButton, 'confirmed');
+        }
+        closeClearHistoryModal();
       }
 
       function renderPlotlyCharts() {
@@ -152,6 +215,27 @@
       document.addEventListener('DOMContentLoaded', () => {
         renderPlotlyCharts();
         scrollToLatest();
+        if (clearHistoryButton) {
+          clearHistoryButton.addEventListener('click', openClearHistoryModal);
+        }
+        if (confirmClearHistory) {
+          confirmClearHistory.addEventListener('click', confirmClearHistoryAction);
+        }
+        if (cancelClearHistory) {
+          cancelClearHistory.addEventListener('click', closeClearHistoryModal);
+        }
+        if (clearHistoryModal) {
+          clearHistoryModal.addEventListener('click', (event) => {
+            if (event.target === clearHistoryModal) {
+              closeClearHistoryModal();
+            }
+          });
+        }
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && clearHistoryModal && !clearHistoryModal.classList.contains('hidden')) {
+            closeClearHistoryModal();
+          }
+        });
       });
 
       document.body.addEventListener('htmx:afterSwap', (event) => {
