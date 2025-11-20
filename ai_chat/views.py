@@ -92,10 +92,12 @@ class ChatPageView(LoginRequiredMixin, TemplateView):
             context["missing_organization"] = True
             return context
 
+        messages = session.messages.exclude(role=ChatMessage.Role.TOOL)
+
         context.update(
             {
                 "session": session,
-                "chat_messages": [_serialize_message(msg) for msg in session.messages.all()],
+                "chat_messages": [_serialize_message(msg) for msg in messages],
             }
         )
         return context
@@ -136,7 +138,11 @@ def send_message(request: HttpRequest, session_id: str) -> HttpResponse:
         for message in response.data.get("messages", [])
         if isinstance(message, dict) and message.get("id")
     ]
-    queryset = ChatMessage.objects.filter(id__in=message_ids).order_by("created_at")
+    queryset = (
+        ChatMessage.objects.filter(id__in=message_ids)
+        .exclude(role=ChatMessage.Role.TOOL)
+        .order_by("created_at")
+    )
     context = {"chat_messages": [_serialize_message(msg) for msg in queryset]}
 
     return render(request, "ai_chat/_messages.html", context)
