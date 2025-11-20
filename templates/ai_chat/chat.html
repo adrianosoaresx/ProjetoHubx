@@ -58,8 +58,8 @@
       {% trans "Associe-se a uma organização para iniciar uma sessão de chat." %}
     </div>
   {% else %}
-    <div class="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-sm min-h-[70vh] overflow-hidden">
-      <div id="chat-history" class="space-y-4 max-h-[calc(80vh-88px)] overflow-y-auto p-4 md:p-6 pb-28" aria-live="polite">
+    <div class="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-sm min-h-[70vh] max-h-[85vh] overflow-hidden flex flex-col">
+      <div id="chat-history" class="space-y-4 flex-1 min-h-0 overflow-y-auto p-4 md:p-6" aria-live="polite">
         {% include "ai_chat/_messages.html" with chat_messages=chat_messages %}
         {% if not chat_messages %}
           <div class="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-dashed border-[var(--border)] rounded-xl p-4">
@@ -73,7 +73,7 @@
         hx-post="{% url 'ai_chat:send_message' session_id=session.id %}"
         hx-target="#chat-history"
         hx-swap="beforeend"
-        class="absolute left-0 right-0 bottom-0 border-t border-[var(--border)] bg-[var(--bg-primary)]/95 backdrop-blur px-4 py-3 md:px-6"
+        class="border-t border-[var(--border)] bg-[var(--bg-primary)]/95 backdrop-blur px-4 py-3 md:px-6"
       >
         {% csrf_token %}
         <div class="flex items-end gap-3">
