@@ -13,6 +13,7 @@ from rest_framework.test import APIRequestFactory
 
 from .api import ChatMessageViewSet
 from .models import ChatMessage, ChatSession
+from organizacoes.models import Organizacao
 
 
 def _build_plotly_payload(payload: Any) -> dict[str, Any] | None:
@@ -68,10 +69,11 @@ class ChatPageView(LoginRequiredMixin, TemplateView):
 
     def _get_or_create_session(self):
         user = self.request.user
-        organizacao = getattr(user, "organizacao", None)
-        if not organizacao:
+        organizacao_id = getattr(user, "organizacao_id", None)
+        if not organizacao_id:
             return None
 
+        organizacao = Organizacao.objects.get(id=organizacao_id)
         session = ChatSession.objects.filter(
             usuario=user,
             organizacao=organizacao,
