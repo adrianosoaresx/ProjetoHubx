@@ -9,4 +9,9 @@ app_name = "ai_chat"
 urlpatterns = [
     path("", views.ChatPageView.as_view(), name="chat"),
     path("sessions/<uuid:session_id>/messages/", views.send_message, name="send_message"),
+    path(
+        "sessions/<uuid:session_id>/messages/clear/",
+        views.clear_session_messages,
+        name="clear_messages",
+    ),
 ]
