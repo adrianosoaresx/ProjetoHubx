@@ -615,7 +615,17 @@ def post_update(request, pk):
     else:
         form = PostForm(instance=post, user=request.user)
 
-    fallback_url = get_back_navigation_fallback(request, fallback=reverse("feed:post_detail", args=[post.pk]))
+    back_origin = (request.GET.get("back") or request.POST.get("back") or "").strip()
+    focus_post_id = (request.GET.get("focus") or request.POST.get("focus") or "").strip() or str(post.pk)
+
+    back_fallback_map = {
+        "minhas-postagens": f"{reverse('accounts:perfil')}#post-{focus_post_id}",
+    }
+
+    fallback_url = get_back_navigation_fallback(
+        request,
+        fallback=back_fallback_map.get(back_origin) or reverse("feed:post_detail", args=[post.pk]),
+    )
     back_href = resolve_back_href(request, fallback=fallback_url)
     form_action = reverse("feed:post_update", args=[post.pk])
     context = {

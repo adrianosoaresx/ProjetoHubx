@@ -88,7 +88,7 @@
           class="card-body space-y-6 border-t border-[var(--border)] hidden"
           data-accordion-panel
         >
-          {% include "feed/_grid.html" with posts=profile_posts %}
+          {% include "feed/_grid.html" with posts=profile_posts back_origin='minhas-postagens' %}
         </div>
       </section>
 
@@ -122,11 +122,18 @@
         }
       };
 
+      const hash = window.location.hash;
+      const postTarget = hash.startsWith('#post-') ? document.querySelector(hash) : null;
       const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      const shouldExpandFromHash = window.location.hash === '#perfil-posts-accordion';
+      const shouldExpandFromHash = hash === '#perfil-posts-accordion' || postTarget instanceof HTMLElement;
       setExpanded(shouldExpandFromHash || initialExpanded);
 
-      if (shouldExpandFromHash) {
+      if (postTarget instanceof HTMLElement) {
+        requestAnimationFrame(() => {
+          postTarget.focus({ preventScroll: true });
+          postTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      } else if (shouldExpandFromHash) {
         panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 

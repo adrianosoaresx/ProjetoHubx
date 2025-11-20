@@ -63,11 +63,13 @@
           </div>
           {% if request.user == post.autor or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
           <div class="post-actions-area relative z-30 mr-2 flex items-center gap-2 pt-1">
-            <a href="{% url 'feed:post_update' post.id %}"
+            {% with update_url=back_origin|default_if_none:'' %}
+            <a href="{% url 'feed:post_update' post.id %}{% if update_url %}?back={{ update_url }}&focus={{ post.id }}{% endif %}"
                class="relative inline-flex items-center justify-center rounded-full p-2 text-[var(--text-muted)] transition hover:bg-[var(--bg-tertiary)] hover:text-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                aria-label="{% trans 'Editar postagem' %}">
               {% lucide 'pencil' class='h-5 w-5' %}
             </a>
+            {% endwith %}
             <a href="{% url 'feed:post_delete' post.id %}"
                hx-get="{% url 'feed:post_delete' post.id %}"
                hx-target="#modal"
