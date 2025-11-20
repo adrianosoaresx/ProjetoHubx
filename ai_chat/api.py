@@ -339,6 +339,19 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         serialized: list[dict[str, Any]] = [SYSTEM_MESSAGE, self._build_session_context(session)]
         for msg in session.messages.all():
             payload: dict[str, Any] = {"role": msg.role, "content": msg.content}
+            if msg.role == ChatMessage.Role.ASSISTANT:
+                try:
+                    assistant_content = json.loads(msg.content)
+                except (json.JSONDecodeError, TypeError):
+                    assistant_content = None
+
+                if isinstance(assistant_content, dict) and assistant_content.get("tool_calls"):
+                    payload = {
+                        "role": msg.role,
+                        "content": assistant_content.get("content", ""),
+                        "tool_calls": assistant_content.get("tool_calls", []),
+                    }
+
             if msg.tool_call_id:
                 payload["tool_call_id"] = msg.tool_call_id
             serialized.append(payload)
