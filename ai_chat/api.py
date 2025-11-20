@@ -4,10 +4,12 @@ import hashlib
 import json
 import logging
 import time
+from collections.abc import Mapping
 from typing import Any, Iterable
 
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
+from django.utils.functional import Promise
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -39,6 +41,19 @@ SYSTEM_MESSAGE = {
         "português."
     ),
 }
+
+
+def _sanitize_json_value(value: Any) -> Any:
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    if isinstance(value, Promise):
+        return str(value)
+    if isinstance(value, Mapping):
+        return {str(key): _sanitize_json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_sanitize_json_value(item) for item in value]
+
+    return str(value)
 
 
 def _build_tool_definitions() -> list[dict[str, Any]]:
@@ -425,14 +440,16 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                         duration = time.monotonic() - start
                         chat_tool_latency_seconds.labels(function=call.function.name).observe(duration)
 
+                sanitized_result = _sanitize_json_value(result)
+
                 if cache_key and result is not None:
-                    cache.set(cache_key, result, 300)
+                    cache.set(cache_key, sanitized_result, 300)
 
             history_messages.append(
                 {
                     "role": "tool",
                     "tool_call_id": call.id,
-                    "content": json.dumps(result),
+                    "content": json.dumps(sanitized_result),
                 }
             )
             stored_messages.append(
@@ -440,7 +457,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     session=session,
                     organizacao=session.organizacao,
                     role=ChatMessage.Role.TOOL,
-                    content=json.dumps(result),
+                    content=json.dumps(sanitized_result),
                     tool_call_id=call.id,
                 )
             )
