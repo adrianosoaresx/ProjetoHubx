@@ -30,7 +30,7 @@ def _build_plotly_payload(payload: Any) -> dict[str, Any] | None:
     return None
 
 
-def _serialize_message(message: ChatMessage) -> dict[str, Any]:
+def _serialize_message(message: ChatMessage) -> dict[str, Any] | None:
     parsed_content: Any | None = None
     display_content = message.content
     plotly_payload: dict[str, Any] | None = None
@@ -41,6 +41,8 @@ def _serialize_message(message: ChatMessage) -> dict[str, Any]:
         parsed_content = None
 
     if isinstance(parsed_content, dict):
+        if parsed_content.get("tool_calls") and not parsed_content.get("content"):
+            return None
         plotly_payload = _build_plotly_payload(parsed_content)
         if message.role == ChatMessage.Role.TOOL:
             display_content = json.dumps(
@@ -94,10 +96,11 @@ class ChatPageView(LoginRequiredMixin, TemplateView):
 
         messages = session.messages.exclude(role=ChatMessage.Role.TOOL)
 
+        serialized_messages = [_serialize_message(msg) for msg in messages]
         context.update(
             {
                 "session": session,
-                "chat_messages": [_serialize_message(msg) for msg in messages],
+                "chat_messages": [msg for msg in serialized_messages if msg],
             }
         )
         return context
@@ -143,7 +146,8 @@ def send_message(request: HttpRequest, session_id: str) -> HttpResponse:
         .exclude(role=ChatMessage.Role.TOOL)
         .order_by("created_at")
     )
-    context = {"chat_messages": [_serialize_message(msg) for msg in queryset]}
+    serialized_messages = [_serialize_message(msg) for msg in queryset]
+    context = {"chat_messages": [msg for msg in serialized_messages if msg]}
 
     return render(request, "ai_chat/_messages.html", context)
 
