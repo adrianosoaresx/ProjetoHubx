@@ -92,17 +92,18 @@
             class="btn btn-primary whitespace-nowrap px-4 py-3 text-sm font-semibold flex items-center gap-2"
             aria-live="polite"
           >
-            <span id="chat-submit-label">{% trans "Enviar" %}</span>
-            <span
-              id="chat-spinner"
-              class="hidden h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-l-white"
-              aria-live="polite"
-              aria-busy="false"
-              role="status"
-            >
-              <span class="sr-only">{% trans "Enviando" %}</span>
-            </span>
+            <span>{% trans "Enviar" %}</span>
           </button>
+          <div
+            id="chat-spinner"
+            class="hidden flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10"
+            aria-live="polite"
+            aria-busy="false"
+            role="status"
+          >
+            <span class="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-l-primary"></span>
+            <span class="sr-only">{% trans "Enviando" %}</span>
+          </div>
         </div>
         <p class="mt-2 text-xs text-[var(--text-secondary)]">
           {% trans "Streaming simples via HTMX. Um upgrade para WebSockets será ativado quando estável." %}
@@ -160,7 +161,6 @@
       const formEl = document.getElementById('chat-form');
       const textareaEl = document.getElementById('chat-message');
       const submitButton = document.getElementById('chat-submit');
-      const submitLabel = document.getElementById('chat-submit-label');
       const submitSpinner = document.getElementById('chat-spinner');
       const clearHistoryButton = document.getElementById('clear-history-button');
       const clearHistoryModal = document.getElementById('clear-history-modal');
@@ -257,14 +257,12 @@
         submitButton.disabled = isLoading;
         submitButton.setAttribute('aria-busy', String(isLoading));
 
-        if (submitLabel) {
-          submitLabel.classList.toggle('hidden', isLoading);
-        }
-
         if (submitSpinner) {
           submitSpinner.classList.toggle('hidden', !isLoading);
           submitSpinner.setAttribute('aria-busy', String(isLoading));
         }
+
+        submitButton.classList.toggle('hidden', isLoading);
       }
 
       document.body.addEventListener('htmx:request', (event) => {
