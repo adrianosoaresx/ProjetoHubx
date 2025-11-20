@@ -1,5 +1,5 @@
 {% load i18n %}
-{% for message in messages %}
+{% for message in chat_messages %}
   <article class="chat-message flex{% if message.is_user %} justify-end{% endif %}">
     <div class="w-full max-w-4xl space-y-2">
       <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
