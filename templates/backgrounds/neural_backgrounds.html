@@ -1249,6 +1249,104 @@
   </svg>
 </div>
 
+  {% elif background == "chat-ia" %}
+<!-- Chat IA Background -->
+<div class="neural-bg-base neural-bg-chat-ia">
+  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="chat-ia-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.85"/>
+        <stop offset="50%" style="stop-color:#6366f1;stop-opacity:0.8"/>
+        <stop offset="100%" style="stop-color:#0ea5e9;stop-opacity:0.75"/>
+      </linearGradient>
+      <radialGradient id="chat-ia-node" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1"/>
+        <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.7"/>
+      </radialGradient>
+      <filter id="chat-ia-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Central assistant core -->
+    <g opacity="0.9">
+      <circle cx="400" cy="280" r="52" fill="url(#chat-ia-node)" filter="url(#chat-ia-glow)"/>
+      <circle cx="400" cy="280" r="32" fill="#0ea5e9" opacity="0.9"/>
+      <circle cx="400" cy="280" r="18" fill="#e0f2fe" opacity="0.9"/>
+      <text x="400" y="285" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700">IA</text>
+    </g>
+
+    <!-- Floating chat windows -->
+    <g opacity="0.85" stroke="#38bdf8" stroke-width="2" fill="#0b1224" filter="url(#chat-ia-glow)">
+      <rect x="180" y="140" width="140" height="80" rx="12" fill="#0f172a" opacity="0.75"/>
+      <rect x="480" y="140" width="140" height="80" rx="12" fill="#0f172a" opacity="0.75"/>
+      <rect x="250" y="380" width="140" height="80" rx="12" fill="#0f172a" opacity="0.75"/>
+      <rect x="420" y="360" width="160" height="90" rx="14" fill="#0f172a" opacity="0.8"/>
+    </g>
+
+    <!-- Message bubbles -->
+    <g fill="#0ea5e9" opacity="0.9">
+      <rect x="205" y="165" width="70" height="18" rx="6" opacity="0.6"/>
+      <rect x="510" y="165" width="60" height="18" rx="6" opacity="0.5"/>
+      <rect x="290" y="405" width="90" height="18" rx="6" opacity="0.55"/>
+      <rect x="460" y="385" width="110" height="18" rx="6" opacity="0.6"/>
+      <rect x="205" y="190" width="55" height="12" rx="5" opacity="0.35"/>
+      <rect x="535" y="188" width="70" height="12" rx="5" opacity="0.35"/>
+      <rect x="470" y="410" width="70" height="12" rx="5" opacity="0.35"/>
+    </g>
+
+    <!-- Neural links -->
+    <g stroke="url(#chat-ia-gradient)" stroke-width="3" fill="none" opacity="0.65">
+      <path d="M320,180 C360,200 380,230 400,280"/>
+      <path d="M540,180 C500,210 470,240 400,280"/>
+      <path d="M320,420 C350,390 380,330 400,280"/>
+      <path d="M500,405 C470,360 440,320 400,280"/>
+    </g>
+
+    <!-- Orbiting data points -->
+    <g opacity="0.8">
+      <circle cx="520" cy="260" r="10" fill="#38bdf8">
+        <animate attributeName="r" values="10;12;10" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="260" cy="260" r="11" fill="#6366f1">
+        <animate attributeName="r" values="11;13;11" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="480" cy="340" r="9" fill="#22d3ee">
+        <animate attributeName="r" values="9;11;9" dur="2.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="320" cy="340" r="9" fill="#818cf8">
+        <animate attributeName="r" values="9;11;9" dur="2.8s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Flowing particles -->
+    <g>
+      <circle cx="400" cy="120" r="4" fill="#22d3ee" opacity="0.9">
+        <animateMotion dur="6s" repeatCount="indefinite">
+          <path d="M0,0 L-120,80 L-40,140 L80,200"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.9;0.4;0.9" dur="6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="420" cy="480" r="4" fill="#6366f1" opacity="0.9">
+        <animateMotion dur="7s" repeatCount="indefinite">
+          <path d="M0,0 L-80,-120 L40,-180 L-60,-240"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.9;0.3;0.9" dur="7s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="600" cy="320" r="5" fill="#0ea5e9" opacity="0.8">
+        <animateMotion dur="5.5s" repeatCount="indefinite">
+          <path d="M0,0 L-140,-40 L-220,40 L-300,-20"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.8;0.35;0.8" dur="5.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </svg>
+</div>
+
   {% elif background == "configuracao" %}
 <!-- Configuração Background -->
 <div class="neural-bg-base neural-bg-configuracao">
