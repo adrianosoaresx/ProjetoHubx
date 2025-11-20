@@ -46,7 +46,6 @@
         hx-post="{% url 'ai_chat:send_message' session_id=session.id %}"
         hx-target="#chat-history"
         hx-swap="beforeend"
-        hx-indicator="#chat-loading"
         class="absolute left-0 right-0 bottom-0 border-t border-[var(--border)] bg-[var(--bg-primary)]/95 backdrop-blur px-4 py-3 md:px-6"
       >
         {% csrf_token %}
@@ -60,9 +59,22 @@
             placeholder="{% trans 'Pergunte sobre eventos, núcleos ou estatísticas...' %}"
             class="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           ></textarea>
-          <button type="submit" class="btn btn-primary whitespace-nowrap px-4 py-3 text-sm font-semibold flex items-center gap-2">
-            <span id="chat-loading" class="htmx-indicator hidden animate-spin h-4 w-4 rounded-full border-2 border-white/30 border-l-white"></span>
-            {% trans "Enviar" %}
+          <button
+            id="chat-submit"
+            type="submit"
+            class="btn btn-primary whitespace-nowrap px-4 py-3 text-sm font-semibold flex items-center gap-2"
+            aria-live="polite"
+          >
+            <span id="chat-submit-label">{% trans "Enviar" %}</span>
+            <span
+              id="chat-spinner"
+              class="hidden h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-l-white"
+              aria-live="polite"
+              aria-busy="false"
+              role="status"
+            >
+              <span class="sr-only">{% trans "Enviando" %}</span>
+            </span>
           </button>
         </div>
         <p class="mt-2 text-xs text-[var(--text-secondary)]">
@@ -81,6 +93,9 @@
       const historyEl = document.getElementById('chat-history');
       const formEl = document.getElementById('chat-form');
       const textareaEl = document.getElementById('chat-message');
+      const submitButton = document.getElementById('chat-submit');
+      const submitLabel = document.getElementById('chat-submit-label');
+      const submitSpinner = document.getElementById('chat-spinner');
 
       function scrollToLatest() {
         if (!historyEl) return;
@@ -119,6 +134,37 @@
           if (formEl) {
             formEl.reset();
           }
+          if (textareaEl) {
+            textareaEl.focus();
+          }
+        }
+      });
+
+      function setLoadingState(isLoading) {
+        if (!textareaEl || !submitButton) return;
+        textareaEl.disabled = isLoading;
+        submitButton.disabled = isLoading;
+        submitButton.setAttribute('aria-busy', String(isLoading));
+
+        if (submitLabel) {
+          submitLabel.classList.toggle('hidden', isLoading);
+        }
+
+        if (submitSpinner) {
+          submitSpinner.classList.toggle('hidden', !isLoading);
+          submitSpinner.setAttribute('aria-busy', String(isLoading));
+        }
+      }
+
+      document.body.addEventListener('htmx:request', (event) => {
+        if (event.target && event.target.id === 'chat-form') {
+          setLoadingState(true);
+        }
+      });
+
+      document.body.addEventListener('htmx:afterRequest', (event) => {
+        if (event.target && event.target.id === 'chat-form') {
+          setLoadingState(false);
           if (textareaEl) {
             textareaEl.focus();
           }
