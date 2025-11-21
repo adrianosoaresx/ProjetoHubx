@@ -1934,6 +1934,8 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             initial_checkout["email"] = checkout_profile_data["email"]
         if checkout_profile_data["documento"]:
             initial_checkout["documento"] = checkout_profile_data["documento"]
+        if not initial_checkout.get("metodo"):
+            initial_checkout["metodo"] = Transacao.Metodo.PIX
 
         context.update(
             {
