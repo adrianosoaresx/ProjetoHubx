@@ -173,6 +173,78 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                 },
             },
         },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_associados_list",
+                "description": "Lista associados ativos da organização com campos básicos.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "organizacao_id": {"type": "string"},
+                    },
+                    "required": ["organizacao_id"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_nucleados_list",
+                "description": "Lista nucleados ativos de um núcleo da organização.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "organizacao_id": {"type": "string"},
+                        "nucleo_id": {"type": "string"},
+                    },
+                    "required": ["organizacao_id", "nucleo_id"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_nucleos_list",
+                "description": "Lista núcleos ativos da organização.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "organizacao_id": {"type": "string"},
+                    },
+                    "required": ["organizacao_id"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_eventos_list",
+                "description": "Lista eventos da organização, permitindo filtrar somente futuros.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "organizacao_id": {"type": "string"},
+                        "future_only": {"type": "boolean"},
+                    },
+                    "required": ["organizacao_id"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_inscritos_list",
+                "description": "Lista inscritos de um evento sem dados sensíveis.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "evento_id": {"type": "string"},
+                    },
+                    "required": ["evento_id"],
+                },
+            },
+        },
     ]
 
 
@@ -184,6 +256,11 @@ TOOL_WRAPPERS: dict[str, Any] = {
     "get_organizacao_description": chat_services.get_organizacao_description,
     "get_organizacao_nucleos_context": chat_services.get_organizacao_nucleos_context,
     "get_future_events_context": chat_services.get_future_events_context,
+    "get_associados_list": chat_services.get_associados_list,
+    "get_nucleados_list": chat_services.get_nucleados_list,
+    "get_nucleos_list": chat_services.get_nucleos_list,
+    "get_eventos_list": chat_services.get_eventos_list,
+    "get_inscritos_list": chat_services.get_inscritos_list,
 }
 
 
