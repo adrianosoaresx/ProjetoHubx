@@ -85,6 +85,7 @@ urlpatterns = [
         "api/ai-chat/",
         include(("ai_chat.api_urls", "ai_chat_api"), namespace="ai_chat_api"),
     ),
+    path("pagamentos/", include(("pagamentos.urls", "pagamentos"), namespace="pagamentos")),
     path("", include("django_prometheus.urls")),
 ]
 

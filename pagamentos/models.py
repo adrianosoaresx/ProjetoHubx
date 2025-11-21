@@ -38,6 +38,11 @@ class Pedido(models.Model):
 
 
 class Transacao(models.Model):
+    class Metodo(models.TextChoices):
+        PIX = "pix", _("Pix")
+        CARTAO = "card", _("Cartão de crédito")
+        BOLETO = "boleto", _("Boleto bancário")
+
     class Status(models.TextChoices):
         PENDENTE = "pending", _("Pendente")
         APROVADA = "approved", _("Aprovada")
@@ -49,6 +54,9 @@ class Transacao(models.Model):
         verbose_name=_("Pedido"),
         related_name="transacoes",
         on_delete=models.CASCADE,
+    )
+    metodo: str = models.CharField(
+        verbose_name=_("Método"), max_length=20, choices=Metodo.choices
     )
     valor: Decimal = models.DecimalField(verbose_name=_("Valor"), max_digits=12, decimal_places=2)
     status: str = models.CharField(
