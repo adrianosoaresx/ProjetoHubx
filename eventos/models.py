@@ -28,6 +28,7 @@ from accounts.models import MediaTag, UserType
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
+from pagamentos.models import Transacao
 
 from .validators import validate_uploaded_file
 
@@ -75,6 +76,13 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     pagamento_validado = models.BooleanField(
         default=False,
         help_text=_("Indica se o pagamento informado foi validado pela equipe."),
+    )
+    transacao = models.OneToOneField(
+        Transacao,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inscricao_evento",
     )
     metodo_pagamento = models.CharField(
         max_length=20,

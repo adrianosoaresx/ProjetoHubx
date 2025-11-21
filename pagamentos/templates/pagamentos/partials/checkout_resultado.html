@@ -17,6 +17,8 @@
       hx-target="this"
       hx-swap="outerHTML"
     {% endif %}
+    data-transacao-id="{{ transacao.id }}"
+    data-transacao-status="{{ transacao.status }}"
   >
     <div class="flex items-center justify-between">
       <div>
