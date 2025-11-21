@@ -1,7 +1,11 @@
 import pytest
-from axe_core_python.sync_playwright import Axe
 from django.urls import reverse
-from playwright.sync_api import sync_playwright
+
+axe_module = pytest.importorskip("axe_core_python.sync_playwright")
+playwright_module = pytest.importorskip("playwright.sync_api")
+
+Axe = axe_module.Axe
+sync_playwright = playwright_module.sync_playwright
 
 pytestmark = pytest.mark.django_db
 

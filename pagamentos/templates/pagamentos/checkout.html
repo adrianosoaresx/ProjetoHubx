@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-8">
+  <h1 class="text-2xl font-bold mb-4">{% trans "Checkout" %}</h1>
+  <div class="bg-white shadow rounded p-6">
+    <form
+      id="checkout-form"
+      hx-post=""
+      hx-target="#checkout-result"
+      hx-swap="outerHTML"
+      method="post"
+      class="space-y-4"
+    >
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button
+        type="submit"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        {% trans "Pagar" %}
+      </button>
+    </form>
+    <div id="checkout-result" class="mt-4">
+      {% include "pagamentos/partials/checkout_resultado.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

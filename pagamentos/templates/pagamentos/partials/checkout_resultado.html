@@ -1,0 +1,20 @@
+{% load i18n %}
+{% if mensagem %}
+  <div class="p-4 bg-green-100 text-green-900 rounded">{{ mensagem }}</div>
+{% endif %}
+{% if form and form.errors %}
+  <div class="p-4 bg-red-100 text-red-900 rounded">
+    {% trans "Corrija os erros e tente novamente." %}
+    {{ form.errors }}
+  </div>
+{% endif %}
+{% if transacao %}
+  <div class="p-4 bg-gray-50 border rounded mt-4">
+    <p class="font-semibold">{% trans "Transação" %}: {{ transacao.id }}</p>
+    <p>{% trans "Método" %}: {{ transacao.get_metodo_display }}</p>
+    <p>{% trans "Status" %}: {{ transacao.get_status_display }}</p>
+    {% if transacao.external_id %}
+      <p>{% trans "ID externo" %}: {{ transacao.external_id }}</p>
+    {% endif %}
+  </div>
+{% endif %}
