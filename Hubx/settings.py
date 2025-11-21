@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     "organizacoes",
     "tokens.apps.TokensConfig",
     "nucleos",
+    "pagamentos.apps.PagamentosConfig",
     # App de eventos
     "eventos.apps.EventosConfig",
     "feed",
