@@ -28,7 +28,7 @@
         id="checkout-form"
         method="post"
         enctype="multipart/form-data"
-        class="grid grid-cols-1 xl:grid-cols-2 gap-8"
+        class="space-y-8"
         data-checkout-url="{% url 'pagamentos:checkout' %}"
         data-checkout-required="{% if checkout_enabled and not evento.gratuito %}true{% else %}false{% endif %}"
       >
@@ -191,16 +191,16 @@
                     <p class="text-xs text-slate-500 mt-1">{% trans "Use data futura para evitar recusa automática." %}</p>
                   </div>
                 </div>
+
+                <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                  {% include "pagamentos/partials/checkout_resultado.html" with form=checkout_form transacao=transacao %}
+                </div>
               </div>
               <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
                 <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
               </div>
             </section>
           {% endif %}
-        </div>
-
-      <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          {% include "pagamentos/partials/checkout_resultado.html" with form=checkout_form transacao=transacao %}
         </div>
       </form>
     </div>
