@@ -57,9 +57,13 @@
             {{ form.non_field_errors }}
             {% for field in form %}
               {% with field_name=field.name %}
-                {% if evento.gratuito and (field_name == 'valor_pago' or field_name == 'metodo_pagamento') %}
+                {% if evento.gratuito and field_name == 'valor_pago' %}
+                  {# Campo de valor omitido para eventos gratuitos #}
+                {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
                   {# Campos de valor/método omitidos para eventos gratuitos #}
-                {% elif checkout_enabled and not evento.gratuito and (field_name == 'valor_pago' or field_name == 'metodo_pagamento') %}
+                {% elif checkout_enabled and not evento.gratuito and field_name == 'valor_pago' %}
+                  {# Campo de valor sincronizado com o checkout do Mercado Pago #}
+                {% elif checkout_enabled and not evento.gratuito and field_name == 'metodo_pagamento' %}
                   {# Campos de valor/método sincronizados com o checkout do Mercado Pago #}
                 {% else %}
                   {% if field_name == 'metodo_pagamento' %}
