@@ -51,6 +51,7 @@ from core.permissions import (
 )
 from core.utils import resolve_back_href
 from pagamentos.forms import CheckoutForm
+from pagamentos.models import Transacao
 from pagamentos.providers import MercadoPagoProvider
 
 from .forms import (
@@ -1927,10 +1928,106 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             {
                 "checkout_form": CheckoutForm(self.request.POST or None, initial=initial_checkout),
                 "provider_public_key": provider.public_key,
-                "transacao": None,
+                "transacao": self._get_checkout_transacao(),
             }
         )
         return context
+
+    def _evento_gratuito(self) -> bool:
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+        return bool(self.evento.gratuito) or (valor_evento is not None and Decimal(valor_evento) == 0)
+
+    def _checkout_required(self) -> bool:
+        if not self.provider_public_key:
+            return False
+        if self._evento_gratuito():
+            return False
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+        if valor_evento is None:
+            return False
+        return Decimal(valor_evento) > 0
+
+    @property
+    def provider_public_key(self) -> str | None:
+        provider = MercadoPagoProvider()
+        return provider.public_key
+
+    def _get_checkout_transacao(self) -> Transacao | None:
+        transacao_id = self.request.POST.get("transacao_id")
+        if not transacao_id:
+            return None
+        try:
+            return Transacao.objects.get(pk=transacao_id)
+        except (TypeError, ValueError, Transacao.DoesNotExist):
+            return None
+
+    def _should_confirm_inscricao(self, transacao: Transacao | None) -> bool:
+        if transacao is None:
+            return True
+        return transacao.status == Transacao.Status.APROVADA
+
+    def form_valid(self, form):
+        transacao = self._get_checkout_transacao()
+
+        if self._checkout_required() and transacao is None:
+            form.add_error(None, _("Finalize o checkout do pagamento antes de concluir a inscrição."))
+            return self.form_invalid(form)
+
+        existing_inscricao = InscricaoEvento.all_objects.filter(
+            user=self.request.user,
+            evento=self.evento,
+        ).first()
+
+        if existing_inscricao and not existing_inscricao.deleted:
+            messages.info(
+                self.request,
+                _("Você já está inscrito neste evento."),
+            )
+            return redirect(self.get_success_url())
+
+        form.instance.user = self.request.user
+        form.instance.evento = self.evento
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+        if valor_evento is not None:
+            form.instance.valor_pago = valor_evento
+
+        form.instance.transacao = transacao
+        if transacao:
+            form.instance.metodo_pagamento = transacao.metodo
+            form.instance.pagamento_validado = transacao.status == Transacao.Status.APROVADA
+
+        if existing_inscricao and existing_inscricao.deleted:
+            existing_inscricao.deleted = False
+            existing_inscricao.deleted_at = None
+            existing_inscricao.status = "pendente"
+            existing_inscricao.presente = False
+            existing_inscricao.valor_pago = form.cleaned_data.get("valor_pago")
+            existing_inscricao.metodo_pagamento = form.cleaned_data.get("metodo_pagamento")
+            comprovante = form.cleaned_data.get("comprovante_pagamento")
+            if comprovante:
+                existing_inscricao.comprovante_pagamento = comprovante
+            existing_inscricao.transacao = transacao or existing_inscricao.transacao
+            existing_inscricao.pagamento_validado = form.instance.pagamento_validado
+            existing_inscricao.save()
+            self.object = existing_inscricao
+            return self._handle_confirmation_and_redirect(transacao)
+
+        response = CreateView.form_valid(self, form)
+        return self._handle_confirmation_and_redirect(transacao, response=response)
+
+    def _handle_confirmation_and_redirect(
+        self, transacao: Transacao | None, response=None
+    ):
+        should_confirm = self._should_confirm_inscricao(transacao)
+        if should_confirm:
+            self.object.confirmar_inscricao()
+            messages.success(self.request, _("Inscrição realizada."))
+        else:
+            messages.info(
+                self.request,
+                _("Pagamento iniciado. Confirmaremos a inscrição após a aprovação."),
+            )
+        return response or redirect(self.get_success_url())
 
 
 # ---------------------------------------------------------------------------

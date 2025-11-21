@@ -17,6 +17,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 
+from eventos.models import InscricaoEvento
 from pagamentos.forms import CheckoutForm
 from pagamentos.models import Pedido, Transacao
 from pagamentos.providers import MercadoPagoProvider
@@ -162,7 +163,27 @@ class WebhookView(APIView):
             "webhook_pagamento_confirmado",
             extra={"transacao_id": transacao.id, "external_id": external_id},
         )
+        self._atualizar_inscricao(transacao)
         return HttpResponse(status=200)
+
+    def _atualizar_inscricao(self, transacao: Transacao) -> None:
+        try:
+            inscricao = transacao.inscricao_evento
+        except InscricaoEvento.DoesNotExist:
+            return
+
+        if transacao.status != Transacao.Status.APROVADA:
+            return
+
+        try:
+            inscricao.pagamento_validado = True
+            inscricao.transacao = transacao
+            inscricao.confirmar_inscricao()
+        except Exception:
+            logger.exception(
+                "webhook_inscricao_confirmacao_falhou",
+                extra={"inscricao_id": inscricao.pk, "transacao_id": transacao.pk},
+            )
 
     def _parse_body(self, raw_body: bytes) -> dict[str, Any]:
         try:

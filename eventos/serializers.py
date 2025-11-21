@@ -81,6 +81,7 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             "check_in_realizado_em",
             "created_at",
             "updated_at",
+            "transacao",
         )
 
     def validate_comprovante_pagamento(self, arquivo):
