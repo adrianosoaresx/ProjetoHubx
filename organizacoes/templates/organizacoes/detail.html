@@ -70,6 +70,26 @@
             </dd>
           </div>
           <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <dt class="text-[var(--text-secondary)]">{% trans 'Dados bancários' %}</dt>
+            <dd class="font-medium text-[var(--text-primary)] space-y-1">
+              {% if object.codigo_banco %}
+                <p>{% trans 'Código do banco:' %} {{ object.codigo_banco }}</p>
+              {% endif %}
+              {% if object.nome_banco %}
+                <p>{% trans 'Nome do banco:' %} {{ object.nome_banco }}</p>
+              {% endif %}
+              {% if object.agencia %}
+                <p>{% trans 'Agência:' %} {{ object.agencia }}</p>
+              {% endif %}
+              {% if object.conta_corrente %}
+                <p>{% trans 'Conta corrente:' %} {{ object.conta_corrente }}</p>
+              {% endif %}
+              {% if not object.codigo_banco and not object.nome_banco and not object.agencia and not object.conta_corrente %}
+                <p class="text-[var(--text-secondary)]">{% trans 'Nenhum dado bancário informado.' %}</p>
+              {% endif %}
+            </dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
             <dt class="text-[var(--text-secondary)]">{% trans 'Presença digital' %}</dt>
             <dd class="font-medium text-[var(--text-primary)] space-y-3">
               {% if object.icone_site %}
