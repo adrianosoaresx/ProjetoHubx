@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{{ title|default:_('Inscrição') }}{% endblock %}
+
+{% block hero %}{% include '_components/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
+
+{% block content %}
+
+  <article class="card">
+    <div class="card-header flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-semibold">
+          {% blocktrans with event_title=evento.titulo %}Inscrição {{ event_title }}{% endblocktrans %}
+        </h2>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Finalize a inscrição utilizando o checkout do Mercado Pago." %}</p>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-right">
+        <p class="text-xs text-slate-500">{% trans "Cobranças operadas via" %}</p>
+        <p class="text-sm font-semibold text-slate-900">{% trans "Mercado Pago" %}</p>
+      </div>
+    </div>
+    <div class="card-body">
+      {% url 'eventos:evento_detalhe' evento.pk as event_detail_url %}
+      <form
+        id="checkout-form"
+        method="post"
+        enctype="multipart/form-data"
+        class="grid grid-cols-1 xl:grid-cols-2 gap-8"
+      >
+        {% csrf_token %}
+        <div class="space-y-6">
+          <section class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="shrink-0 w-10 h-10 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">
+                {{ evento.titulo|slice:":1"|default:"E" }}
+              </div>
+              <div>
+                <p class="text-xs uppercase text-[var(--text-secondary)]">{% trans "Evento" %}</p>
+                <p class="text-base font-semibold">{{ evento.titulo }}</p>
+              </div>
+            </div>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans with data_inicio=evento.data_inicio data_fim=evento.data_fim %}
+                De {{ data_inicio }} até {{ data_fim }}
+              {% endblocktrans %}
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Dados da inscrição" %}</h3>
+            {{ form.non_field_errors }}
+            {% for field in form %}
+              {% with field_name=field.name %}
+                {% if evento.gratuito and field_name == 'valor_pago' %}
+                  {# Campo de valor omitido para eventos gratuitos #}
+                {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
+                  {# Campo de método de pagamento omitido para eventos gratuitos #}
+                {% else %}
+                  {% if field_name == 'metodo_pagamento' %}
+                    {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
+                  {% elif field_name == 'comprovante_pagamento' %}
+                    {% with field_value=field.value %}
+                      <div class="space-y-1" data-payment-proof-field>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                          {{ field.label }}{% if field.field.required %} *{% endif %}
+                        </label>
+                        <div class="flex flex-wrap items-center gap-3">
+                          <label
+                            for="{{ field.id_for_label }}"
+                            class="btn btn-secondary"
+                            data-payment-proof-trigger
+                          >
+                            {% trans "Enviar comprovante" %}
+                          </label>
+                          <span
+                            class="text-sm text-[var(--text-secondary)]"
+                            data-payment-proof-text
+                            data-default-text="{{ _('Nenhum comprovante enviado')|escape }}"
+                            {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
+                          >
+                            {% if field_value %}
+                              {{ field_value.name|default:field_value }}
+                            {% else %}
+                              {% trans "Nenhum comprovante enviado" %}
+                            {% endif %}
+                          </span>
+                          <button
+                            type="button"
+                            class="text-sm font-medium text-primary-500 hover:underline {% if not field_value %}hidden{% endif %}"
+                            data-payment-proof-remove
+                          >
+                            {% trans "Remover comprovante" %}
+                          </button>
+                          {% if field_value and field_value.url %}
+                            <a
+                              href="{{ field_value.url|escape }}"
+                              class="text-sm font-medium text-primary-500 hover:underline"
+                              target="_blank"
+                              rel="noopener"
+                              data-payment-proof-preview
+                              data-initial-url="{{ field_value.url|escape }}"
+                            >
+                              {% trans "Ver comprovante atual" %}
+                            </a>
+                          {% else %}
+                            <span class="hidden" data-payment-proof-preview></span>
+                          {% endif %}
+                        </div>
+                        {% if field.errors %}
+                          <ul class="errorlist">
+                            {% for error in field.errors %}
+                              <li>{{ error }}</li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}
+                        {% if field.help_text %}
+                          <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% render_field field %}
+                      </div>
+                    {% endwith %}
+                  {% else %}
+                    {% include '_forms/field.html' with field=field %}
+                  {% endif %}
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </section>
+
+          <section class="space-y-4">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Pagamento" %}</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
+                {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
+                {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
+                  {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
+                  {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
+                {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h4 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h4>
+                <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do Mercado Pago." %}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700" for="card-number">{% trans "Número do cartão" %}</label>
+                    <input id="card-number" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-number" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700" for="security-code">{% trans "CVV" %}</label>
+                    <input id="security-code" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-csc" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700" for="card-expiration-month">{% trans "Mês" %}</label>
+                    <input id="card-expiration-month" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="MM" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700" for="card-expiration-year">{% trans "Ano" %}</label>
+                    <input id="card-expiration-year" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="YYYY" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700" for="id_parcelas">{% trans "Parcelas" %}</label>
+                    {{ checkout_form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  </div>
+                </div>
+                <input id="document-type" type="hidden" value="CPF" />
+                {{ checkout_form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
+                <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h4 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h4>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
+                  {{ checkout_form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  <p class="text-xs text-slate-500 mt-1">{% trans "Use data futura para evitar recusa automática." %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+              <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
+            </div>
+          </section>
+        </div>
+
+        <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          {% include "pagamentos/partials/checkout_resultado.html" with form=checkout_form transacao=transacao %}
+        </div>
+      </form>
+    </div>
+  </article>
+
+  <script>
+    (() => {
+      const initializedProofs = new WeakSet();
+
+      function updateDisplay(container) {
+        if (!container) {
+          return;
+        }
+
+        const text = container.querySelector('[data-payment-proof-text]');
+        const defaultText = text?.dataset.defaultText || '';
+        const initialText = text?.dataset.initialText || '';
+        const preview = container.querySelector('[data-payment-proof-preview]');
+        const initialUrl = preview?.dataset.initialUrl || '';
+        const removeButton = container.querySelector('[data-payment-proof-remove]');
+        const input = container.querySelector('[data-payment-proof-input]');
+        const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+
+        const files = input?.files;
+        const hasFiles = !!(files && files.length > 0);
+        const clearActive = !!(clearCheckbox && clearCheckbox.checked);
+        const shouldShowInitial = !!(initialText && !hasFiles && !clearActive);
+
+        if (text) {
+          if (hasFiles) {
+            const names = Array.from(files)
+              .map((file) => file.name)
+              .join(', ');
+            text.textContent = names;
+          } else if (shouldShowInitial) {
+            text.textContent = initialText;
+          } else {
+            text.textContent = defaultText;
+          }
+        }
+
+        if (preview) {
+          if (shouldShowInitial && initialUrl) {
+            preview.classList.remove('hidden');
+            if (preview.tagName === 'A') {
+              preview.setAttribute('href', initialUrl);
+            }
+          } else {
+            preview.classList.add('hidden');
+          }
+        }
+
+        if (removeButton) {
+          const shouldShowRemove = hasFiles || shouldShowInitial;
+          removeButton.classList.toggle('hidden', !shouldShowRemove);
+        }
+      }
+
+      function clearSelection(container, { preserveInitial = false } = {}) {
+        const input = container.querySelector('[data-payment-proof-input]');
+        const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+        const text = container.querySelector('[data-payment-proof-text]');
+        const hasInitial = !!(text && text.dataset.initialText);
+
+        if (input) {
+          input.value = '';
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (clearCheckbox) {
+          if (preserveInitial) {
+            clearCheckbox.checked = false;
+          } else {
+            clearCheckbox.checked = hasInitial;
+          }
+        }
+
+        updateDisplay(container);
+      }
+
+      function initPaymentProof(container) {
+        if (!container || initializedProofs.has(container)) {
+          return;
+        }
+
+        const input = container.querySelector('[data-payment-proof-input]');
+        const removeButton = container.querySelector('[data-payment-proof-remove]');
+        const clearCheckbox = container.querySelector('[data-payment-proof-clear]');
+
+        if (input) {
+          input.addEventListener('change', () => {
+            if (clearCheckbox) {
+              clearCheckbox.checked = false;
+            }
+            updateDisplay(container);
+          });
+        }
+
+        if (removeButton) {
+          removeButton.addEventListener('click', () => {
+            clearSelection(container);
+          });
+        }
+
+        if (clearCheckbox) {
+          clearCheckbox.addEventListener('change', () => {
+            updateDisplay(container);
+          });
+        }
+
+        updateDisplay(container);
+
+        initializedProofs.add(container);
+      }
+
+      function initAll(root) {
+        const containers = (root || document).querySelectorAll('[data-payment-proof-field]');
+        containers.forEach((container) => initPaymentProof(container));
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => initAll(document));
+      } else {
+        initAll(document);
+      }
+
+      document.addEventListener('htmx:afterSwap', (event) => {
+        initAll(event.target);
+      });
+
+      document.addEventListener('payment-proof-visibility-change', (event) => {
+        const container = event.detail?.container;
+        if (!container) {
+          return;
+        }
+        if (event.detail.hidden) {
+          clearSelection(container, { preserveInitial: true });
+        } else {
+          updateDisplay(container);
+        }
+      });
+    })();
+  </script>
+
+  <script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
+  <script>
+    const publicKey = "{{ provider_public_key|default:"" }}";
+    if (publicKey) {
+      const mp = new MercadoPago(publicKey);
+      mp.cardForm({
+        amount: document.getElementById('id_valor')?.value || '0',
+        autoMount: true,
+        form: {
+          id: 'checkout-form',
+          cardNumber: 'card-number',
+          securityCode: 'security-code',
+          expirationMonth: 'card-expiration-month',
+          expirationYear: 'card-expiration-year',
+          cardholderName: 'id_nome',
+          cardholderEmail: 'id_email',
+          identificationType: 'document-type',
+          identificationNumber: 'id_documento',
+          installments: 'id_parcelas',
+          cardToken: 'id_token_cartao'
+        },
+        callbacks: {
+          onFormMounted: error => { if (error) console.error(error); },
+          onError: error => console.error('MP error', error),
+        }
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('[data-copy]')) {
+        const code = event.target.getAttribute('data-copy');
+        navigator.clipboard.writeText(code || '').then(() => {
+          event.target.innerText = event.target.dataset.labelCopied;
+          setTimeout(() => { event.target.innerText = event.target.dataset.label; }, 1200);
+        });
+      }
+    });
+  </script>
+
+{% endblock %}
