@@ -48,31 +48,55 @@
           <label class="block text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
           {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
         </div>
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-card-section>
           <h2 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h2>
           <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do Mercado Pago." %}</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-700" for="card-number">{% trans "Número do cartão" %}</label>
-              <input id="card-number" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-number" />
+              <input
+                id="card-number"
+                class="mt-1 w-full rounded-lg border-slate-200 shadow-sm"
+                autocomplete="cc-number"
+                data-card-field
+                required
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700" for="security-code">{% trans "CVV" %}</label>
-              <input id="security-code" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-csc" />
+              <input
+                id="security-code"
+                class="mt-1 w-full rounded-lg border-slate-200 shadow-sm"
+                autocomplete="cc-csc"
+                data-card-field
+                required
+              />
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-700" for="card-expiration-month">{% trans "Mês" %}</label>
-              <input id="card-expiration-month" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="MM" />
+              <input
+                id="card-expiration-month"
+                class="mt-1 w-full rounded-lg border-slate-200 shadow-sm"
+                placeholder="MM"
+                data-card-field
+                required
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700" for="card-expiration-year">{% trans "Ano" %}</label>
-              <input id="card-expiration-year" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="YYYY" />
+              <input
+                id="card-expiration-year"
+                class="mt-1 w-full rounded-lg border-slate-200 shadow-sm"
+                placeholder="YYYY"
+                data-card-field
+                required
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700" for="id_parcelas">{% trans "Parcelas" %}</label>
-              {{ form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              {{ form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm"|attr:"data-card-field data-card-required=true" }}
             </div>
           </div>
           <input id="document-type" type="hidden" value="CPF" />
@@ -104,9 +128,48 @@
 <script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
 <script>
   const publicKey = "{{ provider_public_key|default:"" }}";
-  if (publicKey) {
-    const mp = new MercadoPago(publicKey);
-    mp.cardForm({
+  let mpInstance = null;
+  let cardFormInstance = null;
+
+  const cardSection = document.querySelector('[data-card-section]');
+  const cardFields = Array.from(document.querySelectorAll('[data-card-field]'));
+  const metodoSelect = document.getElementById('id_metodo');
+
+  const setCardFieldsState = (isCard) => {
+    if (cardSection) {
+      cardSection.classList.toggle('hidden', !isCard);
+    }
+
+    cardFields.forEach((field) => {
+      if (isCard) {
+        if (field.dataset.cardRequired === 'true') {
+          field.setAttribute('required', 'required');
+        }
+        field.removeAttribute('disabled');
+      } else {
+        if (field.hasAttribute('required')) {
+          field.dataset.cardRequired = 'true';
+        }
+        field.removeAttribute('required');
+        field.setAttribute('disabled', 'disabled');
+      }
+    });
+
+    if (!isCard) {
+      const tokenField = document.getElementById('id_token_cartao');
+      if (tokenField) {
+        tokenField.value = '';
+      }
+    }
+  };
+
+  const mountCardForm = () => {
+    if (!publicKey || cardFormInstance) return;
+    if (!mpInstance) {
+      mpInstance = new MercadoPago(publicKey);
+    }
+
+    cardFormInstance = mpInstance.cardForm({
       amount: document.getElementById('id_valor')?.value || '0',
       autoMount: true,
       form: {
@@ -123,11 +186,31 @@
         cardToken: 'id_token_cartao'
       },
       callbacks: {
-        onFormMounted: error => { if (error) console.error(error); },
-        onError: error => console.error('MP error', error),
+        onFormMounted: (error) => { if (error) console.error(error); },
+        onError: (error) => console.error('MP error', error),
       }
     });
-  }
+  };
+
+  const destroyCardForm = () => {
+    if (cardFormInstance?.unmount) {
+      cardFormInstance.unmount();
+    }
+    cardFormInstance = null;
+  };
+
+  const handleMetodoChange = () => {
+    const isCard = metodoSelect?.value === 'card';
+    setCardFieldsState(isCard);
+    if (isCard) {
+      mountCardForm();
+    } else {
+      destroyCardForm();
+    }
+  };
+
+  handleMetodoChange();
+  metodoSelect?.addEventListener('change', handleMetodoChange);
 
   document.addEventListener('click', (event) => {
     if (event.target.matches('[data-copy]')) {
