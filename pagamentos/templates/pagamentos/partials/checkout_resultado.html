@@ -1,20 +1,92 @@
 {% load i18n %}
 {% if mensagem %}
-  <div class="p-4 bg-green-100 text-green-900 rounded">{{ mensagem }}</div>
+  <div class="p-4 mb-3 bg-emerald-50 text-emerald-900 rounded-lg border border-emerald-200">{{ mensagem }}</div>
 {% endif %}
 {% if form and form.errors %}
-  <div class="p-4 bg-red-100 text-red-900 rounded">
-    {% trans "Corrija os erros e tente novamente." %}
+  <div class="p-4 mb-3 bg-rose-50 text-rose-900 rounded-lg border border-rose-200">
+    <p class="font-semibold mb-2">{% trans "Corrija os erros e tente novamente." %}</p>
     {{ form.errors }}
   </div>
 {% endif %}
 {% if transacao %}
-  <div class="p-4 bg-gray-50 border rounded mt-4">
-    <p class="font-semibold">{% trans "Transação" %}: {{ transacao.id }}</p>
-    <p>{% trans "Método" %}: {{ transacao.get_metodo_display }}</p>
-    <p>{% trans "Status" %}: {{ transacao.get_status_display }}</p>
-    {% if transacao.external_id %}
-      <p>{% trans "ID externo" %}: {{ transacao.external_id }}</p>
+  <div
+    class="space-y-4"
+    {% if transacao.status == 'pending' %}
+      hx-get="{% url 'pagamentos:status' transacao.pk %}"
+      hx-trigger="load, every 6s"
+      hx-target="this"
+      hx-swap="outerHTML"
+    {% endif %}
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-slate-500 uppercase font-semibold">{% trans "Transação" %} #{{ transacao.id }}</p>
+        <p class="text-lg font-bold text-slate-900">{{ transacao.get_metodo_display }}</p>
+        <p class="text-sm text-slate-600">{% trans "Status" %}: {{ transacao.get_status_display }}</p>
+      </div>
+      {% if transacao.external_id %}
+        <span class="px-3 py-1 text-xs bg-slate-100 text-slate-700 rounded-full">{% trans "ID externo" %}: {{ transacao.external_id }}</span>
+      {% endif %}
+    </div>
+
+    {% if transacao.metodo == 'pix' and transacao.pix_qr_code %}
+      <div class="bg-white rounded-lg border border-slate-200 p-4 flex flex-col md:flex-row gap-4 items-start">
+        {% if transacao.pix_qr_code_base64 %}
+          <img
+            src="data:image/png;base64,{{ transacao.pix_qr_code_base64 }}"
+            alt="{% trans "QR Code Pix" %}"
+            class="w-40 h-40 border border-slate-200 rounded"
+          />
+        {% endif %}
+        <div class="flex-1 space-y-2">
+          <p class="text-sm text-slate-700">{% trans "Use o QR Code ou copie o código Pix abaixo" %}</p>
+          <div class="flex items-center gap-2">
+            <code class="text-xs bg-slate-100 border border-slate-200 rounded px-2 py-1 overflow-x-auto">{{ transacao.pix_qr_code }}</code>
+            <button
+              type="button"
+              class="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              data-copy="{{ transacao.pix_qr_code }}"
+              data-label="{% trans "Copiar" %}"
+              data-label-copied="{% trans "Copiado" %}"
+            >{% trans "Copiar" %}</button>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if transacao.metodo == 'boleto' and transacao.boleto_url %}
+      <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-slate-900">{% trans "Boleto disponível" %}</p>
+          {% if transacao.boleto_expiracao %}
+            <p class="text-sm text-slate-600">{% blocktrans with data=transacao.boleto_expiracao %}Vencimento: {{ data }}{% endblocktrans %}</p>
+          {% endif %}
+        </div>
+        <a href="{{ transacao.boleto_url }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener">
+          {% trans "Baixar PDF" %}
+        </a>
+      </div>
+    {% endif %}
+
+    {% if transacao.status == 'approved' %}
+      <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 flex items-start gap-3">
+        <div>
+          <p class="font-semibold">{% trans "Pagamento aprovado" %}</p>
+          <p class="text-sm">{% trans "Você receberá uma confirmação por e-mail em instantes." %}</p>
+        </div>
+      </div>
+    {% elif transacao.status == 'failed' %}
+      <div class="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-900">
+        <p class="font-semibold">{% trans "Pagamento falhou" %}</p>
+        <p class="text-sm">{% trans "Revise os dados e tente novamente ou escolha outro método." %}</p>
+      </div>
+    {% else %}
+      <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-900">
+        <p class="font-semibold">{% trans "Aguardando confirmação" %}</p>
+        <p class="text-sm">{% trans "Atualizamos o status automaticamente a cada poucos segundos." %}</p>
+      </div>
     {% endif %}
   </div>
+{% else %}
+  <p class="text-sm text-slate-600">{% trans "Envie o formulário para gerar a cobrança e acompanhar por aqui." %}</p>
 {% endif %}

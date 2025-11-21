@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from pagamentos.models import Transacao
@@ -31,4 +32,8 @@ class CheckoutForm(forms.Form):
                 self.add_error("token_cartao", _("Token do cartão é obrigatório."))
         if metodo == Transacao.Metodo.BOLETO and not cleaned.get("vencimento"):
             self.add_error("vencimento", _("Data de vencimento é obrigatória."))
+        if metodo == Transacao.Metodo.BOLETO and cleaned.get("vencimento"):
+            vencimento = cleaned["vencimento"]
+            if vencimento <= timezone.now():
+                self.add_error("vencimento", _("A data de vencimento deve ser futura."))
         return cleaned
