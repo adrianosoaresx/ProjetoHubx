@@ -98,30 +98,8 @@
 
             <section class="space-y-4">
               <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Pagamento" %}</h3>
+
               <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
-                  {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                  {% if form.valor_pago.errors %}
-                    <ul class="errorlist mt-1">
-                      {% for error in form.valor_pago.errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  {% endif %}
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
-                  {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                  <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
-                  {% if form.metodo_pagamento.errors %}
-                    <ul class="errorlist mt-1">
-                      {% for error in form.metodo_pagamento.errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  {% endif %}
-                </div>
                 <div class="grid grid-cols-1 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
@@ -151,9 +129,32 @@
                     {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
                   {% endif %}
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
+                  {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  {% if form.valor_pago.errors %}
+                    <ul class="errorlist mt-1">
+                      {% for error in form.valor_pago.errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
+                  {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
+                  {% if form.metodo_pagamento.errors %}
+                    <ul class="errorlist mt-1">
+                      {% for error in form.metodo_pagamento.errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-payment-card>
                   <h4 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h4>
-                  <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do Mercado Pago." %}</p>
+                  <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do MercadoPago." %}</p>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-slate-700" for="card-number">{% trans "Número do cartão" %}</label>
@@ -182,7 +183,7 @@
                   {{ checkout_form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
                   <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-payment-boleto>
                   <h4 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h4>
                   <div>
                     <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
@@ -422,32 +423,51 @@
         }
       });
 
-      const valorPagoHidden = document.querySelector('[data-sync-valor-pago]');
-      const metodoPagamentoHidden = document.querySelector('[data-sync-metodo-pagamento]');
-      const valorCheckoutInput = document.getElementById('id_valor');
-      const metodoCheckoutInput = document.getElementById('id_metodo');
+        const valorPagoHidden = document.querySelector('[data-sync-valor-pago]');
+        const metodoPagamentoHidden = document.querySelector('[data-sync-metodo-pagamento]');
+        const valorCheckoutInput = document.getElementById('id_valor');
+        const metodoCheckoutInput = document.getElementById('id_metodo');
+        const cardSection = document.querySelector('[data-payment-card]');
+        const boletoSection = document.querySelector('[data-payment-boleto]');
 
-      const syncPagamentoFields = () => {
-        if (valorPagoHidden && valorCheckoutInput) {
-          valorPagoHidden.value = valorCheckoutInput.value || '';
+        const syncPagamentoFields = () => {
+          if (valorPagoHidden && valorCheckoutInput) {
+            valorPagoHidden.value = valorCheckoutInput.value || '';
+          }
+          if (metodoPagamentoHidden && metodoCheckoutInput) {
+            metodoPagamentoHidden.value = metodoCheckoutInput.value || '';
+          }
+        };
+
+        const togglePaymentDetails = () => {
+          const metodo = metodoCheckoutInput?.value;
+          if (cardSection) {
+            cardSection.classList.toggle('hidden', metodo !== 'card');
+          }
+          if (boletoSection) {
+            boletoSection.classList.toggle('hidden', metodo !== 'boleto');
+          }
+        };
+
+        if (valorPagoHidden || metodoPagamentoHidden) {
+          ['change', 'input'].forEach((eventName) => {
+            valorCheckoutInput?.addEventListener(eventName, syncPagamentoFields);
+          });
+          metodoCheckoutInput?.addEventListener('change', () => {
+            syncPagamentoFields();
+            togglePaymentDetails();
+          });
+          syncPagamentoFields();
+        } else {
+          metodoCheckoutInput?.addEventListener('change', togglePaymentDetails);
         }
-        if (metodoPagamentoHidden && metodoCheckoutInput) {
-          metodoPagamentoHidden.value = metodoCheckoutInput.value || '';
-        }
-      };
 
-      if (valorPagoHidden || metodoPagamentoHidden) {
-        ['change', 'input'].forEach((eventName) => {
-          valorCheckoutInput?.addEventListener(eventName, syncPagamentoFields);
-        });
-        metodoCheckoutInput?.addEventListener('change', syncPagamentoFields);
-        syncPagamentoFields();
-      }
+        togglePaymentDetails();
 
-      window.checkoutFormController = {
-        handleCheckoutSubmit,
-        checkoutRequired,
-      };
+        window.checkoutFormController = {
+          handleCheckoutSubmit,
+          checkoutRequired,
+        };
     })();
   </script>
 
