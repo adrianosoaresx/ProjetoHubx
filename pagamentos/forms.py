@@ -24,6 +24,18 @@ class CheckoutForm(forms.Form):
     token_cartao = forms.CharField(label=_("Token do cartão"), required=False)
     vencimento = forms.DateTimeField(label=_("Vencimento"), required=False)
 
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        profile_data = self._get_profile_data(user)
+        for field_name, value in profile_data.items():
+            if value and not self.initial.get(field_name):
+                self.initial[field_name] = value
+            if value and field_name in self.fields:
+                self.fields[field_name].widget.attrs.update(
+                    {"readonly": "readonly", "aria-readonly": "true"}
+                )
+
     def clean(self) -> dict[str, object]:
         cleaned = super().clean()
         metodo = cleaned.get("metodo")
@@ -36,4 +48,51 @@ class CheckoutForm(forms.Form):
             vencimento = cleaned["vencimento"]
             if vencimento <= timezone.now():
                 self.add_error("vencimento", _("A data de vencimento deve ser futura."))
+
+        if self.user:
+            profile_data = self._get_profile_data(self.user)
+            nome_checkout = (cleaned.get("nome") or "").strip()
+            if profile_data["nome"] and nome_checkout and nome_checkout != profile_data["nome"]:
+                self.add_error(
+                    "nome",
+                    _("Use o nome cadastrado no seu perfil. Para alterar, edite as informações da conta."),
+                )
+
+            email_checkout = (cleaned.get("email") or "").strip().lower()
+            if profile_data["email"] and email_checkout and email_checkout != profile_data["email"].lower():
+                self.add_error(
+                    "email",
+                    _("Use o e-mail do seu perfil. Para atualizar, edite as informações da conta."),
+                )
+
+            documento_checkout = self._normalize_documento(cleaned.get("documento") or "")
+            if profile_data["documento"] and documento_checkout:
+                if documento_checkout != self._normalize_documento(profile_data["documento"]):
+                    self.add_error(
+                        "documento",
+                        _("Use o CPF/CNPJ do seu perfil. Para corrigir, edite as informações da conta."),
+                    )
+
         return cleaned
+
+    def _get_profile_data(self, user) -> dict[str, str]:
+        if not user:
+            return {"nome": "", "email": "", "documento": ""}
+
+        nome = ""
+        if hasattr(user, "get_full_name"):
+            nome = user.get_full_name() or ""
+        nome = nome or getattr(user, "name", "") or getattr(user, "username", "")
+
+        email = getattr(user, "email", "") or ""
+        documento = getattr(user, "cpf", "") or getattr(user, "cnpj", "") or ""
+
+        return {
+            "nome": nome,
+            "email": email,
+            "documento": documento,
+        }
+
+    @staticmethod
+    def _normalize_documento(documento: str) -> str:
+        return "".join(char for char in documento if char.isdigit())

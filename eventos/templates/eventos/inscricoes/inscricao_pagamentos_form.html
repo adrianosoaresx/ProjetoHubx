@@ -180,16 +180,31 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
-                    {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                    {% if checkout_profile_data.nome %}
+                      {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
+                      <p class="text-xs text-slate-500 mt-1">{% trans "Este dado vem do seu perfil. Para alterá-lo, edite suas informações de conta." %}</p>
+                    {% else %}
+                      {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                    {% endif %}
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
-                    {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                    {% if checkout_profile_data.email %}
+                      {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
+                      <p class="text-xs text-slate-500 mt-1">{% trans "Use o e-mail do seu perfil. Para mudar, atualize suas informações de conta." %}</p>
+                    {% else %}
+                      {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                    {% endif %}
                   </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
-                  {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  {% if checkout_profile_data.documento %}
+                    {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
+                    <p class="text-xs text-slate-500 mt-1">{% trans "Documento preenchido a partir do seu perfil. Para corrigir, atualize o CPF/CNPJ na conta." %}</p>
+                  {% else %}
+                    {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  {% endif %}
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
                   <h4 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h4>

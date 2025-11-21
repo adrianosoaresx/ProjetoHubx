@@ -1914,21 +1914,37 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             initial_checkout["valor"] = valor_evento
 
         usuario = getattr(self.request, "user", None)
+        checkout_profile_data = {"nome": "", "email": "", "documento": ""}
         if usuario:
             nome = ""
             if hasattr(usuario, "get_full_name"):
                 nome = usuario.get_full_name() or ""
-            initial_checkout["nome"] = nome or getattr(usuario, "name", "") or getattr(
+            checkout_profile_data["nome"] = nome or getattr(usuario, "name", "") or getattr(
                 usuario, "username", ""
             )
             if getattr(usuario, "email", None):
-                initial_checkout["email"] = usuario.email
+                checkout_profile_data["email"] = usuario.email
+            checkout_profile_data["documento"] = getattr(usuario, "cpf", "") or getattr(
+                usuario, "cnpj", ""
+            )
+
+        if checkout_profile_data["nome"]:
+            initial_checkout["nome"] = checkout_profile_data["nome"]
+        if checkout_profile_data["email"]:
+            initial_checkout["email"] = checkout_profile_data["email"]
+        if checkout_profile_data["documento"]:
+            initial_checkout["documento"] = checkout_profile_data["documento"]
 
         context.update(
             {
-                "checkout_form": CheckoutForm(self.request.POST or None, initial=initial_checkout),
+                "checkout_form": CheckoutForm(
+                    self.request.POST or None,
+                    initial=initial_checkout,
+                    user=usuario,
+                ),
                 "provider_public_key": provider.public_key,
                 "transacao": self._get_checkout_transacao(),
+                "checkout_profile_data": checkout_profile_data,
             }
         )
         return context
