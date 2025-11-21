@@ -182,7 +182,7 @@
                 {% endif %}
               </div>
 
-              {% if user.is_authenticated and user.get_tipo_usuario != 'admin' and user.get_tipo_usuario != 'associado' %}
+              {% if user.is_authenticated and user.get_tipo_usuario != 'admin' and not user.is_associado %}
                 {% if inscricao and pode_cancelar %}
                   <form method="post" action="{% url 'eventos:evento_cancelar_inscricao' object.pk %}" class="flex">
                     {% csrf_token %}
@@ -231,7 +231,11 @@
 
         {% include 'eventos/partials/portfolio_card.html' %}
 
-        {% if user.is_authenticated and user.get_tipo_usuario == 'associado' %}
+        {% if user.is_authenticated and (
+          user.get_tipo_usuario == 'associado' or
+          user.get_tipo_usuario == 'nucleado' or
+          user.get_tipo_usuario == 'coordenador'
+        ) %}
           <article class="card">
             <details class="group">
               <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
