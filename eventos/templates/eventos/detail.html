@@ -231,13 +231,10 @@
 
         {% include 'eventos/partials/portfolio_card.html' %}
 
-        {% if user.is_authenticated and (
-          user.get_tipo_usuario == 'associado' or
-          user.get_tipo_usuario == 'nucleado' or
-          user.get_tipo_usuario == 'coordenador'
-        ) %}
-          <article class="card">
-            <details class="group">
+        {% if user.is_authenticated %}
+          {% if user.get_tipo_usuario == 'associado' or user.get_tipo_usuario == 'nucleado' or user.get_tipo_usuario == 'coordenador' %}
+            <article class="card">
+              <details class="group">
               <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">
                 <div class="flex items-start gap-3">
                   <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
@@ -293,8 +290,9 @@
                   <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrições indisponíveis para este evento.' %}</p>
                 {% endif %}
               </div>
-            </details>
-          </article>
+              </details>
+            </article>
+          {% endif %}
         {% endif %}
 
         {% if pode_ver_inscritos %}
