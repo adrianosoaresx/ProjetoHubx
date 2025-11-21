@@ -19,6 +19,9 @@ class Pedido(models.Model):
         choices=Status.choices,
         default=Status.PENDENTE,
     )
+    email: str | None = models.EmailField(verbose_name=_("E-mail do cliente"), blank=True, null=True)
+    nome: str | None = models.CharField(verbose_name=_("Nome do cliente"), max_length=120, blank=True, null=True)
+    documento: str | None = models.CharField(verbose_name=_("Documento"), max_length=40, blank=True, null=True)
     external_id: str | None = models.CharField(
         verbose_name=_("Identificador externo"),
         max_length=100,
@@ -71,6 +74,9 @@ class Transacao(models.Model):
         blank=True,
         null=True,
     )
+    detalhes: dict | None = models.JSONField(
+        verbose_name=_("Detalhes da transação"), default=dict, blank=True, null=True
+    )
     criado_em = models.DateTimeField(verbose_name=_("Criado em"), auto_now_add=True)
     atualizado_em = models.DateTimeField(verbose_name=_("Atualizado em"), auto_now=True)
 
@@ -81,3 +87,26 @@ class Transacao(models.Model):
 
     def __str__(self) -> str:
         return f"{self._meta.verbose_name} #{self.pk}"
+
+    @property
+    def pix_qr_code(self) -> str | None:
+        transaction_data = self._transaction_data
+        return transaction_data.get("qr_code") if transaction_data else None
+
+    @property
+    def pix_qr_code_base64(self) -> str | None:
+        transaction_data = self._transaction_data
+        return transaction_data.get("qr_code_base64") if transaction_data else None
+
+    @property
+    def boleto_url(self) -> str | None:
+        transaction_details = (self.detalhes or {}).get("transaction_details", {})
+        return transaction_details.get("external_resource_url")
+
+    @property
+    def boleto_expiracao(self) -> str | None:
+        return (self.detalhes or {}).get("date_of_expiration")
+
+    @property
+    def _transaction_data(self) -> dict | None:
+        return (self.detalhes or {}).get("point_of_interaction", {}).get("transaction_data")

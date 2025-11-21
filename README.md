@@ -62,6 +62,19 @@ Para notificações push, defina também:
 - `ONESIGNAL_APP_ID` e `ONESIGNAL_API_KEY` para o cliente OneSignal (`onesignal_sdk`).
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_CLAIMS_SUBJECT` usados pelo `pywebpush`.
 
+### Pagamentos (Mercado Pago)
+
+Para habilitar o checkout e os webhooks do Mercado Pago, configure:
+
+- `MERCADO_PAGO_ACCESS_TOKEN`: token privado usado para criar, consultar e estornar cobranças.
+- `MERCADO_PAGO_PUBLIC_KEY`: chave pública usada pelo JavaScript do checkout para tokenizar cartões.
+- `MERCADO_PAGO_WEBHOOK_SECRET`: segredo opcional para validar a assinatura `X-Signature` recebida no webhook.
+
+Endpoints envolvidos:
+
+- `/pagamentos/checkout/` – formulário HTMX com Pix, cartão e boleto.
+- `/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas.
+
 Exemplo de configuração no `.env`:
 
 ```env

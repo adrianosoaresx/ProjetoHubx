@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold text-slate-900">{% trans "Transações para revisão" %}</h1>
+    <div class="flex gap-3">
+      <a
+        href="{% url 'pagamentos:transacoes-csv' %}"
+        class="px-4 py-2 bg-slate-800 text-white rounded-lg shadow hover:bg-slate-900"
+      >{% trans "Exportar CSV" %}</a>
+    </div>
+  </div>
+  <div class="mb-4">
+    <form method="get" class="flex gap-2 items-center">
+      <label for="status" class="text-sm font-medium text-slate-700">{% trans "Status" %}</label>
+      <select
+        id="status"
+        name="status"
+        class="border rounded px-3 py-2 text-sm"
+        onchange="this.form.submit()"
+      >
+        <option value="all" {% if status_filtro == 'all' %}selected{% endif %}>{% trans "Pendentes e falhadas" %}</option>
+        <option value="pending" {% if status_filtro == 'pending' %}selected{% endif %}>{% trans "Pendentes" %}</option>
+        <option value="failed" {% if status_filtro == 'failed' %}selected{% endif %}>{% trans "Falhadas" %}</option>
+      </select>
+    </form>
+  </div>
+  <div class="overflow-x-auto bg-white shadow rounded-lg">
+    <table class="min-w-full divide-y divide-slate-200">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "ID" %}</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "Pedido" %}</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "Método" %}</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "Valor" %}</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "Status" %}</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{% trans "Criado em" %}</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-slate-200">
+        {% for transacao in transacoes %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 text-sm text-slate-800">#{{ transacao.id }}</td>
+            <td class="px-4 py-3 text-sm text-slate-800">#{{ transacao.pedido_id }}</td>
+            <td class="px-4 py-3 text-sm text-slate-800">{{ transacao.get_metodo_display }}</td>
+            <td class="px-4 py-3 text-sm text-slate-800">R$ {{ transacao.valor }}</td>
+            <td class="px-4 py-3 text-sm">
+              <span class="px-2 py-1 text-xs rounded-full {% if transacao.status == 'pending' %}bg-amber-100 text-amber-800{% elif transacao.status == 'failed' %}bg-rose-100 text-rose-800{% else %}bg-slate-100 text-slate-800{% endif %}">
+                {{ transacao.get_status_display }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm text-slate-600">{{ transacao.criado_em|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="px-4 py-4 text-center text-slate-500">{% trans "Nenhuma transação encontrada." %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

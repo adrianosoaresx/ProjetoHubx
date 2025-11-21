@@ -2,29 +2,141 @@
 {% load i18n %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-8">
-  <h1 class="text-2xl font-bold mb-4">{% trans "Checkout" %}</h1>
-  <div class="bg-white shadow rounded p-6">
+<div class="max-w-5xl mx-auto py-10">
+  <div class="bg-white shadow rounded-xl p-8">
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <p class="text-sm text-slate-500 uppercase font-semibold">{% trans "Pagamento" %}</p>
+        <h1 class="text-3xl font-bold text-slate-900">{% trans "Checkout Hubx" %}</h1>
+        <p class="text-slate-600">{% trans "Escolha o método de pagamento e finalize sua compra com segurança." %}</p>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-right">
+        <p class="text-xs text-slate-500">{% trans "Cobranças operadas via" %}</p>
+        <p class="text-sm font-semibold text-slate-900">{% trans "Mercado Pago" %}</p>
+      </div>
+    </div>
     <form
       id="checkout-form"
       hx-post=""
       hx-target="#checkout-result"
       hx-swap="outerHTML"
       method="post"
-      class="space-y-4"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-8"
     >
       {% csrf_token %}
-      {{ form.as_p }}
-      <button
-        type="submit"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        {% trans "Pagar" %}
-      </button>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
+          {{ form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
+          {{ form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+          <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
+            {{ form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
+            {{ form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
+          {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+          <h2 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h2>
+          <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do Mercado Pago." %}</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700" for="card-number">{% trans "Número do cartão" %}</label>
+              <input id="card-number" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-number" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700" for="security-code">{% trans "CVV" %}</label>
+              <input id="security-code" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-csc" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700" for="card-expiration-month">{% trans "Mês" %}</label>
+              <input id="card-expiration-month" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="MM" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700" for="card-expiration-year">{% trans "Ano" %}</label>
+              <input id="card-expiration-year" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="YYYY" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700" for="id_parcelas">{% trans "Parcelas" %}</label>
+              {{ form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+            </div>
+          </div>
+          <input id="document-type" type="hidden" value="CPF" />
+          {{ form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
+          <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+          <h2 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h2>
+          <div>
+            <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
+            {{ form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+            <p class="text-xs text-slate-500 mt-1">{% trans "Use data futura para evitar recusa automática." %}</p>
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow"
+        >
+          {% trans "Finalizar pagamento" %}
+        </button>
+      </div>
+      <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        {% include "pagamentos/partials/checkout_resultado.html" %}
+      </div>
     </form>
-    <div id="checkout-result" class="mt-4">
-      {% include "pagamentos/partials/checkout_resultado.html" %}
-    </div>
   </div>
 </div>
+
+<script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
+<script>
+  const publicKey = "{{ provider_public_key|default:"" }}";
+  if (publicKey) {
+    const mp = new MercadoPago(publicKey);
+    mp.cardForm({
+      amount: document.getElementById('id_valor')?.value || '0',
+      autoMount: true,
+      form: {
+        id: 'checkout-form',
+        cardNumber: 'card-number',
+        securityCode: 'security-code',
+        expirationMonth: 'card-expiration-month',
+        expirationYear: 'card-expiration-year',
+        cardholderName: 'id_nome',
+        cardholderEmail: 'id_email',
+        identificationType: 'document-type',
+        identificationNumber: 'id_documento',
+        installments: 'id_parcelas',
+        cardToken: 'id_token_cartao'
+      },
+      callbacks: {
+        onFormMounted: error => { if (error) console.error(error); },
+        onError: error => console.error('MP error', error),
+      }
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    if (event.target.matches('[data-copy]')) {
+      const code = event.target.getAttribute('data-copy');
+      navigator.clipboard.writeText(code || '').then(() => {
+        event.target.innerText = event.target.dataset.labelCopied;
+        setTimeout(() => { event.target.innerText = event.target.dataset.label; }, 1200);
+      });
+    }
+  });
+</script>
 {% endblock %}

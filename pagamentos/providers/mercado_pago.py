@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import os
+import logging
 from typing import Any
 
 import requests
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from pagamentos.exceptions import PagamentoInvalidoError, PagamentoProviderError
 from pagamentos.models import Pedido, Transacao
 from pagamentos.providers.base import PaymentProvider
+
+logger = logging.getLogger(__name__)
 
 
 class MercadoPagoProvider(PaymentProvider):
@@ -42,6 +46,15 @@ class MercadoPagoProvider(PaymentProvider):
         else:
             raise PagamentoInvalidoError(_("Método de pagamento não suportado."))
 
+        logger.info(
+            "mercadopago_criar_cobranca",
+            extra={
+                "pedido_id": pedido.id,
+                "metodo": metodo,
+                "valor": float(pedido.valor),
+                "payload_keys": sorted(payload.keys()),
+            },
+        )
         return self._post("/v1/payments", payload)
 
     def confirmar_pagamento(self, transacao: Transacao) -> dict[str, Any]:
@@ -56,7 +69,12 @@ class MercadoPagoProvider(PaymentProvider):
     def consultar_pagamento(self, transacao: Transacao) -> dict[str, Any]:
         if not transacao.external_id:
             raise PagamentoInvalidoError(_("Transação sem identificador externo."))
-        return self._request("GET", f"/v1/payments/{transacao.external_id}")
+        resposta = self._request("GET", f"/v1/payments/{transacao.external_id}")
+        logger.info(
+            "mercadopago_consultar_pagamento",
+            extra={"external_id": transacao.external_id, "status": resposta.get("status")},
+        )
+        return resposta
 
     def _build_pix_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
         return {
@@ -84,6 +102,8 @@ class MercadoPagoProvider(PaymentProvider):
         vencimento = dados_pagamento.get("vencimento")
         if not vencimento:
             raise PagamentoInvalidoError(_("Data de vencimento obrigatória para boleto."))
+        if vencimento <= timezone.now():
+            raise PagamentoInvalidoError(_("Boleto expirado ou com vencimento inválido."))
         return {
             "transaction_amount": float(pedido.valor),
             "payment_method_id": "bolbradesco",
@@ -126,11 +146,24 @@ class MercadoPagoProvider(PaymentProvider):
             )
             response.raise_for_status()
         except requests.HTTPError as exc:  # pragma: no cover - erro tratado abaixo
+            logger.warning(
+                "mercadopago_http_error",
+                extra={"url": url, "method": method, "status_code": getattr(exc.response, "status_code", None)},
+            )
             raise PagamentoProviderError(str(exc)) from exc
         except requests.RequestException as exc:  # pragma: no cover - erro tratado abaixo
+            logger.warning(
+                "mercadopago_request_error",
+                extra={"url": url, "method": method},
+            )
             raise PagamentoProviderError(str(exc)) from exc
 
         try:
-            return response.json()
+            data = response.json()
+            logger.info(
+                "mercadopago_resposta_sucesso",
+                extra={"url": url, "method": method, "status_code": response.status_code},
+            )
+            return data
         except ValueError as exc:  # pragma: no cover
             raise PagamentoProviderError(_("Resposta inválida do provedor.")) from exc

@@ -1,0 +1,7 @@
+{% load i18n %}
+{% blocktrans with pedido_id=pedido.id %}Pagamento do pedido #{{ pedido_id }} aprovado!{% endblocktrans %}
+{% blocktrans %}Método:{% endblocktrans %} {{ transacao.get_metodo_display }}
+{% blocktrans %}Valor pago:{% endblocktrans %} R$ {{ pedido.valor }}
+{% blocktrans %}Status:{% endblocktrans %} {{ transacao.get_status_display }}
+
+{% trans "Obrigado por comprar com a Hubx.Space!" %}

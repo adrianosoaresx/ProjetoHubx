@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from typing import List
 from urllib.parse import parse_qsl, urlsplit
 
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -287,6 +287,12 @@ ICON_CLOCK = """
 
 
 def _get_menu_items() -> List[MenuItem]:
+    def _safe_reverse(view_name: str) -> str | None:
+        try:
+            return reverse(view_name)
+        except NoReverseMatch:
+            return None
+
     perfil_url = reverse("accounts:perfil")
     configuracoes_url = reverse("configuracoes:configuracoes")
     nucleos_url = reverse("nucleos:list")
@@ -354,12 +360,18 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_BRIEFCASE,
             permissions=["authenticated"],
         ),
-        MenuItem(
-            id="ai-chat",
-            path=reverse("ai_chat:chat"),
-            label="Chat IA",
-            icon=ICON_CHAT,
-            permissions=["authenticated"],
+        *(
+            [
+                MenuItem(
+                    id="ai-chat",
+                    path=ai_chat_path,
+                    label="Chat IA",
+                    icon=ICON_CHAT,
+                    permissions=["authenticated"],
+                )
+            ]
+            if (ai_chat_path := _safe_reverse("ai_chat:chat"))
+            else []
         ),
         MenuItem(
             id="conexoes",
