@@ -7,7 +7,7 @@
 
 {% block content %}
 
-  {% with checkout_enabled=provider_public_key and not evento.gratuito %}
+  {% with checkout_enabled=provider_public_key %}
 
   <article class="card">
     <div class="card-header flex items-center justify-between flex-wrap gap-3">
@@ -30,7 +30,7 @@
         enctype="multipart/form-data"
         class="grid grid-cols-1 xl:grid-cols-2 gap-8"
         data-checkout-url="{% url 'pagamentos:checkout' %}"
-        data-checkout-required="{{ checkout_enabled|yesno:'true,false' }}"
+        data-checkout-required="{% if checkout_enabled and not evento.gratuito %}true{% else %}false{% endif %}"
       >
         {% csrf_token %}
         <input type="hidden" name="transacao_id" id="id_transacao_id" />
@@ -59,7 +59,7 @@
               {% with field_name=field.name %}
                 {% if evento.gratuito and field_name in ('valor_pago', 'metodo_pagamento') %}
                   {# Campos de valor/método omitidos para eventos gratuitos #}
-                {% elif checkout_enabled and field_name in ('valor_pago', 'metodo_pagamento') %}
+                {% elif checkout_enabled and not evento.gratuito and field_name in ('valor_pago', 'metodo_pagamento') %}
                   {# Campos de valor/método sincronizados com o checkout do Mercado Pago #}
                 {% else %}
                   {% if field_name == 'metodo_pagamento' %}
