@@ -50,6 +50,8 @@ from core.permissions import (
     no_superadmin_required,
 )
 from core.utils import resolve_back_href
+from pagamentos.forms import CheckoutForm
+from pagamentos.providers import MercadoPagoProvider
 
 from .forms import (
     EventoForm,
@@ -1893,6 +1895,42 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
 
     def get_success_url(self):
         return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
+
+
+class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
+    template_name = "eventos/inscricoes/inscricao_pagamentos_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        provider = MercadoPagoProvider()
+
+        valor_evento = context.get("valor_evento_usuario")
+        if valor_evento is None:
+            valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+
+        initial_checkout: dict[str, Any] = {}
+        if valor_evento is not None:
+            initial_checkout["valor"] = valor_evento
+
+        usuario = getattr(self.request, "user", None)
+        if usuario:
+            nome = ""
+            if hasattr(usuario, "get_full_name"):
+                nome = usuario.get_full_name() or ""
+            initial_checkout["nome"] = nome or getattr(usuario, "name", "") or getattr(
+                usuario, "username", ""
+            )
+            if getattr(usuario, "email", None):
+                initial_checkout["email"] = usuario.email
+
+        context.update(
+            {
+                "checkout_form": CheckoutForm(self.request.POST or None, initial=initial_checkout),
+                "provider_public_key": provider.public_key,
+                "transacao": None,
+            }
+        )
+        return context
 
 
 # ---------------------------------------------------------------------------
