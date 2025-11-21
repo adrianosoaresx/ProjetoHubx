@@ -67,68 +67,9 @@
                   {# Campos de valor/método sincronizados com o checkout do Mercado Pago #}
                 {% else %}
                   {% if field_name == 'metodo_pagamento' %}
-                    {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
+                    {# Campo de método de pagamento removido do formulário #}
                   {% elif field_name == 'comprovante_pagamento' %}
-                    {% with field_value=field.value %}
-                      <div class="space-y-1" data-payment-proof-field>
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-                          {{ field.label }}{% if field.field.required %} *{% endif %}
-                        </label>
-                        <div class="flex flex-wrap items-center gap-3">
-                          <label
-                            for="{{ field.id_for_label }}"
-                            class="btn btn-secondary"
-                            data-payment-proof-trigger
-                          >
-                            {% trans "Enviar comprovante" %}
-                          </label>
-                          <span
-                            class="text-sm text-[var(--text-secondary)]"
-                            data-payment-proof-text
-                            data-default-text="{{ _('Nenhum comprovante enviado')|escape }}"
-                            {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
-                          >
-                            {% if field_value %}
-                              {{ field_value.name|default:field_value }}
-                            {% else %}
-                              {% trans "Nenhum comprovante enviado" %}
-                            {% endif %}
-                          </span>
-                          <button
-                            type="button"
-                            class="text-sm font-medium text-primary-500 hover:underline {% if not field_value %}hidden{% endif %}"
-                            data-payment-proof-remove
-                          >
-                            {% trans "Remover comprovante" %}
-                          </button>
-                          {% if field_value and field_value.url %}
-                            <a
-                              href="{{ field_value.url|escape }}"
-                              class="text-sm font-medium text-primary-500 hover:underline"
-                              target="_blank"
-                              rel="noopener"
-                              data-payment-proof-preview
-                              data-initial-url="{{ field_value.url|escape }}"
-                            >
-                              {% trans "Ver comprovante atual" %}
-                            </a>
-                          {% else %}
-                            <span class="hidden" data-payment-proof-preview></span>
-                          {% endif %}
-                        </div>
-                        {% if field.errors %}
-                          <ul class="errorlist">
-                            {% for error in field.errors %}
-                              <li>{{ error }}</li>
-                            {% endfor %}
-                          </ul>
-                        {% endif %}
-                        {% if field.help_text %}
-                          <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
-                        {% endif %}
-                        {% render_field field %}
-                      </div>
-                    {% endwith %}
+                    {# Campo de comprovante removido do formulário #}
                   {% else %}
                     {% include '_forms/field.html' with field=field %}
                   {% endif %}
@@ -181,7 +122,7 @@
                     </ul>
                   {% endif %}
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
                     {% if checkout_profile_data.nome %}
