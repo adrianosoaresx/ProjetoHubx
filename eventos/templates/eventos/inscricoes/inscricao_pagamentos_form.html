@@ -90,7 +90,7 @@
                 <input
                   type="hidden"
                   name="{{ form.metodo_pagamento.html_name }}"
-                  value="{{ checkout_form.metodo.value|default:checkout_form.metodo.initial }}"
+                  value="{{ checkout_form.metodo.value|default_if_none:checkout_form.metodo.initial|default:checkout_form.metodo.initial }}"
                   data-sync-metodo-pagamento
                 />
               </div>

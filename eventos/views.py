@@ -1987,6 +1987,9 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
     def form_valid(self, form):
         transacao = self._get_checkout_transacao()
 
+        if transacao and not form.cleaned_data.get("metodo_pagamento"):
+            form.cleaned_data["metodo_pagamento"] = transacao.metodo
+
         if self._checkout_required() and transacao is None:
             form.add_error(None, _("Finalize o checkout do pagamento antes de concluir a inscrição."))
             return self.form_invalid(form)
