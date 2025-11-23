@@ -327,6 +327,17 @@ class InscricaoEventoForm(forms.ModelForm):
 
     def clean_metodo_pagamento(self):
         metodo = self.cleaned_data.get("metodo_pagamento")
+        if not metodo:
+            instance_metodo = getattr(self.instance, "metodo_pagamento", None)
+            transacao_metodo = getattr(getattr(self.instance, "transacao", None), "metodo", None)
+
+            if instance_metodo:
+                metodo = instance_metodo
+            elif transacao_metodo:
+                metodo = transacao_metodo
+
+            if metodo:
+                self.cleaned_data["metodo_pagamento"] = metodo
         if not self._is_evento_gratuito() and not metodo:
             raise forms.ValidationError(_("Selecione uma forma de pagamento."))
         return metodo
