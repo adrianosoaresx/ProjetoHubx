@@ -52,23 +52,25 @@
             </p>
           </section>
 
-          <section class="space-y-4">
-            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Dados da inscrição" %}</h3>
-            {{ form.non_field_errors }}
-            {% for field in form %}
-              {% with field_name=field.name %}
-                {% if field_name == 'valor_pago' %}
-                  {% render_field field|attr:"data-sync-valor-pago:true" type="hidden" %}
-                {% elif field_name == 'metodo_pagamento' %}
-                  {% render_field field|attr:"data-sync-metodo-pagamento:true" type="hidden" %}
-                {% elif field_name == 'comprovante_pagamento' %}
-                  {# Campo omitido para simplificar a experiência de pagamento #}
-                {% else %}
-                  {% include '_forms/field.html' with field=field %}
-                {% endif %}
-              {% endwith %}
-            {% endfor %}
-          </section>
+          {{ form.non_field_errors }}
+          {% if form.valor_pago %}
+            <input
+              type="hidden"
+              name="{{ form.valor_pago.html_name }}"
+              id="{{ form.valor_pago.id_for_label }}"
+              value="{{ form.valor_pago.value|default_if_none:'' }}"
+              data-sync-valor-pago="true"
+            />
+          {% endif %}
+          {% if form.metodo_pagamento %}
+            <input
+              type="hidden"
+              name="{{ form.metodo_pagamento.html_name }}"
+              id="{{ form.metodo_pagamento.id_for_label }}"
+              value="{{ form.metodo_pagamento.value|default_if_none:'' }}"
+              data-sync-metodo-pagamento="true"
+            />
+          {% endif %}
 
           {% if not evento.gratuito %}
             <section class="space-y-4">
