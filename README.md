@@ -62,7 +62,7 @@ Para notificações push, defina também:
 - `ONESIGNAL_APP_ID` e `ONESIGNAL_API_KEY` para o cliente OneSignal (`onesignal_sdk`).
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_CLAIMS_SUBJECT` usados pelo `pywebpush`.
 
-### Pagamentos (Mercado Pago)
+### Pagamentos (Mercado Pago e PayPal)
 
 Para habilitar o checkout e os webhooks do Mercado Pago, configure:
 
@@ -70,10 +70,18 @@ Para habilitar o checkout e os webhooks do Mercado Pago, configure:
 - `MERCADO_PAGO_PUBLIC_KEY`: chave pública usada pelo JavaScript do checkout para tokenizar cartões.
 - `MERCADO_PAGO_WEBHOOK_SECRET`: segredo opcional para validar a assinatura `X-Signature` recebida no webhook.
 
+Para habilitar PayPal como método adicional:
+
+- `PAYPAL_CLIENT_ID` e `PAYPAL_CLIENT_SECRET`: credenciais da REST API do PayPal.
+- `PAYPAL_API_URL`: endpoint base (use `https://api-m.sandbox.paypal.com` em testes).
+- `PAYPAL_CURRENCY`: código da moeda (padrão `BRL`).
+- `PAYPAL_WEBHOOK_SECRET`: segredo opcional para validar a assinatura `X-Paypal-Signature` recebida no webhook.
+
 Endpoints envolvidos:
 
 - `/pagamentos/checkout/` – formulário HTMX com Pix, cartão e boleto.
 - `/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas.
+- `/pagamentos/webhook/paypal/` – webhook opcional para sincronizar ordens do PayPal.
 
 Exemplo de configuração no `.env`:
 

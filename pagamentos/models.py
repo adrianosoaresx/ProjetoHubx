@@ -45,6 +45,7 @@ class Transacao(models.Model):
         PIX = "pix", _("Pix")
         CARTAO = "card", _("Cartão de crédito")
         BOLETO = "boleto", _("Boleto bancário")
+        PAYPAL = "paypal", _("PayPal")
 
     class Status(models.TextChoices):
         PENDENTE = "pending", _("Pendente")
@@ -106,6 +107,16 @@ class Transacao(models.Model):
     @property
     def boleto_expiracao(self) -> str | None:
         return (self.detalhes or {}).get("date_of_expiration")
+
+    @property
+    def paypal_approval_url(self) -> str | None:
+        if self.metodo != Transacao.Metodo.PAYPAL:
+            return None
+        links = (self.detalhes or {}).get("links") or []
+        for link in links:
+            if link.get("rel") == "approve":
+                return link.get("href")
+        return None
 
     @property
     def _transaction_data(self) -> dict | None:

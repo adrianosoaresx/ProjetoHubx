@@ -56,6 +56,26 @@
       </div>
     {% endif %}
 
+    {% if transacao.metodo == 'paypal' %}
+      <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+        <p class="font-semibold text-slate-900">{% trans "Pagamento pelo PayPal" %}</p>
+        <p class="text-sm text-slate-600">{% trans "Abriremos uma ordem no PayPal para aprovação e captura." %}</p>
+        {% if transacao.paypal_approval_url %}
+          <a
+            href="{{ transacao.paypal_approval_url }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            target="_blank"
+            rel="noopener"
+          >
+            {% trans "Acessar ordem no PayPal" %}
+          </a>
+          <p class="text-xs text-slate-500">{% trans "Após aprovar, retornaremos aqui para confirmar o status." %}</p>
+        {% else %}
+          <p class="text-xs text-slate-500">{% trans "Aguardando o provedor liberar o link de aprovação." %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
     {% if transacao.metodo == 'boleto' and transacao.boleto_url %}
       <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
         <div>
