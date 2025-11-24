@@ -68,3 +68,15 @@ def test_inscricao_api_rejeita_mime_divergente(api_client, cliente_user):
     resp = api_client.post(url, data, format="multipart")
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
     assert "Extensão" in resp.data["comprovante_pagamento"][0]
+
+
+def test_inscricao_form_aceita_cartao_no_checkout(admin_user):
+    evento = EventoFactory(organizacao=admin_user.organizacao)
+    form = InscricaoEventoForm(
+        data={"valor_pago": "10.00", "metodo_pagamento": "card"},
+        evento=evento,
+        user=admin_user,
+    )
+
+    assert form.is_valid()
+    assert form.cleaned_data["metodo_pagamento"] == "card"
