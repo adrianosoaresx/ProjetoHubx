@@ -58,28 +58,11 @@
             {% for field in form %}
               {% with field_name=field.name %}
                 {% if field_name == 'valor_pago' %}
-                  <div class="space-y-1">
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-                      {{ field.label }}{% if field.field.required %} *{% endif %}
-                    </label>
-                    {% if field.errors %}
-                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0"|attr:"readonly:readonly" class+="form-input w-full" %}
-                    {% else %}
-                      {% render_field field|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0"|attr:"readonly:readonly" class+="form-input w-full" %}
-                    {% endif %}
-                    {% if field.errors %}
-                      <ul class="errorlist">
-                        {% for error in field.errors %}
-                          <li>{{ error }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                    <p class="text-xs text-[var(--text-secondary)]">
-                      {% trans "Valor definido automaticamente de acordo com a inscrição." %}
-                    </p>
-                  </div>
+                  {% render_field field|attr:"data-sync-valor-pago:true" type="hidden" %}
                 {% elif field_name == 'metodo_pagamento' %}
                   {% render_field field|attr:"data-sync-metodo-pagamento:true" type="hidden" %}
+                {% elif field_name == 'comprovante_pagamento' %}
+                  {# Campo omitido para simplificar a experiência de pagamento #}
                 {% else %}
                   {% include '_forms/field.html' with field=field %}
                 {% endif %}
@@ -91,105 +74,49 @@
             <section class="space-y-4">
               <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Pagamento" %}</h3>
 
-              <div class="space-y-4">
-                <div class="grid grid-cols-1 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
-                    {% if checkout_profile_data.nome %}
-                      {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
-                      <p class="text-xs text-slate-500 mt-1">{% trans "Este dado vem do seu perfil. Para alterá-lo, edite suas informações de conta." %}</p>
-                    {% else %}
-                      {{ checkout_form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              <div class="space-y-6">
+                <div class="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 shadow-sm">
+                  <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div class="space-y-1">
+                      <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Método de pagamento" %}</p>
+                      <p class="text-sm text-[var(--text-secondary)]">{% trans "Escolha como deseja pagar. Os dados necessários são preenchidos automaticamente a partir do seu perfil." %}</p>
+                    </div>
+                    <div class="text-sm text-[var(--text-secondary)]">
+                      <span class="font-semibold text-[var(--text-primary)]">{% trans "Valor" %}:</span>
+                      <span>{{ checkout_form.valor.value|default:valor_evento_usuario }}</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 space-y-2">
+                    {{ checkout_form.metodo|add_class:"w-full rounded-lg border-slate-200 shadow-sm"|attr:"data-sync-metodo-pagamento:true" }}
+                    <p class="text-xs text-[var(--text-secondary)]">{% trans "Pix gera QR Code imediato; boleto e cartão serão processados conforme disponibilidade." %}</p>
+                    {% if form.metodo_pagamento.errors %}
+                      <ul class="errorlist">
+                        {% for error in form.metodo_pagamento.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
                     {% endif %}
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
-                    {% if checkout_profile_data.email %}
-                      {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
-                      <p class="text-xs text-slate-500 mt-1">{% trans "Use o e-mail do seu perfil. Para mudar, atualize suas informações de conta." %}</p>
-                    {% else %}
-                      {{ checkout_form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                    {% endif %}
-                  </div>
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
-                  {% if checkout_profile_data.documento %}
-                    {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
-                    <p class="text-xs text-slate-500 mt-1">{% trans "Documento preenchido a partir do seu perfil. Para corrigir, atualize o CPF/CNPJ na conta." %}</p>
-                  {% else %}
-                    {{ checkout_form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                  {% endif %}
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
-                  {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
-                  {% if form.valor_pago.errors %}
-                    <ul class="errorlist mt-1">
-                      {% for error in form.valor_pago.errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  {% endif %}
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
-                  {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm"|attr:"data-sync-metodo-pagamento:true" }}
-                  <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
-                  {% if form.metodo_pagamento.errors %}
-                    <ul class="errorlist mt-1">
-                      {% for error in form.metodo_pagamento.errors %}
-                        <li>{{ error }}</li>
-                      {% endfor %}
-                    </ul>
-                  {% endif %}
-                </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-payment-card>
-                  <h4 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h4>
-                  <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do MercadoPago." %}</p>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700" for="card-number">{% trans "Número do cartão" %}</label>
-                      <input id="card-number" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-number" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700" for="security-code">{% trans "CVV" %}</label>
-                      <input id="security-code" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" autocomplete="cc-csc" />
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700" for="card-expiration-month">{% trans "Mês" %}</label>
-                      <input id="card-expiration-month" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="MM" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700" for="card-expiration-year">{% trans "Ano" %}</label>
-                      <input id="card-expiration-year" class="mt-1 w-full rounded-lg border-slate-200 shadow-sm" placeholder="YYYY" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700" for="id_parcelas">{% trans "Parcelas" %}</label>
-                      {{ checkout_form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                    </div>
-                  </div>
-                  <input id="document-type" type="hidden" value="CPF" />
-                  {{ checkout_form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
-                  <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
-                </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-payment-boleto>
-                  <h4 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h4>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
-                    {{ checkout_form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-                    <p class="text-xs text-slate-500 mt-1">{% trans "Use data futura para evitar recusa automática." %}</p>
-                  </div>
+
+                <div class="hidden" aria-hidden="true">
+                  {{ checkout_form.nome }}
+                  {{ checkout_form.email }}
+                  {{ checkout_form.documento }}
+                  {{ checkout_form.valor|attr:"data-sync-valor-pago:true" }}
+                  {{ checkout_form.parcelas }}
+                  {{ checkout_form.token_cartao|attr:"id=id_token_cartao" }}
+                  {{ checkout_form.vencimento }}
                 </div>
 
                 <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                   {% include "pagamentos/partials/checkout_resultado.html" with form=checkout_form transacao=transacao %}
                 </div>
-              </div>
-              <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+                  <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
+                </div>
               </div>
             </section>
           {% endif %}
@@ -419,8 +346,6 @@
         const metodoPagamentoField = document.querySelector('[data-sync-metodo-pagamento]');
         const valorCheckoutInput = document.getElementById('id_valor');
         const metodoCheckoutInput = document.getElementById('id_metodo');
-        const cardSection = document.querySelector('[data-payment-card]');
-        const boletoSection = document.querySelector('[data-payment-boleto]');
 
         const syncPagamentoFields = () => {
           if (valorPagoField && valorCheckoutInput) {
@@ -431,86 +356,19 @@
           }
         };
 
-        const togglePaymentDetails = () => {
-          const metodo = metodoCheckoutInput?.value || metodoPagamentoField?.value;
-          if (cardSection) {
-            cardSection.classList.toggle('hidden', metodo !== 'card');
-          }
-          if (boletoSection) {
-            boletoSection.classList.toggle('hidden', metodo !== 'boleto');
-          }
-        };
-
         if (valorPagoField || metodoPagamentoField) {
           valorCheckoutInput?.addEventListener('change', syncPagamentoFields);
           metodoCheckoutInput?.addEventListener('change', () => {
             syncPagamentoFields();
-            togglePaymentDetails();
           });
           syncPagamentoFields();
-        } else {
-          metodoCheckoutInput?.addEventListener('change', togglePaymentDetails);
         }
-
-        togglePaymentDetails();
 
         window.checkoutFormController = {
           handleCheckoutSubmit,
           checkoutRequired,
         };
     })();
-  </script>
-
-  <script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
-  <script>
-    const publicKey = "{{ provider_public_key|default:"" }}";
-    if (publicKey) {
-      const controller = window.checkoutFormController;
-      const mp = new MercadoPago(publicKey);
-      const cardForm = mp.cardForm({
-        amount: document.getElementById('id_valor')?.value || '0',
-        autoMount: true,
-        form: {
-          id: 'checkout-form',
-          cardNumber: 'card-number',
-          securityCode: 'security-code',
-          expirationMonth: 'card-expiration-month',
-          expirationYear: 'card-expiration-year',
-          cardholderName: 'id_nome',
-          cardholderEmail: 'id_email',
-          identificationType: 'document-type',
-          identificationNumber: 'id_documento',
-          installments: 'id_parcelas',
-          cardToken: 'id_token_cartao'
-        },
-        callbacks: {
-          onFormMounted: error => { if (error) console.error(error); },
-          onError: error => console.error('MP error', error),
-          onSubmit: (event) => {
-            const handleSubmit = controller?.handleCheckoutSubmit;
-            if (!handleSubmit) {
-              return;
-            }
-            const cardData = cardForm.getCardFormData();
-            handleSubmit(event, {
-              token_cartao: cardData.token,
-              parcelas: cardData.installments,
-              metodo: cardData.payment_method_id || cardData.paymentMethodId || document.getElementById('id_metodo')?.value,
-            });
-          },
-        }
-      });
-    }
-
-    document.addEventListener('click', (event) => {
-      if (event.target.matches('[data-copy]')) {
-        const code = event.target.getAttribute('data-copy');
-        navigator.clipboard.writeText(code || '').then(() => {
-          event.target.innerText = event.target.dataset.labelCopied;
-          setTimeout(() => { event.target.innerText = event.target.dataset.label; }, 1200);
-        });
-      }
-    });
   </script>
 
   {% endwith %}
