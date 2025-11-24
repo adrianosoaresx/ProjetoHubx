@@ -36,8 +36,19 @@ class CheckoutForm(forms.Form):
                     {"readonly": "readonly", "aria-readonly": "true"}
                 )
 
+        valor_field = self.fields.get("valor")
+        if valor_field:
+            valor_field.widget.attrs.update(
+                {"readonly": "readonly", "aria-readonly": "true", "class": "bg-slate-50"}
+            )
+
     def clean(self) -> dict[str, object]:
         cleaned = super().clean()
+        if self.initial.get("valor") is not None:
+            try:
+                cleaned["valor"] = Decimal(self.initial["valor"])
+            except Exception:
+                self.add_error("valor", _("Valor inválido informado."))
         metodo = cleaned.get("metodo")
         if metodo == Transacao.Metodo.CARTAO:
             if not cleaned.get("token_cartao"):
