@@ -57,45 +57,56 @@
             {{ form.non_field_errors }}
             {% for field in form %}
               {% with field_name=field.name %}
-                {% if evento.gratuito and field_name == 'valor_pago' %}
-                  {# Campo de valor omitido para eventos gratuitos #}
-                {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
-                  {# Campos de valor/método omitidos para eventos gratuitos #}
-                {% elif checkout_enabled and not evento.gratuito and field_name == 'valor_pago' %}
-                  {# Campo de valor sincronizado com o checkout do Mercado Pago #}
-                {% elif checkout_enabled and not evento.gratuito and field_name == 'metodo_pagamento' %}
-                  {# Campos de valor/método sincronizados com o checkout do Mercado Pago #}
+                {% if field_name == 'valor_pago' %}
+                  <div class="space-y-1">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                      {{ field.label }}{% if field.field.required %} *{% endif %}
+                    </label>
+                    {% if field.errors %}
+                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0" class+="form-input w-full" %}
+                    {% else %}
+                      {% render_field field|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0" class+="form-input w-full" %}
+                    {% endif %}
+                    {% if field.errors %}
+                      <ul class="errorlist">
+                        {% for error in field.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                    <p class="text-xs text-[var(--text-secondary)]">
+                      {% trans "Utilize o mesmo valor exibido no checkout do Mercado Pago para manter a conciliação." %}
+                    </p>
+                  </div>
+                {% elif field_name == 'metodo_pagamento' %}
+                  <div class="space-y-1">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                      {{ field.label }}{% if field.field.required %} *{% endif %}
+                    </label>
+                    {% if field.errors %}
+                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-metodo-pagamento:true" class+="form-select w-full" %}
+                    {% else %}
+                      {% render_field field|attr:"data-sync-metodo-pagamento:true" class+="form-select w-full" %}
+                    {% endif %}
+                    {% if field.errors %}
+                      <ul class="errorlist">
+                        {% for error in field.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                    <p class="text-xs text-[var(--text-secondary)]">
+                      {% trans "Selecione o método em uso no checkout para que o backend valide o fluxo corretamente." %}
+                    </p>
+                  </div>
                 {% else %}
-                  {% if field_name == 'metodo_pagamento' %}
-                    {# Campo de método de pagamento removido do formulário #}
-                  {% elif field_name == 'comprovante_pagamento' %}
-                    {# Campo de comprovante removido do formulário #}
-                  {% else %}
-                    {% include '_forms/field.html' with field=field %}
-                  {% endif %}
+                  {% include '_forms/field.html' with field=field %}
                 {% endif %}
               {% endwith %}
             {% endfor %}
           </section>
 
           {% if not evento.gratuito %}
-            {% if checkout_enabled %}
-              <div class="hidden" aria-hidden="true">
-                <input
-                  type="hidden"
-                  name="{{ form.valor_pago.html_name }}"
-                  value="{{ checkout_form.valor.value|default:checkout_form.valor.initial }}"
-                  data-sync-valor-pago
-                />
-                <input
-                  type="hidden"
-                  name="{{ form.metodo_pagamento.html_name }}"
-                  value="{{ checkout_form.metodo.value|default_if_none:checkout_form.metodo.initial|default:checkout_form.metodo.initial }}"
-                  data-sync-metodo-pagamento
-                />
-              </div>
-            {% endif %}
-
             <section class="space-y-4">
               <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Pagamento" %}</h3>
 
@@ -423,24 +434,33 @@
         }
       });
 
-        const valorPagoHidden = document.querySelector('[data-sync-valor-pago]');
-        const metodoPagamentoHidden = document.querySelector('[data-sync-metodo-pagamento]');
+        const valorPagoField = document.querySelector('[data-sync-valor-pago]');
+        const metodoPagamentoField = document.querySelector('[data-sync-metodo-pagamento]');
         const valorCheckoutInput = document.getElementById('id_valor');
         const metodoCheckoutInput = document.getElementById('id_metodo');
         const cardSection = document.querySelector('[data-payment-card]');
         const boletoSection = document.querySelector('[data-payment-boleto]');
 
         const syncPagamentoFields = () => {
-          if (valorPagoHidden && valorCheckoutInput) {
-            valorPagoHidden.value = valorCheckoutInput.value || '';
+          if (valorPagoField && valorCheckoutInput) {
+            valorPagoField.value = valorCheckoutInput.value || '';
           }
-          if (metodoPagamentoHidden && metodoCheckoutInput) {
-            metodoPagamentoHidden.value = metodoCheckoutInput.value || '';
+          if (metodoPagamentoField && metodoCheckoutInput) {
+            metodoPagamentoField.value = metodoCheckoutInput.value || '';
+          }
+        };
+
+        const syncCheckoutFromForm = () => {
+          if (valorCheckoutInput && valorPagoField) {
+            valorCheckoutInput.value = valorPagoField.value || valorCheckoutInput.value;
+          }
+          if (metodoCheckoutInput && metodoPagamentoField) {
+            metodoCheckoutInput.value = metodoPagamentoField.value || metodoCheckoutInput.value;
           }
         };
 
         const togglePaymentDetails = () => {
-          const metodo = metodoCheckoutInput?.value;
+          const metodo = metodoCheckoutInput?.value || metodoPagamentoField?.value;
           if (cardSection) {
             cardSection.classList.toggle('hidden', metodo !== 'card');
           }
@@ -449,15 +469,21 @@
           }
         };
 
-        if (valorPagoHidden || metodoPagamentoHidden) {
+        if (valorPagoField || metodoPagamentoField) {
           ['change', 'input'].forEach((eventName) => {
             valorCheckoutInput?.addEventListener(eventName, syncPagamentoFields);
+            valorPagoField?.addEventListener(eventName, syncCheckoutFromForm);
           });
           metodoCheckoutInput?.addEventListener('change', () => {
             syncPagamentoFields();
             togglePaymentDetails();
           });
+          metodoPagamentoField?.addEventListener('change', () => {
+            syncCheckoutFromForm();
+            togglePaymentDetails();
+          });
           syncPagamentoFields();
+          syncCheckoutFromForm();
         } else {
           metodoCheckoutInput?.addEventListener('change', togglePaymentDetails);
         }
