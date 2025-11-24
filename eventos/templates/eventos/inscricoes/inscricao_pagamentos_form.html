@@ -63,9 +63,9 @@
                       {{ field.label }}{% if field.field.required %} *{% endif %}
                     </label>
                     {% if field.errors %}
-                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0" class+="form-input w-full" %}
+                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0"|attr:"readonly:readonly" class+="form-input w-full" %}
                     {% else %}
-                      {% render_field field|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0" class+="form-input w-full" %}
+                      {% render_field field|attr:"data-sync-valor-pago:true"|attr:"step:0.01"|attr:"min:0"|attr:"readonly:readonly" class+="form-input w-full" %}
                     {% endif %}
                     {% if field.errors %}
                       <ul class="errorlist">
@@ -75,30 +75,11 @@
                       </ul>
                     {% endif %}
                     <p class="text-xs text-[var(--text-secondary)]">
-                      {% trans "Utilize o mesmo valor exibido no checkout do Mercado Pago para manter a conciliação." %}
+                      {% trans "Valor definido automaticamente de acordo com a inscrição." %}
                     </p>
                   </div>
                 {% elif field_name == 'metodo_pagamento' %}
-                  <div class="space-y-1">
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-                      {{ field.label }}{% if field.field.required %} *{% endif %}
-                    </label>
-                    {% if field.errors %}
-                      {% render_field field|attr:"aria-invalid:true"|attr:"data-sync-metodo-pagamento:true" class+="form-select w-full" %}
-                    {% else %}
-                      {% render_field field|attr:"data-sync-metodo-pagamento:true" class+="form-select w-full" %}
-                    {% endif %}
-                    {% if field.errors %}
-                      <ul class="errorlist">
-                        {% for error in field.errors %}
-                          <li>{{ error }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                    <p class="text-xs text-[var(--text-secondary)]">
-                      {% trans "Selecione o método em uso no checkout para que o backend valide o fluxo corretamente." %}
-                    </p>
-                  </div>
+                  {% render_field field|attr:"data-sync-metodo-pagamento:true" type="hidden" %}
                 {% else %}
                   {% include '_forms/field.html' with field=field %}
                 {% endif %}
@@ -142,7 +123,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
-                  {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  {{ checkout_form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm bg-slate-50"|attr:"readonly:readonly"|attr:"aria-readonly:true" }}
                   {% if form.valor_pago.errors %}
                     <ul class="errorlist mt-1">
                       {% for error in form.valor_pago.errors %}
@@ -153,7 +134,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
-                  {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+                  {{ checkout_form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm"|attr:"data-sync-metodo-pagamento:true" }}
                   <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
                   {% if form.metodo_pagamento.errors %}
                     <ul class="errorlist mt-1">
@@ -450,15 +431,6 @@
           }
         };
 
-        const syncCheckoutFromForm = () => {
-          if (valorCheckoutInput && valorPagoField) {
-            valorCheckoutInput.value = valorPagoField.value || valorCheckoutInput.value;
-          }
-          if (metodoCheckoutInput && metodoPagamentoField) {
-            metodoCheckoutInput.value = metodoPagamentoField.value || metodoCheckoutInput.value;
-          }
-        };
-
         const togglePaymentDetails = () => {
           const metodo = metodoCheckoutInput?.value || metodoPagamentoField?.value;
           if (cardSection) {
@@ -470,20 +442,12 @@
         };
 
         if (valorPagoField || metodoPagamentoField) {
-          ['change', 'input'].forEach((eventName) => {
-            valorCheckoutInput?.addEventListener(eventName, syncPagamentoFields);
-            valorPagoField?.addEventListener(eventName, syncCheckoutFromForm);
-          });
+          valorCheckoutInput?.addEventListener('change', syncPagamentoFields);
           metodoCheckoutInput?.addEventListener('change', () => {
             syncPagamentoFields();
             togglePaymentDetails();
           });
-          metodoPagamentoField?.addEventListener('change', () => {
-            syncCheckoutFromForm();
-            togglePaymentDetails();
-          });
           syncPagamentoFields();
-          syncCheckoutFromForm();
         } else {
           metodoCheckoutInput?.addEventListener('change', togglePaymentDetails);
         }
