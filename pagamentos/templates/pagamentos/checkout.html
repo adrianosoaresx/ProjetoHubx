@@ -12,7 +12,7 @@
       </div>
       <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-right">
         <p class="text-xs text-slate-500">{% trans "Cobranças operadas via" %}</p>
-        <p class="text-sm font-semibold text-slate-900">{% trans "Mercado Pago" %}</p>
+        <p class="text-sm font-semibold text-slate-900">{% trans "Mercado Pago e PayPal" %}</p>
       </div>
     </div>
     <form
@@ -32,7 +32,7 @@
         <div>
           <label class="block text-sm font-medium text-slate-700" for="id_metodo">{% trans "Método de pagamento" %}</label>
           {{ form.metodo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-          <p class="text-xs text-slate-500 mt-1">{% trans "Pix gera QR Code imediato; cartão utiliza tokenização Mercado Pago." %}</p>
+          <p class="text-xs text-slate-500 mt-1">{% trans "Pix e boleto são processados via Mercado Pago; cartão usa tokenização Mercado Pago; PayPal cria uma ordem para aprovação." %}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -103,7 +103,7 @@
           {{ form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
           <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
         </div>
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-boleto-section>
           <h2 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h2>
           <div>
             <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
@@ -134,6 +134,8 @@
   const cardSection = document.querySelector('[data-card-section]');
   const cardFields = Array.from(document.querySelectorAll('[data-card-field]'));
   const metodoSelect = document.getElementById('id_metodo');
+  const boletoSection = document.querySelector('[data-boleto-section]');
+  const boletoFields = boletoSection ? Array.from(boletoSection.querySelectorAll('input, select, textarea')) : [];
 
   const setCardFieldsState = (isCard) => {
     if (cardSection) {
@@ -199,9 +201,33 @@
     cardFormInstance = null;
   };
 
+  const setBoletoFieldsState = (isBoleto) => {
+    if (boletoSection) {
+      boletoSection.classList.toggle('hidden', !isBoleto);
+    }
+    boletoFields.forEach((field) => {
+      if (isBoleto) {
+        field.removeAttribute('disabled');
+        field.setAttribute('required', 'required');
+      } else {
+        field.removeAttribute('required');
+        field.setAttribute('disabled', 'disabled');
+      }
+    });
+    if (!isBoleto) {
+      const vencimento = document.getElementById('id_vencimento');
+      if (vencimento) {
+        vencimento.value = '';
+      }
+    }
+  };
+
   const handleMetodoChange = () => {
-    const isCard = metodoSelect?.value === 'card';
+    const metodoSelecionado = metodoSelect?.value;
+    const isCard = metodoSelecionado === 'card';
+    const isBoleto = metodoSelecionado === 'boleto';
     setCardFieldsState(isCard);
+    setBoletoFieldsState(isBoleto);
     if (isCard) {
       mountCardForm();
     } else {

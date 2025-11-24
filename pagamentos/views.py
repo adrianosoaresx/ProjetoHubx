@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from eventos.models import InscricaoEvento
 from pagamentos.forms import CheckoutForm
 from pagamentos.models import Pedido, Transacao
-from pagamentos.providers import MercadoPagoProvider
+from pagamentos.providers import MercadoPagoProvider, PayPalProvider, PaymentProvider
 from pagamentos.serializers import CheckoutResponseSerializer, CheckoutSerializer, WebhookSerializer
 from pagamentos.services import PagamentoService
 
@@ -50,14 +50,17 @@ class CheckoutView(APIView):
         request=CheckoutSerializer,
         responses={201: CheckoutResponseSerializer},
         tags=["Pagamentos"],
-        description=_("Inicia o pagamento no Mercado Pago e retorna a transação criada."),
+        description=_("Inicia o pagamento no provedor selecionado e retorna a transação criada."),
     )
     def post(self, request: HttpRequest) -> HttpResponse:
         form = CheckoutForm(request.POST)
-        provider = MercadoPagoProvider()
+        provider = self._provider_for_method(request.POST.get("metodo"))
         if not form.is_valid():
             return self._render_response(
-                request, form=form, provider_public_key=provider.public_key, status=400
+                request,
+                form=form,
+                provider_public_key=MercadoPagoProvider().public_key,
+                status=400,
             )
 
         pedido = Pedido.objects.create(
@@ -77,6 +80,11 @@ class CheckoutView(APIView):
             "status": 201,
         }
         return self._render_response(request, **contexto)
+
+    def _provider_for_method(self, metodo: str | None) -> PaymentProvider:
+        if metodo == Transacao.Metodo.PAYPAL:
+            return PayPalProvider()
+        return MercadoPagoProvider()
 
     def _render_response(self, request: HttpRequest, **contexto: Any) -> HttpResponse:
         template = (
@@ -109,7 +117,7 @@ class TransacaoStatusView(APIView):
             return HttpResponseBadRequest("invalid transaction")
 
         if transacao.status == Transacao.Status.PENDENTE:
-            provider = MercadoPagoProvider()
+            provider = self._provider_for_transacao(transacao)
             service = PagamentoService(provider)
             try:
                 service.confirmar_pagamento(transacao)
@@ -124,6 +132,11 @@ class TransacaoStatusView(APIView):
             "pagamentos/partials/checkout_resultado.html",
             {"transacao": transacao, "form": CheckoutForm()},
         )
+
+    def _provider_for_transacao(self, transacao: Transacao) -> PaymentProvider:
+        if transacao.metodo == Transacao.Metodo.PAYPAL:
+            return PayPalProvider()
+        return MercadoPagoProvider()
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -145,7 +158,11 @@ class WebhookView(APIView):
             return HttpResponseForbidden()
 
         payload = self._parse_body(request.body)
-        external_id = str(payload.get("data", {}).get("id") or payload.get("id", ""))
+        external_id = str(
+            payload.get("data", {}).get("id")
+            or payload.get("id", "")
+            or payload.get("resource", {}).get("id", "")
+        )
         if not external_id:
             logger.warning("webhook_sem_id")
             return HttpResponseBadRequest("missing id")
@@ -196,6 +213,20 @@ class WebhookView(APIView):
         if not secret:
             return True
         assinatura = request.headers.get("X-Signature")
+        if not assinatura:
+            return False
+        calculada = hmac.new(secret.encode(), msg=request.body, digestmod=sha256).hexdigest()
+        return hmac.compare_digest(assinatura, calculada)
+
+
+class PayPalWebhookView(WebhookView):
+    provider_class = PayPalProvider
+
+    def _assinatura_valida(self, request: HttpRequest) -> bool:
+        secret = os.getenv("PAYPAL_WEBHOOK_SECRET")
+        if not secret:
+            return True
+        assinatura = request.headers.get("X-Paypal-Signature")
         if not assinatura:
             return False
         calculada = hmac.new(secret.encode(), msg=request.body, digestmod=sha256).hexdigest()

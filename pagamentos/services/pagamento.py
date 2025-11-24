@@ -138,11 +138,11 @@ class PagamentoService:
         if status is None:
             return Transacao.Status.PENDENTE
         status = status.lower()
-        if status in {"approved", "paid"}:
+        if status in {"approved", "paid", "completed", "captured"}:
             return Transacao.Status.APROVADA
-        if status in {"refunded", "cancelled"}:
+        if status in {"refunded", "cancelled", "voided"}:
             return Transacao.Status.ESTORNADA
-        if status in {"rejected", "failed"}:
+        if status in {"rejected", "failed", "declined"}:
             return Transacao.Status.FALHOU
         return Transacao.Status.PENDENTE
 
