@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from organizacoes.models import Organizacao
+
 
 class Pedido(models.Model):
     class Status(models.TextChoices):
@@ -12,6 +14,14 @@ class Pedido(models.Model):
         PAGO = "paid", _("Pago")
         CANCELADO = "cancelled", _("Cancelado")
 
+    organizacao: Organizacao | None = models.ForeignKey(
+        Organizacao,
+        verbose_name=_("Organização"),
+        related_name="pedidos",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     valor: Decimal = models.DecimalField(verbose_name=_("Valor"), max_digits=12, decimal_places=2)
     status: str = models.CharField(
         verbose_name=_("Status"),

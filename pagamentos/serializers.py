@@ -8,6 +8,7 @@ from pagamentos.models import Transacao
 
 
 class CheckoutSerializer(serializers.Serializer):
+    organizacao_id = serializers.UUIDField(required=False, allow_null=True)
     valor = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.50"))
     metodo = serializers.ChoiceField(choices=Transacao.Metodo.choices)
     email = serializers.EmailField()

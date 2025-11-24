@@ -10,6 +10,7 @@ from pagamentos.models import Transacao
 
 
 class CheckoutForm(forms.Form):
+    organizacao_id = forms.UUIDField(required=False, widget=forms.HiddenInput())
     valor = forms.DecimalField(
         label=_("Valor"),
         min_value=Decimal("0.50"),
@@ -24,8 +25,9 @@ class CheckoutForm(forms.Form):
     token_cartao = forms.CharField(label=_("Token do cartão"), required=False)
     vencimento = forms.DateTimeField(label=_("Vencimento"), required=False)
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, organizacao=None, **kwargs):
         self.user = user
+        self.organizacao = organizacao
         super().__init__(*args, **kwargs)
         profile_data = self._get_profile_data(user)
         for field_name, value in profile_data.items():
@@ -41,6 +43,9 @@ class CheckoutForm(forms.Form):
             valor_field.widget.attrs.update(
                 {"readonly": "readonly", "aria-readonly": "true", "class": "bg-slate-50"}
             )
+
+        if organizacao and organizacao.id:
+            self.initial.setdefault("organizacao_id", organizacao.id)
 
     def clean(self) -> dict[str, object]:
         cleaned = super().clean()

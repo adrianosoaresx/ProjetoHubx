@@ -24,13 +24,26 @@ class PayPalProvider(PaymentProvider):
         client_secret: str | None = None,
         base_url: str | None = None,
         session: requests.Session | None = None,
+        currency: str | None = None,
     ) -> None:
         self.client_id = client_id or os.getenv("PAYPAL_CLIENT_ID", "")
         self.client_secret = client_secret or os.getenv("PAYPAL_CLIENT_SECRET", "")
         self.base_url = base_url or os.getenv("PAYPAL_API_URL", "https://api-m.sandbox.paypal.com")
         self.session = session or requests.Session()
         self._access_token: str | None = None
-        self.currency = os.getenv("PAYPAL_CURRENCY", "BRL")
+        self.currency = currency or os.getenv("PAYPAL_CURRENCY", "BRL")
+
+    @classmethod
+    def from_organizacao(cls, organizacao, **kwargs: Any) -> "PayPalProvider":
+        if not organizacao:
+            return cls(**kwargs)
+        return cls(
+            client_id=getattr(organizacao, "paypal_client_id", None),
+            client_secret=getattr(organizacao, "paypal_client_secret", None),
+            base_url=kwargs.get("base_url"),
+            session=kwargs.get("session"),
+            currency=getattr(organizacao, "paypal_currency", None),
+        )
 
     def criar_cobranca(
         self, pedido: Pedido, metodo: str, dados_pagamento: dict[str, Any] | None = None

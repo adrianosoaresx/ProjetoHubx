@@ -39,6 +39,25 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     agencia = models.CharField(_("Agência"), max_length=10, blank=True)
     conta_corrente = models.CharField(_("Conta corrente"), max_length=20, blank=True)
     chave_pix = models.CharField(_("Chave Pix"), max_length=255, blank=True)
+    mercado_pago_public_key = models.CharField(
+        _("Public key do Mercado Pago"), max_length=255, blank=True
+    )
+    mercado_pago_access_token = models.CharField(
+        _("Access token do Mercado Pago"), max_length=255, blank=True
+    )
+    mercado_pago_webhook_secret = models.CharField(
+        _("Segredo do webhook do Mercado Pago"), max_length=255, blank=True
+    )
+    paypal_client_id = models.CharField(_("Client ID do PayPal"), max_length=255, blank=True)
+    paypal_client_secret = models.CharField(
+        _("Client secret do PayPal"), max_length=255, blank=True
+    )
+    paypal_webhook_secret = models.CharField(
+        _("Segredo do webhook do PayPal"), max_length=255, blank=True
+    )
+    paypal_currency = models.CharField(
+        _("Moeda padrão do PayPal"), max_length=10, blank=True, default="BRL"
+    )
     nome_site = models.CharField(_("Nome do site"), max_length=12, blank=True)
     site = models.URLField(_("Site"), blank=True)
     icone_site = models.ImageField(_("Ícone do site"), upload_to="organizacoes/icones/", blank=True, null=True)
