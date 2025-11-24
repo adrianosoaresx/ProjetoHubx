@@ -30,6 +30,17 @@ class MercadoPagoProvider(PaymentProvider):
         self.base_url = base_url or os.getenv("MERCADO_PAGO_API_URL", "https://api.mercadopago.com")
         self.session = session or requests.Session()
 
+    @classmethod
+    def from_organizacao(cls, organizacao, **kwargs: Any) -> "MercadoPagoProvider":
+        if not organizacao:
+            return cls(**kwargs)
+        return cls(
+            access_token=getattr(organizacao, "mercado_pago_access_token", None),
+            public_key=getattr(organizacao, "mercado_pago_public_key", None),
+            base_url=kwargs.get("base_url"),
+            session=kwargs.get("session"),
+        )
+
     def criar_cobranca(
         self, pedido: Pedido, metodo: str, dados_pagamento: dict[str, Any] | None = None
     ) -> dict[str, Any]:

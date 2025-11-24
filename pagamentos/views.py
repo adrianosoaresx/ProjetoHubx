@@ -6,9 +6,11 @@ import logging
 import os
 from hashlib import sha256
 from typing import Any
+from urllib.parse import urlparse
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -18,6 +20,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 
 from eventos.models import InscricaoEvento
+from organizacoes.models import Organizacao
 from pagamentos.forms import CheckoutForm
 from pagamentos.models import Pedido, Transacao
 from pagamentos.providers import MercadoPagoProvider, PayPalProvider, PaymentProvider
@@ -37,8 +40,9 @@ class CheckoutView(APIView):
         tags=["Pagamentos"],
     )
     def get(self, request: HttpRequest) -> HttpResponse:
-        provider = MercadoPagoProvider()
-        form = CheckoutForm()
+        organizacao = self._obter_organizacao(request)
+        provider = MercadoPagoProvider.from_organizacao(organizacao)
+        form = CheckoutForm(organizacao=organizacao)
         return self._render_response(
             request,
             form=form,
@@ -53,21 +57,25 @@ class CheckoutView(APIView):
         description=_("Inicia o pagamento no provedor selecionado e retorna a transação criada."),
     )
     def post(self, request: HttpRequest) -> HttpResponse:
-        form = CheckoutForm(request.POST)
-        provider = self._provider_for_method(request.POST.get("metodo"))
+        organizacao = self._obter_organizacao(request)
+        form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
         if not form.is_valid():
             return self._render_response(
                 request,
                 form=form,
-                provider_public_key=MercadoPagoProvider().public_key,
+                provider_public_key=MercadoPagoProvider.from_organizacao(organizacao).public_key,
                 status=400,
             )
+
+        organizacao = self._obter_organizacao(request, str(form.cleaned_data.get("organizacao_id") or ""))
+        provider = self._provider_for_method(form.cleaned_data.get("metodo"), organizacao)
 
         pedido = Pedido.objects.create(
             valor=form.cleaned_data["valor"],
             email=form.cleaned_data.get("email"),
             nome=form.cleaned_data.get("nome"),
             documento=form.cleaned_data.get("documento"),
+            organizacao=organizacao,
         )
         service = PagamentoService(provider)
         dados_pagamento = self._dados_pagamento(form.cleaned_data)
@@ -81,10 +89,41 @@ class CheckoutView(APIView):
         }
         return self._render_response(request, **contexto)
 
-    def _provider_for_method(self, metodo: str | None) -> PaymentProvider:
+    def _provider_for_method(self, metodo: str | None, organizacao: Organizacao | None = None) -> PaymentProvider:
         if metodo == Transacao.Metodo.PAYPAL:
-            return PayPalProvider()
-        return MercadoPagoProvider()
+            return PayPalProvider.from_organizacao(organizacao)
+        return MercadoPagoProvider.from_organizacao(organizacao)
+
+    def _obter_organizacao(
+        self, request: HttpRequest, organizacao_id: str | None = None
+    ) -> Organizacao | None:
+        raw_id = organizacao_id or request.POST.get("organizacao_id") or request.GET.get("organizacao_id")
+        if raw_id:
+            try:
+                org = Organizacao.objects.filter(id=raw_id).first()
+                if org:
+                    return org
+            except (ValueError, TypeError):
+                pass
+
+        host = (request.get_host() or "").split(":")[0].lower()
+        if host:
+            subdomain = host.split(".")[0]
+            org = (
+                Organizacao.objects.filter(
+                    Q(nome_site__iexact=subdomain)
+                    | Q(nome_site__iexact=host)
+                    | Q(site__icontains=host)
+                ).first()
+            )
+            if org:
+                return org
+
+            for candidate in Organizacao.objects.exclude(site="").iterator():
+                netloc = urlparse(candidate.site).netloc.lower()
+                if netloc and (host == netloc or host.endswith(netloc)):
+                    return candidate
+        return None
 
     def _render_response(self, request: HttpRequest, **contexto: Any) -> HttpResponse:
         template = (
@@ -135,8 +174,8 @@ class TransacaoStatusView(APIView):
 
     def _provider_for_transacao(self, transacao: Transacao) -> PaymentProvider:
         if transacao.metodo == Transacao.Metodo.PAYPAL:
-            return PayPalProvider()
-        return MercadoPagoProvider()
+            return PayPalProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
+        return MercadoPagoProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -153,10 +192,6 @@ class WebhookView(APIView):
         description=_("Webhook de notificações do Mercado Pago com verificação de assinatura."),
     )
     def post(self, request: HttpRequest) -> HttpResponse:
-        if not self._assinatura_valida(request):
-            logger.warning("webhook_assinatura_invalida")
-            return HttpResponseForbidden()
-
         payload = self._parse_body(request.body)
         external_id = str(
             payload.get("data", {}).get("id")
@@ -167,13 +202,28 @@ class WebhookView(APIView):
             logger.warning("webhook_sem_id")
             return HttpResponseBadRequest("missing id")
 
+        transacao = None
         try:
-            transacao = Transacao.objects.select_related("pedido").get(external_id=external_id)
+            transacao = (
+                Transacao.objects.select_related("pedido", "pedido__organizacao")
+                .get(external_id=external_id)
+            )
         except Transacao.DoesNotExist:
             logger.info("webhook_transacao_desconhecida", extra={"external_id": external_id})
+        organizacao = self._organizacao_from_request(request, payload, transacao)
+
+        if not self._assinatura_valida(request, organizacao):
+            logger.warning("webhook_assinatura_invalida")
+            return HttpResponseForbidden()
+
+        if not transacao:
             return HttpResponse(status=200)
 
-        provider = self.provider_class()
+        provider = (
+            self.provider_class.from_organizacao(organizacao)
+            if hasattr(self.provider_class, "from_organizacao")
+            else self.provider_class()
+        )
         service = PagamentoService(provider)
         service.confirmar_pagamento(transacao)
         logger.info(
@@ -208,8 +258,12 @@ class WebhookView(APIView):
         except json.JSONDecodeError:
             return {}
 
-    def _assinatura_valida(self, request: HttpRequest) -> bool:
-        secret = os.getenv("MERCADO_PAGO_WEBHOOK_SECRET")
+    def _assinatura_valida(
+        self, request: HttpRequest, organizacao: Organizacao | None
+    ) -> bool:
+        secret = (organizacao.mercado_pago_webhook_secret if organizacao else None) or os.getenv(
+            "MERCADO_PAGO_WEBHOOK_SECRET"
+        )
         if not secret:
             return True
         assinatura = request.headers.get("X-Signature")
@@ -218,12 +272,39 @@ class WebhookView(APIView):
         calculada = hmac.new(secret.encode(), msg=request.body, digestmod=sha256).hexdigest()
         return hmac.compare_digest(assinatura, calculada)
 
+    def _organizacao_from_request(
+        self, request: HttpRequest, payload: dict[str, Any], transacao: Transacao | None
+    ) -> Organizacao | None:
+        if transacao and getattr(transacao.pedido, "organizacao_id", None):
+            return transacao.pedido.organizacao
+
+        host = (request.get_host() or "").split(":")[0].lower()
+        if host:
+            subdomain = host.split(".")[0]
+            org = (
+                Organizacao.objects.filter(
+                    Q(nome_site__iexact=subdomain)
+                    | Q(nome_site__iexact=host)
+                    | Q(site__icontains=host)
+                ).first()
+            )
+            if org:
+                return org
+
+            for candidate in Organizacao.objects.exclude(site="").iterator():
+                netloc = urlparse(candidate.site).netloc.lower()
+                if netloc and (host == netloc or host.endswith(netloc)):
+                    return candidate
+        return None
+
 
 class PayPalWebhookView(WebhookView):
     provider_class = PayPalProvider
 
-    def _assinatura_valida(self, request: HttpRequest) -> bool:
-        secret = os.getenv("PAYPAL_WEBHOOK_SECRET")
+    def _assinatura_valida(self, request: HttpRequest, organizacao: Organizacao | None) -> bool:
+        secret = (organizacao.paypal_webhook_secret if organizacao else None) or os.getenv(
+            "PAYPAL_WEBHOOK_SECRET"
+        )
         if not secret:
             return True
         assinatura = request.headers.get("X-Paypal-Signature")

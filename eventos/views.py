@@ -1903,7 +1903,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        provider = MercadoPagoProvider()
+        provider = MercadoPagoProvider.from_organizacao(self.evento.organizacao)
 
         valor_evento = context.get("valor_evento_usuario")
         if valor_evento is None:
@@ -1943,6 +1943,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
                     self.request.POST or None,
                     initial=initial_checkout,
                     user=usuario,
+                    organizacao=self.evento.organizacao,
                 ),
                 "provider_public_key": provider.public_key,
                 "transacao": self._get_checkout_transacao(),
@@ -1967,7 +1968,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
     @property
     def provider_public_key(self) -> str | None:
-        provider = MercadoPagoProvider()
+        provider = MercadoPagoProvider.from_organizacao(self.evento.organizacao)
         return provider.public_key
 
     def _get_checkout_transacao(self) -> Transacao | None:
