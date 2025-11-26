@@ -1,0 +1,62 @@
+{% load i18n %}
+{% if eventos %}
+  {% for evento in eventos %}
+    <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number|default:1 }}">
+      <div role="listitem" class="flex h-full flex-col gap-3">
+        {% include '_components/card_evento.html' with evento=evento %}
+        <div class="space-y-1 text-xs text-[var(--text-muted)]">
+          <p>
+            {{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }}
+            {% if evento.nucleo %}
+              · {{ evento.nucleo.nome }}
+            {% endif %}
+          </p>
+          {% if evento.total_inscritos or evento.total_inscritos == 0 %}
+            <p class="text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</p>
+          {% endif %}
+          {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
+            <p class="text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% for evento in eventos %}
+    {% if forloop.counter0|divisibleby:3 %}
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number|default:1 }}">
+    {% endif %}
+        <div role="listitem" class="flex h-full flex-col gap-3">
+          {% include '_components/card_evento.html' with evento=evento %}
+          <div class="space-y-1 text-xs text-[var(--text-muted)]">
+            <p>
+              {{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }}
+              {% if evento.nucleo %}
+                · {{ evento.nucleo.nome }}
+              {% endif %}
+            </p>
+            {% if evento.total_inscritos or evento.total_inscritos == 0 %}
+              <p class="text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</p>
+            {% endif %}
+            {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
+              <p class="text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% if forloop.last and not forloop.counter|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+        {% if forloop.last and forloop.counter|add:'-1'|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+    {% if forloop.counter|divisibleby:3 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number|default:1 }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Ainda não há eventos vinculados aos núcleos que você coordena." %}</p>
+    </div>
+  </div>
+{% endif %}
