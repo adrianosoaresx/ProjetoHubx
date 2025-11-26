@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n lucide_icons %}
+{% load i18n lucide_icons static %}
 
 {% block title %}{% trans "Dashboard do coordenador" %}{% endblock %}
 
@@ -61,26 +61,49 @@
             {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
-          <ul class="space-y-3" aria-live="polite">
-            {% for nucleo in nucleos_coordenados %}
-              <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                <div class="flex flex-col gap-1">
-                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</span>
-                  {% if nucleo.cidade or nucleo.estado %}
-                    <span class="text-xs text-[var(--text-muted)]">{{ nucleo.cidade }}{% if nucleo.cidade and nucleo.estado %} · {% endif %}{{ nucleo.estado }}</span>
-                  {% endif %}
-                  {% if nucleo.total_membros or nucleo.total_membros == 0 %}
-                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Membros ativos" %}: {{ nucleo.total_membros }}</span>
-                  {% endif %}
+        <div class="card-body space-y-4">
+          {% with nucleos_count=nucleos_coordenados|length %}
+            <div
+              class="space-y-4"
+              data-carousel-root="coordenador-nucleos"
+              data-current-slide="1"
+              data-backend-page="1"
+              data-backend-total-pages="1"
+              aria-label="{% trans 'Navegação de núcleos coordenados' %}"
+            >
+              <div class="relative">
+                <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                  <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                    {% include 'dashboard/partials/coordenador_nucleo_carousel_slide.html' with nucleos=nucleos_coordenados page_number=1 %}
+                  </div>
                 </div>
-              </li>
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                {% trans "Você ainda não coordena nenhum núcleo." %}
-              </li>
-            {% endfor %}
-          </ul>
+                {% if nucleos_count > 0 %}
+                  <div class="absolute inset-y-0 left-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-prev
+                      aria-label="{% trans 'Anterior' %}"
+                    >
+                      {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="absolute inset-y-0 right-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-next
+                      aria-label="{% trans 'Próximo' %}"
+                    >
+                      {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
         </div>
       </details>
 
@@ -103,32 +126,49 @@
             {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
-          <ul class="space-y-3" aria-live="polite">
-            {% for evento in eventos_coordenados %}
-              <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                <div class="flex flex-col gap-1">
-                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_('Evento sem título') }}</span>
-                  <span class="text-xs text-[var(--text-muted)]">
-                    {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}
-                    {% if evento.nucleo %}
-                      · {{ evento.nucleo.nome }}
-                    {% endif %}
-                  </span>
-                  {% if evento.total_inscritos or evento.total_inscritos == 0 %}
-                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Inscrições confirmadas" %}: {{ evento.total_inscritos }}</span>
-                  {% endif %}
-                  {% if evento.valor_total_inscricoes or evento.valor_total_inscricoes == 0 %}
-                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Receita" %}: {{ evento.valor_total_inscricoes }}</span>
-                  {% endif %}
+        <div class="card-body space-y-4">
+          {% with eventos_count=eventos_coordenados|length %}
+            <div
+              class="space-y-4"
+              data-carousel-root="coordenador-eventos"
+              data-current-slide="1"
+              data-backend-page="1"
+              data-backend-total-pages="1"
+              aria-label="{% trans 'Navegação de eventos coordenados' %}"
+            >
+              <div class="relative">
+                <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                  <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                    {% include 'dashboard/partials/coordenador_evento_carousel_slide.html' with eventos=eventos_coordenados page_number=1 %}
+                  </div>
                 </div>
-              </li>
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                {% trans "Ainda não há eventos vinculados aos núcleos que você coordena." %}
-              </li>
-            {% endfor %}
-          </ul>
+                {% if eventos_count > 0 %}
+                  <div class="absolute inset-y-0 left-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-prev
+                      aria-label="{% trans 'Anterior' %}"
+                    >
+                      {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="absolute inset-y-0 right-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-next
+                      aria-label="{% trans 'Próximo' %}"
+                    >
+                      {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
         </div>
       </details>
     </section>
@@ -242,4 +282,9 @@
       </details>
     </section>
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}
