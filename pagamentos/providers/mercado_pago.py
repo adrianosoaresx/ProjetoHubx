@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone as dt_timezone
 from typing import Any
 
 import requests
@@ -15,6 +15,9 @@ from pagamentos.models import Pedido, Transacao
 from pagamentos.providers.base import PaymentProvider
 
 logger = logging.getLogger(__name__)
+
+# Compatibilidade com Python < 3.11, que não possui datetime.UTC
+UTC = dt_timezone.utc
 
 
 class MercadoPagoProvider(PaymentProvider):
