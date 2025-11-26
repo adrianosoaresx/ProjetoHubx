@@ -153,6 +153,19 @@ def test_chat_role_permission_allows_associado_with_limited_tools():
 
 
 @pytest.mark.django_db
+def test_chat_role_permission_allows_consultor_with_context_tools():
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org, user_type=UserType.CONSULTOR)
+
+    view = api.ChatMessageViewSet()
+    allowed_tools = view._get_allowed_tools(user.get_tipo_usuario)
+
+    assert allowed_tools == {"get_future_events_context", "get_organizacao_nucleos_context"}
+    filtered_tools = view._filter_tool_definitions(user.get_tipo_usuario)
+    assert {tool["function"]["name"] for tool in filtered_tools} == allowed_tools
+
+
+@pytest.mark.django_db
 def test_chat_role_permission_blocks_unlisted_profile():
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org, user_type=UserType.CONVIDADO)
