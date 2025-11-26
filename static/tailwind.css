@@ -3959,11 +3959,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   border-color: var(--color-primary-500);
 }
 
-.border-slate-200 {
-  --tw-border-opacity: 1;
-  border-color: rgb(226 232 240 / var(--tw-border-opacity, 1));
-}
-
 .border-transparent {
   border-color: transparent;
 }
@@ -4082,10 +4077,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .bg-primary {
   background-color: var(--primary);
-}
-
-.bg-primary-50 {
-  background-color: var(--color-primary-50);
 }
 
 .bg-primary-500 {
@@ -4735,21 +4726,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
-}
-
-.text-slate-500 {
-  --tw-text-opacity: 1;
-  color: rgb(100 116 139 / var(--tw-text-opacity, 1));
-}
-
-.text-slate-600 {
-  --tw-text-opacity: 1;
-  color: rgb(71 85 105 / var(--tw-text-opacity, 1));
-}
-
-.text-slate-700 {
-  --tw-text-opacity: 1;
-  color: rgb(51 65 85 / var(--tw-text-opacity, 1));
 }
 
 .text-slate-900 {
@@ -6291,6 +6267,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .lg\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lg\:grid-cols-\[2fr_1fr\] {
+    grid-template-columns: 2fr 1fr;
   }
 
   .lg\:flex-row {
