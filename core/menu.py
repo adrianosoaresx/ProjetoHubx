@@ -424,7 +424,7 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             "feed",
             feed_url,
-            "Vitrine",
+            "Mural",
             ICON_FEED,
             [
                 "admin",
