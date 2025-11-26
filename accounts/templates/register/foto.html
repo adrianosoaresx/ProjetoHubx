@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block extra_css %}
+  {% include '_force_sidebar_collapsed.html' %}
+{% endblock %}
+
 {% block title %}{% trans "Registro - Foto" %} | Hubx{% endblock %}
 
 {% block hero %}
