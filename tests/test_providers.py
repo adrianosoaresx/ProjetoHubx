@@ -96,6 +96,21 @@ def test_criar_cobranca_cartao_sem_token(pedido: Pedido, mercado_pago_provider: 
         )
 
 
+def test_formata_data_expiracao_pix(pedido: Pedido) -> None:
+    provider = MercadoPagoProvider(access_token="token", public_key="public")
+    payload = provider._build_pix_payload(
+        pedido,
+        {
+            "email": "pix@example.com",
+            "nome": "Cliente",
+            "document_number": "000",
+            "expiracao": "26-11-2025T17:13:29UTC",
+        },
+    )
+
+    assert payload["date_of_expiration"] == "2025-11-26T17:13:29+00:00"
+
+
 def test_boleto_vencimento_expirado(pedido: Pedido, mercado_pago_provider: MercadoPagoProvider) -> None:
     vencimento = timezone.now() - timezone.timedelta(days=1)
     with pytest.raises(PagamentoInvalidoError):
