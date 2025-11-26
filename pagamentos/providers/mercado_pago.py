@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -217,6 +218,31 @@ class MercadoPagoProvider(PaymentProvider):
     @staticmethod
     def _format_datetime(value: Any) -> Any:
         """Converte objetos datetime para ISO 8601 para envio na API."""
-        if hasattr(value, "isoformat"):
-            return value.isoformat()
-        return value
+        if value is None:
+            return value
+
+        dt: datetime | None = None
+
+        if isinstance(value, str):
+            for fmt in ("%d-%m-%YT%H:%M:%S%Z", "%d-%m-%YT%H:%M:%S%z"):
+                try:
+                    dt = datetime.strptime(value, fmt)
+                    break
+                except ValueError:
+                    continue
+            if dt is None:
+                try:
+                    dt = datetime.fromisoformat(value)
+                except ValueError:
+                    return value
+        elif hasattr(value, "isoformat"):
+            dt = value
+        else:
+            return value
+
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone=UTC)
+        else:
+            dt = dt.astimezone(UTC)
+
+        return dt.isoformat(timespec="seconds")
