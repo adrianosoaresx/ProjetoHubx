@@ -148,6 +148,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                     "type": "object",
                     "properties": {
                         "organizacao_id": {"type": "string"},
+                        "usuario_id": {"type": "string"},
+                        "vinculo_id": {"type": "string"},
                     },
                     "required": ["organizacao_id"],
                 },
@@ -168,6 +170,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                             "items": {"type": "string"},
                             "description": "Lista de IDs de núcleos para filtrar.",
                         },
+                        "usuario_id": {"type": "string"},
+                        "vinculo_id": {"type": "string"},
                     },
                     "required": ["organizacao_id"],
                 },
@@ -489,6 +493,8 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             except json.JSONDecodeError:
                 args = {}
             args.setdefault("organizacao_id", str(session.organizacao_id))
+            if call.function.name in {"get_organizacao_nucleos_context", "get_future_events_context"}:
+                args.setdefault("usuario_id", str(session.usuario_id))
             function = TOOL_WRAPPERS.get(call.function.name)
             allowed_tools = self._get_allowed_tools(role)
             if call.function.name not in allowed_tools:

@@ -6,6 +6,7 @@ from typing import Any, Iterable
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.db.models import Q
 from django.utils import timezone
 
 from dashboard.services import (
@@ -121,13 +122,26 @@ def get_organizacao_description(organizacao_id: str) -> dict[str, Any]:
     return organizacao or {"organizacao_id": organizacao_id, "error": "Organização não encontrada."}
 
 
-def get_organizacao_nucleos_context(organizacao_id: str) -> dict[str, Any]:
+def get_organizacao_nucleos_context(
+    organizacao_id: str, *, usuario_id: str | None = None, vinculo_id: str | None = None
+) -> dict[str, Any]:
     """Retorna lista de núcleos ativos da organização com dados relevantes para contexto RAG."""
 
+    usuario_id = usuario_id or vinculo_id
+    base_queryset = Nucleo.objects.filter(organizacao_id=organizacao_id, ativo=True, deleted=False)
+
+    if usuario_id:
+        base_queryset = base_queryset.filter(
+            Q(consultor_id=usuario_id)
+            | Q(
+                participacoes__user_id=usuario_id,
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
+        )
+
     nucleos = list(
-        Nucleo.objects.filter(organizacao_id=organizacao_id, ativo=True, deleted=False)
-        .values("id", "nome", "descricao", "classificacao")
-        .order_by("nome")
+        base_queryset.values("id", "nome", "descricao", "classificacao").order_by("nome").distinct()
     )
     return {
         "organizacao_id": str(organizacao_id),
@@ -141,9 +155,12 @@ def get_future_events_context(
     limit: int | None = 10,
     from_date: datetime | None = None,
     nucleo_ids: Iterable[str] | None = None,
+    usuario_id: str | None = None,
+    vinculo_id: str | None = None,
 ) -> dict[str, Any]:
     """Retorna eventos futuros da organização filtrados para composição de contexto RAG."""
 
+    usuario_id = usuario_id or vinculo_id
     reference = from_date or timezone.now()
     queryset = Evento.objects.filter(
         organizacao_id=organizacao_id,
@@ -159,8 +176,34 @@ def get_future_events_context(
         "nucleo_id",
     )
 
+    allowed_nucleo_ids: set[str] | None = None
+    if usuario_id:
+        allowed_nucleo_ids = {
+            str(nucleo_id)
+            for nucleo_id in Nucleo.objects.filter(
+                organizacao_id=organizacao_id,
+                ativo=True,
+                deleted=False,
+            )
+            .filter(
+                Q(consultor_id=usuario_id)
+                | Q(
+                    participacoes__user_id=usuario_id,
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                )
+            )
+            .values_list("id", flat=True)
+        }
+
     if nucleo_ids:
-        queryset = queryset.filter(nucleo_id__in=list(nucleo_ids))
+        nucleo_filter_set = {str(nucleo_id) for nucleo_id in nucleo_ids}
+        allowed_nucleo_ids = (
+            nucleo_filter_set & allowed_nucleo_ids if allowed_nucleo_ids is not None else nucleo_filter_set
+        )
+
+    if allowed_nucleo_ids is not None:
+        queryset = queryset.filter(nucleo_id__in=list(allowed_nucleo_ids))
 
     events = list(queryset.order_by("data_inicio"))
     if limit is not None:
