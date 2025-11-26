@@ -236,6 +236,11 @@
         };
 
         const getStoredDesktopState = () => {
+          const isAuthenticated = document.body.dataset.isAuthenticated === 'true';
+          if (!isAuthenticated) {
+            return true;
+          }
+
           const stored = localStorage.getItem('sidebar');
           if (stored === 'collapsed') {
             return true;
@@ -245,8 +250,7 @@
             return false;
           }
 
-          const isAuthenticated = document.body.dataset.isAuthenticated === 'true';
-          return !isAuthenticated;
+          return false;
         };
         let desktopCollapsed = getStoredDesktopState();
         let mobileOpen = false;
