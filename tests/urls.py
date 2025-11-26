@@ -67,6 +67,10 @@ urlpatterns = [
         "api/feed/",
         include(("feed.api_urls", "feed_api"), namespace="feed_api"),
     ),
+    path(
+        "api/chat/",
+        include(("ai_chat.api_urls", "ai_chat_api"), namespace="ai_chat_api"),
+    ),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),
 ]
