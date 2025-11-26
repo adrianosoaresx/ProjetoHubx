@@ -309,7 +309,7 @@ class ChatRolePermission(IsAuthenticated):
         if not super().has_permission(request, view):
             return False
         role = getattr(request.user, "get_tipo_usuario", None)
-        return role in {"admin", "coordenador", "consultor", "root"}
+        return role in {"admin", "associado", "coordenador", "consultor", "root"}
 
 
 class ChatRateThrottle(SimpleRateThrottle):
@@ -346,6 +346,13 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             "get_organizacao_description",
             "get_organizacao_nucleos_context",
         },
+        "associado": {
+            "get_future_events_context",
+            "get_eventos_list",
+            "get_organizacao_description",
+            "get_organizacao_nucleos_context",
+            "get_nucleos_list",
+        },
     }
     HEAVY_TOOLS = {
         "get_membership_totals",
@@ -357,34 +364,34 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
     serializer_class = ChatMessageSerializer
     permission_classes = [ChatRolePermission]
     throttle_classes = [ChatRateThrottle]
-
+    
     def get_queryset(self):
         user = self.request.user
         return ChatMessage.objects.filter(
             organizacao_id=getattr(user, "organizacao_id", None), session__usuario=user
         )
-
+    
     def _get_user_role(self) -> str:
         role = getattr(self.request.user, "get_tipo_usuario", "") or ""
         return str(role)
-
+    
     def _get_allowed_tools(self, role: str) -> set[str]:
         return self.ALLOWED_TOOLS_BY_ROLE.get(role, set())
-
+    
     def _filter_tool_definitions(self, role: str) -> list[dict[str, Any]]:
         allowed = self._get_allowed_tools(role)
         return [tool for tool in _build_tool_definitions() if tool["function"]["name"] in allowed]
-
+    
     def _build_tool_cache_key(self, name: str, args: dict[str, Any]) -> str:
         version = get_cache_version(f"ai_chat_tool_{name}")
         args_payload = json.dumps(args, sort_keys=True, default=str)
         hashed_args = hashlib.md5(args_payload.encode()).hexdigest()
         return f"ai_chat_tool_{name}_v{version}_{hashed_args}"
-
+    
     def _get_client(self) -> OpenAI:
         settings = get_ai_chat_settings()
         return OpenAI(api_key=settings.api_key, timeout=settings.request_timeout)
-
+    
     def _call_openai(self, client: OpenAI, *, phase: str, session: ChatSession, **kwargs):
         start = time.monotonic()
         try:
@@ -402,7 +409,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 },
             )
             raise
-
+    
         duration = time.monotonic() - start
         chat_openai_latency_seconds.labels(phase=phase).observe(duration)
         logger.info(
@@ -415,7 +422,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             },
         )
         return response
-
+    
     def _build_session_context(self, session: ChatSession) -> dict[str, str]:
         organizacao = session.organizacao
         return {
@@ -426,7 +433,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 f"ID da organização: {organizacao.pk}. Nome: {organizacao.nome}."
             ),
         }
-
+    
     def _serialize_history(self, session: ChatSession) -> list[dict[str, Any]]:
         serialized: list[dict[str, Any]] = [SYSTEM_MESSAGE, self._build_session_context(session)]
         for msg in session.messages.all():
@@ -436,19 +443,19 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     assistant_content = json.loads(msg.content)
                 except (json.JSONDecodeError, TypeError):
                     assistant_content = None
-
+    
                 if isinstance(assistant_content, dict) and assistant_content.get("tool_calls"):
                     payload = {
                         "role": msg.role,
                         "content": assistant_content.get("content", ""),
                         "tool_calls": assistant_content.get("tool_calls", []),
                     }
-
+    
             if msg.tool_call_id:
                 payload["tool_call_id"] = msg.tool_call_id
             serialized.append(payload)
         return serialized
-
+    
     def _execute_tool_calls(
         self,
         tool_calls: Iterable[Any],
@@ -497,7 +504,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     cached = cache.get(cache_key)
                     if cached is not None:
                         result = cached
-
+    
                 if result is None:
                     start = time.monotonic()
                     try:
@@ -516,12 +523,12 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     finally:
                         duration = time.monotonic() - start
                         chat_tool_latency_seconds.labels(function=call.function.name).observe(duration)
-
+    
                 sanitized_result = _sanitize_json_value(result)
-
+    
                 if cache_key and result is not None:
                     cache.set(cache_key, sanitized_result, 300)
-
+    
             history_messages.append(
                 {
                     "role": "tool",
@@ -538,19 +545,19 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     tool_call_id=call.id,
                 )
             )
-
+    
         return history_messages, stored_messages
-
+    
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         session: ChatSession = serializer.validated_data["session"]
         user_message_text: str = serializer.validated_data["message"]
-
+    
         session = get_object_or_404(
             ChatSession, pk=session.pk, organizacao=request.user.organizacao, usuario=request.user
         )
-
+    
         role = self._get_user_role()
         if role not in self.ALLOWED_TOOLS_BY_ROLE:
             raise PermissionDenied("Seu perfil não tem acesso ao assistente no momento.")
@@ -561,14 +568,14 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 role=ChatMessage.Role.USER,
                 content=user_message_text,
             )
-
+    
             history = self._serialize_history(session)
             history.append({"role": "user", "content": user_message_text})
-
+    
             client = self._get_client()
             settings = get_ai_chat_settings()
             tools = self._filter_tool_definitions(role)
-
+    
             try:
                 first_response = self._call_openai(
                     client,
@@ -587,11 +594,11 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     },
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
-
+    
             assistant_message = first_response.choices[0].message
             stored_tool_messages: list[ChatMessage] = []
             history_extensions: list[dict[str, Any]] = []
-
+    
             if assistant_message.tool_calls:
                 history_extensions, stored_tool_messages = self._execute_tool_calls(
                     assistant_message.tool_calls,
@@ -601,9 +608,9 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 )
             elif assistant_message.content:
                 history_extensions = [{"role": "assistant", "content": assistant_message.content}]
-
+    
             final_history = history + history_extensions
-
+    
             try:
                 final_response = self._call_openai(
                     client,
@@ -623,7 +630,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
             final_message = final_response.choices[0].message
-
+    
             stored_messages = [user_message, *stored_tool_messages]
             assistant_db_message = ChatMessage.objects.create(
                 session=session,
@@ -632,7 +639,7 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 content=final_message.content or "",
             )
             stored_messages.append(assistant_db_message)
-
+    
             output = {
                 "session": ChatSessionSerializer(session, context=self.get_serializer_context()).data,
                 "messages": ChatMessageSerializer(stored_messages, many=True, context=self.get_serializer_context()).data,

@@ -1,6 +1,9 @@
 import json
 import sys
 import types
+import json
+import sys
+import types
 from types import SimpleNamespace
 
 import pytest
@@ -123,3 +126,95 @@ def test_chat_message_flow_executes_tool_and_returns_final_response(monkeypatch)
     stored_messages = ChatMessage.objects.filter(session=session).order_by("created_at")
     assert stored_messages.count() == 4
     assert stored_messages.last().content == "resposta final"
+
+
+@pytest.mark.django_db
+def test_chat_role_permission_allows_associado_with_limited_tools():
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org, user_type=UserType.ASSOCIADO)
+    user.nucleo = None
+    user.save(update_fields=["nucleo"])
+
+    request = APIRequestFactory().get("/")
+    request.user = user
+
+    permission = api.ChatRolePermission()
+    assert permission.has_permission(request, None) is True
+
+    view = api.ChatMessageViewSet()
+    allowed_tools = view._get_allowed_tools(user.get_tipo_usuario)
+    assert allowed_tools == {
+        "get_future_events_context",
+        "get_eventos_list",
+        "get_organizacao_description",
+        "get_organizacao_nucleos_context",
+        "get_nucleos_list",
+    }
+
+
+@pytest.mark.django_db
+def test_chat_role_permission_blocks_unlisted_profile():
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org, user_type=UserType.CONVIDADO)
+    session = ChatSession.objects.create(usuario=user, organizacao=org)
+
+    client = APIClient()
+    client.force_authenticate(user)
+
+    response = client.post(
+        reverse("ai_chat_api:chat-message-list"),
+        {"session": str(session.pk), "message": "olá"},
+        format="json",
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_chat_message_associado_uses_only_public_tools(monkeypatch):
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org, user_type=UserType.ASSOCIADO)
+    user.nucleo = None
+    user.save(update_fields=["nucleo"])
+    session = ChatSession.objects.create(usuario=user, organizacao=org)
+
+    collected_tools: list[set[str]] = []
+
+    def fake_call(self, client, *, phase, session, **kwargs):
+        tools = kwargs.get("tools") or []
+        collected_tools.append({tool["function"]["name"] for tool in tools})
+        content = "resposta final" if phase == "final" else "ok"
+        return FakeResponse(SimpleNamespace(content=content, tool_calls=[]))
+
+    monkeypatch.setattr(api.ChatMessageViewSet, "_get_client", lambda self: object())
+    monkeypatch.setattr(api.ChatMessageViewSet, "_call_openai", fake_call)
+
+    client = APIClient()
+    client.force_authenticate(user)
+
+    response = client.post(
+        reverse("ai_chat_api:chat-message-list"),
+        {"session": str(session.pk), "message": "olá"},
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert collected_tools == [
+        {
+            "get_future_events_context",
+            "get_eventos_list",
+            "get_organizacao_description",
+            "get_organizacao_nucleos_context",
+            "get_nucleos_list",
+        },
+        {
+            "get_future_events_context",
+            "get_eventos_list",
+            "get_organizacao_description",
+            "get_organizacao_nucleos_context",
+            "get_nucleos_list",
+        },
+    ]
+
+    data = response.json()
+    assert [message["role"] for message in data["messages"]] == ["user", "assistant"]
