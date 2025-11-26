@@ -84,6 +84,132 @@
       </details>
     </section>
 
+    <section aria-labelledby="dashboard-lists-title" class="space-y-6 pt-2 md:pt-4">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <details class="card group">
+          <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-success-600)]">
+                {% lucide 'layers' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h2 id="dashboard-nucleos-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Núcleos" %}</h2>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Grupos ativos da organização." %}</p>
+              </div>
+            </div>
+            <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="card-body space-y-4">
+            {% with nucleos_count=nucleos|length %}
+              <div
+                class="space-y-4"
+                data-carousel-root="admin-nucleos"
+                data-current-slide="1"
+                data-backend-page="1"
+                data-backend-total-pages="1"
+                aria-label="{% trans 'Navegação de núcleos da organização' %}"
+              >
+                <div class="relative">
+                  <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                    <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                      {% include 'dashboard/partials/admin_nucleo_carousel_slide.html' with nucleos=nucleos page_number=1 %}
+                    </div>
+                  </div>
+                  {% if nucleos_count > 0 %}
+                    <div class="absolute inset-y-0 left-4 flex items-center">
+                      <button
+                        type="button"
+                        class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                        data-carousel-prev
+                        aria-label="{% trans 'Anterior' %}"
+                      >
+                        {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                      </button>
+                    </div>
+                    <div class="absolute inset-y-0 right-4 flex items-center">
+                      <button
+                        type="button"
+                        class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                        data-carousel-next
+                        aria-label="{% trans 'Próximo' %}"
+                      >
+                        {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                      </button>
+                    </div>
+                    <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endwith %}
+          </div>
+        </details>
+
+        <details class="card group">
+          <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--color-info-600)]">
+                {% lucide 'calendar-days' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h2 id="dashboard-eventos-title" class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Eventos" %}</h2>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Atividades em andamento ou planejadas." %}</p>
+              </div>
+            </div>
+            <span class="text-[var(--text-muted)] transition-transform duration-200 group-open:-rotate-180">
+              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="card-body space-y-4">
+            {% with eventos_count=eventos|length %}
+              <div
+                class="space-y-4"
+                data-carousel-root="admin-eventos"
+                data-current-slide="1"
+                data-backend-page="1"
+                data-backend-total-pages="1"
+                aria-label="{% trans 'Navegação de eventos da organização' %}"
+              >
+                <div class="relative">
+                  <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                    <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                      {% include 'dashboard/partials/admin_evento_carousel_slide.html' with eventos=eventos page_number=1 %}
+                    </div>
+                  </div>
+                  {% if eventos_count > 0 %}
+                    <div class="absolute inset-y-0 left-4 flex items-center">
+                      <button
+                        type="button"
+                        class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                        data-carousel-prev
+                        aria-label="{% trans 'Anterior' %}"
+                      >
+                        {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                      </button>
+                    </div>
+                    <div class="absolute inset-y-0 right-4 flex items-center">
+                      <button
+                        type="button"
+                        class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                        data-carousel-next
+                        aria-label="{% trans 'Próximo' %}"
+                      >
+                        {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                      </button>
+                    </div>
+                    <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endwith %}
+          </div>
+        </details>
+      </div>
+    </section>
+
     <section aria-labelledby="dashboard-charts-title" class="space-y-6 pt-4 md:pt-6">
       <details class="card group" {% if dashboard_period_changed %}open{% endif %}>
         <summary class="card-header flex cursor-pointer items-center justify-between gap-4">
@@ -363,4 +489,9 @@
       renderPlotlyChart("nucleados-periodo-chart", "nucleados-periodo-chart-data");
     });
   </script>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}

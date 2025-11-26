@@ -45,6 +45,8 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
     template_name = "dashboard/admin_dashboard.html"
     DEFAULT_MONTHS = 12
     PERIOD_CHOICES: tuple[int, ...] = (3, 6, 12, 24)
+    NUCLEO_LIST_LIMIT = 9
+    EVENT_LIST_LIMIT = 9
 
     def _resolve_months(self) -> int:
         """Obtém o número de meses válido informado via query string."""
@@ -84,6 +86,49 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
         )
         monthly_registration_values = calculate_monthly_registration_values(
             organizacao, months=months
+        )
+
+        nucleos_list = (
+            list(
+                Nucleo.objects.filter(organizacao=organizacao)
+                .annotate(
+                    total_membros=Count(
+                        "participacoes",
+                        filter=Q(
+                            participacoes__status="ativo",
+                            participacoes__status_suspensao=False,
+                        ),
+                        distinct=True,
+                    )
+                )
+                .order_by("nome")[: self.NUCLEO_LIST_LIMIT]
+            )
+            if organizacao
+            else []
+        )
+
+        eventos_list = (
+            list(
+                Evento.objects.filter(
+                    organizacao=organizacao,
+                    status__in=[Evento.Status.ATIVO, Evento.Status.PLANEJAMENTO],
+                )
+                .select_related("nucleo")
+                .annotate(
+                    total_inscritos=Count(
+                        "inscricoes",
+                        filter=Q(inscricoes__status="confirmada"),
+                        distinct=True,
+                    ),
+                    valor_total_inscricoes=Sum(
+                        "inscricoes__valor_pago",
+                        filter=Q(inscricoes__status="confirmada"),
+                    ),
+                )
+                .order_by("-data_inicio")[: self.EVENT_LIST_LIMIT]
+            )
+            if organizacao
+            else []
         )
 
         membros_por_periodo_chart = build_time_series_chart(
@@ -142,6 +187,8 @@ class AdminDashboardView(LoginRequiredMixin, AdminOrOperatorRequiredMixin, Templ
                 "dashboard_period_months": months,
                 "dashboard_period_choices": self.PERIOD_CHOICES,
                 "dashboard_period_changed": "months" in self.request.GET,
+                "nucleos": nucleos_list,
+                "eventos": eventos_list,
             }
         )
         return context
