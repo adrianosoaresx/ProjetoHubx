@@ -89,12 +89,13 @@ class MercadoPagoProvider(PaymentProvider):
         return resposta
 
     def _build_pix_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
+        expiracao = self._format_datetime(dados_pagamento.get("expiracao"))
         return {
             "transaction_amount": float(pedido.valor),
             "payment_method_id": "pix",
             "description": dados_pagamento.get("descricao") or "Pagamento Hubx",
             "payer": self._payer_data(dados_pagamento),
-            "date_of_expiration": dados_pagamento.get("expiracao"),
+            "date_of_expiration": expiracao,
         }
 
     def _build_cartao_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
@@ -116,11 +117,12 @@ class MercadoPagoProvider(PaymentProvider):
             raise PagamentoInvalidoError(_("Data de vencimento obrigatória para boleto."))
         if vencimento <= timezone.now():
             raise PagamentoInvalidoError(_("Boleto expirado ou com vencimento inválido."))
+        vencimento_formatado = self._format_datetime(vencimento)
         return {
             "transaction_amount": float(pedido.valor),
             "payment_method_id": "bolbradesco",
             "payer": self._payer_data(dados_pagamento),
-            "date_of_expiration": vencimento,
+            "date_of_expiration": vencimento_formatado,
         }
 
     def _payer_data(self, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
@@ -211,3 +213,10 @@ class MercadoPagoProvider(PaymentProvider):
     @staticmethod
     def _generate_idempotency_key() -> str:
         return uuid.uuid4().hex
+
+    @staticmethod
+    def _format_datetime(value: Any) -> Any:
+        """Converte objetos datetime para ISO 8601 para envio na API."""
+        if hasattr(value, "isoformat"):
+            return value.isoformat()
+        return value
