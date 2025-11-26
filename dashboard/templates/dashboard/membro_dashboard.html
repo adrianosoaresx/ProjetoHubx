@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n l10n lucide_icons %}
+{% load i18n l10n lucide_icons static %}
 
 {% block title %}{% trans "Meu dashboard" %}{% endblock %}
 
@@ -115,29 +115,48 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
-            {% for participacao in participacoes %}
-              <li>
-                <a
-                  href="{% url 'nucleos:detail_uuid' participacao.nucleo.public_id %}"
-                  class="
-                    flex h-full flex-col gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]
-                    px-4 py-3 transition hover:border-[var(--color-success-500)] hover:text-[var(--color-success-600)]
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success-500)]
-                    focus-visible:ring-offset-2
-                  "
-                  aria-label="{% blocktrans trimmed with nome=participacao.nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}"
-                >
-                  <span class="text-sm font-medium text-[var(--text-primary)]">{{ participacao.nucleo.nome }}</span>
-                  <span class="text-xs text-[var(--text-muted)]">{% trans "Status" %}: {{ participacao.get_status_display }}</span>
-                </a>
-              </li>
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)] sm:col-span-2 lg:col-span-3">
-                {% trans "Você ainda não integra nenhum núcleo." %}
-              </li>
-            {% endfor %}
-          </ul>
+          {% with participacoes_count=participacoes|length %}
+            <div
+              class="space-y-4"
+              data-carousel-root="membro-nucleos"
+              data-current-slide="1"
+              data-backend-page="1"
+              data-backend-total-pages="1"
+              aria-label="{% trans 'Navegação de núcleos do membro' %}"
+            >
+              <div class="relative">
+                <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                  <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                    {% include 'dashboard/partials/membro_nucleo_carousel_slide.html' with participacoes=participacoes page_number=1 %}
+                  </div>
+                </div>
+                {% if participacoes_count > 0 %}
+                  <div class="absolute inset-y-0 left-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-prev
+                      aria-label="{% trans 'Anterior' %}"
+                    >
+                      {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="absolute inset-y-0 right-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-next
+                      aria-label="{% trans 'Próximo' %}"
+                    >
+                      {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
         </div>
       </details>
 
@@ -157,31 +176,48 @@
           </span>
         </summary>
         <div class="card-body space-y-4">
-          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
-            {% for inscricao in inscricoes_ativas %}
-              {% with evento=inscricao.evento %}
-                <li class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
-                  <div class="flex h-full flex-col gap-1">
-                    <span class="text-sm font-medium text-[var(--text-primary)]">{{ evento.titulo|default:_("Evento indisponível") }}</span>
-                    <span class="text-xs text-[var(--text-muted)]">
-                      {% if evento %}
-                        {{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }} ·
-                      {% endif %}
-                      {% if inscricao.presente %}
-                        {% trans "Participação registrada" %}
-                      {% else %}
-                        {{ inscricao.get_status_display }}
-                      {% endif %}
-                    </span>
+          {% with inscricoes_count=inscricoes_ativas|length %}
+            <div
+              class="space-y-4"
+              data-carousel-root="membro-eventos"
+              data-current-slide="1"
+              data-backend-page="1"
+              data-backend-total-pages="1"
+              aria-label="{% trans 'Navegação de eventos do membro' %}"
+            >
+              <div class="relative">
+                <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
+                  <div class="flex transition-transform duration-500 ease-out" data-carousel-track role="list">
+                    {% include 'dashboard/partials/membro_evento_carousel_slide.html' with inscricoes=inscricoes_ativas page_number=1 %}
                   </div>
-                </li>
-              {% endwith %}
-            {% empty %}
-              <li class="rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)] sm:col-span-2 lg:col-span-3">
-                {% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}
-              </li>
-            {% endfor %}
-          </ul>
+                </div>
+                {% if inscricoes_count > 0 %}
+                  <div class="absolute inset-y-0 left-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group mr-3 flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-prev
+                      aria-label="{% trans 'Anterior' %}"
+                    >
+                      {% lucide 'circle-chevron-left' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="absolute inset-y-0 right-4 flex items-center">
+                    <button
+                      type="button"
+                      class="group flex items-center justify-center text-[var(--text-primary)] transition hover:bg-[var(--color-primary-500)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]"
+                      data-carousel-next
+                      aria-label="{% trans 'Próximo' %}"
+                    >
+                      {% lucide 'circle-chevron-right' class='h-8 w-8' aria_hidden='true' %}
+                    </button>
+                  </div>
+                  <div class="pointer-events-none absolute inset-y-0 left-0 hidden w-16 bg-gradient-to-r from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[var(--bg-primary)]/90 to-transparent lg:block"></div>
+                {% endif %}
+              </div>
+            </div>
+          {% endwith %}
         </div>
       </details>
     </section>
@@ -263,4 +299,9 @@
     </section>
 
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}
