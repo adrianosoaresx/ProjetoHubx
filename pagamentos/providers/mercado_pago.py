@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import os
 import logging
+import os
+import uuid
 from typing import Any
 
 import requests
@@ -136,22 +137,32 @@ class MercadoPagoProvider(PaymentProvider):
             },
         }
 
-    def _headers(self) -> dict[str, str]:
-        return {
+    def _headers(self, idempotency_key: str | None = None) -> dict[str, str]:
+        headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
+        if idempotency_key:
+            headers["X-Idempotency-Key"] = idempotency_key
+        return headers
 
     def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", path, json=payload)
+        return self._request(
+            "POST",
+            path,
+            json=payload,
+            idempotency_key=self._generate_idempotency_key(),
+        )
 
-    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+    def _request(
+        self, method: str, path: str, idempotency_key: str | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         url = f"{self.base_url}{path}"
         try:
             response = self.session.request(
                 method,
                 url,
-                headers=self._headers(),
+                headers=self._headers(idempotency_key=idempotency_key),
                 timeout=10,
                 **kwargs,
             )
@@ -196,3 +207,7 @@ class MercadoPagoProvider(PaymentProvider):
             return data
         except ValueError as exc:  # pragma: no cover
             raise PagamentoProviderError(_("Resposta inválida do provedor.")) from exc
+
+    @staticmethod
+    def _generate_idempotency_key() -> str:
+        return uuid.uuid4().hex
