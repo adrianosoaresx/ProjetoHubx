@@ -343,7 +343,6 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         "coordenador": set(TOOL_WRAPPERS.keys()),
         "consultor": {
             "get_future_events_context",
-            "get_organizacao_description",
             "get_organizacao_nucleos_context",
         },
         "associado": {
