@@ -1,0 +1,72 @@
+{% load i18n %}
+{% if inscricoes %}
+  {% for inscricao in inscricoes %}
+    {% with evento=inscricao.evento %}
+      <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number|default:1 }}">
+        <div role="listitem" class="flex h-full flex-col gap-3">
+          {% if evento %}
+            {% include '_components/card_evento.html' with evento=evento %}
+          {% else %}
+            <div class="flex h-full flex-col justify-between rounded-xl border border-[var(--border-muted)] bg-[var(--bg-secondary)] p-4">
+              <p class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Evento indisponível" %}</p>
+              <p class="text-xs text-[var(--text-secondary)]">{% trans "Detalhes do evento não encontrados." %}</p>
+            </div>
+          {% endif %}
+          <p class="text-xs text-[var(--text-muted)]">
+            {% if evento %}
+              {{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }} ·
+            {% endif %}
+            {% if inscricao.presente %}
+              {% trans "Participação registrada" %}
+            {% else %}
+              {{ inscricao.get_status_display }}
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    {% endwith %}
+  {% endfor %}
+
+  {% for inscricao in inscricoes %}
+    {% with evento=inscricao.evento %}
+      {% if forloop.counter0|divisibleby:3 %}
+        <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number|default:1 }}">
+      {% endif %}
+          <div role="listitem" class="flex h-full flex-col gap-3">
+            {% if evento %}
+              {% include '_components/card_evento.html' with evento=evento %}
+            {% else %}
+              <div class="flex h-full flex-col justify-between rounded-xl border border-[var(--border-muted)] bg-[var(--bg-secondary)] p-4">
+                <p class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Evento indisponível" %}</p>
+                <p class="text-xs text-[var(--text-secondary)]">{% trans "Detalhes do evento não encontrados." %}</p>
+              </div>
+            {% endif %}
+            <p class="text-xs text-[var(--text-muted)]">
+              {% if evento %}
+                {{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }} ·
+              {% endif %}
+              {% if inscricao.presente %}
+                {% trans "Participação registrada" %}
+              {% else %}
+                {{ inscricao.get_status_display }}
+              {% endif %}
+            </p>
+          </div>
+          {% if forloop.last and not forloop.counter|divisibleby:3 %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% endif %}
+          {% if forloop.last and forloop.counter|add:'-1'|divisibleby:3 %}
+            <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+          {% endif %}
+      {% if forloop.counter|divisibleby:3 or forloop.last %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number|default:1 }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Nenhum evento confirmado ou inscrição ativa até o momento." %}</p>
+    </div>
+  </div>
+{% endif %}
