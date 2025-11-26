@@ -157,11 +157,29 @@ class MercadoPagoProvider(PaymentProvider):
             )
             response.raise_for_status()
         except requests.HTTPError as exc:  # pragma: no cover - erro tratado abaixo
+            status_code = getattr(exc.response, "status_code", None)
+            error_body: Any | None = None
+            if exc.response is not None:
+                try:
+                    error_body = exc.response.json()
+                except ValueError:
+                    error_body = exc.response.text
+
             logger.warning(
                 "mercadopago_http_error",
-                extra={"url": url, "method": method, "status_code": getattr(exc.response, "status_code", None)},
+                extra={
+                    "url": url,
+                    "method": method,
+                    "status_code": status_code,
+                    "error_body": error_body,
+                },
             )
-            raise PagamentoProviderError(str(exc)) from exc
+
+            message = str(exc)
+            if error_body:
+                message = f"{message}: {error_body}"
+
+            raise PagamentoProviderError(message) from exc
         except requests.RequestException as exc:  # pragma: no cover - erro tratado abaixo
             logger.warning(
                 "mercadopago_request_error",
