@@ -190,6 +190,50 @@ def test_get_future_events_context_filters_by_org_and_nucleo():
 
 
 @pytest.mark.django_db
+def test_get_organizacao_nucleos_context_limits_to_user_participations():
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org)
+    consultor_nucleo = NucleoFactory(organizacao=org, consultor=user)
+    membro_nucleo = NucleoFactory(organizacao=org)
+    ParticipacaoNucleo.objects.create(
+        user=user,
+        nucleo=membro_nucleo,
+        status="ativo",
+        papel="membro",
+    )
+    NucleoFactory(organizacao=org)  # núcleo sem vínculo
+
+    result = services.get_organizacao_nucleos_context(org.id, usuario_id=str(user.id))
+
+    assert set(nucleo["id"] for nucleo in result["nucleos"]) == {
+        str(consultor_nucleo.id),
+        str(membro_nucleo.id),
+    }
+
+
+@pytest.mark.django_db
+def test_get_future_events_context_limits_to_user_nucleos():
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org)
+    nucleo = NucleoFactory(organizacao=org)
+    ParticipacaoNucleo.objects.create(
+        user=user,
+        nucleo=nucleo,
+        status="ativo",
+        papel="membro",
+    )
+    other_nucleo = NucleoFactory(organizacao=org)
+
+    future_date = timezone.now() + timedelta(days=2)
+    EventoFactory(organizacao=org, nucleo=nucleo, data_inicio=future_date)
+    EventoFactory(organizacao=org, nucleo=other_nucleo, data_inicio=future_date)
+
+    result = services.get_future_events_context(org.id, usuario_id=str(user.id))
+
+    assert [event["nucleo_id"] for event in result["events"]] == [str(nucleo.id)]
+
+
+@pytest.mark.django_db
 def test_get_associados_list_filters_and_sanitizes(cache):
     org = OrganizacaoFactory()
     other_org = OrganizacaoFactory()

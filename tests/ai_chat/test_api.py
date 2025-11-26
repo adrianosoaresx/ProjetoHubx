@@ -129,6 +129,48 @@ def test_chat_message_flow_executes_tool_and_returns_final_response(monkeypatch)
 
 
 @pytest.mark.django_db
+def test_chat_tools_receive_user_identifier(monkeypatch):
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org, user_type=UserType.CONSULTOR)
+    session = ChatSession.objects.create(usuario=user, organizacao=org)
+
+    captured_args: dict[str, object] = {}
+
+    def fake_tool(**kwargs):
+        captured_args.update(kwargs)
+        return {"ok": True}
+
+    monkeypatch.setitem(api.TOOL_WRAPPERS, "get_future_events_context", fake_tool)
+
+    analysis_tool_call = FakeToolCall("call_user", "get_future_events_context", "{}")
+    responses = iter(
+        [
+            FakeResponse(SimpleNamespace(content="vou consultar", tool_calls=[analysis_tool_call])),
+            FakeResponse(SimpleNamespace(content="resposta final", tool_calls=[])),
+        ]
+    )
+
+    monkeypatch.setattr(api.ChatMessageViewSet, "_get_client", lambda self: object())
+    monkeypatch.setattr(
+        api.ChatMessageViewSet,
+        "_call_openai",
+        lambda self, client, *, phase, session, **kwargs: next(responses),
+    )
+
+    client = APIClient()
+    client.force_authenticate(user)
+
+    response = client.post(
+        reverse("ai_chat_api:chat-message-list"),
+        {"session": str(session.pk), "message": "olá"},
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert captured_args == {"organizacao_id": str(org.id), "usuario_id": str(user.id)}
+
+
+@pytest.mark.django_db
 def test_chat_role_permission_allows_associado_with_limited_tools():
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org, user_type=UserType.ASSOCIADO)
