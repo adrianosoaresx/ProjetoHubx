@@ -235,7 +235,19 @@
           }
         };
 
-        const getStoredDesktopState = () => localStorage.getItem('sidebar') === 'collapsed';
+        const getStoredDesktopState = () => {
+          const stored = localStorage.getItem('sidebar');
+          if (stored === 'collapsed') {
+            return true;
+          }
+
+          if (stored === 'expanded') {
+            return false;
+          }
+
+          const isAuthenticated = document.body.dataset.isAuthenticated === 'true';
+          return !isAuthenticated;
+        };
         let desktopCollapsed = getStoredDesktopState();
         let mobileOpen = false;
         let bodyOverflowBeforeMobile = initialBodyOverflow;
