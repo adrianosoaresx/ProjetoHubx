@@ -19,8 +19,9 @@
     {% endif %}
     data-transacao-id="{{ transacao.id }}"
     data-transacao-status="{{ transacao.status }}"
+    data-metodo="{{ transacao.metodo }}"
   >
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between" data-metodo="{{ transacao.metodo }}">
       <div>
         <p class="text-sm text-slate-500 uppercase font-semibold">{% trans "Transação" %} #{{ transacao.id }}</p>
         <p class="text-lg font-bold text-slate-900">{{ transacao.get_metodo_display }}</p>
