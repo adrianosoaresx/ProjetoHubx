@@ -242,7 +242,12 @@
           }
         };
 
-        const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        const hasFieldErrors =
+          accordion.querySelector('.errorlist') ||
+          accordion.querySelector('[aria-invalid="true"]');
+
+        const initialExpanded =
+          toggle.getAttribute('aria-expanded') === 'true' || Boolean(hasFieldErrors);
         setExpanded(initialExpanded);
 
         toggle.addEventListener('click', () => {

@@ -3,9 +3,11 @@ from __future__ import annotations
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import UserType
+from organizacoes.utils import validate_cnpj
 
 User = get_user_model()
 
@@ -116,6 +118,21 @@ class OrganizacaoUserCreateForm(UserCreationForm):
         if email and User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError(_("Este e-mail já está em uso."))
         return email
+
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get("cnpj")
+        if not cnpj:
+            return cnpj
+
+        try:
+            cnpj = validate_cnpj(cnpj)
+        except ValidationError as exc:
+            raise forms.ValidationError(exc.message)
+
+        if User.objects.filter(cnpj=cnpj).exists():
+            raise forms.ValidationError(_("Este CNPJ já está em uso."))
+
+        return cnpj
 
     def save(self, commit: bool = True, *, organizacao) -> User:
         if organizacao is None:
