@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
+from validate_docbr import CNPJ
 
 from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
@@ -88,6 +89,36 @@ class OrganizacaoUserCreateViewTests(TestCase):
         self.assertTrue(
             get_user_model().objects.filter(email="outro@example.com").exists()
         )
+
+    def test_duplicate_cnpj_shows_form_error(self):
+        self.client.force_login(self.admin)
+        cnpj = CNPJ().generate(mask=True)
+
+        get_user_model().objects.create_user(
+            email="associado@example.com",
+            username="associado",
+            password="Assoc!123",
+            user_type=UserType.ASSOCIADO,
+            organizacao=self.organizacao,
+            cnpj=cnpj,
+        )
+
+        response = self.client.post(
+            self.url,
+            {
+                "username": "novo_associado_cnpj",
+                "email": "novo_cnpj@example.com",
+                "contato": "Novo Associado CNPJ",
+                "user_type": UserType.ASSOCIADO.value,
+                "cnpj": cnpj,
+                "password1": "StrongPass!1",
+                "password2": "StrongPass!1",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Este CNPJ já está em uso.")
+        self.assertEqual(get_user_model().objects.filter(cnpj=cnpj).count(), 1)
 
 
 class HeroActionTemplateTests(TestCase):

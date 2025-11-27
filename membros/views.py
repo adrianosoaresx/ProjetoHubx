@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.db.models.functions import Lower
 from django.http import JsonResponse
@@ -105,7 +105,16 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
         if organizacao is None:
             raise PermissionDenied
 
-        new_user = form.save(organizacao=organizacao)
+        try:
+            new_user = form.save(organizacao=organizacao)
+        except IntegrityError as exc:
+            error_message = str(exc)
+            if "accounts_user.cnpj" in error_message:
+                form.add_error("cnpj", _("Este CNPJ já está em uso."))
+            else:
+                form.add_error(None, _("Não foi possível salvar o usuário. Tente novamente."))
+            return self.form_invalid(form)
+
         type_labels = {value: label for value, label in UserType.choices}
         tipo_display = type_labels.get(new_user.user_type, new_user.user_type)
         messages.success(
