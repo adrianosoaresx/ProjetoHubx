@@ -239,6 +239,33 @@ ONESIGNAL_ENABLED = os.getenv(
     "1" if (ONESIGNAL_APP_ID and ONESIGNAL_API_KEY) else "0",
 ).strip().lower() in {"1", "true", "yes", "on"}
 
+# Email
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Hubx <no-reply@hubx.local>")
+_EMAIL_HOST = os.getenv("EMAIL_HOST")
+_EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+_EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+_EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+_EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "1").strip().lower() in {"1", "true", "yes", "on"}
+
+if _EMAIL_HOST and _EMAIL_HOST_USER and _EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = _EMAIL_HOST
+    EMAIL_PORT = _EMAIL_PORT
+    EMAIL_USE_TLS = _EMAIL_USE_TLS
+    EMAIL_HOST_USER = _EMAIL_HOST_USER
+    EMAIL_HOST_PASSWORD = _EMAIL_HOST_PASSWORD
+else:
+    EMAIL_BACKEND = os.getenv(
+        "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+    )
+
+EMAIL_DELIVERY_ENABLED = os.getenv("EMAIL_DELIVERY_ENABLED", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
