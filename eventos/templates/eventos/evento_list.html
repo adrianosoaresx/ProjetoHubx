@@ -265,7 +265,13 @@
               {% for evento in eventos_cancelados %}
                 {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
               {% empty %}
-                <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum evento cancelado encontrado." %}</p>
+                <div class="col-span-full">
+                  <div
+                    class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center"
+                  >
+                    <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Nenhum evento cancelado encontrado." %}</p>
+                  </div>
+                </div>
               {% endfor %}
             </div>
           </div>
