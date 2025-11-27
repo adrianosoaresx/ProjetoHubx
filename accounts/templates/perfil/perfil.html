@@ -10,59 +10,34 @@
 <div class="space-y-6">
 
       {% with default_section=perfil_default_section|default:"info" %}
-        {% trans "Informações do perfil" as info_title %}
-        {% blocktrans with profile_name=profile.display_name asvar info_subtitle %}
-          Visualize e gerencie as informações de {{ profile_name }}.
-        {% endblocktrans %}
-        {% trans "Carregando conteúdo..." as perfil_loading_text %}
-        {% trans "Não foi possível carregar esta seção." as perfil_error_text %}
-        {% with perfil_mode_value=perfil_mode|default:'public' %}
-          {% with perfil_hx_push_url='?section='|add:default_section %}
-            {% if is_owner %}
-              {% with perfil_hx_vals='{"section":"'|add:default_section|add:'"}' %}
-                {% include "perfil/partials/info_accordion.html" with
-                  content_id='perfil-content'
-                  title=info_title
-                  subtitle=info_subtitle
-                  icon='contact'
-                  data_perfil_mode=perfil_mode_value
-                  data_perfil_username=profile.username
-                  data_perfil_public_id=profile.public_id
-                  data_perfil_default_url=perfil_default_url
-                  data_perfil_default_section=default_section
-                  data_perfil_loading_text=perfil_loading_text
-                  data_perfil_error_text=perfil_error_text
-                  hx_trigger='load'
-                  hx_get=perfil_default_url
-                  hx_target='#perfil-content'
-                  hx_push_url=perfil_hx_push_url
-                  hx_vals=perfil_hx_vals
-                %}
-              {% endwith %}
-            {% else %}
-              {% with perfil_hx_vals='{"section":"'|add:default_section|add:'","public_id":"'|add:profile.public_id|escapejs|add:'","username":"'|add:profile.username|escapejs|add:'"}' %}
-                {% include "perfil/partials/info_accordion.html" with
-                  content_id='perfil-content'
-                  title=info_title
-                  subtitle=info_subtitle
-                  icon='contact'
-                  data_perfil_mode=perfil_mode_value
-                  data_perfil_username=profile.username
-                  data_perfil_public_id=profile.public_id
-                  data_perfil_default_url=perfil_default_url
-                  data_perfil_default_section=default_section
-                  data_perfil_loading_text=perfil_loading_text
-                  data_perfil_error_text=perfil_error_text
-                  hx_trigger='load'
-                  hx_get=perfil_default_url
-                  hx_target='#perfil-content'
-                  hx_push_url=perfil_hx_push_url
-                  hx_vals=perfil_hx_vals
-                %}
-              {% endwith %}
-            {% endif %}
-          {% endwith %}
-        {% endwith %}
+        <section
+          id="perfil-content"
+          class="space-y-6"
+          data-perfil-default-url="{{ perfil_default_url }}"
+          data-perfil-default-section="{{ default_section }}"
+          data-perfil-mode="{% if is_owner %}owner{% else %}public{% endif %}"
+          data-perfil-username="{{ profile.username }}"
+          data-perfil-public-id="{{ profile.public_id }}"
+          data-perfil-loading-text="{% trans 'Carregando conteúdo...' %}"
+          data-perfil-error-text="{% trans 'Não foi possível carregar esta seção.' %}"
+          aria-live="polite"
+          aria-busy="true"
+          hx-trigger="load"
+          hx-get="{{ perfil_default_url }}"
+          hx-target="#perfil-content"
+          {% if default_section %}
+            hx-push-url="?section={{ default_section }}"
+          {% endif %}
+          {% if is_owner %}
+            hx-vals='{"section":"{{ default_section }}"}'
+          {% else %}
+            hx-vals='{"section":"{{ default_section }}","public_id":"{{ profile.public_id|escapejs }}","username":"{{ profile.username|escapejs }}"}'
+          {% endif %}
+        >
+          <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
+            {% trans "Carregando conteúdo..." %}
+          </div>
+        </section>
       {% endwith %}
 
       <section id="perfil-posts-accordion" class="card" data-accordion>
