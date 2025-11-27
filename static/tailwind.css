@@ -3008,6 +3008,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   right: 0px;
 }
 
+.inset-x-2 {
+  left: 0.5rem;
+  right: 0.5rem;
+}
+
 .inset-y-0 {
   top: 0px;
   bottom: 0px;
@@ -3029,16 +3034,8 @@ body.sidebar-mobile-open .sidebar-backdrop {
   left: 1rem;
 }
 
-.left-auto {
-  left: auto;
-}
-
 .right-0 {
   right: 0px;
-}
-
-.right-2 {
-  right: 0.5rem;
 }
 
 .right-3 {
@@ -3430,10 +3427,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .w-8 {
   width: 2rem;
-}
-
-.w-\[min\(24rem\2c calc\(100vw-2\.5rem\)\)\] {
-  width: min(24rem,calc(100vw - 2.5rem));
 }
 
 .w-auto {
@@ -5823,6 +5816,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 }
 
 @media (min-width: 640px) {
+  .sm\:inset-auto {
+    inset: auto;
+  }
+
   .sm\:right-0 {
     right: 0px;
   }
