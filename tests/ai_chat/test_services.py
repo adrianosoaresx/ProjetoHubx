@@ -237,15 +237,28 @@ def test_get_future_events_context_limits_to_user_nucleos():
 def test_get_associados_list_filters_and_sanitizes(cache):
     org = OrganizacaoFactory()
     other_org = OrganizacaoFactory()
+    viewer = UserFactory(organizacao=org)
     active = UserFactory(organizacao=org, is_associado=True, username="ativo")
     UserFactory(organizacao=org, is_associado=True, is_active=False)
     UserFactory(organizacao=other_org, is_associado=True)
 
-    result = services.get_associados_list(org.id)
+    result = services.get_associados_list(org.id, usuario_id=str(viewer.id))
 
     assert result["organizacao_id"] == str(org.id)
     assert [item["id"] for item in result["associados"]] == [str(active.id)]
     assert "email" not in json.dumps(result)
+
+
+@pytest.mark.django_db
+def test_get_associados_list_requires_same_organization(cache):
+    org = OrganizacaoFactory()
+    UserFactory(organizacao=org, is_associado=True)
+    outsider = UserFactory()
+
+    result = services.get_associados_list(org.id, usuario_id=str(outsider.id))
+
+    assert result["associados"] == []
+    assert "error" in result
 
 
 @pytest.mark.django_db
@@ -269,11 +282,30 @@ def test_get_nucleados_list_respects_org_and_status():
         papel="membro",
     )
 
-    result = services.get_nucleados_list(org.id, str(nucleo.id))
+    result = services.get_nucleados_list(org.id, str(nucleo.id), usuario_id=str(membro.id))
 
     assert result["organizacao_id"] == str(org.id)
     assert [item["id"] for item in result["nucleados"]] == [str(membro.id)]
     assert result["nucleados"][0]["status"] == "ativo"
+
+
+@pytest.mark.django_db
+def test_get_nucleados_list_requires_permission():
+    org = OrganizacaoFactory()
+    nucleo = NucleoFactory(organizacao=org)
+    ParticipacaoNucleo.objects.create(
+        user=UserFactory(organizacao=org, is_associado=True),
+        nucleo=nucleo,
+        status="ativo",
+        papel="membro",
+    )
+
+    outsider = UserFactory()
+
+    result = services.get_nucleados_list(org.id, str(nucleo.id), usuario_id=str(outsider.id))
+
+    assert result["nucleados"] == []
+    assert "error" in result
 
 
 @pytest.mark.django_db
@@ -305,6 +337,7 @@ def test_get_eventos_list_filters_future_only():
 def test_get_inscritos_list_returns_names(cache):
     evento = EventoFactory()
     associado = UserFactory(organizacao=evento.organizacao, is_associado=True, contato="Nome Teste")
+    ParticipacaoNucleo.objects.create(user=associado, nucleo=evento.nucleo, status="ativo")
     InscricaoEvento.objects.create(user=associado, evento=evento, status="confirmada")
     InscricaoEvento.objects.create(
         user=UserFactory(organizacao=evento.organizacao),
@@ -312,7 +345,22 @@ def test_get_inscritos_list_returns_names(cache):
         status="confirmada",
     )
 
-    result = services.get_inscritos_list(str(evento.id))
+    result = services.get_inscritos_list(str(evento.id), usuario_id=str(associado.id))
 
     assert result["evento_id"] == str(evento.id)
     assert result["inscritos"] == [{"id": str(associado.id), "nome": "Nome Teste"}]
+
+
+@pytest.mark.django_db
+def test_get_inscritos_list_requires_access(cache):
+    evento = EventoFactory()
+    inscrito = UserFactory(organizacao=evento.organizacao, is_associado=True)
+    ParticipacaoNucleo.objects.create(user=inscrito, nucleo=evento.nucleo, status="ativo")
+    InscricaoEvento.objects.create(user=inscrito, evento=evento, status="confirmada")
+
+    outsider = UserFactory()
+
+    result = services.get_inscritos_list(str(evento.id), usuario_id=str(outsider.id))
+
+    assert result["inscritos"] == []
+    assert "error" in result
