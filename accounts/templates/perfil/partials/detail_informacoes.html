@@ -171,17 +171,6 @@
       <div class="mt-6 flex flex-wrap justify-end gap-3 border-t border-[var(--border)] pt-4">
         {% if is_owner %}
           <a
-            href="{% url 'accounts:excluir_conta' %}"
-            class="btn btn-danger"
-            hx-get="{% url 'accounts:delete_account' %}"
-            hx-target="#modal"
-            hx-trigger="click"
-            hx-swap="innerHTML"
-            hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-          >
-            {% trans "Excluir" %}
-          </a>
-          <a
             href="{% url 'accounts:perfil_sections_info' %}"
             class="btn btn-primary"
             hx-get="{% url 'accounts:perfil_sections_info' %}"
@@ -195,17 +184,19 @@
         {% else %}
           {% with target_public_id=manage_target_public_id|stringformat:"s" target_username=manage_target_username target_username_encoded=manage_target_username|urlencode %}
             {% with query_params="public_id="|add:target_public_id|add:"&username="|add:target_username_encoded %}
-              <a
-                href="{% url 'accounts:excluir_conta' %}?{{ query_params }}"
-                class="btn btn-danger"
-                hx-get="{% url 'accounts:delete_account' %}?{{ query_params }}"
-                hx-target="#modal"
-                hx-trigger="click"
-                hx-swap="innerHTML"
-                hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-              >
-                {% trans "Excluir" %}
-              </a>
+              {% if request.user.get_tipo_usuario == "admin" or request.user.get_tipo_usuario == "operador" %}
+                <a
+                  href="{% url 'accounts:excluir_conta' %}?{{ query_params }}"
+                  class="btn btn-danger"
+                  hx-get="{% url 'accounts:delete_account' %}?{{ query_params }}"
+                  hx-target="#modal"
+                  hx-trigger="click"
+                  hx-swap="innerHTML"
+                  hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                >
+                  {% trans "Excluir" %}
+                </a>
+              {% endif %}
               <a
                 href="{% url 'accounts:perfil_sections_info' %}?{{ query_params }}"
                 class="btn btn-primary"
