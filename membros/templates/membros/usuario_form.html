@@ -62,7 +62,7 @@
               type="button"
               class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
               data-accordion-toggle
-              aria-expanded="{% if form.razao_social.errors or form.nome_fantasia.errors or form.cnpj.errors or form.cpf.errors or form.area_atuacao.errors or form.descricao_atividade.errors %}true{% else %}false{% endif %}"
+              aria-expanded="false"
               aria-controls="membro-company-panel"
             >
               <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações da empresa" %}</span>
@@ -83,7 +83,7 @@
             </button>
             <div
               id="membro-company-panel"
-              class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.razao_social.errors and not form.nome_fantasia.errors and not form.cnpj.errors and not form.cpf.errors and not form.area_atuacao.errors and not form.descricao_atividade.errors %}hidden{% endif %}"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6 hidden"
               data-accordion-panel
             >
               {% if form.razao_social %}
@@ -128,7 +128,7 @@
               type="button"
               class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
               data-accordion-toggle
-              aria-expanded="{% if form.contato.errors or form.phone_number.errors or form.whatsapp.errors or form.email.errors %}true{% else %}false{% endif %}"
+              aria-expanded="false"
               aria-controls="membro-contact-panel"
             >
               <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Informações de contato" %}</span>
@@ -149,7 +149,7 @@
             </button>
             <div
               id="membro-contact-panel"
-              class="border-t border-[var(--border)] px-4 py-4 space-y-6 {% if not form.contato.errors and not form.phone_number.errors and not form.whatsapp.errors and not form.email.errors %}hidden{% endif %}"
+              class="border-t border-[var(--border)] px-4 py-4 space-y-6 hidden"
               data-accordion-panel
             >
               {% if form.contato %}
@@ -218,4 +218,38 @@
   </div>
 </article>
 
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function () {
+      const accordions = document.querySelectorAll('[data-accordion]');
+      accordions.forEach((accordion) => {
+        const toggle = accordion.querySelector('[data-accordion-toggle]');
+        const panel = accordion.querySelector('[data-accordion-panel]');
+        const icon = accordion.querySelector('[data-accordion-icon]');
+
+        if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+          return;
+        }
+
+        const setExpanded = (expanded) => {
+          toggle.setAttribute('aria-expanded', String(expanded));
+          panel.classList.toggle('hidden', !expanded);
+
+          if (icon instanceof HTMLElement) {
+            icon.classList.toggle('rotate-180', expanded);
+          }
+        };
+
+        const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        setExpanded(initialExpanded);
+
+        toggle.addEventListener('click', () => {
+          const expanded = toggle.getAttribute('aria-expanded') === 'true';
+          setExpanded(!expanded);
+        });
+      });
+    })();
+  </script>
 {% endblock %}
