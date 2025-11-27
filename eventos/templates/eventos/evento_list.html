@@ -260,7 +260,7 @@
             <div
               role="list"
               aria-label="{% trans 'Lista de eventos cancelados' %}"
-              class="card-grid items-stretch sm:grid-cols-1 md:grid-cols-2"
+              class="card-grid items-stretch"
             >
               {% for evento in eventos_cancelados %}
                 {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
