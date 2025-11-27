@@ -185,14 +185,39 @@
           </div>
         {% endif %}
 
-        {% if form.password1 %}
-          <div>
-            {% include '_forms/field.html' with field=form.password1 %}
-          </div>
-        {% endif %}
-        {% if form.password2 %}
-          <div>
-            {% include '_forms/field.html' with field=form.password2 %}
+        {% if form.password1 or form.password2 %}
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-generate-password
+                aria-label="{% trans 'Gerar senha automática' %}"
+              >
+                {% trans "Gerar senha" %}
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                data-toggle-password
+                data-hidden-label="{% trans 'Mostrar senha' %}"
+                data-visible-label="{% trans 'Ocultar senha' %}"
+                aria-label="{% trans 'Alternar visualização da senha' %}"
+                aria-pressed="false"
+              >
+                {% trans "Mostrar senha" %}
+              </button>
+            </div>
+            {% if form.password1 %}
+              <div>
+                {% include '_forms/field.html' with field=form.password1 %}
+              </div>
+            {% endif %}
+            {% if form.password2 %}
+              <div>
+                {% include '_forms/field.html' with field=form.password2 %}
+              </div>
+            {% endif %}
           </div>
         {% endif %}
 
@@ -255,6 +280,66 @@
           setExpanded(!expanded);
         });
       });
+
+      const passwordInputs = Array.from(
+        document.querySelectorAll('input[name="password1"], input[name="password2"]'),
+      ).filter((input) => input instanceof HTMLInputElement);
+
+      const toggleButton = document.querySelector('[data-toggle-password]');
+      const generateButton = document.querySelector('[data-generate-password]');
+
+      const hiddenLabel =
+        (toggleButton instanceof HTMLElement && toggleButton.dataset.hiddenLabel) ||
+        (toggleButton instanceof HTMLElement ? toggleButton.textContent : '') ||
+        '';
+      const visibleLabel =
+        (toggleButton instanceof HTMLElement && toggleButton.dataset.visibleLabel) || hiddenLabel;
+
+      const setVisibility = (visible) => {
+        passwordInputs.forEach((input) => {
+          input.type = visible ? 'text' : 'password';
+        });
+
+        if (toggleButton instanceof HTMLElement) {
+          toggleButton.setAttribute('aria-pressed', String(visible));
+          toggleButton.textContent = visible ? visibleLabel : hiddenLabel;
+        }
+      };
+
+      if (toggleButton instanceof HTMLElement && passwordInputs.length) {
+        setVisibility(false);
+
+        toggleButton.addEventListener('click', () => {
+          const isVisible = toggleButton.getAttribute('aria-pressed') === 'true';
+          setVisibility(!isVisible);
+        });
+      }
+
+      if (generateButton instanceof HTMLElement && passwordInputs.length) {
+        const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@#$%*?';
+
+        const generatePassword = (length = 12) => {
+          let password = '';
+
+          for (let index = 0; index < length; index += 1) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset.charAt(randomIndex);
+          }
+
+          return password;
+        };
+
+        generateButton.addEventListener('click', () => {
+          const password = generatePassword();
+
+          passwordInputs.forEach((input) => {
+            input.value = password;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+
+          setVisibility(true);
+        });
+      }
     })();
   </script>
 {% endblock %}
