@@ -86,7 +86,7 @@
               {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
             </span>
           </summary>
-          <div class="card-body">
+          <div class="">
             {% include 'nucleos/partials/nucleo_carousel.html' with section=section page=section.page_obj fetch_url=section.fetch_url search_term=section.search_term|default:nucleos_search_term empty_message=section.empty_message scope=section.scope|default:nucleos_carousel_scope classificacao_filter=selected_classificacao %}
           </div>
         </details>
