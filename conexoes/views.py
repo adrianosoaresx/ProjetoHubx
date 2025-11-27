@@ -753,6 +753,24 @@ def solicitar_conexao(request, id):
         messages.error(request, _("Você não pode conectar-se consigo mesmo."))
     elif request.user.connections.filter(id=other_user.id).exists():
         messages.info(request, _("Vocês já estão conectados."))
+    elif request.user.followers.filter(id=other_user.id).exists():
+        request.user.connections.add(other_user)
+        request.user.followers.remove(other_user)
+        if other_user.followers.filter(id=request.user.id).exists():
+            other_user.followers.remove(request.user)
+        messages.success(
+            request,
+            _("Conexão com %(nome)s aceita.")
+            % {"nome": _get_display_name(other_user)},
+        )
+        enviar_para_usuario(
+            other_user,
+            CONNECTION_NOTIFICATION_TEMPLATES["accepted"],
+            {
+                "solicitado": _get_display_name(request.user),
+                "actor_id": str(request.user.id),
+            },
+        )
     elif other_user.followers.filter(id=request.user.id).exists():
         messages.info(request, _("Solicitação de conexão já enviada."))
     else:

@@ -8,6 +8,13 @@ from organizacoes.factories import OrganizacaoFactory
 User = get_user_model()
 
 
+@pytest.fixture(autouse=True)
+def _stub_enviar_para_usuario(monkeypatch):
+    from notificacoes.services import notificacoes
+
+    monkeypatch.setattr(notificacoes, "enviar_para_usuario", lambda *_, **__: None)
+
+
 @pytest.mark.django_db
 def test_aceitar_conexao(client):
     user = User.objects.create_user(email="a@example.com", username="a", password="x")
@@ -179,6 +186,48 @@ def test_solicitar_conexao_cria_solicitacao(client):
 
     assert response.status_code == 200
     assert outro.followers.filter(id=user.id).exists()
+
+
+@pytest.mark.django_db
+def test_solicitar_conexao_aceita_pedido_cruzado(client):
+    organizacao = OrganizacaoFactory()
+    primeiro = User.objects.create_user(
+        email="owner@example.com",
+        username="owner",
+        password="x",
+        organizacao=organizacao,
+        is_associado=True,
+    )
+    segundo = User.objects.create_user(
+        email="segundo@example.com",
+        username="segundo",
+        password="x",
+        organizacao=organizacao,
+        is_associado=True,
+    )
+
+    client.force_login(primeiro)
+    response_primeiro = client.post(
+        reverse("conexoes:solicitar_conexao", args=[segundo.id]),
+        {"q": ""},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response_primeiro.status_code == 200
+    assert segundo.followers.filter(id=primeiro.id).exists()
+
+    client.force_login(segundo)
+    response_segundo = client.post(
+        reverse("conexoes:solicitar_conexao", args=[primeiro.id]),
+        {"q": ""},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response_segundo.status_code == 200
+    assert segundo.connections.filter(id=primeiro.id).exists()
+    assert primeiro.connections.filter(id=segundo.id).exists()
+    assert not segundo.followers.filter(id=primeiro.id).exists()
+    assert not primeiro.followers.filter(id=segundo.id).exists()
 
 
 @pytest.mark.django_db
