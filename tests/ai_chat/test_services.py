@@ -238,11 +238,18 @@ def test_get_associados_list_filters_and_sanitizes(cache):
     org = OrganizacaoFactory()
     other_org = OrganizacaoFactory()
     viewer = UserFactory(organizacao=org)
-    active = UserFactory(organizacao=org, is_associado=True, username="ativo")
+    active = UserFactory(
+        organizacao=org, is_associado=True, username="ativo", contato="A Ativo"
+    )
+    second = UserFactory(
+        organizacao=org, is_associado=True, username="beta", contato="B Beta"
+    )
     UserFactory(organizacao=org, is_associado=True, is_active=False)
     UserFactory(organizacao=other_org, is_associado=True)
 
-    result = services.get_associados_list(org.id, usuario_id=str(viewer.id))
+    result = services.get_associados_list(
+        org.id, usuario_id=str(viewer.id), limit=1, offset=0
+    )
 
     assert result["organizacao_id"] == str(org.id)
     assert [item["id"] for item in result["associados"]] == [str(active.id)]
@@ -255,7 +262,7 @@ def test_get_associados_list_requires_same_organization(cache):
     UserFactory(organizacao=org, is_associado=True)
     outsider = UserFactory()
 
-    result = services.get_associados_list(org.id, usuario_id=str(outsider.id))
+    result = services.get_associados_list(org.id, usuario_id=str(outsider.id), limit=1)
 
     assert result["associados"] == []
     assert "error" in result
@@ -266,11 +273,18 @@ def test_get_nucleados_list_respects_org_and_status():
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
     other_nucleo = NucleoFactory(organizacao=org)
-    membro = UserFactory(organizacao=org, is_associado=True)
+    membro = UserFactory(organizacao=org, is_associado=True, contato="A")
+    outro_membro = UserFactory(organizacao=org, is_associado=True, contato="B")
     outro = UserFactory(organizacao=org, is_associado=True)
 
     ParticipacaoNucleo.objects.create(
         user=membro,
+        nucleo=nucleo,
+        status="ativo",
+        papel="membro",
+    )
+    ParticipacaoNucleo.objects.create(
+        user=outro_membro,
         nucleo=nucleo,
         status="ativo",
         papel="membro",
@@ -282,11 +296,13 @@ def test_get_nucleados_list_respects_org_and_status():
         papel="membro",
     )
 
-    result = services.get_nucleados_list(org.id, str(nucleo.id), usuario_id=str(membro.id))
+    result = services.get_nucleados_list(
+        org.id, str(nucleo.id), usuario_id=str(membro.id), limit=1, offset=1
+    )
 
     assert result["organizacao_id"] == str(org.id)
-    assert [item["id"] for item in result["nucleados"]] == [str(membro.id)]
-    assert result["nucleados"][0]["status"] == "ativo"
+    assert [item["id"] for item in result["nucleados"]] == [str(outro_membro.id)]
+    assert all(n["status"] == "ativo" for n in result["nucleados"])
 
 
 @pytest.mark.django_db
@@ -302,7 +318,9 @@ def test_get_nucleados_list_requires_permission():
 
     outsider = UserFactory()
 
-    result = services.get_nucleados_list(org.id, str(nucleo.id), usuario_id=str(outsider.id))
+    result = services.get_nucleados_list(
+        org.id, str(nucleo.id), usuario_id=str(outsider.id), limit=1
+    )
 
     assert result["nucleados"] == []
     assert "error" in result
@@ -326,8 +344,8 @@ def test_get_eventos_list_filters_future_only():
     past = EventoFactory(organizacao=org, data_inicio=timezone.now() - timedelta(days=2))
     future = EventoFactory(organizacao=org, data_inicio=timezone.now() + timedelta(days=2))
 
-    future_only = services.get_eventos_list(org.id, future_only=True)
-    all_events = services.get_eventos_list(org.id, future_only=False)
+    future_only = services.get_eventos_list(org.id, future_only=True, limit=1)
+    all_events = services.get_eventos_list(org.id, future_only=False, limit=2)
 
     assert [e["id"] for e in future_only["eventos"]] == [str(future.id)]
     assert set(e["id"] for e in all_events["eventos"]) == {str(past.id), str(future.id)}
@@ -339,13 +357,24 @@ def test_get_inscritos_list_returns_names(cache):
     associado = UserFactory(organizacao=evento.organizacao, is_associado=True, contato="Nome Teste")
     ParticipacaoNucleo.objects.create(user=associado, nucleo=evento.nucleo, status="ativo")
     InscricaoEvento.objects.create(user=associado, evento=evento, status="confirmada")
+    outro_associado = UserFactory(
+        organizacao=evento.organizacao, is_associado=True, contato="Outro Nome"
+    )
+    ParticipacaoNucleo.objects.create(
+        user=outro_associado, nucleo=evento.nucleo, status="ativo"
+    )
+    InscricaoEvento.objects.create(
+        user=outro_associado, evento=evento, status="confirmada"
+    )
     InscricaoEvento.objects.create(
         user=UserFactory(organizacao=evento.organizacao),
         evento=EventoFactory(organizacao=evento.organizacao),
         status="confirmada",
     )
 
-    result = services.get_inscritos_list(str(evento.id), usuario_id=str(associado.id))
+    result = services.get_inscritos_list(
+        str(evento.id), usuario_id=str(associado.id), limit=1, offset=0
+    )
 
     assert result["evento_id"] == str(evento.id)
     assert result["inscritos"] == [{"id": str(associado.id), "nome": "Nome Teste"}]
