@@ -109,6 +109,13 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         return self.get(email__iexact=email)
 
 
+class SoftDeleteUserManager(CustomUserManager):
+    """Manager que oculta usuários marcados como deletados."""
+
+    def get_queryset(self):  # type: ignore[override]
+        return super().get_queryset().filter(deleted=False)
+
+
 class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     """
     Modelo de usuário customizado.
@@ -231,7 +238,8 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
 
-    objects = CustomUserManager()
+    objects = SoftDeleteUserManager()
+    all_objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = ["username"]
