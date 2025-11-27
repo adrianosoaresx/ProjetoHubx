@@ -187,6 +187,16 @@
 
         {% if form.password1 or form.password2 %}
           <div class="space-y-3">
+            {% if form.password1 %}
+              <div>
+                {% include '_forms/field.html' with field=form.password1 %}
+              </div>
+            {% endif %}
+            {% if form.password2 %}
+              <div>
+                {% include '_forms/field.html' with field=form.password2 %}
+              </div>
+            {% endif %}
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -208,16 +218,6 @@
                 {% trans "Mostrar senha" %}
               </button>
             </div>
-            {% if form.password1 %}
-              <div>
-                {% include '_forms/field.html' with field=form.password1 %}
-              </div>
-            {% endif %}
-            {% if form.password2 %}
-              <div>
-                {% include '_forms/field.html' with field=form.password2 %}
-              </div>
-            {% endif %}
           </div>
         {% endif %}
 
