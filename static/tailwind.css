@@ -3008,11 +3008,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   right: 0px;
 }
 
-.inset-x-2 {
-  left: 0.5rem;
-  right: 0.5rem;
-}
-
 .inset-y-0 {
   top: 0px;
   bottom: 0px;
@@ -3427,6 +3422,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .w-8 {
   width: 2rem;
+}
+
+.w-\[calc\(100vw-1rem\)\] {
+  width: calc(100vw - 1rem);
 }
 
 .w-auto {
@@ -5816,14 +5815,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 }
 
 @media (min-width: 640px) {
-  .sm\:inset-auto {
-    inset: auto;
-  }
-
-  .sm\:right-0 {
-    right: 0px;
-  }
-
   .sm\:col-span-2 {
     grid-column: span 2 / span 2;
   }
