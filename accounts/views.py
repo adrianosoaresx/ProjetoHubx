@@ -620,14 +620,17 @@ def excluir_conta(request):
             evento="conta_excluida",
             ip=get_client_ip(request),
         )
-        token = AccountToken.objects.create(
-            usuario=user,
-            tipo=AccountToken.Tipo.CANCEL_DELETE,
-            expires_at=timezone.now() + timezone.timedelta(days=30),
-            ip_gerado=get_client_ip(request),
-        )
+        token = None
+        if is_self:
+            token = AccountToken.objects.create(
+                usuario=user,
+                tipo=AccountToken.Tipo.CANCEL_DELETE,
+                expires_at=timezone.now() + timezone.timedelta(days=30),
+                ip_gerado=get_client_ip(request),
+            )
 
-    send_cancel_delete_email.delay(token.id)
+    if is_self and token:
+        send_cancel_delete_email.delay(token.id)
 
     if is_self:
         logout(request)
