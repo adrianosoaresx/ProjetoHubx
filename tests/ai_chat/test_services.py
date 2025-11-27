@@ -190,6 +190,21 @@ def test_get_future_events_context_filters_by_org_and_nucleo():
 
 
 @pytest.mark.django_db
+def test_get_future_events_context_accepts_nucleo_public_id():
+    org = OrganizacaoFactory()
+    nucleo = NucleoFactory(organizacao=org)
+    other_nucleo = NucleoFactory(organizacao=org)
+
+    future_date = timezone.now() + timedelta(days=1)
+    EventoFactory(organizacao=org, nucleo=nucleo, data_inicio=future_date)
+    EventoFactory(organizacao=org, nucleo=other_nucleo, data_inicio=future_date)
+
+    result = services.get_future_events_context(org.id, nucleo_ids=[str(nucleo.public_id)])
+
+    assert [event["nucleo_id"] for event in result["events"]] == [str(nucleo.id)]
+
+
+@pytest.mark.django_db
 def test_get_organizacao_nucleos_context_limits_to_user_participations():
     org = OrganizacaoFactory()
     user = UserFactory(organizacao=org)

@@ -198,7 +198,31 @@ def get_future_events_context(
         }
 
     if nucleo_ids:
-        nucleo_filter_set = {str(nucleo_id) for nucleo_id in nucleo_ids}
+        nucleo_filter_set: set[str] = set()
+
+        numeric_ids: set[int] = set()
+        uuid_ids: set[uuid.UUID] = set()
+        for raw_id in nucleo_ids:
+            try:
+                numeric_ids.add(int(str(raw_id)))
+                continue
+            except (TypeError, ValueError):
+                try:
+                    uuid_ids.add(uuid.UUID(str(raw_id)))
+                except (TypeError, ValueError):
+                    continue
+
+        if numeric_ids or uuid_ids:
+            nucleo_filter_set = {
+                str(pk)
+                for pk in Nucleo.objects.filter(
+                    organizacao_id=organizacao_id,
+                    deleted=False,
+                )
+                .filter(Q(id__in=numeric_ids) | Q(public_id__in=uuid_ids))
+                .values_list("id", flat=True)
+            }
+
         allowed_nucleo_ids = (
             nucleo_filter_set & allowed_nucleo_ids if allowed_nucleo_ids is not None else nucleo_filter_set
         )
