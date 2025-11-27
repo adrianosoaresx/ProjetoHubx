@@ -8,47 +8,24 @@
 
 {% block content %}
 <div class="space-y-6">
-  <details class="card group">
-    <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-      <div class="flex items-start gap-3">
-        <span
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20"
-        >
-          {% lucide 'contact' class='h-6 w-6' aria_hidden='true' %}
-        </span>
-        <div class="space-y-1">
-          <p class="text-xl font-semibold">{% trans "Informações públicas" %}</p>
-          <p class="text-sm text-[var(--text-secondary)]">
-            {% blocktrans with profile_name=perfil.display_name %}
-              Informações públicas de {{ profile_name }}.
-            {% endblocktrans %}
-          </p>
-        </div>
-      </div>
-      <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
-        {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-      </span>
-    </summary>
-   
-      <section
-        id="perfil-info"
-        class="space-y-6"
-        data-perfil-mode="public"
-        data-perfil-username="{{ perfil.username }}"
-        data-perfil-public-id="{{ perfil.public_id }}"
-        aria-live="polite"
-        aria-busy="true"
-        hx-trigger="load"
-        hx-get="{% url 'accounts:perfil_info_partial' %}"
-        hx-target="#perfil-info"
-        hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
-      >
-        <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
-          {% trans "Carregando conteúdo..." %}
-        </div>
-      </section>
-    
-  </details>
+  {% trans "Informações públicas" as info_title %}
+  {% blocktrans with profile_name=perfil.display_name asvar info_subtitle %}
+    Informações públicas de {{ profile_name }}.
+  {% endblocktrans %}
+  {% url 'accounts:perfil_info_partial' as perfil_info_url %}
+
+  {% include "perfil/partials/info_accordion.html" with
+    title=info_title
+    subtitle=info_subtitle
+    icon='contact'
+    data_perfil_mode='public'
+    data_perfil_username=perfil.username
+    data_perfil_public_id=perfil.public_id
+    hx_trigger='load'
+    hx_get=perfil_info_url
+    hx_target='#perfil-info'
+    hx_vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
+  %}
 
   <section id="perfil-posts-accordion" class="card" data-accordion>
     <div class="card-header flex flex-wrap items-center justify-between gap-3">
