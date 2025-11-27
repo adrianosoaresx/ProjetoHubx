@@ -181,18 +181,20 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
         },
         {
             "type": "function",
-            "function": {
-                "name": "get_associados_list",
-                "description": "Lista associados ativos da organização com campos básicos.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "organizacao_id": {"type": "string"},
+                "function": {
+                    "name": "get_associados_list",
+                    "description": "Lista associados ativos da organização com campos básicos.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "organizacao_id": {"type": "string"},
+                            "limit": {"type": "integer"},
+                            "offset": {"type": "integer"},
+                        },
+                        "required": ["organizacao_id"],
                     },
-                    "required": ["organizacao_id"],
                 },
             },
-        },
         {
             "type": "function",
             "function": {
@@ -205,6 +207,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                         "nucleo_id": {"type": "string"},
                         "usuario_id": {"type": "string"},
                         "vinculo_id": {"type": "string"},
+                        "limit": {"type": "integer"},
+                        "offset": {"type": "integer"},
                     },
                     "required": ["organizacao_id", "nucleo_id"],
                 },
@@ -226,19 +230,21 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
         },
         {
             "type": "function",
-            "function": {
-                "name": "get_eventos_list",
-                "description": "Lista eventos da organização, permitindo filtrar somente futuros.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "organizacao_id": {"type": "string"},
-                        "future_only": {"type": "boolean"},
+                "function": {
+                    "name": "get_eventos_list",
+                    "description": "Lista eventos da organização, permitindo filtrar somente futuros.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "organizacao_id": {"type": "string"},
+                            "future_only": {"type": "boolean"},
+                            "limit": {"type": "integer"},
+                            "offset": {"type": "integer"},
+                        },
+                        "required": ["organizacao_id"],
                     },
-                    "required": ["organizacao_id"],
                 },
             },
-        },
         {
             "type": "function",
             "function": {
@@ -250,6 +256,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                         "evento_id": {"type": "string"},
                         "usuario_id": {"type": "string"},
                         "vinculo_id": {"type": "string"},
+                        "limit": {"type": "integer"},
+                        "offset": {"type": "integer"},
                     },
                     "required": ["evento_id"],
                 },

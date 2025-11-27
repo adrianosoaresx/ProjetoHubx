@@ -274,8 +274,23 @@ def _user_has_nucleo_access(
     return participa and not suspenso
 
 
+DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 50
+
+
+def _normalize_pagination(limit: int | None, offset: int | None) -> tuple[int, int]:
+    normalized_limit = DEFAULT_PAGE_SIZE if limit is None else max(1, min(limit, MAX_PAGE_SIZE))
+    normalized_offset = max(offset or 0, 0)
+    return normalized_limit, normalized_offset
+
+
 def get_associados_list(
-    organizacao_id: str, *, usuario_id: str | None = None, vinculo_id: str | None = None
+    organizacao_id: str,
+    *,
+    usuario_id: str | None = None,
+    vinculo_id: str | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> dict[str, Any]:
     """Retorna lista de associados ativos da organização com campos não sensíveis."""
 
@@ -287,7 +302,8 @@ def get_associados_list(
             "error": "Você não tem permissão para acessar esta organização.",
         }
 
-    cache_key = f"ai_chat:associados:{organizacao_id}"
+    normalized_limit, normalized_offset = _normalize_pagination(limit, offset)
+    cache_key = f"ai_chat:associados:{organizacao_id}:{normalized_limit}:{normalized_offset}"
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
@@ -300,7 +316,7 @@ def get_associados_list(
             is_active=True,
         )
         .only("id", "contato", "username", "created_at")
-        .order_by("contato", "username")
+        .order_by("contato", "username")[normalized_offset : normalized_offset + normalized_limit]
     )
     data = {
         "organizacao_id": str(organizacao_id),
@@ -324,6 +340,8 @@ def get_nucleados_list(
     *,
     usuario_id: str | None = None,
     vinculo_id: str | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> dict[str, Any]:
     """Retorna nucleados ativos de um núcleo específico dentro da organização informada."""
 
@@ -355,6 +373,8 @@ def get_nucleados_list(
             "error": "Você não tem permissão para acessar este núcleo.",
         }
 
+    normalized_limit, normalized_offset = _normalize_pagination(limit, offset)
+
     participacoes = (
         ParticipacaoNucleo.objects.select_related("user", "nucleo")
         .filter(
@@ -377,7 +397,7 @@ def get_nucleados_list(
             "user__username",
         )
         .order_by("user__contato", "user__username")
-    )
+    )[normalized_offset : normalized_offset + normalized_limit]
     return {
         "organizacao_id": str(organizacao_id),
         "nucleo_id": str(nucleo_id),
@@ -416,10 +436,18 @@ def get_nucleos_list(organizacao_id: str) -> dict[str, Any]:
     }
 
 
-def get_eventos_list(organizacao_id: str, future_only: bool = True) -> dict[str, Any]:
+def get_eventos_list(
+    organizacao_id: str,
+    future_only: bool = True,
+    *,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> dict[str, Any]:
     """Retorna eventos da organização, opcionando limitar a eventos futuros."""
 
-    cache_key = f"ai_chat:eventos:{organizacao_id}:{future_only}"
+    normalized_limit, normalized_offset = _normalize_pagination(limit, offset)
+
+    cache_key = f"ai_chat:eventos:{organizacao_id}:{future_only}:{normalized_limit}:{normalized_offset}"
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
@@ -433,7 +461,7 @@ def get_eventos_list(organizacao_id: str, future_only: bool = True) -> dict[str,
     if future_only:
         queryset = queryset.filter(data_inicio__gte=referencia)
 
-    eventos = list(queryset.order_by("data_inicio"))
+    eventos = list(queryset.order_by("data_inicio")[normalized_offset : normalized_offset + normalized_limit])
     data = {
         "organizacao_id": str(organizacao_id),
         "eventos": [
@@ -451,7 +479,12 @@ def get_eventos_list(organizacao_id: str, future_only: bool = True) -> dict[str,
 
 
 def get_inscritos_list(
-    evento_id: str, *, usuario_id: str | None = None, vinculo_id: str | None = None
+    evento_id: str,
+    *,
+    usuario_id: str | None = None,
+    vinculo_id: str | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> dict[str, Any]:
     """Retorna inscritos de um evento sem expor dados sensíveis."""
 
@@ -493,7 +526,8 @@ def get_inscritos_list(
             "error": "Você não tem permissão para acessar esta organização.",
         }
 
-    cache_key = f"ai_chat:inscritos:{evento_id}"
+    normalized_limit, normalized_offset = _normalize_pagination(limit, offset)
+    cache_key = f"ai_chat:inscritos:{evento_id}:{normalized_limit}:{normalized_offset}"
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
@@ -503,7 +537,7 @@ def get_inscritos_list(
         .filter(evento_id=evento_id, deleted=False, evento__deleted=False)
         .only("evento", "user__id", "user__contato", "user__username")
         .order_by("user__contato", "user__username")
-    )
+    )[normalized_offset : normalized_offset + normalized_limit]
     data = {
         "evento_id": evento_id,
         "inscritos": [
