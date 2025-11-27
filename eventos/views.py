@@ -261,9 +261,13 @@ def build_evento_carousel_sections(
         num_inscritos=Count("inscricoes", distinct=True)
     )
 
-    sections_order = ["ativos", "realizados"]
+    sections_order = ["ativos"]
     if can_view_planejamento_cancelados:
-        sections_order.insert(1, "planejamento")
+        sections_order.append("planejamento")
+
+    sections_order.append("realizados")
+    if can_view_planejamento_cancelados:
+        sections_order.append("cancelados")
 
     if only_sections is not None:
         sections_order = [section for section in sections_order if section in only_sections]
@@ -289,6 +293,12 @@ def build_evento_carousel_sections(
             )
             empty_message = _("Nenhum evento realizado encontrado.")
             aria_label = _("Lista de eventos realizados")
+        elif section == "cancelados":
+            queryset = restringe_planejamento_cancelados(
+                annotated_base.filter(status=Evento.Status.CANCELADO)
+            ).order_by("-data_inicio")
+            empty_message = _("Nenhum evento cancelado encontrado.")
+            aria_label = _("Lista de eventos cancelados")
         else:
             continue
 
@@ -490,6 +500,21 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             else _("Lista de eventos realizados")
         )
 
+        cancelados_section = sections.get("cancelados")
+        ctx["eventos_cancelados_page"] = (
+            cancelados_section["page_obj"] if cancelados_section else None
+        )
+        ctx["eventos_cancelados_empty_message"] = (
+            cancelados_section["empty_message"]
+            if cancelados_section
+            else _("Nenhum evento cancelado encontrado.")
+        )
+        ctx["eventos_cancelados_aria_label"] = (
+            cancelados_section["aria_label"]
+            if cancelados_section
+            else _("Lista de eventos cancelados")
+        )
+
         ctx["eventos_carousel_fetch_url"] = carousel_sections["fetch_url"]
         ctx["eventos_search_query"] = carousel_sections["search_term"]
         ctx["eventos_status_filter"] = carousel_sections["status_filter"]
@@ -534,7 +559,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
 class EventoListCarouselView(LoginRequiredMixin, NoSuperadminMixin, View):
     http_method_names = ["get"]
-    sections = {"ativos", "planejamento", "realizados"}
+    sections = {"ativos", "planejamento", "realizados", "cancelados"}
 
     def get(self, request, *args, **kwargs):
         section = request.GET.get("section")
@@ -544,7 +569,7 @@ class EventoListCarouselView(LoginRequiredMixin, NoSuperadminMixin, View):
         can_view_planejamento_cancelados, nucleo_ids_limit = _resolve_planejamento_permissions(
             request.user
         )
-        if section == "planejamento" and not can_view_planejamento_cancelados:
+        if section in {"planejamento", "cancelados"} and not can_view_planejamento_cancelados:
             return JsonResponse({"error": _("Seção indisponível para o usuário.")}, status=403)
 
         base_queryset = get_evento_base_queryset(request)

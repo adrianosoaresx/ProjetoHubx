@@ -257,23 +257,7 @@
             </span>
           </summary>
           <div>
-            <div
-              role="list"
-              aria-label="{% trans 'Lista de eventos cancelados' %}"
-              class="card-grid items-stretch"
-            >
-              {% for evento in eventos_cancelados %}
-                {% include card_template with item=evento evento=evento item_context_name=card_item_name %}
-              {% empty %}
-                <div class="col-span-full">
-                  <div
-                    class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center"
-                  >
-                    <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Nenhum evento cancelado encontrado." %}</p>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
+            {% include 'eventos/partials/evento_carousel.html' with page=eventos_cancelados_page section='cancelados' fetch_url=eventos_carousel_fetch_url search_term=eventos_search_query status_filter=eventos_status_filter empty_message=eventos_cancelados_empty_message aria_label=eventos_cancelados_aria_label %}
           </div>
         </details>
       {% endif %}
