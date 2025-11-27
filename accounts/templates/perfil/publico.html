@@ -8,196 +8,182 @@
 
 {% block content %}
 <div class="space-y-6">
-  <details class="card group">
-    <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-      <div class="flex items-start gap-3">
-        <span
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/20"
+
+      {% with default_section=perfil_default_section|default:"info" %}
+        <section
+          id="perfil-content"
+          class="space-y-6"
+          data-perfil-default-url="{{ perfil_default_url }}"
+          data-perfil-default-section="{{ default_section }}"
+          data-perfil-mode="public"
+          data-perfil-username="{{ perfil.username }}"
+          data-perfil-public-id="{{ perfil.public_id }}"
+          data-perfil-loading-text="{% trans 'Carregando conteúdo...' %}"
+          data-perfil-error-text="{% trans 'Não foi possível carregar esta seção.' %}"
+          aria-live="polite"
+          aria-busy="true"
+          hx-trigger="load"
+          hx-get="{{ perfil_default_url }}"
+          hx-target="#perfil-content"
+          {% if default_section %}
+            hx-push-url="?section={{ default_section }}"
+          {% endif %}
+          hx-vals='{"section":"{{ default_section }}","public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
         >
-          {% lucide 'contact' class='h-6 w-6' aria_hidden='true' %}
-        </span>
-        <div class="space-y-1">
-          <p class="text-xl font-semibold">{% trans "Informações públicas" %}</p>
-          <p class="text-sm text-[var(--text-secondary)]">
-            {% blocktrans with profile_name=perfil.display_name %}
-              Informações públicas de {{ profile_name }}.
-            {% endblocktrans %}
-          </p>
+          <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
+            {% trans "Carregando conteúdo..." %}
+          </div>
+        </section>
+      {% endwith %}
+
+      <section id="perfil-posts-accordion" class="card" data-accordion>
+        <div class="card-header flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 text-left"
+            data-accordion-toggle
+            aria-expanded="false"
+            aria-controls="perfil-posts-panel"
+          >
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                {% lucide 'newspaper' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h3 class="text-xl font-semibold">{% trans "Postagens" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans with profile_name=perfil.display_name %}
+                    Acompanhe as postagens públicas de {{ profile_name }}.
+                  {% endblocktrans %}
+                </p>
+              </div>
+            </div>
+            <svg
+              class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
         </div>
-      </div>
-      <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
-        {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-      </span>
-    </summary>
-   
-      <section
-        id="perfil-info"
-        class="space-y-6"
-        data-perfil-mode="public"
-        data-perfil-username="{{ perfil.username }}"
-        data-perfil-public-id="{{ perfil.public_id }}"
-        aria-live="polite"
-        aria-busy="true"
-        hx-trigger="load"
-        hx-get="{% url 'accounts:perfil_info_partial' %}"
-        hx-target="#perfil-info"
-        hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
-      >
-        <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
-          {% trans "Carregando conteúdo..." %}
+
+        <div
+          id="perfil-posts-panel"
+          class="card-body space-y-6 border-t border-[var(--border)] hidden"
+          data-accordion-panel
+        >
+          {% include "feed/_grid.html" with posts=profile_posts %}
         </div>
       </section>
-    
-  </details>
 
-  <section id="perfil-posts-accordion" class="card" data-accordion>
-    <div class="card-header flex flex-wrap items-center justify-between gap-3">
-      <button
-        type="button"
-        class="flex w-full items-center justify-between gap-3 text-left"
-        data-accordion-toggle
-        aria-expanded="false"
-        aria-controls="perfil-posts-panel"
-      >
-        <div class="flex items-start gap-3">
-          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
-            {% lucide 'newspaper' class='h-6 w-6' aria_hidden='true' %}
-          </span>
-          <div class="space-y-1">
-            <h3 class="text-xl font-semibold">{% trans "Postagens" %}</h3>
-            <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans with profile_name=perfil.display_name %}
-                Acompanhe as postagens públicas de {{ profile_name }}.
-              {% endblocktrans %}
-            </p>
+      <details class="card group">
+        <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <span
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20"
+            >
+              {% lucide 'briefcase' class='h-6 w-6' aria_hidden='true' %}
+            </span>
+            <div class="space-y-1">
+              <p class="text-xl font-semibold">{% trans "Portfólio" %}</p>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans with profile_name=perfil.display_name %}
+                  Trabalhos e mídias públicos de {{ profile_name }}.
+                {% endblocktrans %}
+              </p>
+            </div>
           </div>
-        </div>
-        <svg
-          class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
-          data-accordion-icon
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
-    </div>
+          <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+          </span>
+        </summary>
 
-    <div
-      id="perfil-posts-panel"
-      class="card-body space-y-6 border-t border-[var(--border)] hidden"
-      data-accordion-panel
-    >
-      {% include "feed/_grid.html" with posts=profile_posts %}
-    </div>
-  </section>
+          <div class="card-body">
+            {% if portfolio_medias %}
 
-  <details class="card group">
-    <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-      <div class="flex items-start gap-3">
-        <span
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20"
-        >
-          {% lucide 'briefcase' class='h-6 w-6' aria_hidden='true' %}
-        </span>
-        <div class="space-y-1">
-          <p class="text-xl font-semibold">{% trans "Portfólio" %}</p>
-          <p class="text-sm text-[var(--text-secondary)]">
-            {% blocktrans with profile_name=perfil.display_name %}
-              Trabalhos e mídias públicos de {{ profile_name }}.
-            {% endblocktrans %}
-          </p>
-        </div>
-      </div>
-      <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
-        {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
-      </span>
-    </summary>
-    
-      <div class="card-body">
-        {% if portfolio_medias %}
+              <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                {% for media in portfolio_medias %}
+                  <article class="card p-0">
+                    <div class="card-body relative space-y-5">
 
-          <div class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-            {% for media in portfolio_medias %}
-              <article class="card p-0">
-                <div class="card-body relative space-y-5">
-
-                  <div class="absolute right-4 top-4 z-10 flex gap-2">
-                    <a
-                      href="{{ media.file.url }}"
-                      class="btn btn-secondary btn-sm"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="{% trans 'Visualizar' %}"
-                    >
-                      {% lucide 'eye' class='w-4 h-4' aria_hidden='true' %}
-                    </a>
-                  </div>
-
-                  <header class="space-y-2 pr-16">
-                    <p class="text-sm font-medium text-[var(--text-primary)]">
-                      {{ media.descricao|default:_('Mídia sem descrição') }}
-                    </p>
-                    {% if media.created_at %}
-                      <p class="text-xs text-[var(--text-secondary)]">
-                        {{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}
-                      </p>
-                    {% endif %}
-                  </header>
-
-                  {% if media.media_type == 'pdf' %}
-
-                    <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
-
-                      <a
-                        href="{{ media.file.url }}"
-                        class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span class="flex items-center gap-3">
-                          <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
-                            {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
-                          </span>
-                          <span class="truncate">{% trans "Visualizar PDF" %}</span>
-                        </span>
-                        {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
-                      </a>
-                    </div>
-                  {% elif media.media_type == 'image' %}
-                    <a href="{{ media.file.url }}" class="block" target="_blank" rel="noopener noreferrer">
-
-                      <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
-
-                        <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
-                          <img
-                            src="{{ media.file.url }}"
-                            alt="{{ media.descricao|default:_('Mídia sem descrição') }}"
-                            class="h-auto w-full max-h-[320px] object-contain"
-                            loading="lazy"
-                          />
-                        </div>
-                      </figure>
-                    </a>
-                  {% elif media.media_type == 'video' %}
-
-                    <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
-
-                      <div class="feed-video-wrapper">
-                        <div class="feed-video-frame">
-                          <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
-                        </div>
+                      <div class="absolute right-4 top-4 z-10 flex gap-2">
+                        <a
+                          href="{{ media.file.url }}"
+                          class="btn btn-secondary btn-sm"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="{% trans 'Visualizar' %}"
+                        >
+                          {% lucide 'eye' class='w-4 h-4' aria_hidden='true' %}
+                        </a>
                       </div>
-                    </figure>
-                  {% else %}
 
-                    <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
+                      <header class="space-y-2 pr-16">
+                        <p class="text-sm font-medium text-[var(--text-primary)]">
+                          {{ media.descricao|default:_('Mídia sem descrição') }}
+                        </p>
+                        {% if media.created_at %}
+                          <p class="text-xs text-[var(--text-secondary)]">
+                            {{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}
+                          </p>
+                        {% endif %}
+                      </header>
+
+                      {% if media.media_type == 'pdf' %}
+
+                        <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+
+                          <a
+                            href="{{ media.file.url }}"
+                            class="flex items-center justify-between gap-4 p-4 text-sm font-medium text-[var(--text-primary)] transition hover:text-[var(--accent)]"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <span class="flex items-center gap-3">
+                              <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--primary)]">
+                                {% lucide 'file-text' class='h-6 w-6' aria_hidden='true' %}
+                              </span>
+                              <span class="truncate">{% trans "Visualizar PDF" %}</span>
+                            </span>
+                            {% lucide 'external-link' class='h-5 w-5 flex-shrink-0 text-[var(--text-secondary)]' aria_hidden='true' %}
+                          </a>
+                        </div>
+                      {% elif media.media_type == 'image' %}
+                        <a href="{{ media.file.url }}" class="block" target="_blank" rel="noopener noreferrer">
+
+                          <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)]">
+
+                            <div class="relative flex max-h-[320px] w-full items-center justify-center overflow-hidden bg-[var(--bg-secondary)]">
+                              <img
+                                src="{{ media.file.url }}"
+                                alt="{{ media.descricao|default:_('Mídia sem descrição') }}"
+                                class="h-auto w-full max-h-[320px] object-contain"
+                                loading="lazy"
+                              />
+                            </div>
+                          </figure>
+                        </a>
+                      {% elif media.media_type == 'video' %}
+
+                        <figure class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-black">
+
+                          <div class="feed-video-wrapper">
+                            <div class="feed-video-frame">
+                              <video src="{{ media.file.url }}" controls class="feed-video-player"></video>
+                            </div>
+                          </div>
+                        </figure>
+                      {% else %}
+
+                        <div class="relative z-20 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-tertiary)] p-4 text-sm text-[var(--text-primary)]">
 
                       {{ media.file.name|default:_('Arquivo disponível') }}
                     </div>
