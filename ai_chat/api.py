@@ -134,6 +134,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                     "type": "object",
                     "properties": {
                         "organizacao_id": {"type": "string"},
+                        "usuario_id": {"type": "string"},
+                        "vinculo_id": {"type": "string"},
                     },
                     "required": ["organizacao_id"],
                 },
@@ -201,6 +203,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                     "properties": {
                         "organizacao_id": {"type": "string"},
                         "nucleo_id": {"type": "string"},
+                        "usuario_id": {"type": "string"},
+                        "vinculo_id": {"type": "string"},
                     },
                     "required": ["organizacao_id", "nucleo_id"],
                 },
@@ -244,6 +248,8 @@ def _build_tool_definitions() -> list[dict[str, Any]]:
                     "type": "object",
                     "properties": {
                         "evento_id": {"type": "string"},
+                        "usuario_id": {"type": "string"},
+                        "vinculo_id": {"type": "string"},
                     },
                     "required": ["evento_id"],
                 },
@@ -492,8 +498,15 @@ class ChatMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
                 args = json.loads(call.function.arguments or "{}")
             except json.JSONDecodeError:
                 args = {}
-            args.setdefault("organizacao_id", str(session.organizacao_id))
-            if call.function.name in {"get_organizacao_nucleos_context", "get_future_events_context"}:
+            if call.function.name != "get_inscritos_list":
+                args.setdefault("organizacao_id", str(session.organizacao_id))
+            if call.function.name in {
+                "get_organizacao_nucleos_context",
+                "get_future_events_context",
+                "get_associados_list",
+                "get_nucleados_list",
+                "get_inscritos_list",
+            }:
                 args.setdefault("usuario_id", str(session.usuario_id))
             function = TOOL_WRAPPERS.get(call.function.name)
             allowed_tools = self._get_allowed_tools(role)

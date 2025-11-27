@@ -20,6 +20,7 @@ from eventos.models import Evento, InscricaoEvento
 from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 from services import nucleos_metrics
+from services.nucleos import user_belongs_to_nucleo
 
 
 def _serialize_datetime(value: datetime | None) -> str | None:
@@ -236,8 +237,55 @@ def _associado_nome(usuario: Any) -> str:
     return username or "Usuário"
 
 
-def get_associados_list(organizacao_id: str) -> dict[str, Any]:
+def _resolve_usuario(usuario_id: str | None = None, vinculo_id: str | None = None):
+    resolved_id = usuario_id or vinculo_id
+    if not resolved_id:
+        return None
+    try:
+        return User.objects.only("id", "organizacao_id", "user_type", "is_active").get(
+            pk=resolved_id, deleted=False
+        )
+    except User.DoesNotExist:
+        return None
+
+
+def _user_has_organizacao_access(user: Any, organizacao_id: str) -> bool:
+    return (
+        bool(user)
+        and getattr(user, "is_active", False)
+        and str(getattr(user, "organizacao_id", "")) == str(organizacao_id)
+    )
+
+
+def _user_has_nucleo_access(
+    user: Any, organizacao_id: str, nucleo_id: str, consultor_id: str | None = None
+) -> bool:
+    if not _user_has_organizacao_access(user, organizacao_id):
+        return False
+
+    tipo = getattr(user, "get_tipo_usuario", None)
+    if tipo in {"admin", "coordenador", "root"}:
+        return True
+
+    if consultor_id and str(consultor_id) == str(getattr(user, "id", None)):
+        return True
+
+    participa, _, suspenso = user_belongs_to_nucleo(user, nucleo_id)
+    return participa and not suspenso
+
+
+def get_associados_list(
+    organizacao_id: str, *, usuario_id: str | None = None, vinculo_id: str | None = None
+) -> dict[str, Any]:
     """Retorna lista de associados ativos da organização com campos não sensíveis."""
+
+    usuario = _resolve_usuario(usuario_id, vinculo_id)
+    if not _user_has_organizacao_access(usuario, organizacao_id):
+        return {
+            "organizacao_id": str(organizacao_id),
+            "associados": [],
+            "error": "Você não tem permissão para acessar esta organização.",
+        }
 
     cache_key = f"ai_chat:associados:{organizacao_id}"
     cached = cache.get(cache_key)
@@ -270,8 +318,42 @@ def get_associados_list(organizacao_id: str) -> dict[str, Any]:
     return data
 
 
-def get_nucleados_list(organizacao_id: str, nucleo_id: str) -> dict[str, Any]:
+def get_nucleados_list(
+    organizacao_id: str,
+    nucleo_id: str,
+    *,
+    usuario_id: str | None = None,
+    vinculo_id: str | None = None,
+) -> dict[str, Any]:
     """Retorna nucleados ativos de um núcleo específico dentro da organização informada."""
+
+    nucleo = (
+        Nucleo.objects.filter(id=nucleo_id, organizacao_id=organizacao_id, deleted=False)
+        .values("id", "consultor_id")
+        .first()
+    )
+    if not nucleo:
+        return {
+            "organizacao_id": str(organizacao_id),
+            "nucleo_id": str(nucleo_id),
+            "nucleados": [],
+            "error": "Núcleo não encontrado para a organização.",
+        }
+
+    usuario = _resolve_usuario(usuario_id, vinculo_id)
+    consultor_id = nucleo.get("consultor_id")
+    if not _user_has_nucleo_access(
+        usuario,
+        organizacao_id,
+        str(nucleo_id),
+        str(consultor_id) if consultor_id else None,
+    ):
+        return {
+            "organizacao_id": str(organizacao_id),
+            "nucleo_id": str(nucleo_id),
+            "nucleados": [],
+            "error": "Você não tem permissão para acessar este núcleo.",
+        }
 
     participacoes = (
         ParticipacaoNucleo.objects.select_related("user", "nucleo")
@@ -368,8 +450,48 @@ def get_eventos_list(organizacao_id: str, future_only: bool = True) -> dict[str,
     return data
 
 
-def get_inscritos_list(evento_id: str) -> dict[str, Any]:
+def get_inscritos_list(
+    evento_id: str, *, usuario_id: str | None = None, vinculo_id: str | None = None
+) -> dict[str, Any]:
     """Retorna inscritos de um evento sem expor dados sensíveis."""
+
+    evento = (
+        Evento.objects.filter(id=evento_id, deleted=False)
+        .values("id", "organizacao_id", "nucleo_id")
+        .first()
+    )
+    if not evento:
+        return {"evento_id": evento_id, "inscritos": [], "error": "Evento não encontrado."}
+
+    usuario = _resolve_usuario(usuario_id, vinculo_id)
+    consultor_id: str | None = None
+    if evento.get("nucleo_id"):
+        consultor_id = (
+            Nucleo.objects.filter(
+                id=evento["nucleo_id"], organizacao_id=evento["organizacao_id"], deleted=False
+            )
+            .values_list("consultor_id", flat=True)
+            .first()
+        )
+
+    if evento.get("nucleo_id") and not _user_has_nucleo_access(
+        usuario,
+        str(evento["organizacao_id"]),
+        str(evento["nucleo_id"]),
+        str(consultor_id) if consultor_id else None,
+    ):
+        return {
+            "evento_id": evento_id,
+            "inscritos": [],
+            "error": "Você não tem permissão para acessar este núcleo.",
+        }
+
+    if not _user_has_organizacao_access(usuario, str(evento["organizacao_id"])):
+        return {
+            "evento_id": evento_id,
+            "inscritos": [],
+            "error": "Você não tem permissão para acessar esta organização.",
+        }
 
     cache_key = f"ai_chat:inscritos:{evento_id}"
     cached = cache.get(cache_key)
