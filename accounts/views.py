@@ -211,6 +211,7 @@ def perfil(request):
     hero_title, hero_subtitle = _profile_hero_names(target_user)
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
+    perfil_mode = "owner" if is_owner else ("manager" if allow_owner_sections else "public")
 
     profile_posts = (
         Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
@@ -270,6 +271,8 @@ def perfil(request):
         "hero_subtitle": hero_subtitle,
         "profile": target_user,
         "is_owner": is_owner,
+        "can_manage_profile": allow_owner_sections,
+        "perfil_mode": perfil_mode,
         "profile_posts": profile_posts,
     }
 
