@@ -154,7 +154,7 @@
             {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
+        <div>
           {% include 'eventos/partials/evento_carousel.html' with page=eventos_ativos_page section='ativos' fetch_url=eventos_carousel_fetch_url search_term=eventos_search_query status_filter=eventos_status_filter empty_message=eventos_ativos_empty_message aria_label=eventos_ativos_aria_label %}
         </div>
       </details>
@@ -188,7 +188,7 @@
               {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
             </span>
           </summary>
-          <div class="card-body">
+          <div>
             {% include 'eventos/partials/evento_carousel.html' with page=eventos_planejamento_page section='planejamento' fetch_url=eventos_carousel_fetch_url search_term=eventos_search_query status_filter=eventos_status_filter empty_message=eventos_planejamento_empty_message aria_label=eventos_planejamento_aria_label %}
           </div>
         </details>
@@ -222,7 +222,7 @@
             {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
           </span>
         </summary>
-        <div class="card-body">
+        <div>
           {% include 'eventos/partials/evento_carousel.html' with page=eventos_realizados_page section='realizados' fetch_url=eventos_carousel_fetch_url search_term=eventos_search_query status_filter=eventos_status_filter empty_message=eventos_realizados_empty_message aria_label=eventos_realizados_aria_label %}
         </div>
       </details>
@@ -256,7 +256,7 @@
               {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
             </span>
           </summary>
-          <div class="card-body">
+          <div>
             <div
               role="list"
               aria-label="{% trans 'Lista de eventos cancelados' %}"
