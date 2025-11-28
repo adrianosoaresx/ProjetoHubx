@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -16,31 +18,47 @@ def _stub_enviar_para_usuario(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_aceitar_conexao(client):
+def test_aceitar_conexao_htmx(client):
     user = User.objects.create_user(email="a@example.com", username="a", password="x")
     other = User.objects.create_user(email="b@example.com", username="b", password="x")
     user.followers.add(other)
 
     client.force_login(user)
     url = reverse("conexoes:aceitar_conexao", args=[other.id])
-    resp = client.post(url)
-    assert resp.status_code == 302
+    resp = client.post(url, HTTP_HX_REQUEST="true")
+    assert resp.status_code == 204
+    assert resp.headers.get("HX-Trigger")
     assert user.connections.filter(id=other.id).exists()
     assert not user.followers.filter(id=other.id).exists()
 
 
 @pytest.mark.django_db
-def test_recusar_conexao(client):
+def test_recusar_conexao_htmx(client):
     user = User.objects.create_user(email="a@example.com", username="a", password="x")
     other = User.objects.create_user(email="b@example.com", username="b", password="x")
     user.followers.add(other)
 
     client.force_login(user)
     url = reverse("conexoes:recusar_conexao", args=[other.id])
-    resp = client.post(url)
-    assert resp.status_code == 302
+    resp = client.post(url, HTTP_HX_REQUEST="true")
+    assert resp.status_code == 204
+    assert resp.headers.get("HX-Trigger")
     assert not user.connections.filter(id=other.id).exists()
     assert not user.followers.filter(id=other.id).exists()
+
+
+@pytest.mark.django_db
+def test_recusar_conexao_htmx_invalida(client):
+    user = User.objects.create_user(email="a@example.com", username="a", password="x")
+    other = User.objects.create_user(email="b@example.com", username="b", password="x")
+
+    client.force_login(user)
+    url = reverse("conexoes:recusar_conexao", args=[other.id])
+    resp = client.post(url, HTTP_HX_REQUEST="true")
+
+    assert resp.status_code == 404
+    trigger = json.loads(resp.headers.get("HX-Trigger", "{}"))
+    assert trigger.get("conexoes:refresh") is True
 
 
 @pytest.mark.django_db
