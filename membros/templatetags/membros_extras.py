@@ -57,6 +57,7 @@ def usuario_badges(user):
 
     badges: list[dict[str, str]] = []
     types_present: set[str] = set()
+    badge_entries: dict[tuple[str, str], dict[str, str]] = {}
 
     participacoes_manager = getattr(user, "participacoes", None)
     participacoes = []
@@ -89,15 +90,19 @@ def usuario_badges(user):
                 label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Coordenador")
-            badges.append(_make_badge(label, "coordenador"))
-            types_present.add("coordenador")
+            key = ("coordenador", nucleo_nome)
+            if key not in badge_entries:
+                badge_entries[key] = _make_badge(label, "coordenador")
+                types_present.add("coordenador")
         else:
             if nucleo_nome:
                 label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
                 label = _("Nucleado")
-            badges.append(_make_badge(label, "nucleado"))
-            types_present.add("nucleado")
+            key = ("nucleado", nucleo_nome)
+            if key not in badge_entries:
+                badge_entries[key] = _make_badge(label, "nucleado")
+                types_present.add("nucleado")
 
     nucleos_consultoria_manager = getattr(user, "nucleos_consultoria", None)
     consultoria = []
@@ -117,36 +122,33 @@ def usuario_badges(user):
         badges.append(_make_badge(label, "consultor"))
         types_present.add("consultor")
 
-    if getattr(user, "nucleo", None) and not {"coordenador", "nucleado"} & types_present:
+    if getattr(user, "nucleo", None):
         nucleo_nome = getattr(user.nucleo, "nome", "")
-        if getattr(user, "is_coordenador", False):
+        badge_type = "coordenador" if getattr(user, "is_coordenador", False) else "nucleado"
+        key = (badge_type, nucleo_nome)
+        if key not in badge_entries:
             if nucleo_nome:
-                label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
+                label = _("%(tipo)s · %(nucleo)s") % {
+                    "tipo": _("Coordenador") if badge_type == "coordenador" else _("Nucleado"),
+                    "nucleo": nucleo_nome,
+                }
             else:
-                label = _("Coordenador")
-            badges.append(_make_badge(label, "coordenador"))
-            types_present.add("coordenador")
-        else:
-            if nucleo_nome:
-                label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
-            else:
-                label = _("Nucleado")
-            badges.append(_make_badge(label, "nucleado"))
-            types_present.add("nucleado")
+                label = _("Coordenador") if badge_type == "coordenador" else _("Nucleado")
+            badge_entries[key] = _make_badge(label, badge_type)
+            types_present.add(badge_type)
+
+    badges.extend(badge_entries.values())
 
     if getattr(user, "user_type", "") == UserType.CONSULTOR.value and "consultor" not in types_present:
         badges.append(_make_badge(_("Consultor"), "consultor"))
         types_present.add("consultor")
 
-    if getattr(user, "is_associado", False) and not types_present:
+    if (
+        getattr(user, "is_associado", False)
+        or getattr(user, "user_type", "") == UserType.ASSOCIADO.value
+    ) and "associado" not in types_present and not badges:
         badges.append(_make_badge(_("Associado"), "associado"))
         types_present.add("associado")
-    elif getattr(user, "is_associado", False) and "associado" not in types_present and not badges:
-        badges.append(_make_badge(_("Associado"), "associado"))
-        types_present.add("associado")
-
-    if getattr(user, "user_type", "") == UserType.ASSOCIADO.value and "associado" not in types_present and not badges:
-        badges.append(_make_badge(_("Associado"), "associado"))
 
     if getattr(user, "user_type", "") == UserType.ADMIN.value:
         badges = [badge for badge in badges if badge.get("type") != "nucleado"]
