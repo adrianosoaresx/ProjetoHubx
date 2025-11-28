@@ -205,6 +205,38 @@ NUCLEO_SECTION_CONFIG: list[dict[str, object]] = [
 NUCLEO_SECTION_CONFIG_MAP = {config["key"]: config for config in NUCLEO_SECTION_CONFIG}
 
 
+def build_custom_nucleo_section(
+    request,
+    queryset: Iterable[Nucleo],
+    *,
+    key: str,
+    title: str,
+    icon: str,
+    icon_classes: str,
+    empty_message: str,
+    aria_label: str,
+    scope: str | None = None,
+    per_page: int = NUCLEO_SECTION_PAGE_SIZE,
+):
+    paginator = Paginator(queryset, per_page)
+    page_number = request.GET.get(f"{key}_page") or 1
+    page_obj = paginator.get_page(page_number)
+
+    return {
+        "key": key,
+        "title": title,
+        "icon": icon,
+        "icon_classes": icon_classes,
+        "empty_message": empty_message,
+        "aria_label": aria_label,
+        "total": paginator.count,
+        "page_obj": page_obj,
+        "fetch_url": "",
+        "search_term": "",
+        "scope": scope,
+    }
+
+
 def build_nucleo_sections(
     request,
     base_queryset: Iterable[Nucleo],
@@ -505,7 +537,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
 
         ctx["classificacao_totals"] = classificacao_totals
         base_qs_for_totals = getattr(self, "_qs_for_counts", Nucleo.objects.none())
-        ctx["nucleo_sections"] = build_nucleo_sections(
+        sections = build_nucleo_sections(
             self.request,
             base_qs_for_totals,
             classificacao_totals,
@@ -515,6 +547,67 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
             selected_classificacao=selected_classificacao,
             scope=ctx["nucleos_carousel_scope"],
         )
+
+        user_tipo = getattr(self.request.user, "get_tipo_usuario", None)
+        allowed_user_types = {
+            UserType.ASSOCIADO.value,
+            UserType.COORDENADOR.value,
+            UserType.CONSULTOR.value,
+        }
+
+        if user_tipo in allowed_user_types:
+            my_nucleos = (
+                base_qs_for_totals.filter(
+                    (
+                        Q(
+                            participacoes__user=self.request.user,
+                            participacoes__status="ativo",
+                            participacoes__status_suspensao=False,
+                        )
+                        | Q(consultor=self.request.user)
+                    ),
+                    classificacao=Nucleo.Classificacao.CONSTITUIDO,
+                    ativo=True,
+                )
+                .order_by("nome")
+                .distinct()
+            )
+
+            meus_section = build_custom_nucleo_section(
+                self.request,
+                my_nucleos,
+                key="meus_nucleos",
+                title=_("Meus núcleos"),
+                icon="user-round-check",
+                icon_classes="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15",
+                empty_message=_("Você ainda não faz parte de nenhum núcleo ativo."),
+                aria_label=_("Lista de núcleos do associado"),
+                scope="meus",
+            )
+
+            all_nucleos = (
+                base_qs_for_totals.filter(
+                    classificacao=Nucleo.Classificacao.CONSTITUIDO, ativo=True
+                )
+                .order_by("nome")
+                .distinct()
+            )
+
+            todos_section = build_custom_nucleo_section(
+                self.request,
+                all_nucleos,
+                key="todos_nucleos",
+                title=_("Todos os núcleos"),
+                icon="grid",
+                icon_classes="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/15",
+                empty_message=_("Nenhum núcleo constituído e ativo encontrado."),
+                aria_label=_("Lista de todos os núcleos constituídos e ativos"),
+                scope="todos",
+            )
+
+            sections = [meus_section, todos_section, *sections]
+
+        ctx["nucleo_sections"] = sections
 
         return ctx
 
