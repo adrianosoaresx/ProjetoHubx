@@ -215,7 +215,9 @@ def test_gerar_qrcode_inclui_dados_da_inscricao(monkeypatch):
     inscricao.gerar_qrcode()
 
     assert "payload" in captured_data
-    payload = json.loads(captured_data["payload"])
+    payload_str = captured_data["payload"]
+    assert payload_str.startswith(f"inscricao:{inscricao.pk}:")
+    payload = json.loads(payload_str.split(":", 2)[-1])
     assert payload["evento_id"] == str(evento.pk)
     assert payload["evento_titulo"] == evento.titulo
     assert payload["usuario_id"] == usuario.pk
@@ -223,6 +225,67 @@ def test_gerar_qrcode_inclui_dados_da_inscricao(monkeypatch):
     assert payload["usuario_email"] == usuario.email
     assert payload["valor_pago"] == "25.50"
     assert payload["inscricao_id"] == str(inscricao.pk)
+
+
+@override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
+def test_checkin_processa_payload_com_prefixo(client, monkeypatch):
+    captured_data = {}
+
+    class DummyImage:
+        def save(self, buffer, format):
+            buffer.write(b"dummy")
+
+    def fake_make(data):
+        captured_data["payload"] = data
+        return DummyImage()
+
+    monkeypatch.setattr(eventos_models.qrcode, "make", fake_make)
+    monkeypatch.setattr(default_storage, "save", lambda name, content: name)
+    monkeypatch.setattr(default_storage, "url", lambda path: f"/media/{path}")
+
+    organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
+    usuario = User.objects.create_user(
+        username="usuario-checkin",
+        email="checkin@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.NUCLEADO,
+    )
+    client.force_login(usuario)
+
+    evento = Evento.objects.create(
+        titulo="Evento com Check-in",
+        descricao="Desc",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua 1",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_presentes=0,
+        participantes_maximo=10,
+    )
+
+    inscricao = InscricaoEvento.objects.create(
+        user=usuario,
+        evento=evento,
+        status="confirmada",
+    )
+
+    inscricao.gerar_qrcode()
+
+    codigo = captured_data.get("payload")
+    assert codigo and codigo.startswith(f"inscricao:{inscricao.pk}:")
+
+    checkin_url = reverse("eventos:inscricao_checkin", args=[inscricao.pk])
+    response = client.post(checkin_url, {"codigo": codigo})
+
+    inscricao.refresh_from_db()
+    assert response.status_code == 200
+    assert inscricao.check_in_realizado_em is not None
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
 def test_usuario_nao_cria_inscricao_duplicada(client, monkeypatch):

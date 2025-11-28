@@ -216,7 +216,9 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         }
 
         data = json.dumps(payload, cls=DjangoJSONEncoder, ensure_ascii=False)
-        img = qrcode.make(data)
+        inscricao_id = payload.get("inscricao_id") or (str(self.pk) if self.pk else "")
+        qrcode_payload = f"inscricao:{inscricao_id}:{data}" if inscricao_id else data
+        img = qrcode.make(qrcode_payload)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         filename = f"inscricoes/qrcodes/{self.pk}.png"
