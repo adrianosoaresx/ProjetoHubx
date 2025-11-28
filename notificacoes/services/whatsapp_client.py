@@ -14,14 +14,14 @@ def _credentials_configured() -> bool:
     return all(getattr(settings, attr, None) for attr in ("TWILIO_SID", "TWILIO_TOKEN", "TWILIO_WHATSAPP_FROM"))
 
 
-def send_whatsapp(user, message: str) -> None:
+def send_whatsapp(user, message: str) -> bool:
     """Enviar mensagem WhatsApp usando Twilio."""
     if not _credentials_configured() or TwilioClient is None:
         logger.warning(
             "whatsapp_indisponivel",
             extra={"user": getattr(user, "id", None)},
         )
-        raise RuntimeError("WhatsApp indisponível")
+        return False
 
     try:
         client = TwilioClient(settings.TWILIO_SID, settings.TWILIO_TOKEN)
@@ -38,3 +38,4 @@ def send_whatsapp(user, message: str) -> None:
         raise
     else:
         logger.info("whatsapp_enviado", extra={"user": getattr(user, "id", None)})
+        return True
