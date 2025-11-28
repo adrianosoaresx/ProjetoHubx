@@ -26,8 +26,16 @@ def test_admin_dashboard_returns_expected_metrics():
 
     admin_user = UserFactory(user_type=UserType.ADMIN, organizacao=organizacao)
 
-    associado = UserFactory(organizacao=organizacao, is_associado=True)
-    nucleado = UserFactory(organizacao=organizacao, is_associado=True)
+    associado = UserFactory(
+        organizacao=organizacao,
+        is_associado=True,
+        user_type=UserType.ASSOCIADO,
+    )
+    nucleado = UserFactory(
+        organizacao=organizacao,
+        is_associado=True,
+        user_type=UserType.NUCLEADO,
+    )
     ParticipacaoNucleo.objects.create(user=nucleado, nucleo=nucleo, status="ativo")
 
     evento_ativo = EventoFactory(organizacao=organizacao, nucleo=nucleo, status=Evento.Status.ATIVO)
@@ -81,6 +89,38 @@ def test_admin_dashboard_returns_expected_metrics():
     tooltip_customdata = membros_chart["figure"]["data"][1]["customdata"]
     assert tooltip_customdata[0][0] == MEMBROS_NUCLEADOS_LABEL
     assert tooltip_customdata[1][0] == MEMBROS_NAO_NUCLEADOS_LABEL
+
+
+@pytest.mark.django_db
+def test_total_membros_excludes_non_associados():
+    rf = RequestFactory()
+    organizacao = OrganizacaoFactory()
+    admin_user = UserFactory(user_type=UserType.ADMIN, organizacao=organizacao)
+
+    associado = UserFactory(
+        organizacao=organizacao,
+        is_associado=True,
+        user_type=UserType.ASSOCIADO,
+    )
+    coordenador = UserFactory(
+        organizacao=organizacao,
+        is_associado=True,
+        user_type=UserType.COORDENADOR,
+    )
+    UserFactory(
+        organizacao=organizacao,
+        is_associado=True,
+        user_type=UserType.CONSULTOR,
+    )
+
+    request = rf.get(reverse("dashboard:admin_dashboard"))
+    request.user = admin_user
+
+    response = AdminDashboardView.as_view()(request)
+    assert response.status_code == 200
+    context = response.context_data
+
+    assert context["total_membros"] == 2
 
 
 @pytest.mark.django_db

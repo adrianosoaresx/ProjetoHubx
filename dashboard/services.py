@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from plotly import graph_objects as go
 
+from accounts.models import UserType
 from eventos.models import Evento, InscricaoEvento
 from nucleos.models import ParticipacaoNucleo
 
@@ -140,9 +141,15 @@ def calculate_membership_totals(organizacao: Any | None) -> OrderedDict[str, int
     if not organizacao_id:
         return totals
 
+    allowed_user_types = {
+        UserType.ASSOCIADO.value,
+        UserType.COORDENADOR.value,
+        UserType.NUCLEADO.value,
+    }
     membros_qs = User.objects.filter(
         organizacao_id=organizacao_id,
         is_associado=True,
+        user_type__in=allowed_user_types,
     )
     total_membros = membros_qs.count()
 
