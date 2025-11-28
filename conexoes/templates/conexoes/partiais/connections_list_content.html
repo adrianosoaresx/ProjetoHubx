@@ -1,5 +1,14 @@
 {% load i18n lucide_icons %}
-<div class="space-y-6" id="connections-dashboard">
+<div
+  class="space-y-6"
+  id="connections-dashboard"
+  {% if connections_refresh_url %}
+    hx-get="{{ connections_refresh_url }}"
+    hx-trigger="conexoes:refresh"
+    hx-target="this"
+    hx-swap="outerHTML"
+  {% endif %}
+>
   {% if connections_filter == 'pendentes' %}
     <details class="card group" aria-labelledby="connections-requests-heading">
       <summary class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden">

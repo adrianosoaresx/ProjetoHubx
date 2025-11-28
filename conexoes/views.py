@@ -1,3 +1,4 @@
+import json
 import re
 from urllib.parse import urlencode
 
@@ -30,6 +31,7 @@ CONNECTION_NOTIFICATION_TEMPLATES = {
     "accepted": "connection_accepted",
     "declined": "connection_declined",
 }
+CONNECTIONS_REFRESH_TRIGGER = json.dumps({"conexoes:refresh": True})
 
 
 def _get_display_name(user):
@@ -132,6 +134,23 @@ def _get_connections_search_form(request):
     return form, query.strip()
 
 
+def _build_connections_refresh_url(request):
+    params = request.GET.copy()
+    refresh_url = reverse("conexoes:perfil_conexoes_partial")
+    query_string = params.urlencode()
+    if query_string:
+        refresh_url = f"{refresh_url}?{query_string}"
+    return refresh_url
+
+
+def _htmx_refresh_response(*, status: int = 204, redirect_url: str | None = None):
+    response = HttpResponse(status=status)
+    response["HX-Trigger"] = CONNECTIONS_REFRESH_TRIGGER
+    if redirect_url:
+        response["HX-Redirect"] = redirect_url
+    return response
+
+
 def _build_connections_page_context(
     request,
     form,
@@ -176,6 +195,7 @@ def _build_connections_page_context(
         "connection_requests": connection_requests,
         "sent_requests": sent_requests,
         "form": form,
+        "connections_refresh_url": _build_connections_refresh_url(request),
         "search_form_action": request.get_full_path(),
         "search_form_hx_get": None,
         "search_form_hx_target": None,
@@ -882,15 +902,20 @@ def aceitar_conexao(request, id):
     response = _deny_root_connections_access(request)
     if response:
         return response
+    redirect_url = f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes"
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("conexoes:perfil_sections_conexoes")
+        if is_htmx_or_ajax(request):
+            return _htmx_refresh_response(status=404, redirect_url=redirect_url)
+        return redirect(redirect_url)
 
     if other_user not in request.user.followers.all():
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("conexoes:perfil_sections_conexoes")
+        if is_htmx_or_ajax(request):
+            return _htmx_refresh_response(status=404, redirect_url=redirect_url)
+        return redirect(redirect_url)
 
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
@@ -904,8 +929,8 @@ def aceitar_conexao(request, id):
         },
     )
     if is_htmx_or_ajax(request):
-        return HttpResponse(status=204)
-    return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes")
+        return _htmx_refresh_response()
+    return redirect(redirect_url)
 
 
 @login_required
@@ -916,15 +941,20 @@ def recusar_conexao(request, id):
     response = _deny_root_connections_access(request)
     if response:
         return response
+    redirect_url = f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes"
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("conexoes:perfil_sections_conexoes")
+        if is_htmx_or_ajax(request):
+            return _htmx_refresh_response(status=404, redirect_url=redirect_url)
+        return redirect(redirect_url)
 
     if other_user not in request.user.followers.all():
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("conexoes:perfil_sections_conexoes")
+        if is_htmx_or_ajax(request):
+            return _htmx_refresh_response(status=404, redirect_url=redirect_url)
+        return redirect(redirect_url)
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
@@ -937,5 +967,5 @@ def recusar_conexao(request, id):
         },
     )
     if is_htmx_or_ajax(request):
-        return HttpResponse(status=204)
-    return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?filter=pendentes")
+        return _htmx_refresh_response()
+    return redirect(redirect_url)
