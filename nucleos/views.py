@@ -598,7 +598,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
                 all_nucleos,
                 key="todos_nucleos",
                 title=_("Todos os núcleos"),
-                icon="grid",
+                icon="layout-grid",
                 icon_classes="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-600)] shadow-lg shadow-[var(--color-info-500)]/15",
                 empty_message=_("Nenhum núcleo constituído e ativo encontrado."),
                 aria_label=_("Lista de todos os núcleos constituídos e ativos"),
