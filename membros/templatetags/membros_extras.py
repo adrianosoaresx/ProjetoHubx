@@ -71,6 +71,25 @@ def _has_nucleo_specific_badge(user, tipo: str) -> bool:
         if getattr(user, "is_coordenador", False) and getattr(user, "nucleo", None):
             return True
 
+    if tipo == UserType.NUCLEADO.value:
+        participacoes_manager = getattr(user, "participacoes", None)
+        participacoes = []
+        if participacoes_manager is not None:
+            prefetched = _get_prefetched(participacoes_manager, "participacoes")
+            if prefetched is not None:
+                participacoes = list(prefetched)
+            else:
+                participacoes = list(participacoes_manager.select_related("nucleo").all())
+
+        for participacao in participacoes:
+            if participacao.status != "ativo" or getattr(participacao, "status_suspensao", False):
+                continue
+            if participacao.papel != "coordenador" and getattr(participacao, "nucleo", None):
+                return True
+
+        if getattr(user, "nucleo", None):
+            return True
+
     if tipo == UserType.CONSULTOR.value:
         nucleos_consultoria_manager = getattr(user, "nucleos_consultoria", None)
         consultoria = []
@@ -206,7 +225,11 @@ def usuario_tipo_badge(user):
     if not tipo:
         return None
 
-    if tipo in {UserType.COORDENADOR.value, UserType.CONSULTOR.value}:
+    if tipo in {
+        UserType.COORDENADOR.value,
+        UserType.CONSULTOR.value,
+        UserType.NUCLEADO.value,
+    }:
         if _has_nucleo_specific_badge(user, tipo):
             return None
 
