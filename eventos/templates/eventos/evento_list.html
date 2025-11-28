@@ -55,7 +55,7 @@
       ></p>
     </div>
 
-    {% if user.is_authenticated and user.get_tipo_usuario == 'associado' %}
+    {% if show_minhas_inscricoes_card %}
       <details class="card group" data-eventos-section="minhas-inscricoes">
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
           <div class="flex items-start gap-3">

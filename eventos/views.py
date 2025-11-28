@@ -67,6 +67,13 @@ from .querysets import filter_eventos_por_usuario
 User = get_user_model()
 
 EVENTO_CAROUSEL_PAGE_SIZE = 6
+MINHAS_INSCRICOES_ALLOWED_TYPES = {
+    UserType.ASSOCIADO.value,
+    UserType.COORDENADOR.value,
+    UserType.NUCLEADO.value,
+    UserType.CONVIDADO.value,
+    UserType.CONSULTOR.value,
+}
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -534,10 +541,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx.setdefault("empty_message", _("Nenhum evento encontrado."))
 
         minhas_inscricoes = []
-        if (
+        show_minhas_inscricoes_card = (
             user.is_authenticated
-            and user.get_tipo_usuario == UserType.ASSOCIADO.value
-        ):
+            and _get_tipo_usuario(user) in MINHAS_INSCRICOES_ALLOWED_TYPES
+        )
+        if show_minhas_inscricoes_card:
             inscricoes_qs = (
                 InscricaoEvento.objects.filter(
                     user=user,
@@ -560,6 +568,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
                     inscricao.save(update_fields=["qrcode_url"])
 
         ctx["minhas_inscricoes"] = minhas_inscricoes
+        ctx["show_minhas_inscricoes_card"] = show_minhas_inscricoes_card
         return ctx
 
 
