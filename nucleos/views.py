@@ -605,7 +605,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
                 scope="todos",
             )
 
-            sections = [meus_section, todos_section, *sections]
+            sections = [meus_section, todos_section]
 
         ctx["nucleo_sections"] = sections
 
