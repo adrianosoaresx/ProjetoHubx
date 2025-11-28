@@ -196,7 +196,10 @@ def _get_nucleos_coordenacao_consultoria_ids(user) -> set[int]:
 
 def _resolve_planejamento_permissions(user):
     tipo_usuario = _get_tipo_usuario(user)
-    can_view = tipo_usuario != UserType.ASSOCIADO.value
+    can_view = tipo_usuario not in {
+        UserType.ASSOCIADO.value,
+        UserType.NUCLEADO.value,
+    }
     nucleo_ids_limit: set[int] | None = None
     if can_view and tipo_usuario in {UserType.COORDENADOR.value, UserType.CONSULTOR.value}:
         nucleo_ids_limit = _get_nucleos_coordenacao_consultoria_ids(user)
@@ -401,7 +404,10 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         )
 
         tipo_usuario = _get_tipo_usuario(user)
-        can_view_planejamento_cancelados = tipo_usuario != UserType.ASSOCIADO.value
+        can_view_planejamento_cancelados = tipo_usuario not in {
+            UserType.ASSOCIADO.value,
+            UserType.NUCLEADO.value,
+        }
         ctx["can_view_planejamento_cancelados"] = can_view_planejamento_cancelados
 
         nucleo_ids_limit: set[int] | None = None

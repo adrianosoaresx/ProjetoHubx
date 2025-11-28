@@ -549,6 +549,54 @@ def test_evento_list_consultor_restringe_planejamento_cancelados(organizacao, cl
     assert response.context["total_eventos_cancelados"] == 1
 
 
+def test_evento_list_nucleado_nao_exibe_planejamento_cancelados(organizacao, client):
+    usuario_nucleado = User.objects.create_user(
+        username="nucleado",
+        email="nucleado@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.NUCLEADO,
+    )
+    Evento.objects.create(
+        titulo="Planejamento",
+        descricao="Evento em planejamento",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Local",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.PLANEJAMENTO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+    Evento.objects.create(
+        titulo="Cancelado",
+        descricao="Evento cancelado",
+        data_inicio=make_aware(datetime.now() + timedelta(days=3)),
+        data_fim=make_aware(datetime.now() + timedelta(days=4)),
+        local="Local",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.CANCELADO,
+        publico_alvo=0,
+        numero_presentes=0,
+    )
+
+    client.force_login(usuario_nucleado)
+    response = client.get(reverse("eventos:lista"))
+
+    assert response.status_code == 200
+    assert response.context["can_view_planejamento_cancelados"] is False
+    assert response.context["total_eventos_planejamento"] == 0
+    assert response.context["total_eventos_cancelados"] == 0
+    assert response.context["eventos_planejamento_page"] is None
+    assert response.context["eventos_cancelados_page"] is None
+
+
 def test_evento_create_view_post_invalido(usuario_logado, client):
     url = reverse("eventos:evento_novo")
     response = client.post(url, data={"titulo": ""})  # inválido
