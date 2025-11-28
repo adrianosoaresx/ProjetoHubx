@@ -51,6 +51,41 @@ def _get_prefetched(manager, cache_key):
     return None
 
 
+def _has_nucleo_specific_badge(user, tipo: str) -> bool:
+    if tipo == UserType.COORDENADOR.value:
+        participacoes_manager = getattr(user, "participacoes", None)
+        participacoes = []
+        if participacoes_manager is not None:
+            prefetched = _get_prefetched(participacoes_manager, "participacoes")
+            if prefetched is not None:
+                participacoes = list(prefetched)
+            else:
+                participacoes = list(participacoes_manager.select_related("nucleo").all())
+
+        for participacao in participacoes:
+            if participacao.status != "ativo" or getattr(participacao, "status_suspensao", False):
+                continue
+            if participacao.papel == "coordenador" and getattr(participacao, "nucleo", None):
+                return True
+
+        if getattr(user, "is_coordenador", False) and getattr(user, "nucleo", None):
+            return True
+
+    if tipo == UserType.CONSULTOR.value:
+        nucleos_consultoria_manager = getattr(user, "nucleos_consultoria", None)
+        consultoria = []
+        if nucleos_consultoria_manager is not None:
+            prefetched = _get_prefetched(nucleos_consultoria_manager, "nucleos_consultoria")
+            if prefetched is not None:
+                consultoria = list(prefetched)
+            else:
+                consultoria = list(nucleos_consultoria_manager.all())
+
+        return any(nucleo is not None for nucleo in consultoria)
+
+    return False
+
+
 @register.simple_tag
 def usuario_badges(user):
     """Retorna metadados de etiquetas para o usuário."""
@@ -170,6 +205,10 @@ def usuario_tipo_badge(user):
         tipo = getattr(user, "user_type", "") or ""
     if not tipo:
         return None
+
+    if tipo in {UserType.COORDENADOR.value, UserType.CONSULTOR.value}:
+        if _has_nucleo_specific_badge(user, tipo):
+            return None
 
     try:
         label = UserType(tipo).label

@@ -29,7 +29,7 @@ class TestUsuarioTipoBadge:
             is_associado=True,
             is_coordenador=True,
         )
-        user.nucleo = nucleo
+        user.nucleo = None
         user.save(update_fields=["nucleo", "is_associado", "is_coordenador"])
 
         badge = usuario_tipo_badge(user)
@@ -38,6 +38,30 @@ class TestUsuarioTipoBadge:
         assert badge["label"] == UserType.COORDENADOR.label
         assert badge["icon"] == "flag"
         assert "#f97316" in badge["style"]
+
+    def test_coordinator_tipo_badge_hidden_when_nucleo_badge_present(self):
+        nucleo = NucleoFactory()
+        user = UserFactory(
+            organizacao=nucleo.organizacao,
+            is_associado=True,
+            is_coordenador=True,
+        )
+        user.nucleo = nucleo
+        user.save(update_fields=["nucleo", "is_associado", "is_coordenador"])
+        ParticipacaoNucleo.objects.create(
+            user=user,
+            nucleo=nucleo,
+            status="ativo",
+            papel="coordenador",
+            papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+        )
+
+        tipo_badge = usuario_tipo_badge(user)
+        badges = usuario_badges(user)
+
+        assert tipo_badge is None
+        assert any(badge["type"] == "coordenador" for badge in badges)
+        assert not any(badge["type"] == "associado" for badge in badges)
 
 
 @pytest.mark.django_db
@@ -73,6 +97,26 @@ class TestUsuarioBadges:
         badges = usuario_badges(consultor)
 
         assert any(badge["icon"] == "briefcase" and "Consultor" in badge["label"] for badge in badges)
+
+    def test_consultor_tipo_badge_hidden_when_nucleo_badge_present(self):
+        nucleo = NucleoFactory()
+        consultor = UserFactory(
+            organizacao=nucleo.organizacao,
+            user_type=UserType.CONSULTOR.value,
+        )
+        consultor.nucleo = None
+        consultor.save(update_fields=["nucleo", "user_type"])
+        nucleo.consultor = consultor
+        nucleo.save(update_fields=["consultor"])
+
+        tipo_badge = usuario_tipo_badge(consultor)
+        badges = usuario_badges(consultor)
+
+        assert tipo_badge is None
+        assert any(
+            badge["type"] == "consultor" and nucleo.nome in badge["label"]
+            for badge in badges
+        )
 
     def test_fallback_to_associado_badge_has_icon(self):
         user = UserFactory(is_associado=True)
