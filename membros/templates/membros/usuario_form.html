@@ -248,6 +248,8 @@
 {% block scripts %}
   <script>
     (function () {
+      const accordionControllers = new WeakMap();
+
       const accordions = document.querySelectorAll('[data-accordion]');
       accordions.forEach((accordion) => {
         const toggle = accordion.querySelector('[data-accordion-toggle]');
@@ -275,11 +277,43 @@
           toggle.getAttribute('aria-expanded') === 'true' || Boolean(hasFieldErrors);
         setExpanded(initialExpanded);
 
+        accordionControllers.set(accordion, { setExpanded });
+
         toggle.addEventListener('click', () => {
           const expanded = toggle.getAttribute('aria-expanded') === 'true';
           setExpanded(!expanded);
         });
       });
+
+      const form = document.querySelector('form');
+
+      if (form instanceof HTMLFormElement) {
+        form.addEventListener('submit', (event) => {
+          if (form.checkValidity()) {
+            return;
+          }
+
+          const invalidFields = form.querySelectorAll(':invalid');
+
+          invalidFields.forEach((field) => {
+            if (!(field instanceof HTMLElement)) {
+              return;
+            }
+
+            const accordion = field.closest('[data-accordion]');
+
+            if (!accordion) {
+              return;
+            }
+
+            const controller = accordionControllers.get(accordion);
+            controller?.setExpanded(true);
+          });
+
+          form.reportValidity();
+          event.preventDefault();
+        });
+      }
 
       const passwordInputs = Array.from(
         document.querySelectorAll('input[name="password1"], input[name="password2"]'),

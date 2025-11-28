@@ -13,6 +13,11 @@ User = get_user_model()
 
 
 class OrganizacaoUserCreateForm(UserCreationForm):
+    username = forms.CharField(
+        label=_("Nome de usuário"),
+        max_length=45,
+        help_text=_("Máximo de 45 caracteres."),
+    )
     contato = forms.CharField(
         label=_("Nome completo"),
         max_length=150,
@@ -98,7 +103,6 @@ class OrganizacaoUserCreateForm(UserCreationForm):
             self.fields["user_type"].widget = forms.HiddenInput()
 
         # Ajusta labels para manter consistência visual
-        self.fields["username"].label = _("Nome de usuário")
         self.fields["password1"].label = _("Senha")
         self.fields["password2"].label = _("Confirmar senha")
 
@@ -118,6 +122,15 @@ class OrganizacaoUserCreateForm(UserCreationForm):
         if email and User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError(_("Este e-mail já está em uso."))
         return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username", "").strip()
+        if len(username) > self.fields["username"].max_length:
+            raise forms.ValidationError(
+                _("O nome de usuário deve ter no máximo %(limit)s caracteres."),
+                params={"limit": self.fields["username"].max_length},
+            )
+        return username
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
