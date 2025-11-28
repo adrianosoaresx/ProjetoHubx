@@ -96,3 +96,34 @@ class PublicarFeedNoticiasTests(TestCase):
         self.assertEqual(Post.objects.count(), 2)
         self.assertEqual(mock_notify.call_count, 2)
         mock_maybe_download.assert_called()
+
+    @patch("organizacoes.services.news_feed_publisher.notify_new_post")
+    @patch("organizacoes.services.news_feed_publisher.feedparser.parse")
+    @patch("feed.services.link_preview.requests.get")
+    def test_skip_publication_without_admin_user(
+        self,
+        mock_get,
+        mock_parse,
+        mock_notify,
+    ):
+        organizacao = OrganizacaoFactory(feed_noticias="https://example.com/rss")
+        UserFactory(organizacao=organizacao, user_type=UserType.ASSOCIADO.value)
+
+        entries = [
+            SimpleNamespace(
+                id="guid-1",
+                link="https://example.com/article-1",
+                title="First post",
+                summary="<p>Summary 1</p>",
+                published="Mon, 01 Jan 2024 00:00:00 GMT",
+            )
+        ]
+        mock_parse.return_value = SimpleNamespace(entries=entries)
+
+        mock_get.side_effect = AssertionError("Should not attempt to fetch link preview")
+
+        created_posts = publicar_feed_noticias(max_items=3, tipo_feed="global")
+
+        self.assertEqual(created_posts, [])
+        self.assertEqual(Post.objects.count(), 0)
+        mock_notify.assert_not_called()

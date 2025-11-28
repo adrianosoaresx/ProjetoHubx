@@ -82,7 +82,7 @@ def _normalize_entry(entry: object) -> Optional[NormalizedFeedItem]:
 
 def _select_author(organizacao: Organizacao):
     User = get_user_model()
-    admin = (
+    return (
         User.objects.filter(
             organizacao=organizacao,
             is_active=True,
@@ -91,13 +91,6 @@ def _select_author(organizacao: Organizacao):
         .order_by("created_at")
         .first()
     )
-    if admin:
-        return admin
-
-    if organizacao.created_by and organizacao.created_by.is_active:
-        return organizacao.created_by
-
-    return User.objects.filter(organizacao=organizacao, is_active=True).order_by("created_at").first()
 
 
 def _truncate_content(title: str, summary: str, link: str, limit: int = 500) -> str:
