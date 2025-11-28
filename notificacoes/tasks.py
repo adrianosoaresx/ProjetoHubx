@@ -40,9 +40,35 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         elif canal == Canal.PUSH:
             send_push(user, body)
         elif canal == Canal.WHATSAPP:
-            send_whatsapp(user, body)
+            whatsapp_enviado = send_whatsapp(user, body)
+            if not whatsapp_enviado:
+                raise RuntimeError("WhatsApp indisponível")
         log.status = NotificationStatus.ENVIADA
         metrics.notificacoes_enviadas_total.labels(canal=canal).inc()
+    except RuntimeError as exc:
+        if canal != Canal.WHATSAPP:
+            raise
+        log.status = NotificationStatus.FALHA
+        log.erro = str(exc)
+        log.data_envio = timezone.now()
+        log.save(update_fields=["status", "erro", "data_envio"])
+        metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
+        log_audit(
+            user,
+            "notification_send_failed",
+            object_type="NotificationLog",
+            object_id=str(log.id),
+            status=AuditLog.Status.FAILURE,
+            metadata={"canal": canal, "template": str(template.id)},
+        )
+        logger.warning(
+            "falha_envio_notificacao_nao_retriavel",
+            user_id=user.id,
+            template=str(template.id),
+            canal=canal,
+            erro=str(exc),
+        )
+        return
     except Exception as exc:  # pragma: no cover - integração externa
         log.erro = str(exc)
         if self.request.retries >= self.max_retries:
@@ -109,7 +135,9 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             if canal == Canal.EMAIL:
                 send_email(config.user, subject, body)
             elif canal == Canal.WHATSAPP:
-                send_whatsapp(config.user, body)
+                whatsapp_enviado = send_whatsapp(config.user, body)
+                if not whatsapp_enviado:
+                    raise RuntimeError("WhatsApp indisponível")
             elif canal == Canal.PUSH:
                 send_push(config.user, body)
         except Exception as exc:
