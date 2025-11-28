@@ -586,17 +586,26 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
                 scope="meus",
             )
 
-            all_nucleos = (
-                base_qs_for_totals.filter(
-                    classificacao=Nucleo.Classificacao.CONSTITUIDO, ativo=True
+            org_nucleos = (
+                Nucleo.objects.select_related("organizacao")
+                .filter(
+                    classificacao=Nucleo.Classificacao.CONSTITUIDO,
+                    ativo=True,
+                    deleted=False,
                 )
                 .order_by("nome")
                 .distinct()
             )
 
+            user_organizacao = getattr(self.request.user, "organizacao", None)
+            if user_organizacao:
+                org_nucleos = org_nucleos.filter(organizacao=user_organizacao)
+            else:
+                org_nucleos = org_nucleos.filter(pk__in=base_qs_for_totals.values("pk"))
+
             todos_section = build_custom_nucleo_section(
                 self.request,
-                all_nucleos,
+                org_nucleos,
                 key="todos_nucleos",
                 title=_("Todos os núcleos"),
                 icon="layout-grid",
