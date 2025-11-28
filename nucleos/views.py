@@ -901,9 +901,14 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
     def get_membros_queryset(self):
         qs = self.get_participacoes_queryset()
-        papel_filter = self.request.GET.get("papel", "todos")
+        card = self.request.GET.get("card", "membros")
+        if card not in {"membros", "coordenadores"}:
+            card = "membros"
+
+        default_papel = "coordenador" if card == "coordenadores" else "todos"
+        papel_filter = self.request.GET.get("papel", default_papel)
         if papel_filter not in {"todos", "membro", "coordenador"}:
-            papel_filter = "todos"
+            papel_filter = default_papel
 
         if papel_filter == "membro":
             qs = qs.exclude(papel="coordenador")
