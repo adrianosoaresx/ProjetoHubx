@@ -86,6 +86,26 @@ class TestUsuarioBadges:
         assert "Associado" in badges[0]["label"]
         assert "#6366f1" in badges[0]["style"]
 
+    def test_associado_badge_only_once_when_user_type_matches(self):
+        user = UserFactory(is_associado=True, user_type=UserType.ASSOCIADO.value)
+        user.nucleo = None
+        user.save(update_fields=["nucleo", "is_associado", "user_type"])
+
+        badges = usuario_badges(user)
+
+        assert len(badges) == 1
+        assert badges[0]["type"] == "associado"
+
+    def test_associado_badge_only_once_without_flag(self):
+        user = UserFactory(is_associado=False, user_type=UserType.ASSOCIADO.value)
+        user.nucleo = None
+        user.save(update_fields=["nucleo", "user_type"])
+
+        badges = usuario_badges(user)
+
+        assert len(badges) == 1
+        assert badges[0]["type"] == "associado"
+
     def test_admin_excludes_nucleado_badges(self):
         nucleo = NucleoFactory()
         admin = UserFactory(organizacao=nucleo.organizacao, user_type=UserType.ADMIN.value)
