@@ -138,15 +138,13 @@ def usuario_badges(user):
         badges.append(_make_badge(_("Consultor"), "consultor"))
         types_present.add("consultor")
 
-    if getattr(user, "is_associado", False) and not types_present:
+    associado_flag = getattr(user, "is_associado", False) or getattr(user, "user_type", "") == UserType.ASSOCIADO.value
+    has_associado_badge = "associado" in types_present or any(
+        badge.get("type") == "associado" for badge in badges
+    )
+    if associado_flag and not badges and not has_associado_badge:
         badges.append(_make_badge(_("Associado"), "associado"))
         types_present.add("associado")
-    elif getattr(user, "is_associado", False) and "associado" not in types_present and not badges:
-        badges.append(_make_badge(_("Associado"), "associado"))
-        types_present.add("associado")
-
-    if getattr(user, "user_type", "") == UserType.ASSOCIADO.value and "associado" not in types_present and not badges:
-        badges.append(_make_badge(_("Associado"), "associado"))
 
     if getattr(user, "user_type", "") == UserType.ADMIN.value:
         badges = [badge for badge in badges if badge.get("type") != "nucleado"]
