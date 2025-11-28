@@ -1,8 +1,11 @@
 import sys
+import time
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+from datetime import datetime, timezone as dt_timezone
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
@@ -12,7 +15,7 @@ from organizacoes.factories import OrganizacaoFactory
 if "feedparser" not in sys.modules:
     sys.modules["feedparser"] = Mock(parse=Mock(), mktime_tz=Mock())
 
-from organizacoes.services.news_feed_publisher import publicar_feed_noticias
+from organizacoes.services.news_feed_publisher import _normalize_entry, publicar_feed_noticias
 
 
 @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
@@ -127,3 +130,22 @@ class PublicarFeedNoticiasTests(TestCase):
         self.assertEqual(created_posts, [])
         self.assertEqual(Post.objects.count(), 0)
         mock_notify.assert_not_called()
+
+
+class NormalizeEntryTests(TestCase):
+    def test_published_parsed_falls_back_without_mktime_tz(self):
+        entry = SimpleNamespace(
+            id="guid-3",
+            link="https://example.com/article-3",
+            title="Third post",
+            summary="<p>Summary 3</p>",
+            published="Wed, 03 Jan 2024 12:00:00 GMT",
+            published_parsed=time.strptime("Wed, 03 Jan 2024 12:00:00 GMT", "%a, %d %b %Y %H:%M:%S %Z"),
+        )
+
+        with patch("organizacoes.services.news_feed_publisher._mktime_tz", None):
+            normalized = _normalize_entry(entry)
+
+        self.assertIsNotNone(normalized)
+        self.assertIsNotNone(normalized.published_at)
+        self.assertEqual(normalized.published_at, datetime(2024, 1, 3, 12, 0, tzinfo=dt_timezone.utc))

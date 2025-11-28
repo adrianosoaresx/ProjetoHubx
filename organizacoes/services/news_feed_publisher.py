@@ -29,6 +29,14 @@ from organizacoes.models import Organizacao, OrganizacaoFeedSync
 logger = logging.getLogger(__name__)
 _FEED_LOCK_TIMEOUT = 60 * 10  # evita execuções duplicadas próximas (10 minutos)
 
+try:  # feedparser >= 6.0
+    from feedparser.util import mktime_tz as _mktime_tz
+except Exception:  # pragma: no cover - import guard
+    try:  # noqa: WPS440 - fallback import
+        from email.utils import mktime_tz as _mktime_tz
+    except Exception:  # pragma: no cover - import guard
+        _mktime_tz = None
+
 
 @dataclass(slots=True)
 class NormalizedFeedItem:
@@ -57,10 +65,20 @@ def _normalize_entry(entry: object) -> Optional[NormalizedFeedItem]:
 
     published_raw = getattr(entry, "published", None) or getattr(entry, "updated", None)
     published_at: Optional[datetime]
-    if hasattr(entry, "published_parsed") and getattr(entry, "published_parsed"):
-        published_at = datetime.fromtimestamp(
-            feedparser.mktime_tz(getattr(entry, "published_parsed")), tz=timezone.utc
-        )
+    published_parsed = getattr(entry, "published_parsed", None)
+    if published_parsed:
+        try:
+            if _mktime_tz:
+                timestamp = _mktime_tz(published_parsed)
+                published_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+            elif published_raw:
+                published_at = parsedate_to_datetime(published_raw)
+            else:
+                published_at = datetime(*published_parsed[:6], tzinfo=timezone.utc)
+            if timezone.is_naive(published_at):
+                published_at = timezone.make_aware(published_at, timezone=timezone.utc)
+        except Exception:
+            published_at = None
     elif published_raw:
         try:
             published_at = parsedate_to_datetime(published_raw)
