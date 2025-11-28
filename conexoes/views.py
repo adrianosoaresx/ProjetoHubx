@@ -890,7 +890,7 @@ def remover_conexao(request, id):
             context.update(_profile_search_hx_context(q))
             context["search_container_id"] = None
             return render(request, "conexoes/partiais/search_card.html", context)
-        return HttpResponse(status=204)
+        return _htmx_refresh_response()
     return redirect("conexoes:perfil_sections_conexoes")
 
 
