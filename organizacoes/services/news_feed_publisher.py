@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import textwrap
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 from email.utils import parsedate_to_datetime
 from typing import Iterable, List, Optional
 from urllib.parse import urlparse
@@ -70,20 +70,20 @@ def _normalize_entry(entry: object) -> Optional[NormalizedFeedItem]:
         try:
             if _mktime_tz:
                 timestamp = _mktime_tz(published_parsed)
-                published_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                published_at = datetime.fromtimestamp(timestamp, tz=dt_timezone.utc)
             elif published_raw:
                 published_at = parsedate_to_datetime(published_raw)
             else:
-                published_at = datetime(*published_parsed[:6], tzinfo=timezone.utc)
+                published_at = datetime(*published_parsed[:6], tzinfo=dt_timezone.utc)
             if timezone.is_naive(published_at):
-                published_at = timezone.make_aware(published_at, timezone=timezone.utc)
+                published_at = timezone.make_aware(published_at, timezone=dt_timezone.utc)
         except Exception:
             published_at = None
     elif published_raw:
         try:
             published_at = parsedate_to_datetime(published_raw)
             if timezone.is_naive(published_at):
-                published_at = timezone.make_aware(published_at, timezone=timezone.utc)
+                published_at = timezone.make_aware(published_at, timezone=dt_timezone.utc)
         except Exception:
             published_at = None
     else:
@@ -219,7 +219,11 @@ def publicar_feed_da_organizacao(
 
     parsed = feedparser.parse(organizacao.feed_noticias)
     entries: Iterable[NormalizedFeedItem] = filter(None, (_normalize_entry(entry) for entry in parsed.entries))
-    sorted_entries = sorted(entries, key=lambda item: item.published_at or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    sorted_entries = sorted(
+        entries,
+        key=lambda item: item.published_at or datetime.min.replace(tzinfo=dt_timezone.utc),
+        reverse=True,
+    )
     limited_entries = sorted_entries[:max_items]
 
     external_ids = [item.external_id for item in limited_entries]
