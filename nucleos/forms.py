@@ -10,6 +10,10 @@ from accounts.forms import ProfileImageFileInput
 from .models import Nucleo, NucleoMidia, ParticipacaoNucleo
 
 class NucleoForm(forms.ModelForm):
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
     class Meta:
         model = Nucleo
         fields = [
@@ -39,6 +43,28 @@ class NucleoForm(forms.ModelForm):
     def clean_descricao(self):
         descricao = self.cleaned_data.get("descricao", "")
         return bleach.clean(descricao)
+
+    def clean_nome(self):
+        nome = self.cleaned_data.get("nome")
+        organizacao = getattr(self.user, "organizacao", None) or getattr(
+            self.instance, "organizacao", None
+        )
+
+        if not nome or organizacao is None:
+            return nome
+
+        existing = Nucleo.all_objects.filter(
+            organizacao=organizacao, nome__iexact=nome
+        )
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError(
+                _("Já existe um núcleo com esse nome nesta organização."),
+            )
+
+        return nome
 
     def clean_mensalidade(self):
         valor = self.cleaned_data.get("mensalidade")

@@ -732,6 +732,11 @@ class NucleoCreateView(
     template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         fallback_url = str(self.success_url)
@@ -770,6 +775,11 @@ class NucleoUpdateView(
     success_url = reverse_lazy("nucleos:list")
     slug_field = "public_id"
     slug_url_kwarg = "public_id"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
