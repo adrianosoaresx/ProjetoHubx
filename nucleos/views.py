@@ -982,6 +982,19 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         page_obj = paginator.get_page(page_number)
         ctx["page_obj"] = page_obj
         ctx["membros_ativos"] = page_obj.object_list
+        coordenadores_qs = self.get_participacoes_queryset().filter(papel="coordenador")
+        search_term = getattr(self, "search_term", "").strip()
+        if search_term:
+            for term in search_term.split():
+                coordenadores_qs = coordenadores_qs.filter(
+                    Q(user__contato__icontains=term)
+                    | Q(user__nome_fantasia__icontains=term)
+                    | Q(user__email__icontains=term)
+                    | Q(user__username__icontains=term)
+                )
+        coordenadores_paginator = Paginator(coordenadores_qs, self.get_membros_paginate_by())
+        coordenadores_page_number = page_number if self.get_card_param() == "coordenadores" else 1
+        ctx["coordenadores_page_obj"] = coordenadores_paginator.get_page(coordenadores_page_number)
         ctx["coordenadores"] = self.get_participacoes_queryset().filter(papel="coordenador")
         # Pendentes e suplentes (somente leitura)
         ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")

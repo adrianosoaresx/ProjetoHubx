@@ -53,7 +53,7 @@
   {% with carousel_papel=current_papel_filter|default:'' %}
     {% if active_card == 'coordenadores' %}
       {% with carousel_papel=carousel_papel|default:'coordenador' %}
-        {% include 'nucleos/partials/membros_carousel.html' with page=page_obj empty_message=empty_message_text fetch_url=membros_carousel_fetch_url|default:'' search=membros_search_query papel=carousel_papel card=active_card section=active_card nucleo_id=object.pk %}
+        {% include 'nucleos/partials/membros_carousel.html' with page=coordenadores_page_obj|default:page_obj empty_message=empty_message_text fetch_url=membros_carousel_fetch_url|default:'' search=membros_search_query papel=carousel_papel card=active_card section=active_card nucleo_id=object.pk %}
       {% endwith %}
     {% else %}
       {% include 'nucleos/partials/membros_carousel.html' with page=page_obj empty_message=empty_message_text fetch_url=membros_carousel_fetch_url|default:'' search=membros_search_query papel=carousel_papel card=active_card section=active_card nucleo_id=object.pk %}
