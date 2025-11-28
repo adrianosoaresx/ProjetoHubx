@@ -896,6 +896,18 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
     def get_membros_paginate_by(self) -> int:
         return getattr(settings, "NUCLEOS_MEMBROS_PAGINATE_BY", 12)
 
+    def get_card_param(self) -> str:
+        card = self.request.GET.get("card")
+        papel = self.request.GET.get("papel")
+
+        if not card and papel == "coordenador":
+            return "coordenadores"
+
+        if card in {"membros", "coordenadores"}:
+            return card
+
+        return "membros"
+
     def get_participacoes_queryset(self):
         nucleo = self.object
         return (
@@ -911,9 +923,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
 
     def get_membros_queryset(self):
         qs = self.get_participacoes_queryset()
-        card = self.request.GET.get("card", "membros")
-        if card not in {"membros", "coordenadores"}:
-            card = "membros"
+        card = self.get_card_param()
 
         default_papel = "coordenador" if card == "coordenadores" else "todos"
         papel_filter = self.request.GET.get("papel", default_papel)
@@ -1089,9 +1099,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         ctx["is_membros_filter_active"] = ctx["current_papel_filter"] in {"todos", "membro"}
         ctx["is_coordenadores_filter_active"] = ctx["current_papel_filter"] == "coordenador"
 
-        card = self.request.GET.get("card", "membros")
-        if card not in {"membros", "coordenadores"}:
-            card = "membros"
+        card = self.get_card_param()
         ctx["selected_card"] = card
 
         # Posts do feed do núcleo para a aba "Feed"
@@ -1195,9 +1203,7 @@ class NucleoMembrosCarouselView(NucleoMembrosPartialView):
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
 
-        card = request.GET.get("card", "membros")
-        if card not in {"membros", "coordenadores"}:
-            card = "membros"
+        card = self.get_card_param()
 
         html = render_to_string(
             "nucleos/partials/membros_carousel_slide.html",
