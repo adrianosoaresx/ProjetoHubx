@@ -551,6 +551,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         user_tipo = getattr(self.request.user, "get_tipo_usuario", None)
         allowed_user_types = {
             UserType.ASSOCIADO.value,
+            UserType.NUCLEADO.value,
             UserType.COORDENADOR.value,
             UserType.CONSULTOR.value,
         }
