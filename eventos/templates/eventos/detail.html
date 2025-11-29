@@ -398,6 +398,12 @@
               </summary>
               <div class="card-body space-y-4">
                 <p class="text-sm text-[var(--text-secondary)]">{% trans "Use o leitor de QR Code para registrar a presença dos participantes." %}</p>
+                <p
+                  class="text-sm text-[var(--color-danger-600)] hidden"
+                  data-checkin-status
+                  role="status"
+                  aria-live="polite"
+                ></p>
                 <section class="space-y-3" data-checkin-list>
                   {% if checkins_realizados %}
                     <ul class="divide-y divide-[var(--border)] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" role="list">
@@ -591,7 +597,11 @@
 {% block scripts %}
   {{ block.super }}
   {% if pode_ver_inscritos %}
-    <script src="https://unpkg.com/html5-qrcode" defer></script>
+    <script
+      src="{% static 'js/vendor/html5-qrcode-2.3.8.min.js' %}"
+      defer
+      onerror="if (!this.dataset.fallbackLoaded) { this.dataset.fallbackLoaded = 'true'; this.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'; }"
+    ></script>
   {% endif %}
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -601,6 +611,7 @@
         const scannerClose = scannerModal?.querySelector('[data-checkin-close]');
         const scanButton = checkinRoot.querySelector('[data-checkin-scan-button]');
         const scannerContainer = document.getElementById('checkin-scanner');
+        const scannerStatus = checkinRoot.querySelector('[data-checkin-status]');
         const feedbackModal = document.getElementById('checkin-feedback-modal');
         const feedbackContainer = feedbackModal?.querySelector('[data-checkin-feedback-container]');
         const feedbackMessage = feedbackModal?.querySelector('[data-checkin-feedback-message]');
@@ -609,6 +620,36 @@
         let scannerActive = false;
         let lastFocusedElement = null;
         let lastFeedbackTrigger = null;
+        const scannerUnavailableMessage = gettext(
+          'Leitor de QR Code indisponível. Verifique sua conexão ou as permissões da câmera.'
+        );
+
+        const setScanAvailabilityMessage = (message) => {
+          if (!scannerStatus || !message) {
+            return;
+          }
+          scannerStatus.textContent = message;
+          scannerStatus.classList.remove('hidden');
+        };
+
+        const disableScanButton = (message) => {
+          if (!scanButton) {
+            return;
+          }
+          scanButton.disabled = true;
+          scanButton.setAttribute('aria-disabled', 'true');
+          scanButton.classList.add('cursor-not-allowed', 'opacity-60');
+          if (message) {
+            scanButton.setAttribute('aria-label', message);
+            scanButton.title = message;
+            setScanAvailabilityMessage(message);
+          }
+        };
+
+        if (typeof Html5Qrcode === 'undefined') {
+          disableScanButton(scannerUnavailableMessage);
+          return;
+        }
 
         const toggleModalVisibility = (modal, show, focusTarget) => {
           if (!modal) {
@@ -636,7 +677,9 @@
 
         const ensureScanner = () => {
           if (typeof Html5Qrcode === 'undefined' || !scannerContainer) {
-            console.warn('Html5Qrcode não disponível ou container ausente.');
+            disableScanButton(scannerUnavailableMessage);
+            lastFeedbackTrigger = scanButton;
+            showFeedback('error', scannerUnavailableMessage);
             return null;
           }
           if (!qrScanner) {
@@ -817,7 +860,7 @@
           const scanner = ensureScanner();
           if (!scanner) {
             lastFeedbackTrigger = scanButton;
-            showFeedback('error', gettext('Leitor de QR Code indisponível.'));
+            showFeedback('error', scannerUnavailableMessage);
             return;
           }
           lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -856,10 +899,13 @@
             toggleModalVisibility(scannerModal, false);
             lastFeedbackTrigger = scanButton;
             const baseMessage = gettext('Não foi possível iniciar a câmera para leitura do QR Code.');
+            const helpMessage = gettext(
+              'Verifique sua conexão e se o navegador tem permissão para usar a câmera.'
+            );
             const detailedMessage = extractErrorMessage(error);
             const message = detailedMessage
-              ? `${baseMessage} ${gettext('Detalhes:')} ${detailedMessage}`
-              : baseMessage;
+              ? `${baseMessage} ${helpMessage} ${gettext('Detalhes:')} ${detailedMessage}`
+              : `${baseMessage} ${helpMessage}`;
             showFeedback('error', message);
           }
         };
