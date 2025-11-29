@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{{ title|default:_('Check-in do evento') }}{% endblock %}
 
@@ -31,7 +31,11 @@
 
 {% block scripts %}
   {{ block.super }}
-  <script src="https://unpkg.com/html5-qrcode" defer></script>
+  <script
+    src="{% static 'js/vendor/html5-qrcode-2.3.8.min.js' %}"
+    defer
+    onerror="if (!this.dataset.fallbackLoaded) { this.dataset.fallbackLoaded = 'true'; this.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'; }"
+  ></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("checkin-form");
