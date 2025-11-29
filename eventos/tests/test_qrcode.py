@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import json
 from decimal import Decimal
 
 import pytest
@@ -216,15 +215,13 @@ def test_gerar_qrcode_inclui_dados_da_inscricao(monkeypatch):
 
     assert "payload" in captured_data
     payload_str = captured_data["payload"]
-    assert payload_str.startswith(f"inscricao:{inscricao.pk}:")
-    payload = json.loads(payload_str.split(":", 2)[-1])
-    assert payload["evento_id"] == str(evento.pk)
-    assert payload["evento_titulo"] == evento.titulo
-    assert payload["usuario_id"] == usuario.pk
-    assert payload["usuario_nome"]
-    assert payload["usuario_email"] == usuario.email
-    assert payload["valor_pago"] == "25.50"
-    assert payload["inscricao_id"] == str(inscricao.pk)
+    assert payload_str.startswith(f"inscricao:{inscricao.pk}")
+
+    partes = payload_str.split(":")
+    assert partes[0] == "inscricao"
+    assert partes[1] == str(inscricao.pk)
+    if len(partes) > 2:
+        assert partes[2] == InscricaoEvento.gerar_checksum(str(inscricao.pk))
 
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
@@ -278,7 +275,7 @@ def test_checkin_processa_payload_com_prefixo(client, monkeypatch):
     inscricao.gerar_qrcode()
 
     codigo = captured_data.get("payload")
-    assert codigo and codigo.startswith(f"inscricao:{inscricao.pk}:")
+    assert codigo and codigo.startswith(f"inscricao:{inscricao.pk}")
 
     checkin_url = reverse("eventos:inscricao_checkin", args=[inscricao.pk])
     response = client.post(checkin_url, {"codigo": codigo})

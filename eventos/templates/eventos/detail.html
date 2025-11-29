@@ -731,7 +731,10 @@
         };
 
         const parseInscricaoId = (codigo) => {
-          const match = typeof codigo === 'string' ? codigo.match(/inscricao:(\d+):/) : null;
+          const match =
+            typeof codigo === 'string'
+              ? codigo.match(/^inscricao:([^:]+)(?::.*)?$/)
+              : null;
           return match ? match[1] : null;
         };
 

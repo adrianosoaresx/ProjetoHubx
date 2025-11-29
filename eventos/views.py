@@ -2146,8 +2146,23 @@ def checkin_inscricao(request, pk: int):
         return HttpResponseForbidden()
     codigo = request.POST.get("codigo", "").strip()
     # Código esperado começa com 'inscricao:' e conter o pk da inscrição
-    if not codigo or "inscricao:" not in codigo or f"inscricao:{inscricao.pk}:" not in codigo:
+    if not codigo or "inscricao:" not in codigo:
         return HttpResponseBadRequest("Código inválido.")
+
+    partes_codigo = codigo.split(":", 2)
+    if len(partes_codigo) < 2 or not partes_codigo[1]:
+        return HttpResponseBadRequest("Código inválido.")
+
+    codigo_inscricao = partes_codigo[1]
+    checksum = partes_codigo[2] if len(partes_codigo) > 2 else None
+
+    if str(inscricao.pk) != codigo_inscricao:
+        return HttpResponseBadRequest("Código inválido.")
+
+    if checksum and not checksum.startswith("{"):
+        expected = InscricaoEvento.gerar_checksum(str(inscricao.pk))
+        if checksum != expected:
+            return HttpResponseBadRequest("Código inválido.")
     if inscricao.status != "confirmada":
         return HttpResponseBadRequest("Inscrição não está confirmada.")
     if inscricao.check_in_realizado_em:
