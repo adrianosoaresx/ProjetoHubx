@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -20,8 +21,8 @@ from audit.services import hash_ip, log_audit
 from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
 
-from .models import AccountToken, SecurityEvent
-from .serializers import UserSerializer
+from .models import AccountToken, SecurityEvent, UserRating
+from .serializers import UserRatingSerializer, UserSerializer
 from .tasks import (
     send_cancel_delete_email,
     send_confirmation_email,
@@ -36,7 +37,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action in {"delete_me", "enable_2fa", "disable_2fa"}:
+        if self.action in {"delete_me", "enable_2fa", "disable_2fa", "rate_user"}:
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -141,6 +142,29 @@ class AccountViewSet(viewsets.GenericViewSet):
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
         return Response({"detail": _("Senha redefinida.")})
+
+    @action(detail=True, methods=["post"], url_path="rate", permission_classes=[IsAuthenticated])
+    def rate_user(self, request, pk=None):
+        target_user = self.get_object()
+        serializer = UserRatingSerializer(
+            data=request.data,
+            context={"request": request, "rated_user": target_user},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        stats = UserRating.objects.filter(rated_user=target_user).aggregate(
+            media=Avg("score"), total=Count("id")
+        )
+        media = stats["media"]
+        display = f"{media:.1f}".replace(".", ",") if media is not None else ""
+
+        response_data = serializer.data | {
+            "average": media,
+            "display": display,
+            "total": stats["total"],
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="enable-2fa")
     def enable_2fa(self, request):

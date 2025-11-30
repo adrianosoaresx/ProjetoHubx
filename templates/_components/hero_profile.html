@@ -41,14 +41,26 @@
             {% endif %}
 
             <div class="mt-2 flex flex-wrap items-center justify-center gap-3 text-sm sm:justify-start">
-              <div class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 shadow-sm">
+              <div
+                class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 shadow-sm"
+                data-user-rating-container
+              >
                 {% lucide "star" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
-                {% if perfil_avaliacao_display %}
-                  <span class="text-base font-semibold text-[var(--text-primary)]">{{ perfil_avaliacao_display }}</span>
-                {% else %}
-                  <span class="text-sm text-[var(--text-muted)]">{% trans "Sem avaliações" %}</span>
-                {% endif %}
-                <span class="text-xs text-[var(--text-secondary)]">({{ perfil_avaliacao_total|default:0 }})</span>
+                <span
+                  class="text-base font-semibold text-[var(--text-primary)] {% if not perfil_avaliacao_display %}hidden{% endif %}"
+                  data-user-rating-value
+                >
+                  {{ perfil_avaliacao_display }}
+                </span>
+                <span
+                  class="text-sm text-[var(--text-muted)] {% if perfil_avaliacao_display %}hidden{% endif %}"
+                  data-user-rating-empty
+                >
+                  {% trans "Sem avaliações" %}
+                </span>
+                <span class="text-xs text-[var(--text-secondary)]" data-user-rating-count>
+                  ({{ perfil_avaliacao_total|default:0 }})
+                </span>
               </div>
               {% if perfil_avaliar_url and request.user.is_authenticated and not is_owner and not perfil_feedback_exists %}
                 <button
@@ -59,6 +71,7 @@
                   hx-swap="innerHTML"
                   hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
                   aria-label="{% trans 'Avaliar perfil' %}"
+                  data-user-rating-action
                 >
                   {% trans "Avaliar" %}
                 </button>
@@ -140,3 +153,40 @@
     </div>
   </div>
 </section>
+
+<script>
+  (function () {
+    function handleUserRatingSubmitted(event) {
+      const detail = event.detail || {};
+      const valueEl = document.querySelector('[data-user-rating-value]');
+      const emptyEl = document.querySelector('[data-user-rating-empty]');
+      const countEl = document.querySelector('[data-user-rating-count]');
+
+      if (valueEl) {
+        const display = detail.display || (typeof detail.average === 'number' ? detail.average.toFixed(1).replace('.', ',') : '');
+        valueEl.textContent = display;
+        valueEl.classList.toggle('hidden', !display);
+      }
+
+      if (emptyEl) {
+        emptyEl.classList.add('hidden');
+      }
+
+      if (countEl && Object.prototype.hasOwnProperty.call(detail, 'total')) {
+        countEl.textContent = `(${detail.total})`;
+      }
+
+      const actionButton = document.querySelector('[data-user-rating-action]');
+      if (actionButton) {
+        actionButton.remove();
+      }
+
+      const modal = document.getElementById('modal');
+      if (modal) {
+        modal.innerHTML = '';
+      }
+    }
+
+    document.addEventListener('user-rating:submitted', handleUserRatingSubmitted);
+  })();
+</script>

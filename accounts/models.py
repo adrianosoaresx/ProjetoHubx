@@ -582,6 +582,67 @@ class PerfilFeedback(TimeStampedModel, SoftDeleteModel):
         return f"Feedback de {self.autor} para {self.avaliado}"
 
 
+class UserRating(TimeStampedModel, SoftDeleteModel):
+    """Avaliação de um usuário por outro, com validações adicionais."""
+
+    rated_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ratings_received",
+    )
+    rated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ratings_given",
+    )
+    score = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Avaliação de Usuário"
+        verbose_name_plural = "Avaliações de Usuários"
+        unique_together = ("rated_by", "rated_user")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"Avaliação de {self.rated_by} para {self.rated_user}"
+
+    def clean(self) -> None:  # pragma: no cover - validado em formulários/APIs
+        errors = {}
+
+        acting_user = getattr(self, "_acting_user", None)
+        if acting_user and not acting_user.has_perm("accounts.add_userrating"):
+            errors["rated_by"] = _("Você não tem permissão para avaliar usuários.")
+
+        if self.rated_by_id and self.rated_user_id and self.rated_by_id == self.rated_user_id:
+            errors["rated_user"] = _("Você não pode avaliar seu próprio perfil.")
+
+        if self.rated_by_id and self.rated_user_id:
+            existing = (
+                UserRating.objects.filter(
+                    rated_by_id=self.rated_by_id,
+                    rated_user_id=self.rated_user_id,
+                )
+                .exclude(pk=self.pk)
+                .exists()
+            )
+            if existing:
+                errors["__all__"] = _("Você já avaliou este usuário.")
+
+        if errors:
+            raise ValidationError(errors)
+
+    def full_clean_with_user(self, acting_user, **kwargs) -> None:
+        """Executa validação incluindo o usuário atuante."""
+
+        self._acting_user = acting_user
+        try:
+            self.full_clean(**kwargs)
+        finally:
+            self._acting_user = None
+
+
 class AccountToken(TimeStampedModel, SoftDeleteModel):
     class Tipo(models.TextChoices):
         EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
