@@ -15,7 +15,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
+from django.db.models import Avg, BooleanField, Count, Exists, OuterRef, Q, Value
 from django.db.models.functions import Lower
 from django.http import (
     Http404,
@@ -49,6 +49,7 @@ from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
 from feed.models import Bookmark, Flag, Post, Reacao
+from eventos.models import FeedbackNota
 from .forms import (
     CPF_REUSE_ERROR,
     IDENTIFIER_REQUIRED_ERROR,
@@ -356,6 +357,14 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     profile_posts = profile_posts.order_by("-created_at").distinct()
 
+    avaliacao_stats = FeedbackNota.objects.filter(usuario=perfil).aggregate(
+        media=Avg("nota"), total=Count("id")
+    )
+    avaliacao_media = avaliacao_stats["media"]
+    avaliacao_display = (
+        f"{avaliacao_media:.1f}".replace(".", ",") if avaliacao_media is not None else ""
+    )
+
     context = {
         "perfil": perfil,
         "hero_title": hero_title,
@@ -363,6 +372,9 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "is_owner": request.user == perfil,
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
+        "perfil_avaliacao_media": avaliacao_media,
+        "perfil_avaliacao_display": avaliacao_display,
+        "perfil_avaliacao_total": avaliacao_stats["total"],
     }
 
     default_section, default_url = _perfil_default_section_url(request)

@@ -40,6 +40,18 @@
               </p>
             {% endif %}
 
+            <div class="mt-2 flex flex-wrap items-center justify-center gap-3 text-sm sm:justify-start">
+              <div class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 shadow-sm">
+                {% lucide "star" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                {% if perfil_avaliacao_display %}
+                  <span class="text-base font-semibold text-[var(--text-primary)]">{{ perfil_avaliacao_display }}</span>
+                {% else %}
+                  <span class="text-sm text-[var(--text-muted)]">{% trans "Sem avaliações" %}</span>
+                {% endif %}
+                <span class="text-xs text-[var(--text-secondary)]">({{ perfil_avaliacao_total|default:0 }})</span>
+              </div>
+            </div>
+
           </div>
 
         </div>
