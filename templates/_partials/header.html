@@ -32,64 +32,65 @@
     <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
     <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
   </form>
-  <div class="flex items-center gap-3 sm:gap-4">
+  <div class="flex items-center gap-3 sm:gap-4 flex-nowrap">
     {% with pending_notifications=push_notification_pending_count|default:0 count_placeholder="__count__" %}
     {% blocktrans count notification_count=pending_notifications asvar notification_label %}Notificações pendentes: {{ notification_count }}{% plural %}Notificações pendentes: {{ notification_count }}{% endblocktrans %}
     {% blocktrans count notification_count=1 asvar notification_label_one %}Notificações pendentes: {{ count_placeholder }}{% plural %}Notificações pendentes: {{ count_placeholder }}{% endblocktrans %}
     {% blocktrans count notification_count=2 asvar notification_label_other %}Notificações pendentes: {{ count_placeholder }}{% plural %}Notificações pendentes: {{ count_placeholder }}{% endblocktrans %}
       <div class="relative shrink-0">
-      <button
-        type="button"
-        id="notification-bell"
-        class="relative inline-flex h-10 w-12 items-center justify-center gap-1 rounded text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
-        aria-label="{{ notification_label }}"
-        aria-haspopup="true"
-        aria-expanded="false"
-        aria-controls="notification-dropdown"
-        data-notification-bell
-        data-dropdown-url="{% url 'notificacoes:notifications-dropdown' %}"
-        data-notification-count="{{ pending_notifications }}"
-        data-notification-label-one="{{ notification_label_one|escape }}"
-        data-notification-label-other="{{ notification_label_other|escape }}"
-        hx-get="{% url 'notificacoes:notifications-dropdown' %}"
-        hx-target="#notification-dropdown"
-        hx-swap="innerHTML"
-        hx-trigger="click"
-      >
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 21a1 1 0 0 0 2 0" />
-          <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-        </svg>
-        {% include 'notificacoes/partials/push_notification_badge.html' with push_notification_pending_count=pending_notifications %}
-        <span data-dropdown-indicator class="transition-transform duration-150" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 0 1 1.08 1.04l-4.25 4.25a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+        <button
+          type="button"
+          id="notification-bell"
+          class="relative inline-flex h-10 w-12 items-center justify-center gap-1 rounded text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
+          aria-label="{{ notification_label }}"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="notification-dropdown"
+          data-notification-bell
+          data-dropdown-url="{% url 'notificacoes:notifications-dropdown' %}"
+          data-notification-count="{{ pending_notifications }}"
+          data-notification-label-one="{{ notification_label_one|escape }}"
+          data-notification-label-other="{{ notification_label_other|escape }}"
+          hx-get="{% url 'notificacoes:notifications-dropdown' %}"
+          hx-target="#notification-dropdown"
+          hx-swap="innerHTML"
+          hx-trigger="click"
+        >
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 21a1 1 0 0 0 2 0" />
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
           </svg>
-        </span>
-        {% blocktrans count notification_count=pending_notifications asvar notification_text %}
-        Você tem {{ notification_count }} notificações pendentes
-        {% plural %}
-        Você tem {{ notification_count }} notificações pendentes
-        {% endblocktrans %}
-        <span class="sr-only" data-notification-sr>{{ notification_text }}</span>
-      </button>
-      <div
-        id="notification-dropdown"
-        class="notification-dropdown hidden absolute right-0 mt-2 
-              w-[calc(100vw-1rem)] sm:w-[25rem]
-              max-w-[calc(100vw-1rem)]
-              max-h-[28rem] overflow-y-auto
-              bg-[var(--bg-primary)] border border-[var(--border)]
-              rounded shadow-lg p-3 sm:p-4
-              focus:outline-none"
-        role="menu"
-        aria-labelledby="notification-bell"
-        aria-live="polite"
-        tabindex="-1"
-      >
+          {% include 'notificacoes/partials/push_notification_badge.html' with push_notification_pending_count=pending_notifications %}
+          <span data-dropdown-indicator class="transition-transform duration-150" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 0 1 1.08 1.04l-4.25 4.25a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+            </svg>
+          </span>
+          {% blocktrans count notification_count=pending_notifications asvar notification_text %}
+          Você tem {{ notification_count }} notificações pendentes
+          {% plural %}
+          Você tem {{ notification_count }} notificações pendentes
+          {% endblocktrans %}
+          <span class="sr-only" data-notification-sr>{{ notification_text }}</span>
+        </button>
+        <div
+          id="notification-dropdown"
+          class="notification-dropdown hidden absolute right-0 mt-2
+                w-[calc(100vw-1rem)] sm:w-[25rem]
+                max-w-[calc(100vw-1rem)]
+                max-h-[28rem] overflow-y-auto
+                bg-[var(--bg-primary)] border border-[var(--border)]
+                rounded shadow-lg p-3 sm:p-4
+                focus:outline-none"
+          role="menu"
+          aria-labelledby="notification-bell"
+          aria-live="polite"
+          tabindex="-1"
+        >
 
-    </div>
-    {% endwith %}
+        </div>
+      </div>
+      {% endwith %}
     {% if request.user.is_authenticated %}
       <a href="{% url 'accounts:perfil' %}" class="block w-8 h-8 rounded-full overflow-hidden shrink-0" aria-label="{% trans 'Perfil' %}">
       {% if request.user.avatar %}
