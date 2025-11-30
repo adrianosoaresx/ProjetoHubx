@@ -156,6 +156,8 @@
 
 <script>
   (function () {
+    const defaultErrorMessage = gettext('Você não tem permissão para realizar esta ação.');
+
     function handleUserRatingSubmitted(event) {
       const detail = event.detail || {};
       const valueEl = document.querySelector('[data-user-rating-value]');
@@ -187,6 +189,22 @@
       }
     }
 
+    function showUserRatingMessage(message) {
+      const displayMessage = typeof message === 'string' && message.trim()
+        ? message.trim()
+        : defaultErrorMessage;
+
+      if (typeof window.HubxToast === 'function') {
+        window.HubxToast(displayMessage);
+      }
+    }
+
+    function handleUserRatingError(event) {
+      const detail = event.detail || {};
+      showUserRatingMessage(detail.message);
+    }
+
     document.addEventListener('user-rating:submitted', handleUserRatingSubmitted);
+    document.addEventListener('user-rating:error', handleUserRatingError);
   })();
 </script>

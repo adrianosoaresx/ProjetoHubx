@@ -76,11 +76,53 @@
   <script type="module" src="{% static 'feed/js/share.js' %}"></script>
   <script type="module" src="{% static 'feed/js/flag.js' %}"></script>
   <script>
-    document.body.addEventListener('htmx:responseError', function (evt) {
-      if (evt.detail.xhr.status === 403) {
-        alert(gettext('Você não tem permissão para realizar esta ação.'));
+    (function () {
+      function ensureToastContainer() {
+        let container = document.getElementById('messages');
+        if (container) {
+          return container;
+        }
+
+        container = document.createElement('ul');
+        container.id = 'messages';
+        container.className = 'fixed top-4 right-4 space-y-2 z-50';
+        document.body.appendChild(container);
+        return container;
       }
-    });
+
+      function showToast(message) {
+        if (!message) {
+          return;
+        }
+
+        const container = ensureToastContainer();
+        const item = document.createElement('li');
+        item.className = 'px-4 py-2 rounded card bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow';
+        item.textContent = message;
+        container.appendChild(item);
+
+        setTimeout(() => {
+          item.remove();
+          if (!container.childElementCount) {
+            container.remove();
+          }
+        }, 4000);
+      }
+
+      document.body.addEventListener('htmx:responseError', function (evt) {
+        if (evt.detail.xhr.status === 403) {
+          const hxTriggerHeader = evt.detail.xhr.getResponseHeader('HX-Trigger');
+          if (hxTriggerHeader) {
+            return;
+          }
+          const rawMessage = (evt.detail.xhr.responseText || '').trim();
+          const message = rawMessage || gettext('Você não tem permissão para realizar esta ação.');
+          showToast(message);
+        }
+      });
+
+      window.HubxToast = showToast;
+    })();
   </script>
   <script>
     (function () {
