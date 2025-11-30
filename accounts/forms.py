@@ -14,7 +14,13 @@ from tokens.utils import get_client_ip
 
 from .auth import validate_totp
 
-from .models import AREA_ATUACAO_CHOICES, AccountToken, PerfilFeedback, SecurityEvent
+from .models import (
+    AREA_ATUACAO_CHOICES,
+    AccountToken,
+    PerfilFeedback,
+    SecurityEvent,
+    UserRating,
+)
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
@@ -488,3 +494,45 @@ class PerfilFeedbackForm(forms.ModelForm):
         model = PerfilFeedback
         fields = ["nota", "comentario"]
         widgets = {"comentario": forms.Textarea(attrs={"rows": 4})}
+
+
+class UserRatingForm(forms.ModelForm):
+    score = forms.TypedChoiceField(
+        choices=[(i, i) for i in range(1, 6)],
+        coerce=int,
+        empty_value=None,
+        label=_("Nota"),
+    )
+
+    def __init__(self, *args, user: User, rated_user: User, **kwargs):
+        self.user = user
+        self.rated_user = rated_user
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = UserRating
+        fields = ["score", "comment"]
+        widgets = {"comment": forms.Textarea(attrs={"rows": 4})}
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if not self.user.has_perm("accounts.add_userrating"):
+            raise forms.ValidationError(_("Você não tem permissão para avaliar usuários."))
+
+        if self.user == self.rated_user:
+            raise forms.ValidationError(_("Você não pode avaliar seu próprio perfil."))
+
+        if UserRating.objects.filter(rated_by=self.user, rated_user=self.rated_user).exists():
+            raise forms.ValidationError(_("Você já avaliou este usuário."))
+
+        return cleaned_data
+
+    def save(self, commit: bool = True):
+        rating: UserRating = super().save(commit=False)
+        rating.rated_by = self.user
+        rating.rated_user = self.rated_user
+        rating.full_clean_with_user(self.user)
+        if commit:
+            rating.save()
+        return rating

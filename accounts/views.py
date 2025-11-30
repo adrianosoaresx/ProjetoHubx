@@ -1,6 +1,7 @@
 import os
 import uuid
 from pathlib import Path
+import json
 
 from django.conf import settings
 
@@ -22,6 +23,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -54,10 +56,10 @@ from .forms import (
     IDENTIFIER_REQUIRED_ERROR,
     EmailLoginForm,
     InformacoesPessoaisForm,
-    PerfilFeedbackForm,
+    UserRatingForm,
 )
 from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
-from .models import AccountToken, PerfilFeedback, SecurityEvent, UserType
+from .models import AccountToken, SecurityEvent, UserRating, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
@@ -357,15 +359,15 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     profile_posts = profile_posts.order_by("-created_at").distinct()
 
-    perfil_feedback_qs = PerfilFeedback.objects.filter(avaliado=perfil)
-    avaliacao_stats = perfil_feedback_qs.aggregate(media=Avg("nota"), total=Count("id"))
+    rating_qs = UserRating.objects.filter(rated_user=perfil)
+    avaliacao_stats = rating_qs.aggregate(media=Avg("score"), total=Count("id"))
     avaliacao_media = avaliacao_stats["media"]
     avaliacao_display = (
         f"{avaliacao_media:.1f}".replace(".", ",") if avaliacao_media is not None else ""
     )
-    perfil_feedback = None
+    user_rating = None
     if request.user.is_authenticated:
-        perfil_feedback = perfil_feedback_qs.filter(autor=request.user).first()
+        user_rating = rating_qs.filter(rated_by=request.user).first()
 
     context = {
         "perfil": perfil,
@@ -379,7 +381,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_avaliacao_total": avaliacao_stats["total"],
         "perfil_avaliar_url": reverse("accounts:perfil_avaliar", args=[perfil.public_id]),
         "perfil_avaliar_identifier": str(perfil.public_id),
-        "perfil_feedback_exists": perfil_feedback is not None,
+        "perfil_feedback_exists": user_rating is not None,
     }
 
     default_section, default_url = _perfil_default_section_url(request)
@@ -396,53 +398,81 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 @login_required
 def perfil_avaliar(request, public_id):
     perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
+    if not request.user.has_perm("accounts.add_userrating"):
+        return HttpResponseForbidden(_("Você não tem permissão para avaliar usuários."))
     if request.user == perfil:
         return HttpResponseForbidden(_("Você não pode avaliar seu próprio perfil."))
 
     redirect_url = reverse("accounts:perfil_publico_uuid", args=[perfil.public_id])
-    existing_feedback = PerfilFeedback.objects.filter(
-        avaliado=perfil, autor=request.user
+    existing_rating = UserRating.objects.filter(
+        rated_user=perfil, rated_by=request.user
     ).first()
 
-    if existing_feedback and request.method in {"GET", "HEAD"}:
+    def _rating_payload():
+        stats = UserRating.objects.filter(rated_user=perfil).aggregate(
+            media=Avg("score"),
+            total=Count("id"),
+        )
+        media = stats["media"]
+        display = f"{media:.1f}".replace(".", ",") if media is not None else ""
+        return {"average": media, "display": display, "total": stats["total"]}
+
+    if request.method in {"GET", "HEAD"}:
         context = {
             "perfil": perfil,
-            "feedback": existing_feedback,
-            "form": PerfilFeedbackForm(),
-            "feedback_exists": True,
+            "feedback": existing_rating,
+            "form": UserRatingForm(user=request.user, rated_user=perfil),
+            "feedback_exists": existing_rating is not None,
         }
         return render(request, "perfil/partials/perfil_feedback_modal.html", context)
 
-    if existing_feedback:
-        messages.info(request, _("Você já avaliou este perfil."))
+    if existing_rating:
+        error_message = _("Você já avaliou este perfil.")
         if request.headers.get("HX-Request"):
-            response = HttpResponse(status=204)
-            response["HX-Redirect"] = redirect_url
+            response = HttpResponse(status=409)
+            response["HX-Trigger"] = json.dumps({
+                "user-rating:error": {"message": error_message}
+            })
             return response
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse({"detail": error_message}, status=409)
+        messages.info(request, error_message)
         return redirect(redirect_url)
 
-    if request.method == "POST":
-        form = PerfilFeedbackForm(request.POST)
-        if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.autor = request.user
-            feedback.avaliado = perfil
-            feedback.save()
-            messages.success(request, _("Avaliação registrada com sucesso."))
-            if request.headers.get("HX-Request"):
-                response = HttpResponse(status=204)
-                response["HX-Redirect"] = redirect_url
-                return response
-            return redirect(redirect_url)
-    else:
-        form = PerfilFeedbackForm()
+    if request.method != "POST":
+        return HttpResponseBadRequest()
+
+    form = UserRatingForm(request.POST, user=request.user, rated_user=perfil)
+    if form.is_valid():
+        form.save()
+        payload = _rating_payload()
+
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Trigger"] = json.dumps({
+                "user-rating:submitted": payload
+            })
+            return response
+
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse(payload, status=201)
+
+        messages.success(request, _("Avaliação registrada com sucesso."))
+        return redirect(redirect_url)
 
     context = {
         "perfil": perfil,
         "form": form,
         "feedback_exists": False,
     }
-    return render(request, "perfil/partials/perfil_feedback_modal.html", context)
+    if "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse({"errors": form.errors}, status=400)
+    return render(
+        request,
+        "perfil/partials/perfil_feedback_modal.html",
+        context,
+        status=400,
+    )
 
 
 @require_GET
