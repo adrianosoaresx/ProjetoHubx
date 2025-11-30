@@ -11,6 +11,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models import PROTECT, SET_NULL
@@ -552,6 +553,33 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
+
+
+class PerfilFeedback(TimeStampedModel, SoftDeleteModel):
+    """Avaliação direta de um usuário por outro."""
+
+    avaliado = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="feedbacks_recebidos",
+    )
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="feedbacks_enviados",
+    )
+    nota = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comentario = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Feedback de Perfil"
+        verbose_name_plural = "Feedbacks de Perfis"
+        unique_together = ("autor", "avaliado")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"Feedback de {self.autor} para {self.avaliado}"
 
 
 class AccountToken(TimeStampedModel, SoftDeleteModel):

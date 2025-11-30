@@ -17,9 +17,9 @@ from django.views.generic import TemplateView
 from core.permissions import AdminOrOperatorRequiredMixin
 
 from eventos.models import Evento
-from eventos.models import FeedbackNota, InscricaoEvento
+from eventos.models import InscricaoEvento
 
-from accounts.models import UserType
+from accounts.models import PerfilFeedback, UserType
 from feed.models import Bookmark
 from nucleos.models import Nucleo
 
@@ -215,7 +215,7 @@ class MembroDashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        avaliacao_stats = FeedbackNota.objects.filter(usuario=user).aggregate(
+        avaliacao_stats = PerfilFeedback.objects.filter(avaliado=user).aggregate(
             media=Avg("nota"), total=Count("id")
         )
         avaliacao_media = avaliacao_stats["media"]

@@ -14,7 +14,7 @@ from tokens.utils import get_client_ip
 
 from .auth import validate_totp
 
-from .models import AREA_ATUACAO_CHOICES, AccountToken, SecurityEvent
+from .models import AREA_ATUACAO_CHOICES, AccountToken, PerfilFeedback, SecurityEvent
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
@@ -474,3 +474,17 @@ class EmailLoginForm(forms.Form):
 
     def get_user(self):
         return self.user
+
+
+class PerfilFeedbackForm(forms.ModelForm):
+    nota = forms.TypedChoiceField(
+        choices=[(i, i) for i in range(1, 6)],
+        coerce=int,
+        empty_value=None,
+        label=_("Nota"),
+    )
+
+    class Meta:
+        model = PerfilFeedback
+        fields = ["nota", "comentario"]
+        widgets = {"comentario": forms.Textarea(attrs={"rows": 4})}
