@@ -398,12 +398,26 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 @login_required
 def perfil_avaliar(request, public_id):
     perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
-    if not request.user.has_perm("accounts.add_userrating"):
-        return HttpResponseForbidden(_("Você não tem permissão para avaliar usuários."))
-    if request.user == perfil:
-        return HttpResponseForbidden(_("Você não pode avaliar seu próprio perfil."))
-
     redirect_url = reverse("accounts:perfil_publico_uuid", args=[perfil.public_id])
+
+    def _rating_error_response(message, *, status=403):
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=status)
+            response["HX-Trigger"] = json.dumps({
+                "user-rating:error": {"message": str(message)}
+            })
+            return response
+
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse({"detail": message}, status=status)
+
+        messages.error(request, message)
+        return redirect(redirect_url)
+
+    if not request.user.has_perm("accounts.add_userrating"):
+        return _rating_error_response(_("Você não tem permissão para avaliar usuários."))
+    if request.user == perfil:
+        return _rating_error_response(_("Você não pode avaliar seu próprio perfil."))
     existing_rating = UserRating.objects.filter(
         rated_user=perfil, rated_by=request.user
     ).first()
