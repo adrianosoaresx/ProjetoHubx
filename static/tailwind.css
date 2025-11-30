@@ -3630,6 +3630,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   flex-wrap: wrap;
 }
 
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
 .place-items-center {
   place-items: center;
 }
