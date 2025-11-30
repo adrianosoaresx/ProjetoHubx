@@ -49,15 +49,15 @@ from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
 from feed.models import Bookmark, Flag, Post, Reacao
-from eventos.models import FeedbackNota
 from .forms import (
     CPF_REUSE_ERROR,
     IDENTIFIER_REQUIRED_ERROR,
     EmailLoginForm,
     InformacoesPessoaisForm,
+    PerfilFeedbackForm,
 )
 from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
-from .models import AccountToken, SecurityEvent, UserType
+from .models import AccountToken, PerfilFeedback, SecurityEvent, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
@@ -357,13 +357,15 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     profile_posts = profile_posts.order_by("-created_at").distinct()
 
-    avaliacao_stats = FeedbackNota.objects.filter(usuario=perfil).aggregate(
-        media=Avg("nota"), total=Count("id")
-    )
+    perfil_feedback_qs = PerfilFeedback.objects.filter(avaliado=perfil)
+    avaliacao_stats = perfil_feedback_qs.aggregate(media=Avg("nota"), total=Count("id"))
     avaliacao_media = avaliacao_stats["media"]
     avaliacao_display = (
         f"{avaliacao_media:.1f}".replace(".", ",") if avaliacao_media is not None else ""
     )
+    perfil_feedback = None
+    if request.user.is_authenticated:
+        perfil_feedback = perfil_feedback_qs.filter(autor=request.user).first()
 
     context = {
         "perfil": perfil,
@@ -375,6 +377,9 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
         "perfil_avaliacao_total": avaliacao_stats["total"],
+        "perfil_avaliar_url": reverse("accounts:perfil_avaliar", args=[perfil.public_id]),
+        "perfil_avaliar_identifier": str(perfil.public_id),
+        "perfil_feedback_exists": perfil_feedback is not None,
     }
 
     default_section, default_url = _perfil_default_section_url(request)
@@ -386,6 +391,58 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     )
 
     return render(request, "perfil/publico.html", context)
+
+
+@login_required
+def perfil_avaliar(request, public_id):
+    perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
+    if request.user == perfil:
+        return HttpResponseForbidden(_("Você não pode avaliar seu próprio perfil."))
+
+    redirect_url = reverse("accounts:perfil_publico_uuid", args=[perfil.public_id])
+    existing_feedback = PerfilFeedback.objects.filter(
+        avaliado=perfil, autor=request.user
+    ).first()
+
+    if existing_feedback and request.method in {"GET", "HEAD"}:
+        context = {
+            "perfil": perfil,
+            "feedback": existing_feedback,
+            "form": PerfilFeedbackForm(),
+            "feedback_exists": True,
+        }
+        return render(request, "perfil/partials/perfil_feedback_modal.html", context)
+
+    if existing_feedback:
+        messages.info(request, _("Você já avaliou este perfil."))
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = redirect_url
+            return response
+        return redirect(redirect_url)
+
+    if request.method == "POST":
+        form = PerfilFeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.autor = request.user
+            feedback.avaliado = perfil
+            feedback.save()
+            messages.success(request, _("Avaliação registrada com sucesso."))
+            if request.headers.get("HX-Request"):
+                response = HttpResponse(status=204)
+                response["HX-Redirect"] = redirect_url
+                return response
+            return redirect(redirect_url)
+    else:
+        form = PerfilFeedbackForm()
+
+    context = {
+        "perfil": perfil,
+        "form": form,
+        "feedback_exists": False,
+    }
+    return render(request, "perfil/partials/perfil_feedback_modal.html", context)
 
 
 @require_GET
