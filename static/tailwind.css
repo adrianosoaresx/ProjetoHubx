@@ -4597,6 +4597,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   color: var(--color-danger-500);
 }
 
+.text-\[var\(--color-danger-600\)\] {
+  color: var(--color-danger-600);
+}
+
 .text-\[var\(--color-danger-700\)\] {
   color: var(--color-danger-700);
 }
