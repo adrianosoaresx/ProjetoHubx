@@ -835,6 +835,9 @@
   #sidebar.sidebar-collapsed .sidebar-subitem svg,
   #sidebar.sidebar-collapsed .sidebar-item img { @apply w-6 h-6 flex-shrink-0; }
 
+  #sidebar.sidebar-collapsed .sidebar-theme-group { @apply flex-col items-stretch gap-2; }
+  #sidebar.sidebar-collapsed .sidebar-theme-group .btn { @apply w-full; }
+
   #sidebar.sidebar-collapsed .sidebar-brand-label { @apply hidden; }
 
   /* Tabelas */
