@@ -880,6 +880,10 @@ def excluir_conta(request):
     is_self = target_user == request.user
     is_htmx = bool(request.headers.get("HX-Request"))
 
+    active_delete_error = _(
+        "Apenas contas inativas podem ser excluídas definitivamente. Desative a conta antes de continuar."
+    )
+
     def _redirect_to_form():
         url = reverse("accounts:excluir_conta")
         if not is_self:
@@ -890,6 +894,15 @@ def excluir_conta(request):
                 }
             )
             url = f"{url}?{params}"
+        return redirect(url)
+
+    def _redirect_to_profile():
+        url = reverse("accounts:perfil")
+        if not is_self:
+            params = {"public_id": str(target_user.public_id)}
+            if target_user.username:
+                params["username"] = target_user.username
+            url = f"{url}?{urlencode(params)}"
         return redirect(url)
 
     def _render_form(status: int = 200, **extra_context):
@@ -905,6 +918,12 @@ def excluir_conta(request):
             else "accounts/delete_account_confirm.html"
         )
         return render(request, template_name, context, status=status)
+
+    if target_user.is_active:
+        if is_htmx:
+            return _render_form(status=400, error_message=active_delete_error)
+        messages.error(request, active_delete_error)
+        return _redirect_to_profile()
 
     if request.method == "GET":
         return _render_form()
@@ -928,10 +947,10 @@ def excluir_conta(request):
 
     with transaction.atomic():
         user = target_user
-        user.delete()
         user.exclusao_confirmada = True
         user.is_active = False
         user.save(update_fields=["exclusao_confirmada", "is_active"])
+        user.delete()
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
