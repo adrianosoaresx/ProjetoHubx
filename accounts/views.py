@@ -231,6 +231,12 @@ def perfil(request):
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
 
+    portfolio_medias = list(
+        target_user.medias.visible_to(viewer, target_user)
+        .select_related("user")
+        .order_by("-created_at")
+    )
+
     profile_posts = (
         Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
         .prefetch_related("reacoes", "comments")
@@ -296,6 +302,7 @@ def perfil(request):
         "hero_subtitle": hero_subtitle,
         "profile": target_user,
         "is_owner": is_owner,
+        "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
