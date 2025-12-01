@@ -517,8 +517,14 @@ class UserRatingForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        if not self.user.has_perm("accounts.add_userrating"):
-            raise forms.ValidationError(_("Você não tem permissão para avaliar usuários."))
+        self.instance.rated_by = self.user
+        self.instance.rated_user = self.rated_user
+
+        viewer_org = getattr(self.user, "organizacao_id", None)
+        rated_org = getattr(self.rated_user, "organizacao_id", None)
+        if not viewer_org or not rated_org or viewer_org != rated_org:
+            raise forms.ValidationError(
+                _("Você só pode avaliar perfis da sua organização."))
 
         if self.user == self.rated_user:
             raise forms.ValidationError(_("Você não pode avaliar seu próprio perfil."))
