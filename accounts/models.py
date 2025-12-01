@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -612,11 +612,24 @@ class UserRating(TimeStampedModel, SoftDeleteModel):
         errors = {}
 
         acting_user = getattr(self, "_acting_user", None)
-        if acting_user and not acting_user.has_perm("accounts.add_userrating"):
-            errors["rated_by"] = _("Você não tem permissão para avaliar usuários.")
+        acting_org_id = getattr(acting_user, "organizacao_id", None) if acting_user else None
+        rated_by_org_id = getattr(self, "rated_by", None)
+        rated_by_org_id = rated_by_org_id.organizacao_id if rated_by_org_id else None
+        rated_user_org_id = getattr(self, "rated_user", None)
+        rated_user_org_id = rated_user_org_id.organizacao_id if rated_user_org_id else None
+
+        org_ids = [org_id for org_id in (acting_org_id, rated_by_org_id) if org_id]
+        viewer_org_id = org_ids[0] if org_ids else None
+
+        if not viewer_org_id or not rated_user_org_id or viewer_org_id != rated_user_org_id:
+            errors.setdefault(NON_FIELD_ERRORS, []).append(
+                _("Você só pode avaliar perfis da sua organização."),
+            )
 
         if self.rated_by_id and self.rated_user_id and self.rated_by_id == self.rated_user_id:
-            errors["rated_user"] = _("Você não pode avaliar seu próprio perfil.")
+            errors.setdefault(NON_FIELD_ERRORS, []).append(
+                _("Você não pode avaliar seu próprio perfil."),
+            )
 
         if self.rated_by_id and self.rated_user_id:
             existing = (

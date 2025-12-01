@@ -414,8 +414,12 @@ def perfil_avaliar(request, public_id):
         messages.error(request, message)
         return redirect(redirect_url)
 
-    if not request.user.has_perm("accounts.add_userrating"):
-        return _rating_error_response(_("Você não tem permissão para avaliar usuários."))
+    viewer_org = getattr(request.user, "organizacao_id", None)
+    profile_org = getattr(perfil, "organizacao_id", None)
+    if not viewer_org or not profile_org or viewer_org != profile_org:
+        return _rating_error_response(
+            _("Você só pode avaliar perfis da sua organização."),
+        )
     if request.user == perfil:
         return _rating_error_response(_("Você não pode avaliar seu próprio perfil."))
     existing_rating = UserRating.objects.filter(
