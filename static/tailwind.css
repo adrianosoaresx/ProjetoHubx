@@ -5396,6 +5396,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   background-color: var(--color-primary-500);
 }
 
+.hover\:bg-\[var\(--primary\)\]:hover {
+  background-color: var(--primary);
+}
+
 .hover\:bg-\[var\(--primary-hover\)\]:hover {
   background-color: var(--primary-hover);
 }
