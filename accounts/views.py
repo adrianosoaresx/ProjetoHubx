@@ -31,7 +31,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from urllib.parse import urlencode
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
@@ -44,6 +44,7 @@ from accounts.tasks import (
     send_confirmation_email,
     send_password_reset_email,
 )
+from audit.services import hash_ip, log_audit
 from core.permissions import (
     IsAdmin,
     IsCoordenador,
@@ -176,6 +177,18 @@ def _can_manage_profile(viewer, profile) -> bool:
     return False
 
 
+def _can_toggle_user_active(viewer, profile) -> bool:
+    if not _can_manage_profile(viewer, profile):
+        return False
+
+    viewer_type = getattr(viewer, "get_tipo_usuario", None)
+    return viewer_type in {
+        UserType.ROOT.value,
+        UserType.ADMIN.value,
+        UserType.OPERADOR.value,
+    }
+
+
 def _resolve_management_target_user(request):
     viewer = request.user
     if not getattr(viewer, "is_authenticated", False):
@@ -206,6 +219,42 @@ def _resolve_management_target_user(request):
         raise PermissionDenied
 
     return target
+
+
+def _build_profile_info_context(request, profile, *, is_owner: bool, viewer: User | None):
+    context: dict[str, object] = {
+        "profile": profile,
+        "is_owner": is_owner,
+    }
+
+    can_manage = _can_manage_profile(viewer, profile) if viewer else False
+    context["can_manage"] = can_manage
+
+    if can_manage:
+        bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
+        identifiers = {
+            "public_id": str(profile.public_id),
+            "username": profile.username,
+        }
+        context.update(
+            {
+                "user": profile,
+                "bio": bio,
+                "manage_target_public_id": profile.public_id,
+                "manage_target_username": profile.username,
+                "manage_target_query": urlencode(identifiers),
+                "can_toggle_active": _can_toggle_user_active(viewer, profile),
+                "activate_user_url": reverse("accounts:activate_user"),
+                "deactivate_user_url": reverse("accounts:deactivate_user"),
+            }
+        )
+
+    return context
+
+
+def _render_profile_info_partial(request, profile, *, is_owner: bool, viewer: User | None):
+    context = _build_profile_info_context(request, profile, is_owner=is_owner, viewer=viewer)
+    return render(request, "perfil/partials/detail_informacoes.html", context)
 
 
 # ====================== PERFIL ======================
@@ -576,25 +625,15 @@ def perfil_section(request, section):
         return error
 
     viewer = request.user if request.user.is_authenticated else None
-    context: dict[str, object] = {
-        "profile": profile,
-        "is_owner": is_owner,
-    }
-
-    can_manage = _can_manage_profile(viewer, profile) if viewer else False
-    context["can_manage"] = can_manage
+    context = _build_profile_info_context(
+        request,
+        profile,
+        is_owner=is_owner,
+        viewer=viewer,
+    )
 
     if section == "info":
-        if can_manage:
-            bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
-            context.update(
-                {
-                    "user": profile,
-                    "bio": bio,
-                    "manage_target_public_id": profile.public_id,
-                    "manage_target_username": profile.username,
-                }
-            )
+        if context.get("can_manage"):
             template = "perfil/partials/detail_informacoes.html"
         else:
             template = "perfil/partials/publico_informacoes.html"
@@ -603,6 +642,91 @@ def perfil_section(request, section):
         return HttpResponseBadRequest("Invalid section")
 
     return render(request, template, context)
+
+
+def _profile_toggle_response(request, target_user, *, is_owner: bool):
+    if request.headers.get("HX-Request"):
+        return _render_profile_info_partial(
+            request,
+            target_user,
+            is_owner=is_owner,
+            viewer=request.user,
+        )
+
+    extra_params: dict[str, str | None] = {"info_view": None}
+    if not is_owner:
+        extra_params.update(
+            {
+                "public_id": str(target_user.public_id),
+                "username": target_user.username,
+            }
+        )
+
+    return redirect_to_profile_section(request, "info", extra_params)
+
+
+@login_required
+@require_POST
+def deactivate_user(request):
+    target_user = _resolve_management_target_user(request)
+
+    if not _can_toggle_user_active(request.user, target_user):
+        raise PermissionDenied
+
+    if not target_user.is_active:
+        return HttpResponseBadRequest(_("Usuário já está inativo."))
+
+    target_user.is_active = False
+    target_user.save(update_fields=["is_active"])
+
+    ip = get_client_ip(request)
+    SecurityEvent.objects.create(
+        usuario=target_user,
+        evento="usuario_desativado",
+        ip=ip,
+    )
+    log_audit(
+        request.user,
+        "user_deactivated",
+        object_type="User",
+        object_id=str(target_user.id),
+        ip_hash=hash_ip(ip),
+        metadata={"target_username": target_user.username},
+    )
+
+    return _profile_toggle_response(request, target_user, is_owner=target_user == request.user)
+
+
+@login_required
+@require_POST
+def activate_user(request):
+    target_user = _resolve_management_target_user(request)
+
+    if not _can_toggle_user_active(request.user, target_user):
+        raise PermissionDenied
+
+    if target_user.is_active:
+        return HttpResponseBadRequest(_("Usuário já está ativo."))
+
+    target_user.is_active = True
+    target_user.save(update_fields=["is_active"])
+
+    ip = get_client_ip(request)
+    SecurityEvent.objects.create(
+        usuario=target_user,
+        evento="usuario_ativado",
+        ip=ip,
+    )
+    log_audit(
+        request.user,
+        "user_activated",
+        object_type="User",
+        object_id=str(target_user.id),
+        ip_hash=hash_ip(ip),
+        metadata={"target_username": target_user.username},
+    )
+
+    return _profile_toggle_response(request, target_user, is_owner=target_user == request.user)
 
 
 @login_required
