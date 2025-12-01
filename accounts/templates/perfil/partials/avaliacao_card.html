@@ -13,8 +13,8 @@
       </div>
       <div class="min-w-0">
         <p class="font-semibold text-[var(--text-primary)] truncate">{{ avaliacao.rated_by.display_name }}</p>
-        {% if avaliacao.created %}
-          <p class="text-xs text-[var(--text-secondary)]">{{ avaliacao.created|date:"SHORT_DATE_FORMAT" }}</p>
+        {% if avaliacao.created_at %}
+          <p class="text-xs text-[var(--text-secondary)]">{{ avaliacao.created_at|date:"SHORT_DATE_FORMAT" }}</p>
         {% endif %}
       </div>
     </header>
