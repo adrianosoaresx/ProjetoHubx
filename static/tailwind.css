@@ -5053,6 +5053,20 @@ body.sidebar-mobile-open .sidebar-backdrop {
   pointer-events: none;
 }
 
+/* Utility to hide native scrollbars while keeping scroll behavior. */
+
+.sidebar-hide-scrollbar {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+}
+
+.sidebar-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
+}
+
 /* Layout helpers for feed media */
 
 .feed-video-wrapper {
