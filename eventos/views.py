@@ -268,7 +268,14 @@ def build_evento_carousel_sections(
         status_filter = "todos"
 
     annotated_base = base_queryset.annotate(
-        num_inscritos=Count("inscricoes", distinct=True)
+        num_inscritos=Count(
+            "inscricoes",
+            filter=Q(
+                inscricoes__status="confirmada",
+                inscricoes__deleted=False,
+            ),
+            distinct=True,
+        )
     )
 
     sections_order = ["ativos"]
@@ -367,7 +374,16 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             qs = qs.filter(status=Evento.Status.CONCLUIDO)
         elif status_filter == "ativos":
             qs = qs.filter(status=Evento.Status.ATIVO)
-        return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
+        return qs.annotate(
+            num_inscritos=Count(
+                "inscricoes",
+                filter=Q(
+                    inscricoes__status="confirmada",
+                    inscricoes__deleted=False,
+                ),
+                distinct=True,
+            )
+        ).order_by("-data_inicio")
 
     # ----- Contexto -----
     def get_context_data(self, **kwargs):
@@ -451,7 +467,14 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             base_qs.filter(cancelados_filter)
         ).count()
         annotated_base = base_qs.annotate(
-            num_inscritos=Count("inscricoes", distinct=True)
+            num_inscritos=Count(
+                "inscricoes",
+                filter=Q(
+                    inscricoes__status="confirmada",
+                    inscricoes__deleted=False,
+                ),
+                distinct=True,
+            )
         )
         ctx["eventos_planejamento"] = restringe_planejamento_cancelados(
             annotated_base.filter(planejamento_filter)
