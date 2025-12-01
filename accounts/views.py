@@ -87,7 +87,7 @@ def _get_rating_stats(rating_qs):
 
 
 def _get_rating_page(rating_qs, *, page_number=1):
-    paginator = Paginator(rating_qs.order_by("-created"), RATINGS_PER_PAGE)
+    paginator = Paginator(rating_qs.order_by("-created_at"), RATINGS_PER_PAGE)
     return paginator.get_page(page_number)
 
 
