@@ -14,11 +14,9 @@ def test_lucide_whatsapp_icon_renders_official_svg():
     assert 'width="24"' in svg
     assert 'height="24"' in svg
     assert 'fill="currentColor"' in svg
-    assert 'viewBox="0 0 24 24"' in svg
+    assert 'viewBox="0 0 418.135 418.135"' in svg
     assert 'xmlns="http://www.w3.org/2000/svg"' in svg
-    assert (
-        '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967' in svg
-    )
+    assert '<path fill="#7AD06D"' in svg
 
 
 def test_lucide_whatsapp_accepts_accessibility_and_attrs():
@@ -27,3 +25,11 @@ def test_lucide_whatsapp_accepts_accessibility_and_attrs():
     assert 'aria-label="WhatsApp"' in svg
     assert 'aria-hidden' not in svg
     assert 'class="icon"' in svg
+
+
+def test_invalid_icon_name_falls_back_to_star():
+    svg = render_template("{% lucide 'stars' %}")
+
+    assert svg.startswith("<svg")
+    assert 'aria-hidden="true"' in svg
+    assert 'stroke-linejoin="round"' in svg

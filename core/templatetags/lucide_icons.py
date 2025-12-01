@@ -53,7 +53,11 @@ def lucide(name: str, label: str | None = None, **attrs) -> str:
         svg = lucide_lib._render_icon(name, None, **attrs)
     except (KeyError, getattr(lucide_lib, "IconDoesNotExist", Exception)):
         if name == "whatsapp":
+            attrs.setdefault("width", 24)
+            attrs.setdefault("height", 24)
+            attrs.setdefault("fill", "currentColor")
             svg = _render_whatsapp_icon(attrs)
         else:
-            raise
+            fallback_icon = "star"
+            svg = lucide_lib._render_icon(fallback_icon, None, **attrs)
     return mark_safe(svg)
