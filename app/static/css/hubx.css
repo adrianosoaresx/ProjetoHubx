@@ -814,6 +814,14 @@
   .sidebar-submenu { @apply mt-1 ml-3 flex flex-col gap-1 border-l border-[var(--border)] pl-3; }
   .sidebar-subitem { @apply flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-accent)] transition; }
   .sidebar-subitem svg { @apply h-4 w-4; }
+  .sidebar-nav {
+    /* Preserve scrolling while hiding the scrollbar across browsers */
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .sidebar-nav::-webkit-scrollbar { display: none; }
   #sidebar .sidebar-header,
   #sidebar .sidebar-nav { @apply transition-all duration-150 ease-in-out; }
   #sidebar.sidebar-collapsed .sidebar-header,
