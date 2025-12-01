@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django import template
 from django.utils.translation import gettext as _
@@ -49,6 +50,36 @@ def _get_prefetched(manager, cache_key):
         if cache_key in cache:
             return cache[cache_key]
     return None
+
+
+@register.simple_tag
+def rating_stars(average) -> list[str]:
+    """Return star states for a five-star rating with half-star rounding."""
+
+    try:
+        value = Decimal(str(average))
+    except (InvalidOperation, TypeError, ValueError):
+        value = Decimal("0")
+
+    half_steps = (value * 2).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    rounded = half_steps / 2
+    clamped = min(max(rounded, Decimal("0")), Decimal("5"))
+
+    stars: list[str] = []
+    half_step = Decimal("0.5")
+
+    for position in range(1, 6):
+        full_threshold = Decimal(position)
+        half_threshold = full_threshold - half_step
+
+        if clamped >= full_threshold:
+            stars.append("full")
+        elif clamped >= half_threshold:
+            stars.append("half")
+        else:
+            stars.append("empty")
+
+    return stars
 
 
 def _has_nucleo_specific_badge(user, tipo: str) -> bool:

@@ -45,7 +45,16 @@
                 class="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1 shadow-sm"
                 data-user-rating-container
               >
-                {% lucide "star" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                {% rating_stars perfil_avaliacao as perfil_stars %}
+                {% for star in perfil_stars %}
+                  {% if star == "full" %}
+                    {% lucide "star" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                  {% elif star == "half" %}
+                    {% lucide "star-half" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                  {% else %}
+                    {% lucide "star-off" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                  {% endif %}
+                {% endfor %}
                 <span
                   class="text-base font-semibold text-[var(--text-primary)] {% if not perfil_avaliacao_display %}hidden{% endif %}"
                   data-user-rating-value
