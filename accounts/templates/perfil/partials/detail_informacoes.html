@@ -232,6 +232,19 @@
               >
                 {% trans "Editar perfil" %}
               </a>
+              {% if not profile.is_active %}
+                <a
+                  href="{% url 'accounts:excluir_conta' %}?{{ query_params }}"
+                  hx-get="{% url 'accounts:delete_account' %}?{{ query_params }}"
+                  hx-target="#modal"
+                  hx-trigger="click"
+                  hx-swap="innerHTML"
+                  hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                  class="btn btn-danger"
+                >
+                  {% trans "Excluir conta" %}
+                </a>
+              {% endif %}
             {% endwith %}
           {% endwith %}
         {% endif %}
