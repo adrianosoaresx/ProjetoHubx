@@ -2540,6 +2540,13 @@ a:focus {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+#sidebar.sidebar-collapsed .sidebar-theme-group .btn-primary {
+  width: 100%;
+}
+
+.btn-primary {
   border-color: transparent;
   background-color: var(--accent);
   color: var(--on-accent);
@@ -2612,6 +2619,13 @@ a:focus {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+#sidebar.sidebar-collapsed .sidebar-theme-group .btn-secondary {
+  width: 100%;
+}
+
+.btn-secondary {
   border-color: var(--border);
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -2684,6 +2698,13 @@ a:focus {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+#sidebar.sidebar-collapsed .sidebar-theme-group .btn-outline {
+  width: 100%;
+}
+
+.btn-outline {
   border-color: var(--border);
   background-color: transparent;
   color: var(--text-primary);
@@ -2855,6 +2876,18 @@ body.sidebar-mobile-open .sidebar-backdrop {
   width: 1rem;
 }
 
+.sidebar-nav {
+  /* Preserve scrolling while hiding the scrollbar across browsers */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
+}
+
 #sidebar .sidebar-header,
   #sidebar .sidebar-nav {
   transition-property: all;
@@ -2901,6 +2934,16 @@ body.sidebar-mobile-open .sidebar-backdrop {
   height: 1.5rem;
   width: 1.5rem;
   flex-shrink: 0;
+}
+
+#sidebar.sidebar-collapsed .sidebar-theme-group {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+#sidebar.sidebar-collapsed .sidebar-theme-group .btn {
+  width: 100%;
 }
 
 #sidebar.sidebar-collapsed .sidebar-brand-label {
@@ -5051,20 +5094,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-translate-x: -100%;
   opacity: 0;
   pointer-events: none;
-}
-
-/* Utility to hide native scrollbars while keeping scroll behavior. */
-
-.sidebar-hide-scrollbar {
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE 10+ */
-}
-
-.sidebar-hide-scrollbar::-webkit-scrollbar {
-  display: none;
-  /* Safari and Chrome */
 }
 
 /* Layout helpers for feed media */
