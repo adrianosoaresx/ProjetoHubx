@@ -4272,6 +4272,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-gradient-to: transparent var(--tw-gradient-to-position);
 }
 
+.fill-\[var\(--primary\)\] {
+  fill: var(--primary);
+}
+
 .fill-current {
   fill: currentColor;
 }
