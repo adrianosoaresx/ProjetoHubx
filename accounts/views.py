@@ -15,6 +15,7 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, BooleanField, Count, Exists, OuterRef, Q, Value
 from django.db.models.functions import Lower
@@ -26,6 +27,7 @@ from django.http import (
     JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -73,6 +75,20 @@ PERFIL_OWNER_SECTION_URLS = {
     **PERFIL_SECTION_URLS,
     "conexoes": "conexoes:perfil_conexoes_partial",
 }
+
+RATINGS_PER_PAGE = 6
+
+
+def _get_rating_stats(rating_qs):
+    stats = rating_qs.aggregate(media=Avg("score"), total=Count("id"))
+    media = stats["media"]
+    display = f"{media:.1f}".replace(".", ",") if media is not None else ""
+    return stats, media, display
+
+
+def _get_rating_page(rating_qs, *, page_number=1):
+    paginator = Paginator(rating_qs.order_by("-created"), RATINGS_PER_PAGE)
+    return paginator.get_page(page_number)
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
@@ -268,12 +284,30 @@ def perfil(request):
 
     profile_posts = profile_posts.order_by("-created_at").distinct()
 
+    rating_qs = UserRating.objects.filter(rated_user=target_user).select_related(
+        "rated_by"
+    )
+    avaliacao_stats, avaliacao_media, avaliacao_display = _get_rating_stats(rating_qs)
+    ratings_page = _get_rating_page(rating_qs)
+    user_rating = rating_qs.filter(rated_by=request.user).first()
+
     context = {
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "profile": target_user,
         "is_owner": is_owner,
         "profile_posts": profile_posts,
+        "perfil_avaliacao_media": avaliacao_media,
+        "perfil_avaliacao_display": avaliacao_display,
+        "perfil_avaliacao_total": avaliacao_stats["total"],
+        "perfil_avaliacoes_page": ratings_page,
+        "perfil_avaliacoes_fetch_url": reverse(
+            "accounts:perfil_avaliacoes_carousel", args=[target_user.public_id]
+        ),
+        "perfil_avaliacoes_empty_message": _(
+            "Nenhuma avaliação disponível até o momento."
+        ),
+        "perfil_feedback_exists": user_rating is not None,
     }
 
     default_section, default_url = _perfil_default_section_url(
@@ -359,12 +393,9 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     profile_posts = profile_posts.order_by("-created_at").distinct()
 
-    rating_qs = UserRating.objects.filter(rated_user=perfil)
-    avaliacao_stats = rating_qs.aggregate(media=Avg("score"), total=Count("id"))
-    avaliacao_media = avaliacao_stats["media"]
-    avaliacao_display = (
-        f"{avaliacao_media:.1f}".replace(".", ",") if avaliacao_media is not None else ""
-    )
+    rating_qs = UserRating.objects.filter(rated_user=perfil).select_related("rated_by")
+    avaliacao_stats, avaliacao_media, avaliacao_display = _get_rating_stats(rating_qs)
+    ratings_page = _get_rating_page(rating_qs)
     user_rating = None
     if request.user.is_authenticated:
         user_rating = rating_qs.filter(rated_by=request.user).first()
@@ -382,6 +413,13 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_avaliar_url": reverse("accounts:perfil_avaliar", args=[perfil.public_id]),
         "perfil_avaliar_identifier": str(perfil.public_id),
         "perfil_feedback_exists": user_rating is not None,
+        "perfil_avaliacoes_page": ratings_page,
+        "perfil_avaliacoes_fetch_url": reverse(
+            "accounts:perfil_avaliacoes_carousel", args=[perfil.public_id]
+        ),
+        "perfil_avaliacoes_empty_message": _(
+            "Nenhuma avaliação disponível até o momento."
+        ),
     }
 
     default_section, default_url = _perfil_default_section_url(request)
@@ -490,6 +528,37 @@ def perfil_avaliar(request, public_id):
         "perfil/partials/perfil_feedback_modal.html",
         context,
         status=400,
+    )
+
+
+@require_GET
+def perfil_avaliacoes_carousel(request, public_id):
+    perfil = get_object_or_404(User, public_id=public_id)
+    viewer = request.user if request.user.is_authenticated else None
+    can_view = viewer and (_can_manage_profile(viewer, perfil) or viewer == perfil)
+    if not perfil.perfil_publico and not can_view:
+        return HttpResponseForbidden()
+    rating_qs = UserRating.objects.filter(rated_user=perfil).select_related("rated_by")
+    page_number = request.GET.get("page") or 1
+    ratings_page = _get_rating_page(rating_qs, page_number=page_number)
+
+    html = render_to_string(
+        "perfil/partials/avaliacoes_carousel_slide.html",
+        {
+            "avaliacoes": list(ratings_page.object_list),
+            "page_number": ratings_page.number,
+            "empty_message": _("Nenhuma avaliação disponível até o momento."),
+        },
+        request=request,
+    )
+
+    return JsonResponse(
+        {
+            "html": html,
+            "page": ratings_page.number,
+            "total_pages": ratings_page.paginator.num_pages,
+            "count": ratings_page.paginator.count,
+        }
     )
 
 

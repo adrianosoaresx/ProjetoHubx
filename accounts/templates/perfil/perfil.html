@@ -40,6 +40,50 @@
         </section>
       {% endwith %}
 
+      <section id="perfil-ratings-accordion" class="card" data-accordion>
+        <div class="card-header flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 text-left sm:flex-1"
+            data-accordion-toggle
+            aria-expanded="false"
+            aria-controls="perfil-ratings-panel"
+          >
+            <div class="flex items-start gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-warning-500)]/10 text-[var(--color-warning-600)] shadow-lg shadow-[var(--color-warning-500)]/20">
+                {% lucide 'stars' class='h-6 w-6' aria_hidden='true' %}
+              </span>
+              <div class="space-y-1">
+                <h3 class="text-xl font-semibold">{% trans "Avaliações" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe as avaliações recebidas no seu perfil." %}</p>
+              </div>
+            </div>
+            <svg
+              class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
+              data-accordion-icon
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div
+          id="perfil-ratings-panel"
+          class="card-body space-y-4 border-t border-[var(--border)] hidden"
+          data-accordion-panel
+        >
+          {% include 'perfil/partials/avaliacoes_carousel.html' with page=perfil_avaliacoes_page fetch_url=perfil_avaliacoes_fetch_url empty_message=perfil_avaliacoes_empty_message %}
+        </div>
+      </section>
+
       <section id="perfil-posts-accordion" class="card" data-accordion>
         <div class="card-header flex flex-wrap items-center justify-between gap-3">
           <button
@@ -101,48 +145,62 @@
   {{ block.super }}
   <script src="{% static 'feed/js/feed.js' %}"></script>
   <script type="module" src="{% static 'perfil/js/perfil.js' %}"></script>
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
   <script>
     (function () {
-      const accordion = document.getElementById('perfil-posts-accordion');
-      if (!accordion) {
-        return;
-      }
-
-      const toggle = accordion.querySelector('[data-accordion-toggle]');
-      const panel = accordion.querySelector('[data-accordion-panel]');
-      const icon = accordion.querySelector('[data-accordion-icon]');
-
-      if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
-        return;
-      }
-
-      const setExpanded = (expanded) => {
-        toggle.setAttribute('aria-expanded', String(expanded));
-        panel.classList.toggle('hidden', !expanded);
-        if (icon instanceof HTMLElement) {
-          icon.classList.toggle('rotate-180', expanded);
+      function initAccordion(accordionId, { hashPrefixes = [] } = {}) {
+        const accordion = document.getElementById(accordionId);
+        if (!accordion) {
+          return;
         }
-      };
 
-      const hash = window.location.hash;
-      const postTarget = hash.startsWith('#post-') ? document.querySelector(hash) : null;
-      const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      const shouldExpandFromHash = hash === '#perfil-posts-accordion' || postTarget instanceof HTMLElement;
-      setExpanded(shouldExpandFromHash || initialExpanded);
+        const toggle = accordion.querySelector('[data-accordion-toggle]');
+        const panel = accordion.querySelector('[data-accordion-panel]');
+        const icon = accordion.querySelector('[data-accordion-icon]');
 
-      if (postTarget instanceof HTMLElement) {
-        requestAnimationFrame(() => {
-          postTarget.focus({ preventScroll: true });
-          postTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+          return;
+        }
+
+        const setExpanded = (expanded) => {
+          toggle.setAttribute('aria-expanded', String(expanded));
+          panel.classList.toggle('hidden', !expanded);
+          if (icon instanceof HTMLElement) {
+            icon.classList.toggle('rotate-180', expanded);
+          }
+        };
+
+        const hash = window.location.hash;
+        let hashTarget = null;
+        const matchesPrefix = hashPrefixes.some((prefix) => {
+          if (hash && hash.startsWith(prefix)) {
+            hashTarget = document.querySelector(hash);
+            return true;
+          }
+          return false;
         });
-      } else if (shouldExpandFromHash) {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const initialExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        const shouldExpandFromHash = hash === `#${accordionId}` || matchesPrefix;
+        setExpanded(shouldExpandFromHash || initialExpanded);
+
+        if (hashTarget instanceof HTMLElement) {
+          requestAnimationFrame(() => {
+            hashTarget.focus({ preventScroll: true });
+            hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        } else if (shouldExpandFromHash) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        toggle.addEventListener('click', () => {
+          const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+          setExpanded(!isExpanded);
+        });
       }
 
-      toggle.addEventListener('click', () => {
-        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-        setExpanded(!isExpanded);
-      });
+      initAccordion('perfil-posts-accordion', { hashPrefixes: ['#post-'] });
+      initAccordion('perfil-ratings-accordion');
     })();
   </script>
 {% endblock %}

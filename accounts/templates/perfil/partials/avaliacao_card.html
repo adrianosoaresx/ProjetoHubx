@@ -1,0 +1,38 @@
+{% load i18n membros_extras lucide_icons %}
+<article class="card h-full">
+  <div class="card-body space-y-4">
+    <header class="flex items-center gap-3">
+      <div class="h-12 w-12 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
+        {% if avaliacao.rated_by.avatar %}
+          <img src="{{ avaliacao.rated_by.avatar_url }}" alt="{{ avaliacao.rated_by.display_name }}" class="h-full w-full object-cover" loading="lazy">
+        {% else %}
+          <div class="grid h-full w-full place-items-center text-sm font-semibold text-[var(--text-secondary)]">
+            {{ avaliacao.rated_by.get_initials|default:avaliacao.rated_by.username|slice:':2'|upper }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="min-w-0">
+        <p class="font-semibold text-[var(--text-primary)] truncate">{{ avaliacao.rated_by.display_name }}</p>
+        {% if avaliacao.created %}
+          <p class="text-xs text-[var(--text-secondary)]">{{ avaliacao.created|date:"SHORT_DATE_FORMAT" }}</p>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="flex items-center gap-2" aria-label="{% trans 'Nota recebida' %}">
+      {% rating_stars avaliacao.score as avaliacao_stars %}
+      {% for star in avaliacao_stars %}
+        <span class="inline-flex" data-rating-state="{{ star }}">
+          {% if star == 'full' %}
+            {% lucide 'star' class='h-4 w-4 text-[var(--primary)] fill-[var(--primary)]' aria_hidden='true' %}
+          {% else %}
+            {% lucide 'star' class='h-4 w-4 text-[var(--text-muted)]' aria_hidden='true' %}
+          {% endif %}
+        </span>
+      {% endfor %}
+      <span class="text-sm font-semibold text-[var(--text-primary)]">{{ avaliacao.score }}/5</span>
+    </div>
+
+    <p class="text-sm leading-relaxed text-[var(--text-secondary)]">{{ avaliacao.comment|default:_('Sem comentário adicional.') }}</p>
+  </div>
+</article>

@@ -1,0 +1,28 @@
+{% load i18n membros_extras lucide_icons %}
+{% if avaliacoes %}
+  {% for avaliacao in avaliacoes %}
+    <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
+      <div role="listitem" class="h-full">
+        {% include 'perfil/partials/avaliacao_card.html' with avaliacao=avaliacao %}
+      </div>
+    </div>
+  {% endfor %}
+
+  {% for avaliacao in avaliacoes %}
+    {% if forloop.counter0|divisibleby:2 %}
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-2" role="list" data-carousel-page="{{ page_number }}">
+    {% endif %}
+        <div role="listitem" class="h-full">
+          {% include 'perfil/partials/avaliacao_card.html' with avaliacao=avaliacao %}
+        </div>
+    {% if forloop.counter|divisibleby:2 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{{ empty_message|default:_('Nenhuma avaliação disponível até o momento.') }}</p>
+    </div>
+  </div>
+{% endif %}
