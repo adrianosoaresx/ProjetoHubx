@@ -44,6 +44,8 @@ urlpatterns = [
         {"section": "info"},
         name="perfil_info_partial",
     ),
+    path("perfil/desativar/", views.deactivate_user, name="deactivate_user"),
+    path("perfil/ativar/", views.activate_user, name="activate_user"),
 
     path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),
     path("excluir/modal/", views.excluir_conta, name="delete_account"),

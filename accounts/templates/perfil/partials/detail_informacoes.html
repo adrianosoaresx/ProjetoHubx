@@ -184,18 +184,42 @@
         {% else %}
           {% with target_public_id=manage_target_public_id|stringformat:"s" target_username=manage_target_username target_username_encoded=manage_target_username|urlencode %}
             {% with query_params="public_id="|add:target_public_id|add:"&username="|add:target_username_encoded %}
-              {% if request.user.get_tipo_usuario == "admin" or request.user.get_tipo_usuario == "operador" %}
-                <a
-                  href="{% url 'accounts:excluir_conta' %}?{{ query_params }}"
-                  class="btn btn-danger"
-                  hx-get="{% url 'accounts:delete_account' %}?{{ query_params }}"
-                  hx-target="#modal"
-                  hx-trigger="click"
-                  hx-swap="innerHTML"
-                  hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-                >
-                  {% trans "Excluir" %}
-                </a>
+              {% if can_toggle_active %}
+                {% if profile.is_active %}
+                  <form
+                    action="{{ deactivate_user_url }}"
+                    method="post"
+                    class="inline"
+                    hx-post="{{ deactivate_user_url }}"
+                    hx-target="closest section"
+                    hx-swap="innerHTML"
+                    hx-vals='{"public_id": "{{ manage_target_public_id|escapejs }}", "username": "{{ manage_target_username|default_if_none:''|escapejs }}"}'
+                  >
+                    {% csrf_token %}
+                    <input type="hidden" name="public_id" value="{{ target_public_id }}" />
+                    <input type="hidden" name="username" value="{{ target_username }}" />
+                    <button type="submit" class="btn btn-warning">
+                      {% trans "Desativar" %}
+                    </button>
+                  </form>
+                {% else %}
+                  <form
+                    action="{{ activate_user_url }}"
+                    method="post"
+                    class="inline"
+                    hx-post="{{ activate_user_url }}"
+                    hx-target="closest section"
+                    hx-swap="innerHTML"
+                    hx-vals='{"public_id": "{{ manage_target_public_id|escapejs }}", "username": "{{ manage_target_username|default_if_none:''|escapejs }}"}'
+                  >
+                    {% csrf_token %}
+                    <input type="hidden" name="public_id" value="{{ target_public_id }}" />
+                    <input type="hidden" name="username" value="{{ target_username }}" />
+                    <button type="submit" class="btn btn-success">
+                      {% trans "Ativar" %}
+                    </button>
+                  </form>
+                {% endif %}
               {% endif %}
               <a
                 href="{% url 'accounts:perfil_sections_info' %}?{{ query_params }}"
