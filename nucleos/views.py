@@ -1216,6 +1216,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         ctx["is_coordenadores_filter_active"] = ctx["current_papel_filter"] == "coordenador"
 
         card = self.get_card_param()
+        ctx["card"] = card
         ctx["selected_card"] = card
 
         # Posts do feed do núcleo para a aba "Feed"
