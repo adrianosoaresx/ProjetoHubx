@@ -151,6 +151,32 @@
         {% include 'membros/_carousel.html' with page=membros_coordenadores_page section='coordenadores' empty_message=membros_section_empty_messages.coordenadores fetch_url=membros_fetch_url search_term=search_term show_promote_button=True %}
       </div>
     </details>
+
+    <details class="card group" data-membros-section="inativos" id="membros-section-inativos" {% if open_section == 'inativos' %}open{% endif %}>
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <div class="flex items-start gap-3">
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-error-500)]/10 text-[var(--color-error-600)] shadow-lg shadow-[var(--color-error-500)]/20">
+            {% lucide 'user-round-x' class='h-6 w-6' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Associados inativos" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=membros_inativos_count %}
+                {{ count }} associado inativo no total
+              {% plural %}
+                {{ count }} associados inativos no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
+      </summary>
+      <div>
+        {% include 'membros/_carousel.html' with page=membros_inativos_page section='inativos' empty_message=membros_section_empty_messages.inativos fetch_url=membros_fetch_url search_term=search_term show_promote_button=True %}
+      </div>
+    </details>
   </div>
 
 {% endblock %}
