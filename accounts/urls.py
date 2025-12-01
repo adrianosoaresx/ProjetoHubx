@@ -29,6 +29,11 @@ urlpatterns = [
     path("perfil/", views.perfil, name="perfil"),
     path("perfil/<uuid:public_id>/", views.perfil_publico, name="perfil_publico_uuid"),
     path("perfil/<uuid:public_id>/avaliar/", views.perfil_avaliar, name="perfil_avaliar"),
+    path(
+        "perfil/<uuid:public_id>/avaliacoes/carousel/",
+        views.perfil_avaliacoes_carousel,
+        name="perfil_avaliacoes_carousel",
+    ),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
 
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
