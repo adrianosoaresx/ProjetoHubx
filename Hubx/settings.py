@@ -165,6 +165,9 @@ TEMPLATES = [
                 "widget_tweaks.templatetags.widget_tweaks",
                 "core.templatetags.string_filters",
             ],
+            "libraries": {
+                "nucleo_tags": "nucleos.templatetags.nucleo_tags",
+            },
         },
     },
 ]
