@@ -16,11 +16,11 @@
               {% if section %}
                 {% with section_encoded=section|urlencode %}
                   {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
-                    {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                    {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') %}
                   {% endwith %}
                 {% endwith %}
               {% else %}
-                {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') %}
               {% endif %}
             {% else %}
               {% include '_components/card_usuario.html' with user=user %}
@@ -49,11 +49,11 @@
                 {% if section %}
                   {% with section_encoded=section|urlencode %}
                     {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
-                      {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                      {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') %}
                     {% endwith %}
                   {% endwith %}
                 {% else %}
-                  {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                  {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') %}
                 {% endif %}
               {% else %}
                 {% include '_components/card_usuario.html' with user=user %}
