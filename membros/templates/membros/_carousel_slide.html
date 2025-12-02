@@ -11,17 +11,21 @@
       >
         <div class="flex h-full flex-col gap-4">
           <div class="flex-1">
-            {% include '_components/card_usuario.html' with user=user %}
+            {% if show_promote_button %}
+              {% url 'membros:membro_promover_form' user.pk as promote_url %}
+              {% if section %}
+                {% with section_encoded=section|urlencode %}
+                  {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
+                    {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                  {% endwith %}
+                {% endwith %}
+              {% else %}
+                {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+              {% endif %}
+            {% else %}
+              {% include '_components/card_usuario.html' with user=user %}
+            {% endif %}
           </div>
-          {% if show_promote_button %}
-            {% url 'membros:membro_promover_form' user.pk as promote_url %}
-            <a
-              href="{{ promote_url }}{% if section %}?section={{ section|urlencode }}{% endif %}"
-              class="btn btn-secondary w-full text-center"
-            >
-              {% trans 'Promover' %}
-            </a>
-          {% endif %}
         </div>
       </div>
     </div>
@@ -40,17 +44,21 @@
         >
           <div class="flex h-full flex-col gap-4">
             <div class="flex-1">
-              {% include '_components/card_usuario.html' with user=user %}
+              {% if show_promote_button %}
+                {% url 'membros:membro_promover_form' user.pk as promote_url %}
+                {% if section %}
+                  {% with section_encoded=section|urlencode %}
+                    {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
+                      {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                    {% endwith %}
+                  {% endwith %}
+                {% else %}
+                  {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') cta_classes='btn btn-secondary w-full text-center relative z-20' cta_container_classes='w-full' %}
+                {% endif %}
+              {% else %}
+                {% include '_components/card_usuario.html' with user=user %}
+              {% endif %}
             </div>
-            {% if show_promote_button %}
-              {% url 'membros:membro_promover_form' user.pk as promote_url %}
-              <a
-                href="{{ promote_url }}{% if section %}?section={{ section|urlencode }}{% endif %}"
-                class="btn btn-secondary w-full text-center"
-              >
-                {% trans 'Promover' %}
-              </a>
-            {% endif %}
           </div>
         </div>
         {% if forloop.last and not forloop.counter|divisibleby:3 %}
