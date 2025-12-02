@@ -424,11 +424,11 @@
           });
         }
 
-        document.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape' && mobileOpen && !mediaQuery.matches) {
-            setMobileOpen(false);
-          }
-        });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileOpen && !mediaQuery.matches) {
+          setMobileOpen(false);
+        }
+      });
 
         if (typeof mediaQuery.addEventListener === 'function') {
           mediaQuery.addEventListener('change', handleMediaChange);
@@ -437,6 +437,26 @@
         }
       }
       document.body.classList.remove('preload');
+    })();
+  </script>
+  <script>
+    (function () {
+      function ensureModalContainer() {
+        if (document.getElementById('modal')) {
+          return;
+        }
+        const container = document.createElement('div');
+        container.id = 'modal';
+        container.setAttribute('role', 'presentation');
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureModalContainer, { once: true });
+      } else {
+        ensureModalContainer();
+      }
     })();
   </script>
   {% block extra_js %}
