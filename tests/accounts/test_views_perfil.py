@@ -309,3 +309,43 @@ def test_perfil_connections_search_uses_search_partial(client, django_user_model
     assert parsed.path == reverse("conexoes:perfil_conexoes_buscar")
     query_params = parse_qs(parsed.query)
     assert query_params.get("view") == ["buscar"]
+
+
+@pytest.mark.parametrize(
+    "profile_type",
+    (
+        UserType.ADMIN,
+        UserType.OPERADOR,
+    ),
+)
+def test_promote_button_hidden_for_admin_or_operator_profiles(
+    client, django_user_model, profile_type
+):
+    organization = OrganizacaoFactory()
+    viewer = django_user_model.objects.create_user(
+        email="viewer@example.com",
+        username="viewer",
+        password="pass123",
+        user_type=UserType.ADMIN,
+        organizacao=organization,
+        is_staff=True,
+    )
+    target = django_user_model.objects.create_user(
+        email="target@example.com",
+        username=f"target-{profile_type.value}",
+        password="pass123",
+        user_type=profile_type,
+        organizacao=organization,
+        is_staff=profile_type == UserType.ADMIN,
+    )
+
+    client.force_login(viewer)
+
+    response = client.get(
+        reverse("accounts:perfil"), {"public_id": str(target.public_id)}
+    )
+
+    assert response.status_code == 200
+    assert response.context["can_promote_profile"] is False
+    assert response.context["promote_profile_url"] is None
+    assert "Promover usuário" not in response.content.decode()
