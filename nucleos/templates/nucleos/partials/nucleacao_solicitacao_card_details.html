@@ -6,9 +6,9 @@
     {% endblocktrans %}
   </p>
 
-  <div class="mt-auto flex flex-wrap items-center justify-center gap-2">
+  <div class="mt-auto grid w-full grid-cols-2 gap-2">
     <button
-      class="btn btn-ghost btn-sm relative z-20 text-[var(--color-error-600)]"
+      class="btn btn-ghost btn-sm relative z-20 w-full text-[var(--color-error-600)]"
       hx-post="{% url 'nucleos:nucleacao_cancelar' solicitacao.pk %}"
       hx-target="closest [data-carousel-page]"
       hx-swap="none"
@@ -17,7 +17,7 @@
       {% trans "Cancelar" %}
     </button>
     <button
-      class="btn btn-primary btn-sm relative z-20"
+      class="btn btn-primary btn-sm relative z-20 w-full"
       hx-get="{% url 'nucleos:nucleacao_promover' solicitacao.pk %}"
       hx-target="#modal"
       hx-swap="innerHTML"
