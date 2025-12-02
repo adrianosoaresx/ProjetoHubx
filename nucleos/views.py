@@ -119,6 +119,33 @@ def _get_allowed_classificacao_keys(user) -> set[str]:
     return {Nucleo.Classificacao.CONSTITUIDO.value}
 
 
+def _user_can_manage_nucleacao_requests(
+    user, nucleo: Nucleo, consultor_ids: set[int] | None = None
+) -> bool:
+    consultor_ids = consultor_ids or set()
+    tipo = getattr(user, "get_tipo_usuario", None)
+    if isinstance(tipo, UserType):
+        tipo = tipo.value
+
+    if tipo == UserType.ADMIN.value:
+        return getattr(user, "organizacao_id", None) == getattr(nucleo, "organizacao_id", None)
+
+    if tipo == UserType.COORDENADOR.value:
+        participacoes = getattr(nucleo, "participacoes", None)
+        if participacoes is not None:
+            return participacoes.filter(
+                user=user,
+                status="ativo",
+                status_suspensao=False,
+            ).exists()
+        return False
+
+    if tipo == UserType.CONSULTOR.value or consultor_ids:
+        return nucleo.pk in consultor_ids
+
+    return False
+
+
 class NucleoVisibilityMixin:
     def get_allowed_classificacao_keys(self) -> set[str]:
         if not hasattr(self, "_allowed_classificacao_keys"):
@@ -400,6 +427,42 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         self._cached_queryset = result
         return result
 
+    def can_view_nucleacao_solicitacoes(self) -> bool:
+        tipo = getattr(self.request.user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        return tipo in {UserType.ADMIN.value, UserType.COORDENADOR.value} or self.user_has_consultoria_access()
+
+    def get_nucleacao_solicitacoes_queryset(self):
+        if not self.can_view_nucleacao_solicitacoes():
+            return ParticipacaoNucleo.objects.none()
+
+        user = self.request.user
+        tipo = getattr(user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+
+        consultor_ids = self.get_consultor_nucleo_ids()
+
+        qs = (
+            ParticipacaoNucleo.objects.filter(status="pendente")
+            .select_related("user", "nucleo")
+            .order_by("data_solicitacao")
+        )
+
+        if tipo == UserType.ADMIN.value:
+            return qs.filter(nucleo__organizacao=user.organizacao)
+
+        if tipo == UserType.COORDENADOR.value:
+            return qs.filter(nucleo__participacoes__user=user).distinct()
+
+        if self.user_has_consultoria_access():
+            if consultor_ids:
+                return qs.filter(nucleo_id__in=consultor_ids)
+            return ParticipacaoNucleo.objects.none()
+
+        return ParticipacaoNucleo.objects.none()
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx.setdefault("list_title", _("Núcleos"))
@@ -413,6 +476,15 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx["form"] = form
         show_totals = self.request.user.user_type in {UserType.ADMIN, UserType.OPERADOR}
         ctx["show_totals"] = show_totals
+
+        show_nucleacao_solicitacoes = self.can_view_nucleacao_solicitacoes()
+        ctx["show_nucleacao_solicitacoes"] = show_nucleacao_solicitacoes
+        ctx["nucleacao_solicitacoes"] = []
+        ctx["total_nucleacao_solicitacoes"] = 0
+        if show_nucleacao_solicitacoes:
+            solicitacoes = list(self.get_nucleacao_solicitacoes_queryset())
+            ctx["nucleacao_solicitacoes"] = solicitacoes
+            ctx["total_nucleacao_solicitacoes"] = len(solicitacoes)
 
         allowed_keys = self.get_allowed_classificacao_keys()
         ctx["allowed_classificacao_keys"] = sorted(allowed_keys)
@@ -693,6 +765,9 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx = super().get_context_data(**kwargs)
         form = NucleoSearchForm(self.request.GET or None)
         ctx["form"] = form
+        ctx.setdefault("show_nucleacao_solicitacoes", False)
+        ctx.setdefault("nucleacao_solicitacoes", [])
+        ctx.setdefault("total_nucleacao_solicitacoes", 0)
         # Ajusta títulos e rótulos para o contexto "Meus Núcleos"
         ctx.setdefault("list_title", _("Meus Núcleos"))
         ctx.setdefault("list_aria_label", _("Lista de núcleos do usuário"))
@@ -1451,6 +1526,66 @@ class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["participar_url"] = reverse("nucleos:participacao_solicitar", args=[self.object.pk])
         return context
+
+
+class NucleacaoPromoverSolicitacaoView(
+    NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, View
+):
+    template_name = "nucleos/partials/nucleacao_promover_modal.html"
+
+    def get_participacao(self):
+        return get_object_or_404(
+            ParticipacaoNucleo, pk=self.kwargs["participacao_id"], status="pendente"
+        )
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        participacao = self.get_participacao()
+        consultor_ids = self.get_consultor_nucleo_ids()
+        if not _user_can_manage_nucleacao_requests(
+            request.user, participacao.nucleo, consultor_ids
+        ):
+            raise PermissionDenied
+        self.participacao = participacao
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            "participacao": self.participacao,
+            "form_action": reverse(
+                "nucleos:nucleacao_promover", args=[self.participacao.pk]
+            ),
+        }
+        return TemplateResponse(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        participacao: ParticipacaoNucleo = self.participacao
+        if participacao.status != "pendente":
+            return redirect("nucleos:list")
+
+        participacao.status = "ativo"
+        participacao.decidido_por = request.user
+        participacao.data_decisao = timezone.now()
+        participacao.justificativa = ""
+        participacao.save(
+            update_fields=[
+                "status",
+                "decidido_por",
+                "data_decisao",
+                "justificativa",
+            ]
+        )
+        notify_participacao_aprovada.delay(participacao.id)
+        messages.success(
+            request,
+            _("Solicitação aprovada e usuário promovido a nucleado."),
+        )
+
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Refresh"] = "true"
+            return response
+
+        return redirect("nucleos:list")
 
 
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):

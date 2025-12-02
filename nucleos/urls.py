@@ -13,6 +13,11 @@ urlpatterns = [
     path("<int:pk>/membros/", views.NucleoMembrosPartialView.as_view(), name="membros_list"),
     path("<int:pk>/nucleacao/", views.NucleacaoInviteView.as_view(), name="nucleacao_invite"),
     path(
+        "solicitacoes/<int:participacao_id>/promover/",
+        views.NucleacaoPromoverSolicitacaoView.as_view(),
+        name="nucleacao_promover",
+    ),
+    path(
         "<int:pk>/membros/carousel/",
         views.NucleoMembrosCarouselView.as_view(),
         name="membros_carousel_api",
