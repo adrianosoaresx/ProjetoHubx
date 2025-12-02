@@ -1,7 +1,8 @@
-{% load i18n %}
-{% with modal_title_id="modal-nucleacao-title-"|add:nucleo.pk|stringformat:"s" modal_description_id="modal-nucleacao-description-"|add:nucleo.pk|stringformat:"s" %}
+{% load i18n nucleo_tags %}
+{% with modal_title_id="modal-nucleacao-title-"|add:nucleo.pk|stringformat:"s" modal_description_id="modal-nucleacao-description"|add:nucleo.pk|stringformat:"s" %}
+{% can_request_nucleacao nucleo as can_request_nucleacao %}
 <div
-  class="modal !active"
+  class="modal !active overflow-hidden"
   role="dialog"
   aria-modal="true"
   aria-labelledby="{{ modal_title_id }}"
@@ -56,19 +57,21 @@
           {% trans "Sua solicitação será enviada aos responsáveis pelo núcleo." %}
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
-          <form
-            method="post"
-            action="{{ participar_url }}"
-            class="flex justify-end"
-            hx-post="{{ participar_url }}"
-            hx-target="#modal"
-            hx-swap="innerHTML"
-          >
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">
-              {% trans "Quero me nuclear" %}
-            </button>
-          </form>
+          {% if can_request_nucleacao %}
+            <form
+              method="post"
+              action="{{ participar_url }}"
+              class="flex justify-end"
+              hx-post="{{ participar_url }}"
+              hx-target="#modal"
+              hx-swap="innerHTML"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">
+                {% trans "Quero me nuclear" %}
+              </button>
+            </form>
+          {% endif %}
           <button type="button" class="btn btn-secondary" data-modal-dismiss>
             {% trans "Cancelar" %}
           </button>

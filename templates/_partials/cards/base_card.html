@@ -1,4 +1,4 @@
-{% load i18n lucide_icons %}
+{% load i18n lucide_icons nucleo_tags %}
 <article
   {% if card_id %}id="{{ card_id }}"{% endif %}
   class="card group relative flex h-full flex-col overflow-hidden{% if cover %} card-with-cover{% endif %}{% if card_classes %} {{ card_classes }}{% endif %}"
@@ -78,7 +78,11 @@
         <h3 class="text-base text-center font-semibold [var(--text-primary)] group-hover:underline">{{ title }}</h3>
         {% include details %}
 
-        {% if cta_url %}
+        {% with can_request_nucleacao=True %}
+        {% if resolved_nucleo %}
+          {% can_request_nucleacao resolved_nucleo as can_request_nucleacao %}
+        {% endif %}
+        {% if cta_url and can_request_nucleacao %}
           <div class="mt-5 flex flex-1 items-end justify-center">
             <a
               href="{{ cta_url }}"
@@ -93,6 +97,7 @@
             </a>
           </div>
         {% endif %}
+        {% endwith %}
       </div>
     </div>
   {% endwith %}
