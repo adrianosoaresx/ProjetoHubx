@@ -177,6 +177,19 @@ def _can_manage_profile(viewer, profile) -> bool:
     return False
 
 
+def _can_promote_profile(viewer, profile) -> bool:
+    if viewer is None or not getattr(viewer, "is_authenticated", False):
+        return False
+
+    viewer_type = getattr(viewer, "get_tipo_usuario", None)
+    if viewer_type not in {UserType.ADMIN.value, UserType.OPERADOR.value}:
+        return False
+
+    viewer_org = getattr(viewer, "organizacao_id", None)
+    profile_org = getattr(profile, "organizacao_id", None)
+    return viewer_org is not None and profile_org is not None and viewer_org == profile_org
+
+
 def _can_toggle_user_active(viewer, profile) -> bool:
     if not _can_manage_profile(viewer, profile):
         return False
@@ -346,6 +359,13 @@ def perfil(request):
     ratings_page = _get_rating_page(rating_qs)
     user_rating = rating_qs.filter(rated_by=request.user).first()
 
+    can_promote_profile = _can_promote_profile(viewer, target_user)
+    promote_profile_url = None
+    if can_promote_profile:
+        promote_profile_url = reverse(
+            "membros:membro_promover_form", args=[target_user.pk]
+        )
+
     context = {
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
@@ -353,6 +373,8 @@ def perfil(request):
         "is_owner": is_owner,
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
+        "can_promote_profile": can_promote_profile,
+        "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
         "perfil_avaliacao_total": avaliacao_stats["total"],
@@ -456,6 +478,11 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     if request.user.is_authenticated:
         user_rating = rating_qs.filter(rated_by=request.user).first()
 
+    can_promote_profile = _can_promote_profile(viewer, perfil)
+    promote_profile_url = None
+    if can_promote_profile:
+        promote_profile_url = reverse("membros:membro_promover_form", args=[perfil.pk])
+
     context = {
         "perfil": perfil,
         "hero_title": hero_title,
@@ -463,6 +490,8 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "is_owner": request.user == perfil,
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
+        "can_promote_profile": can_promote_profile,
+        "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
         "perfil_avaliacao_total": avaliacao_stats["total"],
