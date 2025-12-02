@@ -73,6 +73,16 @@
                   ({{ perfil_avaliacao_total|default:0 }})
                 </span>
               </div>
+              {% if can_promote_profile and promote_profile_url %}
+                <a
+                  href="{{ promote_profile_url }}"
+                  class="btn btn-primary btn-sm"
+                  aria-label="{% trans 'Promover usuário' %}"
+                >
+                  {% lucide 'arrow-up-right' class='h-4 w-4' aria_hidden='true' %}
+                  <span>{% trans "Promover" %}</span>
+                </a>
+              {% endif %}
               {% if perfil_avaliar_url and request.user.is_authenticated and not is_owner and not perfil_feedback_exists %}
                 <button
                   type="button"
