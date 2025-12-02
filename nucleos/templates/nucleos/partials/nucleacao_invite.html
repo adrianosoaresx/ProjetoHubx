@@ -33,7 +33,7 @@
           <p class="inline-flex w-fit items-center rounded-full bg-[var(--bg-secondary)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
             {{ nucleo.get_classificacao_display }}
           </p>
-          <h2 id="{{ modal_title_id }}" class="text-xl font-semibold text-[var(--text-primary)]">{{ nucleo.nome }}</h2>
+          <h2 id="{{ modal_title_id }}" class="text-xl font-semibold text-[var(--text-primary)]" tabindex="-1" data-initial-focus>{{ nucleo.nome }}</h2>
           <p class="text-sm text-[var(--text-muted)]">
             {% trans "Confirme se deseja participar deste núcleo." %}
           </p>
@@ -56,7 +56,14 @@
           {% trans "Sua solicitação será enviada aos responsáveis pelo núcleo." %}
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
-          <form method="post" action="{{ participar_url }}" class="flex justify-end">
+          <form
+            method="post"
+            action="{{ participar_url }}"
+            class="flex justify-end"
+            hx-post="{{ participar_url }}"
+            hx-target="#modal"
+            hx-swap="innerHTML"
+          >
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">
               {% trans "Quero me nuclear" %}
@@ -123,7 +130,10 @@
       }
     });
 
-    if (focusableElements.length) {
+    const initialFocusElement = dialog.querySelector('[data-initial-focus]');
+    if (initialFocusElement && typeof initialFocusElement.focus === 'function') {
+      initialFocusElement.focus();
+    } else if (focusableElements.length) {
       focusableElements[0].focus();
     }
   })();

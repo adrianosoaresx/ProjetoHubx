@@ -1483,6 +1483,9 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
 
         if save_fields:
             participacao.save(update_fields=save_fields)
+        if bool(request.headers.get("HX-Request")):
+            context = {"nucleo": nucleo}
+            return TemplateResponse(request, "nucleos/partials/nucleacao_success.html", context)
         return redirect("nucleos:detail", pk=pk)
 
 
