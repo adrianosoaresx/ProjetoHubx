@@ -987,6 +987,11 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
             self.membro.is_coordenador = has_coordenador
             updates.append("is_coordenador")
 
+        if not (has_participacao or has_coordenador or has_consultor):
+            if self.membro.nucleo is not None:
+                self.membro.nucleo = None
+                updates.append("nucleo")
+
         allowed_types = {
             UserType.ASSOCIADO,
             UserType.NUCLEADO,
