@@ -11,20 +11,7 @@
       >
         <div class="flex h-full flex-col gap-4">
           <div class="flex-1">
-            {% if show_promote_button %}
-              {% url 'membros:membro_promover_form' user.pk as promote_url %}
-              {% if section %}
-                {% with section_encoded=section|urlencode %}
-                  {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
-                    {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') %}
-                  {% endwith %}
-                {% endwith %}
-              {% else %}
-                {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') %}
-              {% endif %}
-            {% else %}
-              {% include '_components/card_usuario.html' with user=user %}
-            {% endif %}
+            {% include '_components/card_usuario.html' with user=user %}
           </div>
         </div>
       </div>
@@ -44,20 +31,7 @@
         >
           <div class="flex h-full flex-col gap-4">
             <div class="flex-1">
-              {% if show_promote_button %}
-                {% url 'membros:membro_promover_form' user.pk as promote_url %}
-                {% if section %}
-                  {% with section_encoded=section|urlencode %}
-                    {% with promote_cta_url=promote_url|add:'?section='|add:section_encoded %}
-                      {% include '_components/card_usuario.html' with user=user cta_url=promote_cta_url cta_label=_('Promover') %}
-                    {% endwith %}
-                  {% endwith %}
-                {% else %}
-                  {% include '_components/card_usuario.html' with user=user cta_url=promote_url cta_label=_('Promover') %}
-                {% endif %}
-              {% else %}
-                {% include '_components/card_usuario.html' with user=user %}
-              {% endif %}
+              {% include '_components/card_usuario.html' with user=user %}
             </div>
           </div>
         </div>
