@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 <div class="modal !active" role="dialog" aria-modal="true" aria-labelledby="perfil-feedback-title" data-modal-root>
   <div class="modal-content rounded-lg bg-[var(--bg-primary)] shadow-xl focus:outline-none">
     <div class="flex items-start justify-between gap-4 border-b border-[var(--border)] px-6 py-4">
@@ -36,7 +36,48 @@
         >
           {% csrf_token %}
           {{ form.non_field_errors }}
-          {% include '_forms/field.html' with field=form.score %}
+          <div class="space-y-1" data-rating-stars>
+            <label for="{{ form.score.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+              {{ form.score.label }}{% if form.score.field.required %} *{% endif %}
+            </label>
+            <input
+              type="hidden"
+              name="{{ form.score.html_name }}"
+              id="{{ form.score.id_for_label }}"
+              value="{{ form.score.value|default_if_none:'' }}"
+            />
+            <div
+              class="flex items-center gap-2"
+              role="radiogroup"
+              aria-labelledby="{{ form.score.id_for_label }}-label"
+              aria-required="{% if form.score.field.required %}true{% else %}false{% endif %}"
+            >
+              <span id="{{ form.score.id_for_label }}-label" class="sr-only">{{ form.score.label }}</span>
+              {% for star_value in "12345" %}
+                <button
+                  type="button"
+                  class="flex h-10 w-10 items-center justify-center rounded-md border border-transparent text-[var(--text-muted)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                  data-value="{{ forloop.counter }}"
+                  data-rating-star
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="{% blocktrans with value=forloop.counter %}{{ value }} de 5{% endblocktrans %}"
+                >
+                  {% lucide 'star' class='h-7 w-7' aria_hidden='true' data_star_icon='true' %}
+                </button>
+              {% endfor %}
+            </div>
+            {% if form.score.errors %}
+              <ul class="errorlist">
+                {% for error in form.score.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            {% if form.score.help_text %}
+              <p class="text-xs text-[var(--text-secondary)]">{{ form.score.help_text }}</p>
+            {% endif %}
+          </div>
           {% include '_forms/field.html' with field=form.comment %}
 
           <div class="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
@@ -104,5 +145,83 @@
     if (focusableElements.length) {
       focusableElements[0].focus();
     }
+  })();
+
+  (function () {
+    const dialog = document.querySelector('[data-modal-root]');
+    if (!dialog) return;
+
+    const ratingContainers = dialog.querySelectorAll('[data-rating-stars]');
+    ratingContainers.forEach((container) => {
+      const hiddenInput = container.querySelector('input[type="hidden"][name="score"]');
+      const stars = Array.from(container.querySelectorAll('[data-rating-star]'));
+      if (!hiddenInput || !stars.length) return;
+
+      let currentValue = parseInt(hiddenInput.value, 10) || 0;
+
+      const applyState = (value) => {
+        stars.forEach((star) => {
+          const starValue = Number(star.dataset.value);
+          const icon = star.querySelector('[data-star-icon]');
+          const isActive = value >= starValue;
+          star.setAttribute('aria-checked', value === starValue ? 'true' : 'false');
+          star.setAttribute('tabindex', starValue === (value || 1) ? '0' : '-1');
+
+          star.classList.toggle('text-yellow-500', isActive);
+          star.classList.toggle('fill-yellow-500', isActive);
+          star.classList.toggle('text-[var(--text-muted)]', !isActive);
+          if (icon) {
+            icon.classList.toggle('text-yellow-500', isActive);
+            icon.classList.toggle('fill-yellow-500', isActive);
+            icon.classList.toggle('fill-transparent', !isActive);
+          }
+        });
+      };
+
+      const commitValue = (value) => {
+        currentValue = value;
+        hiddenInput.value = value;
+        applyState(value);
+      };
+
+      applyState(currentValue);
+
+      stars.forEach((star) => {
+        const starValue = Number(star.dataset.value);
+
+        star.addEventListener('mouseenter', () => applyState(starValue));
+        star.addEventListener('mouseleave', () => applyState(currentValue));
+
+        star.addEventListener('click', () => {
+          commitValue(starValue);
+          star.focus();
+        });
+
+        star.addEventListener('keydown', (event) => {
+          const keys = ['Enter', ' '];
+          if (keys.includes(event.key)) {
+            event.preventDefault();
+            commitValue(starValue);
+            return;
+          }
+
+          if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            const nextValue = Math.min(5, (currentValue || 0) + 1);
+            commitValue(nextValue);
+            stars[nextValue - 1]?.focus();
+          }
+
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            const prevValue = Math.max(1, (currentValue || 1) - 1);
+            commitValue(prevValue);
+            stars[prevValue - 1]?.focus();
+          }
+        });
+      });
+
+      container.addEventListener('mouseleave', () => applyState(currentValue));
+    });
   })();
 </script>
