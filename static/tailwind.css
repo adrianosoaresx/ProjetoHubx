@@ -4365,6 +4365,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-gradient-to: transparent var(--tw-gradient-to-position);
 }
 
+.fill-\[\#FFD700\] {
+  fill: #FFD700;
+}
+
 .fill-\[var\(--primary\)\] {
   fill: var(--primary);
 }
@@ -4696,6 +4700,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .tracking-widest {
   letter-spacing: 0.1em;
+}
+
+.text-\[\#FFD700\] {
+  --tw-text-opacity: 1;
+  color: rgb(255 215 0 / var(--tw-text-opacity, 1));
 }
 
 .text-\[inherit\] {
