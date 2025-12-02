@@ -3139,6 +3139,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   margin-bottom: 2rem;
 }
 
+.-mt-10 {
+  margin-top: -2.5rem;
+}
+
 .-mt-12 {
   margin-top: -3rem;
 }
@@ -3319,6 +3323,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   height: 10rem;
 }
 
+.h-44 {
+  height: 11rem;
+}
+
 .h-48 {
   height: 12rem;
 }
@@ -3473,6 +3481,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .w-auto {
   width: auto;
+}
+
+.w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
 }
 
 .w-full {
@@ -3911,6 +3924,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   border-radius: 0.75rem;
 }
 
+.rounded-t-lg {
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+
 .border {
   border-width: 1px;
 }
@@ -4177,9 +4195,33 @@ body.sidebar-mobile-open .sidebar-backdrop {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
+.from-\[var\(--hero-from\2c \#22c55e\)\] {
+  --tw-gradient-from: var(--hero-from,#22c55e) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-\[var\(--hero-from\2c \#2563eb\)\] {
+  --tw-gradient-from: var(--hero-from,#2563eb) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
 .from-\[var\(--primary\)\] {
   --tw-gradient-from: var(--primary) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-black\/40 {
+  --tw-gradient-from: rgb(0 0 0 / 0.4) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-black\/50 {
+  --tw-gradient-from: rgb(0 0 0 / 0.5) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -4265,6 +4307,14 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .to-\[var\(--hero-to\)\] {
   --tw-gradient-to: var(--hero-to) var(--tw-gradient-to-position);
+}
+
+.to-\[var\(--hero-to\2c \#16a34a\)\] {
+  --tw-gradient-to: var(--hero-to,#16a34a) var(--tw-gradient-to-position);
+}
+
+.to-\[var\(--hero-to\2c \#7c3aed\)\] {
+  --tw-gradient-to: var(--hero-to,#7c3aed) var(--tw-gradient-to-position);
 }
 
 .to-blue-100 {
@@ -4476,6 +4526,14 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-bottom: 1rem;
 }
 
+.pb-5 {
+  padding-bottom: 1.25rem;
+}
+
+.pb-6 {
+  padding-bottom: 1.5rem;
+}
+
 .pl-5 {
   padding-left: 1.25rem;
 }
@@ -4656,6 +4714,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   color: var(--color-danger-700);
 }
 
+.text-\[var\(--color-error-600\)\] {
+  color: var(--color-error-600);
+}
+
 .text-\[var\(--color-info-600\)\] {
   color: var(--color-info-600);
 }
@@ -4694,6 +4756,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .text-\[var\(--primary\)\] {
   color: var(--primary);
+}
+
+.text-\[var\(--primary\2c \#22c55e\)\] {
+  color: var(--primary,#22c55e);
 }
 
 .text-\[var\(--primary\2c \#2563eb\)\] {
@@ -6081,6 +6147,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
   .sm\:px-6 {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  .sm\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
   .sm\:py-3 {
