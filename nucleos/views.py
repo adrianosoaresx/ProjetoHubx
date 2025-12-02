@@ -1432,6 +1432,27 @@ class NucleoPortfolioDeleteView(NucleoMidiaBaseMixin, DeleteView):
         return response
 
 
+class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
+    model = Nucleo
+    template_name = "nucleos/partials/nucleacao_invite.html"
+    context_object_name = "nucleo"
+
+    def get_queryset(self):
+        qs = Nucleo.objects.filter(deleted=False)
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(organizacao=user.organizacao)
+        elif user.user_type == UserType.COORDENADOR:
+            qs = qs.filter(participacoes__user=user)
+        allowed_keys = _get_allowed_classificacao_keys(user)
+        return qs.filter(classificacao__in=allowed_keys)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["participar_url"] = reverse("nucleos:participacao_solicitar", args=[self.object.pk])
+        return context
+
+
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
