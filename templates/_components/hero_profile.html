@@ -50,7 +50,9 @@
                   {% for star in perfil_stars %}
                     <span class="inline-flex" data-rating-state="{{ star }}">
                       {% if star == "full" %}
-                        {% lucide "star" class="h-4 w-4 text-[var(--primary)] fill-[var(--primary)]" aria_hidden="true" %}
+                        {% lucide "star" class="h-4 w-4 text-[#FFD700] fill-[#FFD700]" aria_hidden="true" %}
+                      {% elif star == "half" %}
+                        {% lucide "star" class="h-4 w-4 text-[#FFD700]" aria_hidden="true" %}
                       {% else %}
                         {% lucide "star" class="h-4 w-4 text-[var(--text-muted)]" aria_hidden="true" %}
                       {% endif %}
@@ -217,8 +219,11 @@
       svg.classList.add('h-4', 'w-4');
 
       if (state === 'full') {
-        svg.classList.add('text-[var(--primary)]', 'fill-[var(--primary)]');
+        svg.classList.add('text-[#FFD700]', 'fill-[#FFD700]');
         svg.setAttribute('fill', 'currentColor');
+      } else if (state === 'half') {
+        svg.classList.add('text-[#FFD700]');
+        svg.setAttribute('fill', 'none');
       } else {
         svg.classList.add('text-[var(--text-muted)]');
         svg.setAttribute('fill', 'none');
