@@ -1,38 +1,16 @@
-{% load i18n lucide_icons %}
-<div class="card h-full w-full">
-  <div class="card-body gap-4">
-    <div class="flex items-start gap-3">
-      <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)]">
-        {% lucide 'user-round' class='h-5 w-5' aria_hidden='true' %}
-      </span>
-      <div class="space-y-1">
-        <p class="text-lg font-semibold text-[var(--text-primary)]">{{ solicitacao.user.display_name|default:solicitacao.user.username }}</p>
-        <p class="text-sm text-[var(--text-secondary)]">
-          {% blocktrans with nucleo=solicitacao.nucleo.nome data=solicitacao.data_solicitacao|date:'d/m/Y H:i' %}
-            Núcleo {{ nucleo }} • Solicitação em {{ data }}
-          {% endblocktrans %}
-        </p>
-      </div>
-    </div>
-    <div class="flex flex-wrap justify-end gap-2">
-      <button
-        class="btn btn-ghost btn-sm text-[var(--color-error-600)]"
-        hx-post="{% url 'nucleos:nucleacao_cancelar' solicitacao.pk %}"
-        hx-target="closest [data-carousel-page]"
-        hx-swap="none"
-        hx-on="htmx:afterRequest: window.location.reload()"
-      >
-        {% trans "Cancelar" %}
-      </button>
-      <button
-        class="btn btn-primary btn-sm"
-        hx-get="{% url 'nucleos:nucleacao_promover' solicitacao.pk %}"
-        hx-target="#modal"
-        hx-swap="innerHTML"
-        hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-      >
-        {% trans "Promover" %}
-      </button>
-    </div>
-  </div>
-</div>
+{% load i18n lucide_icons membros_extras %}
+{% url 'accounts:perfil_publico_uuid' solicitacao.user.public_id as profile_url %}
+{% with redes=solicitacao.user.redes_sociais|default_if_none:'' whatsapp=solicitacao.user.whatsapp|default_if_none:''|digits_only %}
+  {% include '_partials/cards/base_card.html' with
+    url=profile_url
+    cover=solicitacao.user.cover
+    avatar=solicitacao.user.avatar
+    title=solicitacao.user.contato|default:solicitacao.user.display_name|default:solicitacao.user.username
+    details='nucleos/partials/nucleacao_solicitacao_card_details.html'
+    sr_label=_('Ver perfil do solicitante')
+    header_social_links=redes
+    header_whatsapp_number=whatsapp
+    card_classes='h-full flex flex-col'
+    solicitacao=solicitacao
+  %}
+{% endwith %}
