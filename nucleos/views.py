@@ -1137,7 +1137,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user)
+            qs = qs.filter(organizacao=user.organizacao)
         return qs
 
     def get_object(self, queryset=None):
