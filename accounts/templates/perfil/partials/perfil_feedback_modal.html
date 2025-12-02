@@ -167,12 +167,12 @@
           star.setAttribute('aria-checked', value === starValue ? 'true' : 'false');
           star.setAttribute('tabindex', starValue === (value || 1) ? '0' : '-1');
 
-          star.classList.toggle('text-yellow-500', isActive);
-          star.classList.toggle('fill-yellow-500', isActive);
+          star.classList.toggle('text-[#FFD700]', isActive);
+          star.classList.toggle('fill-[#FFD700]', isActive);
           star.classList.toggle('text-[var(--text-muted)]', !isActive);
           if (icon) {
-            icon.classList.toggle('text-yellow-500', isActive);
-            icon.classList.toggle('fill-yellow-500', isActive);
+            icon.classList.toggle('text-[#FFD700]', isActive);
+            icon.classList.toggle('fill-[#FFD700]', isActive);
             icon.classList.toggle('fill-transparent', !isActive);
           }
         });
