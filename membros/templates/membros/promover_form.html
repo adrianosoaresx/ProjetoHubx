@@ -67,15 +67,15 @@
         <legend class="text-sm font-medium text-[var(--text-muted)]">{% trans 'Promoções por núcleo' %}</legend>
         {% if nucleos %}
           {% for nucleo in nucleos %}
-            <article
-              class="space-y-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 shadow-sm transition"
+            <details
+              class="group rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm transition"
               data-nucleo-item
               data-nucleo-id="{{ nucleo.id }}"
               data-unavailable-roles="{{ nucleo.unavailable_roles|join:',' }}"
               data-user-current-roles="{{ nucleo.user_current_roles|join:',' }}"
               data-unavailable-message-map="{{ nucleo.unavailable_messages_json|default:'{}'|escapejs }}"
             >
-              <header class="flex flex-wrap items-center justify-between gap-2">
+              <summary class="flex cursor-pointer items-center justify-between gap-2 px-5 py-4 text-left">
                 <div class="flex items-start gap-3">
                   {% if nucleo.avatar_url %}
                     <img src="{{ nucleo.avatar_url }}" alt="{% blocktrans with nome=nucleo.nome %}Avatar do núcleo {{ nome }}{% endblocktrans %}" class="h-12 w-12 rounded-full object-cover" loading="lazy">
@@ -86,22 +86,26 @@
                   {% endif %}
                   <div class="space-y-1">
                     <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ nucleo.nome }}</h3>
-                  <div class="flex flex-wrap gap-2">
-                    {% if nucleo.is_current_member %}
-                      <span class="inline-flex items-center rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Membro atual' %}</span>
-                    {% endif %}
-                    {% if nucleo.is_current_consultor %}
-                      <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--success)]">{% trans 'Consultor atual' %}</span>
-                    {% endif %}
-                    {% for role in nucleo.user_current_roles %}
-                      <span class="inline-flex items-center rounded-full bg-[var(--primary-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">{{ coordenador_role_labels|get_item:role }}</span>
-                    {% endfor %}
+                    <div class="flex flex-wrap gap-2">
+                      {% if nucleo.is_current_member %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--bg-tertiary)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans 'Membro atual' %}</span>
+                      {% endif %}
+                      {% if nucleo.is_current_consultor %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--success-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-[var(--success)]">{% trans 'Consultor atual' %}</span>
+                      {% endif %}
+                      {% for role in nucleo.user_current_roles %}
+                        <span class="inline-flex items-center rounded-full bg-[var(--primary-light)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">{{ coordenador_role_labels|get_item:role }}</span>
+                      {% endfor %}
+                    </div>
                   </div>
                 </div>
-                </div>
-              </header>
+                <span class="rounded-full bg-[var(--bg-tertiary)] p-2 text-[var(--text-secondary)] transition group-open:rotate-180">
+                  {% lucide 'chevron-down' class='h-4 w-4' aria_hidden='true' %}
+                </span>
+              </summary>
 
-              <div class="grid auto-rows-fr content-start items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div class="space-y-4 border-t border-[var(--border)] px-5 py-5">
+                <div class="grid auto-rows-fr content-start items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {% if not nucleo.is_current_member and not nucleo.is_current_coordinator %}
                   <label class="group flex h-full flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-primary)]/40 p-4 shadow-sm transition hover:border-primary/40 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/30">
                     <div class="flex items-center justify-start">
@@ -277,8 +281,8 @@
                     </div>
                   </label>
                 {% endif %}
-              </div>
-              <div class="space-y-2 rounded-lg bg-[var(--bg-primary)]/40 p-3 text-xs text-[var(--text-secondary)]">
+                </div>
+                <div class="space-y-2 rounded-lg bg-[var(--bg-primary)]/40 p-3 text-xs text-[var(--text-secondary)]">
                 {% if nucleo.consultor_name %}
                   <p><span class="font-medium text-[var(--text-muted)]">{% trans 'Consultor atual:' %}</span> {{ nucleo.consultor_name }}</p>
                 {% endif %}
@@ -300,10 +304,10 @@
                     <p>{% trans 'Nenhum coordenador cadastrado.' %}</p>
                   {% endif %}
                 </div>
-              </div>
 
-              <p class="hidden text-xs font-medium text-[var(--error)]" data-nucleo-warning></p>
-            </article>
+                <p class="hidden text-xs font-medium text-[var(--error)]" data-nucleo-warning></p>
+              </div>
+            </details>
           {% endfor %}
         {% else %}
           <p class="text-sm text-[var(--text-muted)]">{% trans 'Nenhum núcleo disponível na organização.' %}</p>
