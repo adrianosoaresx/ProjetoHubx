@@ -83,10 +83,10 @@
           {% can_request_nucleacao resolved_nucleo as can_request_nucleacao %}
         {% endif %}
         {% if cta_url and can_request_nucleacao %}
-          <div class="mt-5 flex flex-1 items-end justify-center">
+          <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
             <a
               href="{{ cta_url }}"
-              class="btn btn-primary btn-sm relative z-20"
+              class="{{ cta_classes|default:'btn btn-primary btn-sm relative z-20' }}"
               {% if cta_hx_get %}hx-get="{{ cta_hx_get }}"{% endif %}
               {% if cta_hx_target %}hx-target="{{ cta_hx_target }}"{% endif %}
               {% if cta_hx_swap %}hx-swap="{{ cta_hx_swap }}"{% endif %}
