@@ -1,16 +1,6 @@
 {% load i18n lucide_icons membros_extras %}
 {% url 'accounts:perfil_publico_uuid' solicitacao.user.public_id as profile_url %}
 {% with redes=solicitacao.user.redes_sociais|default_if_none:'' whatsapp=solicitacao.user.whatsapp|default_if_none:''|digits_only %}
-  {% include '_partials/cards/base_card.html' with
-    url=profile_url
-    cover=solicitacao.user.cover
-    avatar=solicitacao.user.avatar
-    title=solicitacao.user.contato|default:solicitacao.user.display_name|default:solicitacao.user.username
-    details='nucleos/partials/nucleacao_solicitacao_card_details.html'
-    sr_label=_('Ver perfil do solicitante')
-    header_social_links=redes
-    header_whatsapp_number=whatsapp
-    card_classes='h-full flex flex-col'
-    solicitacao=solicitacao
-  %}
+  {% include '_partials/cards/base_card.html' with url=profile_url cover=solicitacao.user.cover avatar=solicitacao.user.avatar title=solicitacao.user.contato|default:solicitacao.user.display_name|default:solicitacao.user.username details='nucleos/partials/nucleacao_solicitacao_card_details.html' sr_label=_('Ver perfil do solicitante') header_social_links=redes header_whatsapp_number=whatsapp card_classes='h-full flex flex-col' solicitacao=solicitacao %}
+
 {% endwith %}
