@@ -272,6 +272,8 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 {"detail": _("Você não tem permissão para acessar este núcleo.")},
                 status=403,
             )
+        if request.user.user_type == UserType.ADMIN:
+            return Response({"detail": _("Administradores não podem solicitar nucleação.")}, status=403)
         participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
 
         save_fields: list[str] = []

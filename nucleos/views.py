@@ -446,6 +446,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
 
         qs = (
             ParticipacaoNucleo.objects.filter(status="pendente")
+            .exclude(user__user_type=UserType.ADMIN.value)
             .select_related("user", "nucleo")
             .order_by("data_solicitacao")
         )
@@ -1588,9 +1589,50 @@ class NucleacaoPromoverSolicitacaoView(
         return redirect("nucleos:list")
 
 
+class NucleacaoCancelarSolicitacaoView(
+    NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, View
+):
+    def get_participacao(self):
+        return get_object_or_404(
+            ParticipacaoNucleo, pk=self.kwargs["participacao_id"], status="pendente"
+        )
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        participacao = self.get_participacao()
+        consultor_ids = self.get_consultor_nucleo_ids()
+        if not _user_can_manage_nucleacao_requests(
+            request.user, participacao.nucleo, consultor_ids
+        ):
+            raise PermissionDenied
+        self.participacao = participacao
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        participacao: ParticipacaoNucleo = self.participacao
+        if participacao.status != "pendente":
+            return redirect("nucleos:list")
+
+        participacao.status = "inativo"
+        participacao.decidido_por = request.user
+        participacao.data_decisao = timezone.now()
+        participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
+
+        messages.success(request, _("Solicitação de nucleação cancelada."))
+
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=204)
+            response["HX-Refresh"] = "true"
+            return response
+
+        return redirect("nucleos:list")
+
+
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        if request.user.user_type == UserType.ADMIN:
+            messages.error(request, _("Administradores não podem solicitar nucleação."))
+            return redirect("nucleos:detail", pk=nucleo.pk)
         participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
 
         save_fields: list[str] = []
