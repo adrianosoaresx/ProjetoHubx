@@ -80,6 +80,16 @@
     </div>
   </div>
 </div>
+<style>
+  #modal [data-modal-root] .modal-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  #modal [data-modal-root] .modal-content::-webkit-scrollbar {
+    display: none;
+  }
+</style>
 <script>
   (function () {
     const modalContainer = document.getElementById('modal');
