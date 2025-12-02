@@ -43,6 +43,20 @@
       const feedback = document.getElementById("feedback");
       const successMessage = "{% trans 'Check-in realizado com sucesso!' %}";
       const readerEl = document.getElementById("reader");
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      const showCameraError = (error) => {
+        const message = (error?.name === "NotAllowedError" || `${error}`.toLowerCase().includes("denied"))
+          ? "{% trans 'Permissão da câmera negada' %}"
+          : "{% trans 'Não foi possível acessar a câmera' %}";
+
+        feedback.classList.remove("text-[var(--success)]");
+        feedback.classList.add("text-[var(--error)]");
+        feedback.textContent = message;
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      };
 
       if (window.Html5Qrcode && readerEl) {
         const qr = new Html5Qrcode("reader");
@@ -53,8 +67,12 @@
             codigoInput.value = decoded;
             qr.stop();
           },
-          () => {}
-        ).catch(() => {});
+          (err) => {
+            showCameraError(err);
+          }
+        ).catch((err) => {
+          showCameraError(err);
+        });
       }
 
       form.addEventListener("submit", function (e) {
