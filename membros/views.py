@@ -993,7 +993,12 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
             UserType.CONSULTOR,
             UserType.COORDENADOR,
         }
-        if self.membro.user_type in allowed_types:
+        try:
+            current_type = UserType(self.membro.user_type)
+        except ValueError:
+            current_type = None
+
+        if current_type in allowed_types:
             if has_coordenador:
                 target_type = UserType.COORDENADOR
             elif has_consultor:
@@ -1002,8 +1007,8 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
                 target_type = UserType.NUCLEADO
             else:
                 target_type = UserType.ASSOCIADO
-            if self.membro.user_type != target_type:
-                self.membro.user_type = target_type
+            if current_type != target_type:
+                self.membro.user_type = target_type.value
                 updates.append("user_type")
 
         if updates:
