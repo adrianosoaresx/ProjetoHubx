@@ -18,6 +18,11 @@ urlpatterns = [
         name="nucleacao_promover",
     ),
     path(
+        "solicitacoes/<int:participacao_id>/cancelar/",
+        views.NucleacaoCancelarSolicitacaoView.as_view(),
+        name="nucleacao_cancelar",
+    ),
+    path(
         "<int:pk>/membros/carousel/",
         views.NucleoMembrosCarouselView.as_view(),
         name="membros_carousel_api",
