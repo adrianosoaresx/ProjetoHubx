@@ -4373,6 +4373,14 @@ body.sidebar-mobile-open .sidebar-backdrop {
   fill: currentColor;
 }
 
+.fill-transparent {
+  fill: transparent;
+}
+
+.fill-yellow-500 {
+  fill: #eab308;
+}
+
 .object-contain {
   -o-object-fit: contain;
      object-fit: contain;
@@ -4410,10 +4418,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .p-4 {
   padding: 1rem;
-}
-
-.p-5 {
-  padding: 1.25rem;
 }
 
 .p-6 {
@@ -4864,6 +4868,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .text-white\/90 {
   color: rgb(255 255 255 / 0.9);
+}
+
+.text-yellow-500 {
+  --tw-text-opacity: 1;
+  color: rgb(234 179 8 / var(--tw-text-opacity, 1));
 }
 
 .text-yellow-600 {
