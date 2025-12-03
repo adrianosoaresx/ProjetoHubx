@@ -38,7 +38,7 @@
           </span>
           <div class="flex-1 min-w-0 space-y-1">
             <a href="{{ log.target_url }}" class="block space-y-1 group focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded">
-              <p class="text-sm font-semibold text-[var(--text-primary)] leading-tight group-hover:text-[var(--primary)] break-words line-clamp-2 md:line-clamp-1">{{ log.template.assunto }}</p>
+              <p class="text-sm font-semibold text-[var(--text-primary)] leading-tight group-hover:text-[var(--primary)] break-words">{{ log.template.assunto }}</p>
               <p class="text-xs text-[var(--text-secondary)] leading-snug break-words">{{ log.corpo_renderizado|default:log.template.corpo|striptags|truncatechars:140 }}</p>
               <p class="text-[11px] text-[var(--text-muted)]">{{ log.data_envio|default:log.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
             </a>
