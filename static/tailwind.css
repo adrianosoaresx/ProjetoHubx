@@ -3231,6 +3231,13 @@ body.sidebar-mobile-open .sidebar-backdrop {
   margin-top: auto;
 }
 
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .block {
   display: block;
 }
@@ -6232,6 +6239,13 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:ml-64 {
     margin-left: 16rem;
+  }
+
+  .md\:line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
   }
 
   .md\:inline-flex {
