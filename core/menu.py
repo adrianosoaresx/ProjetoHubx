@@ -365,7 +365,7 @@ def _get_menu_items() -> List[MenuItem]:
                 MenuItem(
                     id="ai-chat",
                     path=ai_chat_path,
-                    label="Chat IA",
+                    label="Hubx.IA",
                     icon=ICON_CHAT,
                     permissions=["authenticated"],
                 )
