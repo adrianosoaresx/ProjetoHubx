@@ -7,7 +7,7 @@ def test_publicar_feed_noticias_agendado_diariamente():
     assert schedule["task"] == "organizacoes.tasks.publicar_feed_noticias_task"
     assert isinstance(schedule["schedule"], crontab)
     assert schedule["schedule"].minute == {0}
-    assert schedule["schedule"].hour == {4}
+    assert schedule["schedule"].hour == {12}
 
 
 def test_publicar_feed_schedule_entry_exists():
