@@ -19,7 +19,7 @@ Todas as entidades utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`, ga
   `feed_noticias`. A página `/organizacoes/<id>/` exibe o endereço configurado
   para consulta rápida.
 - **Agendamento**: a tarefa Celery `publicar_feed_noticias_task` roda
-  diariamente às 04:00 (`CELERY_BEAT_SCHEDULE["publicar_feed_noticias_diario"]`)
+  diariamente às 12:00 (`CELERY_BEAT_SCHEDULE["publicar_feed_noticias_diario"]`)
   e processa apenas organizações ativas com `feed_noticias` definido. Um lock em
   cache evita execuções concorrentes por 10 minutos.
 - **Autor e tags**: os posts são publicados em nome do primeiro administrador

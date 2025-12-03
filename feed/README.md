@@ -68,7 +68,7 @@ de notícias`. Quando preenchido, a tarefa
 `organizacoes.tasks.publicar_feed_noticias_task` cria posts automaticamente a
 partir das entradas mais recentes:
 
-- **Agendamento**: executada diariamente às 04:00 via Celery Beat
+- **Agendamento**: executada diariamente às 12:00 via Celery Beat
   (`CELERY_BEAT_SCHEDULE["publicar_feed_noticias_diario"]`). O bloqueio
   `_FEED_LOCK_TIMEOUT` (10 minutos) impede execuções simultâneas por
   organização.
