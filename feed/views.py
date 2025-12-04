@@ -347,7 +347,21 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
         context.setdefault("page_title", _("Vitrine") + " | Hubx")
         context.setdefault("hero_title", _("Mural empresarial"))
+        context.setdefault("hero_subtitle", "")
         context.setdefault("hero_action_template", "feed/hero_actions.html")
+
+        tipo_feed = self.request.GET.get("tipo_feed")
+        if tipo_feed == "nucleo":
+            nucleo_id = self.request.GET.get("nucleo")
+            nucleo = get_object_or_404(Nucleo, id=nucleo_id)
+            if not can_manage_feed(user, nucleo):
+                raise Http404
+
+            context["nucleo"] = nucleo
+            context["hero_title"] = _("Mural Núcleo %(nome)s") % {"nome": nucleo.nome}
+            context["hero_subtitle"] = _("Mural empresarial do núcleo %(nome)s") % {
+                "nome": nucleo.nome
+            }
 
         return context
 

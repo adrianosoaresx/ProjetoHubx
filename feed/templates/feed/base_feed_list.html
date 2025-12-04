@@ -4,7 +4,7 @@
 {% block title %}{{ page_title|default:'' }}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_feed.html' with title=hero_title action_template=hero_action_template %}
+  {% include '_components/hero_feed.html' with title=hero_title subtitle=hero_subtitle action_template=hero_action_template %}
 {% endblock %}
 
 {% block content %}
