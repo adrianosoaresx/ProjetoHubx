@@ -32,6 +32,7 @@ from feed.services.link_preview import (
 )
 
 from .models import Bookmark, Comment, Post, PostView, Reacao, Tag
+from .utils import get_allowed_nucleos_for_user
 from .tasks import POSTS_CREATED, notify_new_post
 
 REACTIONS_TOTAL = Gauge("feed_reactions_total", "Total de reações registradas", ["vote"])
@@ -126,9 +127,17 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        allowed_nucleos = get_allowed_nucleos_for_user(user)
         tipo_feed = attrs.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
-        if tipo_feed == "nucleo" and not attrs.get("nucleo"):
+        nucleo = attrs.get("nucleo") or getattr(self.instance, "nucleo", None)
+        if tipo_feed == "nucleo" and not allowed_nucleos.exists():
+            raise serializers.ValidationError({"tipo_feed": "Usuário não pode publicar em núcleos."})
+        if tipo_feed == "nucleo" and not nucleo:
             raise serializers.ValidationError({"nucleo": "Núcleo é obrigatório"})
+        if tipo_feed == "nucleo" and nucleo and not allowed_nucleos.filter(pk=nucleo.pk).exists():
+            raise serializers.ValidationError({"nucleo": "Usuário não possui acesso a esse núcleo."})
         if tipo_feed == "evento" and not attrs.get("evento"):
             raise serializers.ValidationError({"evento": "Evento é obrigatório"})
         return attrs
