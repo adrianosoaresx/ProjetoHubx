@@ -52,6 +52,7 @@ from .forms import (
     ParticipacaoDecisaoForm,
 )
 from .models import CoordenadorSuplente, Nucleo, NucleoMidia, ParticipacaoNucleo
+from .permissions import can_manage_feed
 from .tasks import notify_participacao_aprovada, notify_participacao_recusada
 
 logger = logging.getLogger(__name__)
@@ -1345,6 +1346,10 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
                 )
             except Exception:
                 ctx["nucleo_posts"] = []
+
+        ctx["mostrar_feed_nucleo"] = can_manage_feed(self.request.user, nucleo)
+        if ctx["mostrar_feed_nucleo"]:
+            ctx["nucleo_feed_url"] = f"{reverse('feed:listar')}?tipo_feed=nucleo&nucleo={nucleo.pk}"
 
         params = self.request.GET.copy()
         try:
