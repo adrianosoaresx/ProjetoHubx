@@ -10,7 +10,10 @@ from accounts.models import UserType
 # Moderação desativada: sem análise por IA
 from organizacoes.models import Organizacao
 
+from nucleos.models import Nucleo
+
 from .models import Comment, Post, Tag
+from .utils import get_allowed_nucleos_for_user
 from .services import upload_media
 
 
@@ -119,14 +122,14 @@ class PostForm(forms.ModelForm):
         ]
         current_value = self.data.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
         choice_map = dict(Post.TIPO_FEED_CHOICES)
-        if current_value and current_value not in {value for value, _ in allowed_choices}:
-            allowed_choices.append((current_value, choice_map.get(current_value, current_value)))
-        self.fields["tipo_feed"].choices = allowed_choices
         if user:
             self.user = user
             self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
             self.initial.setdefault("organizacao", getattr(user, "organizacao", None))
-            self.fields["nucleo"].queryset = user.nucleos.all()
+            self.allowed_nucleos = get_allowed_nucleos_for_user(user)
+            self.fields["nucleo"].queryset = self.allowed_nucleos
+            if self.allowed_nucleos.exists():
+                allowed_choices.append(("nucleo", choice_map.get("nucleo", "Núcleo")))
             if hasattr(user, "eventos"):
                 self.fields["evento"].queryset = user.eventos.all()
             else:
@@ -141,8 +144,13 @@ class PostForm(forms.ModelForm):
         else:
             self.user = None
 
+            self.allowed_nucleos = Nucleo.objects.none()
             self.fields["evento"].queryset = self.fields["evento"].queryset.none()
             self.fields["organizacao"].queryset = Organizacao.objects.none()
+
+        if current_value and current_value not in {value for value, _ in allowed_choices}:
+            allowed_choices.append((current_value, choice_map.get(current_value, current_value)))
+        self.fields["tipo_feed"].choices = allowed_choices
         self.fields["organizacao"].required = False
 
         self.fields["tags"].queryset = Tag.objects.all()
@@ -206,10 +214,14 @@ class PostForm(forms.ModelForm):
         evento = cleaned_data.get("evento")
         organizacao = cleaned_data.get("organizacao")
 
-        if tipo_feed == "nucleo" and not nucleo:
-            self.add_error("nucleo", "Selecione o núcleo.")
-        if tipo_feed == "nucleo" and self.user and nucleo and nucleo not in self.user.nucleos.all():
-            self.add_error("nucleo", "Usuário não é membro do núcleo.")
+        if tipo_feed == "nucleo":
+            allowed_nucleos = getattr(self, "allowed_nucleos", Nucleo.objects.none())
+            if not allowed_nucleos.exists():
+                self.add_error("tipo_feed", "Usuário não pode publicar em núcleos.")
+            if not nucleo:
+                self.add_error("nucleo", "Selecione o núcleo.")
+            elif not allowed_nucleos.filter(pk=nucleo.pk).exists():
+                self.add_error("nucleo", "Usuário não é membro do núcleo.")
         if tipo_feed == "evento" and not evento:
             self.add_error("evento", "Selecione o evento.")
 
