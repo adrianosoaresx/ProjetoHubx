@@ -1,6 +1,6 @@
 {% load i18n lucide_icons %}
 {% trans 'Eventos' as hero_default_title %}
-{% trans 'encontros que impulsionam ideias, conexões e inovação' as hero_default_subtitle %}
+{% trans 'Encontros que impulsionam ideias, conexões e inovação' as hero_default_subtitle %}
 {% with hero_title=title|default:hero_default_title hero_subtitle=subtitle|default:hero_default_subtitle hero_breadcrumb_template=breadcrumb_template hero_neural_background=neural_background|default:'eventos' hero_style=style %}
 <section class="hero-with-neural bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-white" {% if hero_style %}style="{{ hero_style }}"{% endif %}>
   <div class="neural-bg-base" aria-hidden="true">
