@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 <section class="hero-with-neural relative isolate overflow-hidden text-white">
   {% if nucleo.cover %}
     <div class="absolute inset-0">
@@ -27,7 +27,19 @@
             <h1 class="text-3xl font-bold md:text-4xl">{{ nucleo.nome }}</h1>
           </div>
         </div>
-
+        {% if mostrar_feed_nucleo and nucleo_feed_url %}
+          <div class="flex flex-col items-start gap-2 md:items-end">
+            <a
+              href="{{ nucleo_feed_url }}"
+              class="btn btn-secondary inline-flex items-center gap-2"
+              aria-label="{% trans 'Ver feed restrito do núcleo' %}"
+            >
+              {% lucide 'messages-square' class='h-4 w-4' aria_hidden='true' %}
+              {% trans 'Feed do núcleo' %}
+            </a>
+            <p class="text-sm text-white/80">{% trans "Apenas membros autorizados podem acessar." %}</p>
+          </div>
+        {% endif %}
       </div>
 
     </div>
