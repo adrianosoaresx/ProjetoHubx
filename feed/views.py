@@ -26,10 +26,12 @@ from core.utils import get_back_navigation_fallback, resolve_back_href
 
 # Moderação desativada: não é necessário notificar moderação
 from nucleos.models import Nucleo
+from nucleos.permissions import can_manage_feed
 from organizacoes.models import Organizacao
 
 from .api import _post_rate, _read_rate
 from .forms import CommentForm, PostForm
+from .utils import get_allowed_nucleos_for_user
 from .models import Bookmark, Flag, Post, Reacao, Tag
 
 
@@ -249,9 +251,18 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)),
             is_shared=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)),
         )
-        # Moderação desativada: usuários veem seus posts e o feed global da organização
+        # Moderação desativada: usuários veem seus posts, feed global e núcleos autorizados
+        can_view_nucleos = can_manage_feed(user)
         if not user.is_staff:
-            qs = qs.filter(Q(autor=user) | Q(tipo_feed="global"))
+            if can_view_nucleos:
+                allowed_nucleos = get_allowed_nucleos_for_user(user)
+                qs = qs.filter(
+                    Q(autor=user)
+                    | Q(tipo_feed="global")
+                    | Q(tipo_feed="nucleo", nucleo__in=allowed_nucleos)
+                )
+            else:
+                qs = qs.filter(Q(autor=user) | Q(tipo_feed="global"))
         qs = qs.distinct()
 
         if organizacao_id:
@@ -261,11 +272,10 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             qs = qs.filter(Q(autor=user) | Q(tipo_feed="global", organizacao=user.organizacao))
         elif tipo_feed == "nucleo":
             nucleo_id = self.request.GET.get("nucleo")
+            nucleo = Nucleo.objects.filter(id=nucleo_id).first()
+            if not nucleo or not can_manage_feed(user, nucleo):
+                return qs.none()
             qs = qs.filter(tipo_feed="nucleo", nucleo_id=nucleo_id)
-            from nucleos.models import Nucleo
-
-            if not Nucleo.objects.filter(id=nucleo_id, participacoes__user=user).exists():
-                qs = qs.none()
         elif tipo_feed == "evento":
             evento_id = self.request.GET.get("evento")
             qs = qs.filter(tipo_feed="evento", evento_id=evento_id)
@@ -447,6 +457,10 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        tipo_feed = form.cleaned_data.get("tipo_feed")
+        nucleo = form.cleaned_data.get("nucleo")
+        if tipo_feed == "nucleo" and (not nucleo or not can_manage_feed(self.request.user, nucleo)):
+            return HttpResponseForbidden()
         for field in ["image", "pdf", "video"]:
             value = form.cleaned_data.get(field)
             if value:
@@ -523,7 +537,15 @@ class PostDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             ),
         )
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
+            if can_manage_feed(self.request.user):
+                allowed_nucleos = get_allowed_nucleos_for_user(self.request.user)
+                qs = qs.filter(
+                    Q(autor=self.request.user)
+                    | Q(tipo_feed="global")
+                    | Q(tipo_feed="nucleo", nucleo__in=allowed_nucleos)
+                )
+            else:
+                qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
         return qs
 
     def get_context_data(self, **kwargs):
@@ -564,6 +586,11 @@ def toggle_like(request, pk):
 @no_superadmin_required
 def post_update(request, pk):
     post = get_object_or_404(Post.objects.filter(deleted=False), pk=pk)
+    if post.tipo_feed == "nucleo" and not can_manage_feed(request.user, post.nucleo):
+        if request.headers.get("HX-Request"):
+            return HttpResponseForbidden()
+        messages.error(request, "Você não tem permissão para editar esta postagem.")
+        return redirect("feed:post_detail", pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
         if request.headers.get("HX-Request"):
             return HttpResponseForbidden()
@@ -588,6 +615,13 @@ def post_update(request, pk):
             data.setdefault("organizacao", str(post.organizacao_id))
         form = PostForm(data, files, instance=post, user=request.user)
         if form.is_valid():
+            target_nucleo = form.cleaned_data.get("nucleo")
+            target_tipo = form.cleaned_data.get("tipo_feed")
+            if target_tipo == "nucleo" and not can_manage_feed(request.user, target_nucleo):
+                if request.headers.get("HX-Request"):
+                    return HttpResponseForbidden()
+                messages.error(request, "Você não tem permissão para editar esta postagem.")
+                return redirect("feed:post_detail", pk=pk)
             for field in ["image", "pdf", "video"]:
                 value = form.cleaned_data.get(field)
                 if value:

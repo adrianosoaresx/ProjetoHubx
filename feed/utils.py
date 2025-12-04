@@ -4,6 +4,7 @@ from django.db.models import QuerySet
 
 from accounts.models import UserType
 from nucleos.models import Nucleo
+from nucleos.permissions import can_manage_feed
 
 
 def get_allowed_nucleos_for_user(user) -> QuerySet[Nucleo]:
@@ -12,9 +13,10 @@ def get_allowed_nucleos_for_user(user) -> QuerySet[Nucleo]:
     if not user or not getattr(user, "is_authenticated", False):
         return Nucleo.objects.none()
 
-    if getattr(user, "user_type", None) in {UserType.ROOT, UserType.ADMIN, UserType.OPERADOR}:
-        if user.user_type == UserType.ROOT:
-            return Nucleo.objects.all()
+    if getattr(user, "user_type", None) == UserType.ROOT:
+        return Nucleo.objects.all()
+
+    if getattr(user, "user_type", None) in {UserType.ADMIN, UserType.OPERADOR}:
         organizacao_id = getattr(user, "organizacao_id", None)
         if organizacao_id:
             return Nucleo.objects.filter(organizacao_id=organizacao_id)
@@ -35,5 +37,8 @@ def get_allowed_nucleos_for_user(user) -> QuerySet[Nucleo]:
     nucleos_consultoria = getattr(user, "nucleos_consultoria", None)
     if nucleos_consultoria is not None:
         nucleo_ids.update(nucleos_consultoria.filter(deleted=False).values_list("id", flat=True))
+
+    if not nucleo_ids and can_manage_feed(user):
+        return Nucleo.objects.none()
 
     return Nucleo.objects.filter(id__in=nucleo_ids)

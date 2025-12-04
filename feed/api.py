@@ -22,6 +22,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from nucleos.models import Nucleo
 from core.cache import get_cache_version
 from feed.application.denunciar_post import DenunciarPost
 from feed.services.link_preview import (
@@ -32,6 +33,8 @@ from feed.services.link_preview import (
 )
 
 from .models import Bookmark, Comment, Post, PostView, Reacao, Tag
+from nucleos.permissions import can_manage_feed
+
 from .utils import get_allowed_nucleos_for_user
 from .tasks import POSTS_CREATED, notify_new_post
 
@@ -276,8 +279,17 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
+        can_view_nucleos = can_manage_feed(self.request.user)
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
+            if can_view_nucleos:
+                allowed_nucleos = get_allowed_nucleos_for_user(self.request.user)
+                qs = qs.filter(
+                    Q(autor=self.request.user)
+                    | Q(tipo_feed="global")
+                    | Q(tipo_feed="nucleo", nucleo__in=allowed_nucleos)
+                )
+            else:
+                qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
         qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
@@ -288,6 +300,9 @@ class PostViewSet(viewsets.ModelViewSet):
             qs = qs.filter(organizacao_id=organizacao)
         nucleo = params.get("nucleo")
         if nucleo:
+            nucleo_obj = Nucleo.objects.filter(pk=nucleo).first()
+            if not nucleo_obj or not can_manage_feed(self.request.user, nucleo_obj):
+                return qs.none()
             qs = qs.filter(nucleo_id=nucleo)
         evento = params.get("evento")
         if evento:
