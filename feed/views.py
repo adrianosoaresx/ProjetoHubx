@@ -347,7 +347,7 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
         context.setdefault("page_title", _("Vitrine") + " | Hubx")
         context.setdefault("hero_title", _("Mural empresarial"))
-        context.setdefault("hero_subtitle", "")
+        context.setdefault("hero_subtitle", _("Onde empresas se encontram para colaborar e crescer."))
         context.setdefault("hero_action_template", "feed/hero_actions.html")
 
         tipo_feed = self.request.GET.get("tipo_feed")
