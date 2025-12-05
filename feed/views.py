@@ -597,6 +597,17 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         return response
 
     def get_success_url(self):
+        if self.locked_nucleo:
+            nucleo_id = self.locked_nucleo.pk
+        elif getattr(self, "object", None) and self.object.tipo_feed == "nucleo" and self.object.nucleo:
+            nucleo_id = self.object.nucleo.pk
+        else:
+            nucleo_id = None
+
+        if nucleo_id:
+            query_string = urlencode({"tipo_feed": "nucleo", "nucleo": str(nucleo_id)})
+            return f"{reverse('feed:listar')}?{query_string}"
+
         back_origin = self._get_back_origin()
         fallback_map = self._get_back_fallback_map()
         return fallback_map.get(back_origin) or super().get_success_url()
