@@ -381,6 +381,22 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         super().setup(request, *args, **kwargs)
         self.locked_nucleo: Nucleo | None = self._resolve_locked_nucleo()
 
+    def _get_locked_feed_context(self) -> tuple[str | None, Nucleo | None, str | None]:
+        """Retorna o contexto de feed travado, se houver.
+
+        Quando o núcleo foi fixado via query string (``tipo_feed=nucleo`` e
+        ``nucleo=<id>``), o usuário não pode alterar o tipo de feed durante a
+        criação da postagem. Este helper consolida essa informação para ser
+        reutilizada nas etapas de inicialização do formulário, renderização do
+        contexto e validação.
+        """
+
+        locked_nucleo = getattr(self, "locked_nucleo", None)
+        if locked_nucleo:
+            return "nucleo", locked_nucleo, str(locked_nucleo.pk)
+
+        return None, None, None
+
     def _get_back_origin(self) -> str:
         return (self.request.GET.get("back") or self.request.POST.get("back") or "").strip()
 
