@@ -99,9 +99,14 @@
         <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
         <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
         <p class="text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
-        <a href="{% url 'feed:nova_postagem' %}?back=feed" class="btn btn-primary text-sm">
+        {% url 'feed:nova_postagem' as nova_postagem_base %}
+        {% with fallback_url=nova_postagem_base|add:'?back=feed' %}
+        {% with nova_url=nova_postagem_url|default:fallback_url %}
+        <a href="{{ nova_url }}" class="btn btn-primary text-sm">
           {{ empty_button|default:_("Criar postagem") }}
         </a>
+        {% endwith %}
+        {% endwith %}
       </div>
     </div>
   {% endfor %}

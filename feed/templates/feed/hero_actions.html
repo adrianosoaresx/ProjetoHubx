@@ -3,10 +3,15 @@
 
   {% if request.user.user_type != 'root' %}
   {# Exceção: abertura em nova aba mantém o formulário de postagem ativo #}
-  <a href="{% url 'feed:nova_postagem' %}?back=feed" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
+  {% url 'feed:nova_postagem' as nova_postagem_base %}
+  {% with fallback_url=nova_postagem_base|add:'?back=feed' %}
+  {% with nova_url=nova_postagem_url|default:fallback_url %}
+  <a href="{{ nova_url }}" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
     {% lucide 'circle-plus' class='w-4 h-4' %}
     {% trans 'Nova postagem' %}
   </a>
+  {% endwith %}
+  {% endwith %}
   <a href="{% url 'feed:bookmarks' %}" class="btn btn-secondary" aria-label="{% trans 'Favoritos' %}">
     {% lucide 'star' class='w-4 h-4' %}
     {% trans 'Favoritos' %}
