@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from tokens.views import GerarTokenConviteView
 from .views import (
     EventoCancelSubscriptionView,
     EventoCancelarInscricaoModalView,
@@ -40,6 +41,11 @@ urlpatterns = [
     # CRUD
     path("evento/novo/", EventoCreateView.as_view(), name="evento_novo"),
     path("evento/<uuid:pk>/", EventoDetailView.as_view(), name="evento_detalhe"),
+    path(
+        "evento/<uuid:evento_id>/convites/novo/",
+        GerarTokenConviteView.as_view(),
+        name="evento_convite_criar",
+    ),
     path("evento/<uuid:pk>/inscritos/", EventoInscritosPartialView.as_view(), name="evento_inscritos"),
     path(
         "evento/<uuid:pk>/inscritos/carousel/",
