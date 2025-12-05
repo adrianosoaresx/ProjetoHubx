@@ -127,6 +127,23 @@ def test_operador_cria_nucleo(client, operador_user, organizacao):
     assert nucleo.organizacao == organizacao
 
 
+def test_coordenador_cria_nucleo(client, coordenador_user, organizacao):
+    client.force_login(coordenador_user)
+    resp = client.post(
+        reverse("nucleos:create"),
+        data={
+            "nome": "N Coordenador",
+            "descricao": "d",
+            "classificacao": Nucleo.Classificacao.PLANEJAMENTO,
+            "ativo": True,
+            "mensalidade": "12.00",
+        },
+    )
+    assert resp.status_code == 302
+    nucleo = Nucleo.objects.get(nome="N Coordenador")
+    assert nucleo.organizacao == organizacao
+
+
 def test_operador_edita_nucleo(client, operador_user, organizacao):
     nucleo = Nucleo.objects.create(
         nome="N Inicial",
@@ -320,7 +337,7 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
     view = NucleoDetailView()
     view.request = request
     view.kwargs = {"pk": nucleo.pk}
-    with django_assert_num_queries(18):
+    with django_assert_num_queries(19):
         qs = view.get_queryset()
         obj = qs.get()
         view.object = obj

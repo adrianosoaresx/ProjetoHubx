@@ -317,6 +317,21 @@ def test_nucleo_ativo_api(api_client, admin_user, organizacao):
     assert nucleo.ativo is False
 
 
+def test_coordenador_cria_nucleo(api_client, coord_user, organizacao):
+    _auth(api_client, coord_user)
+    list_url = reverse("nucleos_api:nucleo-list")
+
+    resp = api_client.post(list_url, {"nome": "N API Coord"})
+    assert resp.status_code == 201
+    nucleo = Nucleo.objects.get(nome="N API Coord")
+    assert nucleo.organizacao == organizacao
+
+    outra_org = Organizacao.objects.create(nome="Outra", cnpj="11.111.111/0001-11")
+    resp = api_client.post(list_url, {"nome": "N API Outro", "organizacao": outra_org.pk})
+    assert resp.status_code == 403
+    assert not Nucleo.objects.filter(nome="N API Outro").exists()
+
+
 @override_settings(ROOT_URLCONF="tests.nucleos.urls")
 def test_usuario_comum_nao_pode_alterar_nucleo(api_client, outro_user, organizacao):
     _auth(api_client, outro_user)

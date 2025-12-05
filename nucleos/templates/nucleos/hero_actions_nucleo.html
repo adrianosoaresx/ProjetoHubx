@@ -1,6 +1,6 @@
 {% load i18n lucide_icons %}
 <div class="flex gap-2">
-  {% if request.user.user_type == 'admin' %}
+  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' or request.user.user_type == 'operador' %}
   <a href="{% url 'nucleos:create' %}" class="btn btn-primary" aria-label="{% trans 'Adicionar núcleo' %}">
     {% lucide 'circle-plus' class='w-4 h-4' %}
     {% trans 'Adicionar núcleo' %}
