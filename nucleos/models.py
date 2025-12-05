@@ -86,6 +86,13 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
         verbose_name = "Participação no Núcleo"
         verbose_name_plural = "Participações nos Núcleos"
 
+    def save(self, *args, **kwargs):  # pragma: no cover - behaviour validated via API tests
+        if self.papel != "coordenador":
+            self.papel_coordenador = None
+        elif not self.papel_coordenador:
+            self.papel_coordenador = self.PapelCoordenador.COORDENADOR_GERAL
+        super().save(*args, **kwargs)
+
 
 class Nucleo(TimeStampedModel, SoftDeleteModel):
     class Classificacao(models.TextChoices):

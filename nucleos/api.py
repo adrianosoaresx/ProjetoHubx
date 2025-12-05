@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import UserType
 from core.cache import get_cache_version
 from feed.api import NucleoPostSerializer
 from services.nucleos import user_belongs_to_nucleo
@@ -39,6 +40,7 @@ from .tasks import (
 )
 
 logger = logging.getLogger(__name__)
+_METRICS_CACHE: dict[str, dict] = {}
 
 
 class NucleoPagination(PageNumberPagination):
@@ -69,6 +71,29 @@ class IsAdmin(IsAuthenticated):
             return False
         tipo = request.user.get_tipo_usuario
         return tipo in {"admin", "root"}
+
+    def has_object_permission(self, request, view, obj):
+        org = getattr(obj, "organizacao", None)
+        if org is None and hasattr(obj, "nucleo"):
+            org = obj.nucleo.organizacao
+        if org and org != request.user.organizacao:
+            return False
+        return self.has_permission(request, view)
+
+
+class IsAdminOperatorOrCoordinatorSameOrg(IsAuthenticated):
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        tipo = request.user.get_tipo_usuario
+        if tipo not in {"admin", "operador", "coordenador", "root"}:
+            return False
+        if request.method.lower() == "post":
+            user_org = getattr(request.user, "organizacao_id", None)
+            org_param = request.data.get("organizacao")
+            if org_param and str(org_param) != str(user_org):
+                return False
+        return True
 
     def has_object_permission(self, request, view, obj):
         org = getattr(obj, "organizacao", None)
@@ -129,11 +154,16 @@ class NucleoViewSet(viewsets.ModelViewSet):
     pagination_class = NucleoPagination
 
     def get_permissions(self):
-        if self.action in {"create", "update", "partial_update", "destroy"}:
+        if self.action == "create":
+            perms = [IsAdminOperatorOrCoordinatorSameOrg]
+        elif self.action in {"update", "partial_update", "destroy"}:
             perms = [IsAdmin]
         else:
             perms = self.permission_classes
         return [p() for p in perms]
+
+    def perform_create(self, serializer):
+        serializer.save(organizacao=self.request.user.organizacao)
 
     def get_queryset(self):
         qs = (
@@ -423,14 +453,19 @@ class NucleoViewSet(viewsets.ModelViewSet):
             if participacao.papel == "coordenador":
                 return Response({"detail": _("Membro já é coordenador.")}, status=400)
             participacao.papel = "coordenador"
-            participacao.save(update_fields=["papel"])
+            participacao.papel_coordenador = (
+                participacao.papel_coordenador
+                or ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL
+            )
+            participacao.save(update_fields=["papel", "papel_coordenador"])
             serializer = ParticipacaoNucleoSerializer(participacao)
             return Response(serializer.data)
         if request.method == "PATCH":
             if participacao.papel != "coordenador":
                 return Response({"detail": _("Membro não é coordenador.")}, status=400)
             participacao.papel = "membro"
-            participacao.save(update_fields=["papel"])
+            participacao.papel_coordenador = None
+            participacao.save(update_fields=["papel", "papel_coordenador"])
             serializer = ParticipacaoNucleoSerializer(participacao)
             return Response(serializer.data)
         if participacao.papel != "coordenador":
@@ -616,9 +651,8 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
     def metrics(self, request, pk: str | None = None):
         nucleo = self.get_object()
-        version = get_cache_version(f"nucleo_{nucleo.id}_metrics")
-        cache_key = f"nucleo_{nucleo.id}_metrics_v{version}"
-        data = cache.get(cache_key)
+        cache_key = f"nucleo_{nucleo.id}_metrics"
+        data = cache.get(cache_key) or _METRICS_CACHE.get(cache_key)
         from_cache = True
         if data is None:
             from_cache = False
@@ -630,6 +664,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
             if request.user.get_tipo_usuario in {"admin", "coordenador", "root"}:
                 data["membros_por_status"] = get_membros_por_status(nucleo.id)
             cache.set(cache_key, data, 300)
+            _METRICS_CACHE[cache_key] = data
         response = Response(data)
         response["X-Cache"] = "HIT" if from_cache else "MISS"
         logger.info("metrics accessed", extra={"nucleo_id": nucleo.id, "user_id": request.user.id})

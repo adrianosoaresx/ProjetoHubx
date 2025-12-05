@@ -55,6 +55,7 @@ class ParticipacaoNucleoSerializer(serializers.ModelSerializer):
 
 
 class NucleoSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     suplentes = CoordenadorSuplenteSerializer(many=True, read_only=True, source="coordenadores_suplentes")
 
     class Meta:
@@ -74,7 +75,7 @@ class NucleoSerializer(serializers.ModelSerializer):
             "deleted_at",
             "suplentes",
         ]
-        read_only_fields = ["deleted", "deleted_at", "created_at"]
+        read_only_fields = ["deleted", "deleted_at", "created_at", "organizacao"]
 
     def validate_mensalidade(self, valor):
         if valor < 0:

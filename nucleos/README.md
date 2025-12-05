@@ -17,7 +17,8 @@ Fluxo de participação:
 
 Permissões:
 
-- Administradores e superadmins podem criar/editar/excluir.
+- Administradores, operadores e coordenadores podem criar núcleos (sempre vinculados à sua organização) e editar dados.
+- Administradores e superadmins podem excluir.
 - Coordenadores podem gerenciar membros e inativar núcleos.
 - Todas as views exigem autenticação.
 
