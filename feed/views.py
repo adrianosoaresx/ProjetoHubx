@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
@@ -351,6 +352,8 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         context.setdefault("hero_action_template", "feed/hero_actions.html")
 
         tipo_feed = self.request.GET.get("tipo_feed")
+        nova_postagem_params = {"back": "feed"}
+
         if tipo_feed == "nucleo":
             nucleo_id = self.request.GET.get("nucleo")
             nucleo = get_object_or_404(Nucleo, id=nucleo_id)
@@ -362,6 +365,9 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             context["hero_subtitle"] = _("Mural empresarial do núcleo %(nome)s") % {
                 "nome": nucleo.nome
             }
+            nova_postagem_params.update({"tipo_feed": "nucleo", "nucleo": str(nucleo.pk)})
+
+        context["nova_postagem_url"] = f"{reverse('feed:nova_postagem')}?{urlencode(nova_postagem_params)}"
 
         return context
 
