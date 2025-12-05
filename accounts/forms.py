@@ -366,8 +366,11 @@ class InformacoesPessoaisForm(forms.ModelForm):
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
+        if isinstance(cnpj, str):
+            cnpj = cnpj.strip()
         if not cnpj:
-            return cnpj
+            self.cleaned_data["cnpj"] = None
+            return None
         try:
             cnpj = validate_cnpj(cnpj)
         except DjangoValidationError as exc:
@@ -390,7 +393,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user = super().save(commit=False)
         user.contato = self.cleaned_data.get("contato", "")
         user.cpf = self.cleaned_data.get("cpf")
-        user.cnpj = self.cleaned_data.get("cnpj")
+        user.cnpj = self.cleaned_data.get("cnpj") or None
         user.razao_social = self.cleaned_data.get("razao_social")
         user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
         user.area_atuacao = self.cleaned_data.get("area_atuacao")
