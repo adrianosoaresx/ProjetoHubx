@@ -441,26 +441,27 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         kwargs["user"] = self.request.user
         locked_tipo, locked_nucleo, _locked_nucleo_id = self._get_locked_feed_context()
         data = kwargs.get("data")
+        is_bound_request = self.request.method == "POST" or data is not None
         mutable_data = data.copy() if data is not None else None
         user_org_id = getattr(self.request.user, "organizacao_id", None)
-        if mutable_data is not None and user_org_id and not mutable_data.get("organizacao"):
-            mutable_data.setdefault("organizacao", str(user_org_id))
+        if is_bound_request:
+            if mutable_data is None:
+                mutable_data = self.request.POST.copy()
+            if user_org_id and not mutable_data.get("organizacao"):
+                mutable_data.setdefault("organizacao", str(user_org_id))
+            if self.locked_nucleo:
+                mutable_data["tipo_feed"] = "nucleo"
+                mutable_data["nucleo"] = str(self.locked_nucleo.pk)
         if self.locked_nucleo:
             kwargs.setdefault("initial", {})
             kwargs["initial"].update({"tipo_feed": "nucleo", "nucleo": self.locked_nucleo})
-            if mutable_data is None:
-                from django.http import QueryDict
-
-                mutable_data = QueryDict(mutable=True)
-            mutable_data["tipo_feed"] = "nucleo"
-            mutable_data["nucleo"] = str(self.locked_nucleo.pk)
-        if mutable_data is not None:
-            kwargs["data"] = mutable_data
         elif locked_tipo:
             initial = kwargs.setdefault("initial", {})
             initial.setdefault("tipo_feed", locked_tipo)
             if locked_nucleo:
                 initial.setdefault("nucleo", locked_nucleo)
+        if mutable_data is not None:
+            kwargs["data"] = mutable_data
         if self.request.FILES:
             files = self.request.FILES.copy()
             arquivo = files.get("arquivo")
