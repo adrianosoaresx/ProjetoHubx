@@ -377,6 +377,28 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     template_name = "feed/post_form.html"
     success_url = reverse_lazy("feed:meu_mural")
 
+    def _get_locked_feed_context(self):
+        if hasattr(self, "_locked_feed_cache"):
+            return self._locked_feed_cache
+
+        tipo_feed = (self.request.GET.get("tipo_feed") or self.request.POST.get("tipo_feed") or "").strip()
+        nucleo_param = (self.request.GET.get("nucleo") or self.request.POST.get("nucleo") or "").strip()
+        locked_tipo = None
+        locked_nucleo = None
+
+        if tipo_feed == "nucleo" and nucleo_param:
+            nucleo_obj = Nucleo.objects.filter(id=nucleo_param).first()
+            if nucleo_obj and can_manage_feed(self.request.user, nucleo_obj):
+                locked_tipo = "nucleo"
+                locked_nucleo = nucleo_obj
+            else:
+                nucleo_obj = None
+        else:
+            nucleo_obj = None
+
+        self._locked_feed_cache = (locked_tipo, locked_nucleo, nucleo_param)
+        return self._locked_feed_cache
+
     def _get_back_origin(self) -> str:
         return (self.request.GET.get("back") or self.request.POST.get("back") or "").strip()
 
@@ -402,12 +424,22 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+        locked_tipo, locked_nucleo, _locked_nucleo_id = self._get_locked_feed_context()
         data = kwargs.get("data")
         user_org_id = getattr(self.request.user, "organizacao_id", None)
         if data is not None and user_org_id and not data.get("organizacao"):
             mutable_data = data.copy()
             mutable_data.setdefault("organizacao", str(user_org_id))
+            if locked_tipo:
+                mutable_data["tipo_feed"] = locked_tipo
+                if locked_nucleo:
+                    mutable_data["nucleo"] = str(locked_nucleo.pk)
             kwargs["data"] = mutable_data
+        elif locked_tipo:
+            initial = kwargs.setdefault("initial", {})
+            initial.setdefault("tipo_feed", locked_tipo)
+            if locked_nucleo:
+                initial.setdefault("nucleo", locked_nucleo)
         if self.request.FILES:
             files = self.request.FILES.copy()
             arquivo = files.get("arquivo")
@@ -423,14 +455,28 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             kwargs["files"] = files
         return kwargs
 
+    def get_initial(self):
+        initial = super().get_initial()
+        locked_tipo, locked_nucleo, _locked_nucleo_id = self._get_locked_feed_context()
+        if locked_tipo:
+            initial.setdefault("tipo_feed", locked_tipo)
+            if locked_nucleo:
+                initial.setdefault("nucleo", locked_nucleo)
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        locked_tipo, locked_nucleo, locked_nucleo_id = self._get_locked_feed_context()
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
         context["tags_disponiveis"] = Tag.objects.all()
         # Seleção segura para o template (evita lookup direto em request.POST)
         selected_tipo = (self.request.POST.get("tipo_feed") or self.request.GET.get("tipo_feed") or "global").strip()
+        if locked_tipo:
+            selected_tipo = locked_tipo
         context["selected_tipo_feed"] = selected_tipo
-        context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
+        context["selected_nucleo"] = locked_nucleo_id or (
+            (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
+        )
         context["tags_text_value"] = (self.request.POST.get("tags_text", "") or "").strip()
         form = context.get("form")
         context["link_preview_data"] = getattr(form, "link_preview_data", {}) if form else {}
@@ -466,6 +512,13 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
                 "hx_target": "#nova-postagem-form",
                 "hx_swap": "outerHTML",
                 "form_wrapper_id": "nova-postagem-form",
+            }
+        )
+        context.update(
+            {
+                "lock_tipo_feed": bool(locked_tipo),
+                "locked_tipo_feed": locked_tipo,
+                "locked_nucleo": locked_nucleo,
             }
         )
         return context

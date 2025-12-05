@@ -128,6 +128,25 @@ def test_novapostagem_redirects_to_profile_posts(client, associado_user):
     assert resp.headers["Location"] == f"{profile_url}#perfil-posts-accordion"
 
 
+def test_novapostagem_locked_nucleo_context(client, nucleado_user, nucleo):
+    client.force_login(nucleado_user)
+    url = reverse("feed:nova_postagem") + f"?tipo_feed=nucleo&nucleo={nucleo.id}"
+    resp = client.get(url)
+    assert resp.context["lock_tipo_feed"] is True
+    assert resp.context["locked_tipo_feed"] == "nucleo"
+    assert resp.context["locked_nucleo"] == nucleo
+
+
+def test_novapostagem_forces_nucleo_feed(client, nucleado_user, nucleo):
+    client.force_login(nucleado_user)
+    url = reverse("feed:nova_postagem") + f"?tipo_feed=nucleo&nucleo={nucleo.id}"
+    resp = client.post(url, {"tipo_feed": "global", "conteudo": "nucleo"})
+    assert resp.status_code == 302
+    post = Post.objects.order_by("-created_at").first()
+    assert post.tipo_feed == "nucleo"
+    assert post.nucleo == nucleo
+
+
 def test_create_comment(nucleado_user, posts):
     client = APIClient()
     client.force_authenticate(nucleado_user)

@@ -69,6 +69,18 @@
               <span class="block text-sm font-medium text-[var(--text-primary)]">
                 {% trans "Tipo de feed" %} *
               </span>
+              {% if lock_tipo_feed %}
+                <input type="hidden" name="tipo_feed" value="{{ locked_tipo_feed }}">
+                {% if locked_nucleo %}
+                  <input type="hidden" name="nucleo" value="{{ locked_nucleo.id }}">
+                  <div class="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                    <p class="font-medium">
+                      {% blocktrans with nome=locked_nucleo.nome %}Publicando no mural do núcleo {{ nome }}{% endblocktrans %}
+                    </p>
+                    <p class="text-xs text-[var(--text-secondary)]">{% trans "Este post ficará visível apenas para o núcleo selecionado." %}</p>
+                  </div>
+                {% endif %}
+              {% else %}
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <label for="tipo_feed_global"
                          class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
@@ -97,9 +109,17 @@
                     <span>{% trans "Privado" %}</span>
                   </label>
                 </div>
+              {% endif %}
               {% if form.tipo_feed.errors %}
                 <ul class="errorlist">
                   {% for error in form.tipo_feed.errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+              {% if form.nucleo.errors %}
+                <ul class="errorlist">
+                  {% for error in form.nucleo.errors %}
                     <li>{{ error }}</li>
                   {% endfor %}
                 </ul>
