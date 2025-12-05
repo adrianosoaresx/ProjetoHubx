@@ -65,66 +65,51 @@
           {% endif %}
 
           <div class="space-y-4">
-            <div class="space-y-2">
-              <span class="block text-sm font-medium text-[var(--text-primary)]">
-                {% trans "Tipo de feed" %} *
-              </span>
-              {% if lock_tipo_feed %}
-                <input type="hidden" name="tipo_feed" value="{{ locked_tipo_feed }}">
-                {% if locked_nucleo %}
-                  <input type="hidden" name="nucleo" value="{{ locked_nucleo.id }}">
-                  <div class="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
-                    <p class="font-medium">
-                      {% blocktrans with nome=locked_nucleo.nome %}Publicando no mural do núcleo {{ nome }}{% endblocktrans %}
-                    </p>
-                    <p class="text-xs text-[var(--text-secondary)]">{% trans "Este post ficará visível apenas para o núcleo selecionado." %}</p>
+            {% if selected_tipo_feed != 'nucleo' %}
+              <div class="space-y-2">
+                <span class="block text-sm font-medium text-[var(--text-primary)]">
+                  {% trans "Tipo de feed" %} *
+                </span>
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <label for="tipo_feed_global"
+                           class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
+                           data-feed-type-option
+                           data-checked="{% if selected_tipo_feed|default:'global' == 'global' %}true{% else %}false{% endif %}">
+                      <input type="checkbox"
+                             id="tipo_feed_global"
+                             name="tipo_feed"
+                             value="global"
+                             class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
+                             data-exclusive="tipo-feed"
+                             {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
+                      <span>{% trans "Público" %}</span>
+                    </label>
+                    <label for="tipo_feed_usuario"
+                           class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
+                           data-feed-type-option
+                           data-checked="{% if selected_tipo_feed == 'usuario' %}true{% else %}false{% endif %}">
+                      <input type="checkbox"
+                             id="tipo_feed_usuario"
+                             name="tipo_feed"
+                             value="usuario"
+                             class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
+                             data-exclusive="tipo-feed"
+                             {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
+                      <span>{% trans "Privado" %}</span>
+                    </label>
                   </div>
+                {% if form.tipo_feed.errors %}
+                  <ul class="errorlist">
+                    {% for error in form.tipo_feed.errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
                 {% endif %}
-              {% else %}
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <label for="tipo_feed_global"
-                         class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
-                         data-feed-type-option
-                         data-checked="{% if selected_tipo_feed|default:'global' == 'global' %}true{% else %}false{% endif %}">
-                    <input type="checkbox"
-                           id="tipo_feed_global"
-                           name="tipo_feed"
-                           value="global"
-                           class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
-                           data-exclusive="tipo-feed"
-                           {% if selected_tipo_feed|default:'global' == 'global' %}checked{% endif %}>
-                    <span>{% trans "Público" %}</span>
-                  </label>
-                  <label for="tipo_feed_usuario"
-                         class="feed-type-option flex items-center gap-2 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] transition cursor-pointer"
-                         data-feed-type-option
-                         data-checked="{% if selected_tipo_feed == 'usuario' %}true{% else %}false{% endif %}">
-                    <input type="checkbox"
-                           id="tipo_feed_usuario"
-                           name="tipo_feed"
-                           value="usuario"
-                           class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]"
-                           data-exclusive="tipo-feed"
-                           {% if selected_tipo_feed == 'usuario' %}checked{% endif %}>
-                    <span>{% trans "Privado" %}</span>
-                  </label>
-                </div>
-              {% endif %}
-              {% if form.tipo_feed.errors %}
-                <ul class="errorlist">
-                  {% for error in form.tipo_feed.errors %}
-                    <li>{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-              {% if form.nucleo.errors %}
-                <ul class="errorlist">
-                  {% for error in form.nucleo.errors %}
-                    <li>{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            </div>
+              </div>
+            {% else %}
+              <input type="hidden" name="tipo_feed" value="nucleo">
+              <input type="hidden" name="nucleo" value="{{ selected_nucleo }}">
+            {% endif %}
           </div>
 
           {% with placeholder_value=_('O que você gostaria de compartilhar?') %}
