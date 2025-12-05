@@ -417,6 +417,7 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+        locked_tipo, locked_nucleo, _locked_nucleo_id = self._get_locked_feed_context()
         data = kwargs.get("data")
         mutable_data = data.copy() if data is not None else None
         user_org_id = getattr(self.request.user, "organizacao_id", None)
@@ -433,6 +434,11 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             mutable_data["nucleo"] = str(self.locked_nucleo.pk)
         if mutable_data is not None:
             kwargs["data"] = mutable_data
+        elif locked_tipo:
+            initial = kwargs.setdefault("initial", {})
+            initial.setdefault("tipo_feed", locked_tipo)
+            if locked_nucleo:
+                initial.setdefault("nucleo", locked_nucleo)
         if self.request.FILES:
             files = self.request.FILES.copy()
             arquivo = files.get("arquivo")
@@ -448,8 +454,18 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             kwargs["files"] = files
         return kwargs
 
+    def get_initial(self):
+        initial = super().get_initial()
+        locked_tipo, locked_nucleo, _locked_nucleo_id = self._get_locked_feed_context()
+        if locked_tipo:
+            initial.setdefault("tipo_feed", locked_tipo)
+            if locked_nucleo:
+                initial.setdefault("nucleo", locked_nucleo)
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        locked_tipo, locked_nucleo, locked_nucleo_id = self._get_locked_feed_context()
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
         context["tags_disponiveis"] = Tag.objects.all()
         locked_nucleo = self.locked_nucleo
@@ -500,6 +516,13 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
                 "hx_target": "#nova-postagem-form",
                 "hx_swap": "outerHTML",
                 "form_wrapper_id": "nova-postagem-form",
+            }
+        )
+        context.update(
+            {
+                "lock_tipo_feed": bool(locked_tipo),
+                "locked_tipo_feed": locked_tipo,
+                "locked_nucleo": locked_nucleo,
             }
         )
         return context

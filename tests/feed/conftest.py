@@ -83,7 +83,13 @@ def nucleado_user(db, organizacao):
 def nucleo(db, organizacao, coordenador_user, nucleado_user):
     n = Nucleo.objects.create(nome="N1", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=nucleado_user, nucleo=n, papel="membro", status="ativo")
-    ParticipacaoNucleo.objects.create(user=coordenador_user, nucleo=n, papel="coordenador", status="ativo")
+    ParticipacaoNucleo.objects.create(
+        user=coordenador_user,
+        nucleo=n,
+        papel="coordenador",
+        status="ativo",
+        papel_coordenador=ParticipacaoNucleo.PapelCoordenador.COORDENADOR_GERAL,
+    )
     return n
 
 
