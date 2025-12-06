@@ -16,6 +16,18 @@ from .models import Convite, Evento, EventoMidia, FeedbackNota, InscricaoEvento
 
 
 class ConviteEventoForm(forms.ModelForm):
+    _evento_prefilled_fields = (
+        "publico_alvo",
+        "data_inicio",
+        "data_fim",
+        "local",
+        "cidade",
+        "estado",
+        "cronograma",
+        "informacoes_adicionais",
+        "numero_participantes",
+    )
+
     class Meta:
         model = Convite
         fields = [
@@ -37,8 +49,31 @@ class ConviteEventoForm(forms.ModelForm):
             "informacoes_adicionais": forms.Textarea,
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, evento=None, **kwargs):
+        initial = kwargs.setdefault("initial", {})
+
+        if evento:
+            initial.setdefault("publico_alvo", evento.get_publico_alvo_display())
+            initial.setdefault("data_inicio", evento.data_inicio.date())
+            initial.setdefault("data_fim", evento.data_fim.date())
+            initial.setdefault("local", evento.local)
+            initial.setdefault("cidade", evento.cidade)
+            initial.setdefault("estado", evento.estado)
+            initial.setdefault("cronograma", evento.cronograma)
+            initial.setdefault("informacoes_adicionais", evento.informacoes_adicionais)
+            initial.setdefault(
+                "numero_participantes",
+                evento.participantes_maximo or evento.numero_presentes or None,
+            )
+
         super().__init__(*args, **kwargs)
+
+        for field_name in self._evento_prefilled_fields:
+            if field_name in self.fields:
+                field = self.fields[field_name]
+                field.disabled = True
+                field.widget.attrs["aria-disabled"] = "true"
+
         self.fields["imagem"].widget.attrs.setdefault("data-convite-image-input", "true")
 
 

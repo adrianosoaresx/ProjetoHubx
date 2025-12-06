@@ -2214,22 +2214,8 @@ def convite_create(request, evento_id):
     if _get_tipo_usuario(request.user) not in allowed_profiles:
         raise PermissionDenied()
 
-    initial = {
-        "publico_alvo": evento.get_publico_alvo_display(),
-        "data_inicio": evento.data_inicio.date(),
-        "data_fim": evento.data_fim.date(),
-        "local": evento.local,
-        "cidade": evento.cidade,
-        "estado": evento.estado,
-        "cronograma": evento.cronograma,
-        "informacoes_adicionais": evento.informacoes_adicionais,
-        "numero_participantes": evento.participantes_maximo
-        or evento.numero_presentes
-        or None,
-    }
-
     if request.method == "POST":
-        form = ConviteEventoForm(request.POST, request.FILES)
+        form = ConviteEventoForm(request.POST, request.FILES, evento=evento)
         if form.is_valid():
             convite = form.save(commit=False)
             convite.evento = evento
@@ -2244,7 +2230,7 @@ def convite_create(request, evento_id):
             )
             return redirect(reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk}))
     else:
-        form = ConviteEventoForm(initial=initial)
+        form = ConviteEventoForm(evento=evento)
 
     fallback_url = reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk})
     back_href = resolve_back_href(request, fallback=fallback_url)
