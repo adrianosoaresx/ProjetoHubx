@@ -15,6 +15,37 @@ from .validators import validate_uploaded_file
 from .models import Evento, EventoMidia, FeedbackNota, InscricaoEvento
 
 
+class ConviteEventoForm(forms.Form):
+    publico_alvo = forms.CharField(label=_("Público-alvo"), max_length=100)
+    data_inicio = forms.DateField(
+        label=_("Data de início"), widget=forms.DateInput(attrs={"type": "date"})
+    )
+    data_fim = forms.DateField(
+        label=_("Data de término"), widget=forms.DateInput(attrs={"type": "date"})
+    )
+    local = forms.CharField(label=_("Local"), max_length=255)
+    cidade = forms.CharField(label=_("Cidade"), max_length=100)
+    estado = forms.CharField(label=_("Estado"), max_length=2)
+    cronograma = forms.CharField(
+        label=_("Cronograma"), widget=forms.Textarea, required=False
+    )
+    informacoes_adicionais = forms.CharField(
+        label=_("Informações adicionais"), widget=forms.Textarea, required=False
+    )
+    numero_participantes = forms.IntegerField(
+        label=_("Número de participantes"), min_value=1, required=False
+    )
+    imagem = forms.ImageField(
+        label=_("Imagem do convite"),
+        required=False,
+        validators=[validate_uploaded_file],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["imagem"].widget.attrs.setdefault("data-convite-image-input", "true")
+
+
 class PDFClearableFileInput(ClearableFileInput):
     template_name = "eventos/widgets/pdf_clearable_file_input.html"
 
