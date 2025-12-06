@@ -167,11 +167,6 @@
                   <a href="{% url 'eventos:evento_editar' object.pk %}"
                      class="btn btn-secondary"
                      aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
-                  <a
-                    href="{% url 'eventos:evento_convite_criar' evento_id=object.pk %}"
-                    class="btn btn-secondary"
-                    aria-label="{% trans 'Incluir convite' %}"
-                  >{% trans 'Incluir convite' %}</a>
                 {% endif %}
                 {% if pode_excluir_evento %}
                   <a
