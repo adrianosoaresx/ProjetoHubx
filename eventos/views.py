@@ -2264,9 +2264,14 @@ def convite_public_view(request, short_code):
     convite = get_object_or_404(
         Convite.objects.select_related("evento"), short_code=short_code
     )
+    evento = convite.evento
     contexto = {
         "convite": convite,
-        "evento": convite.evento,
+        "evento": evento,
+        "inscricao_url": reverse("eventos:inscricao_criar", args=[evento.pk]),
+        "share_url": request.build_absolute_uri(
+            reverse("eventos:convite_public", args=[convite.short_code])
+        ),
     }
     return TemplateResponse(request, "eventos/convites/public.html", contexto)
 

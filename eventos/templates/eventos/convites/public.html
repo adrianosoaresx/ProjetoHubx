@@ -12,23 +12,44 @@
           <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h1>
           <p class="text-sm text-[var(--text-secondary)]">{{ evento.organizacao|default:_('Evento') }}</p>
         </div>
-        {% if convite.imagem or evento.cover %}
-          <div class="h-24 w-24 overflow-hidden rounded-lg border border-[var(--border)]">
-            {% if convite.imagem %}
-              <img
-                src="{{ convite.imagem.url }}"
-                alt="{% trans 'Imagem do convite' %}"
-                class="h-full w-full object-cover"
-              />
-            {% elif evento.cover %}
-              <img
-                src="{{ evento.cover.url }}"
-                alt="{% trans 'Imagem do convite' %}"
-                class="h-full w-full object-cover"
-              />
+        <div class="flex flex-col items-end gap-2 md:flex-row md:items-center">
+          <div class="flex gap-2">
+            <a
+              href="{{ inscricao_url }}"
+              class="btn btn-primary"
+              aria-label="{% trans 'Inscrever-se no evento' %}"
+            >
+              {% trans "Inscrever-se" %}
+            </a>
+            {% if share_url %}
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-copy-link="{{ share_url }}"
+                data-copy-success="{% trans 'Link copiado!' %}"
+              >
+                {% trans "Copiar link" %}
+              </button>
             {% endif %}
           </div>
-        {% endif %}
+          {% if convite.imagem or evento.cover %}
+            <div class="h-24 w-24 overflow-hidden rounded-lg border border-[var(--border)]">
+              {% if convite.imagem %}
+                <img
+                  src="{{ convite.imagem.url }}"
+                  alt="{% trans 'Imagem do convite' %}"
+                  class="h-full w-full object-cover"
+                />
+              {% elif evento.cover %}
+                <img
+                  src="{{ evento.cover.url }}"
+                  alt="{% trans 'Imagem do convite' %}"
+                  class="h-full w-full object-cover"
+                />
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
       </div>
       <div class="card-body grid gap-4 md:grid-cols-2">
         <div class="space-y-2">
@@ -64,4 +85,34 @@
       </div>
     </article>
   </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const copyButton = document.querySelector('[data-copy-link]');
+      if (!copyButton || !navigator.clipboard) {
+        return;
+      }
+
+      const originalText = copyButton.textContent.trim();
+      const successText = copyButton.dataset.copySuccess || originalText;
+
+      copyButton.addEventListener('click', async () => {
+        const link = copyButton.getAttribute('data-copy-link');
+        try {
+          await navigator.clipboard.writeText(link);
+          copyButton.textContent = successText;
+          copyButton.disabled = true;
+          setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.disabled = false;
+          }, 1500);
+        } catch (err) {
+          console.error('Erro ao copiar link do convite', err);
+        }
+      });
+    })();
+  </script>
 {% endblock %}
