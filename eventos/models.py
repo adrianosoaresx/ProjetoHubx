@@ -3,6 +3,8 @@ from __future__ import annotations
 # ruff: noqa: I001
 
 import logging
+import secrets
+import string
 import uuid
 import hmac
 from hashlib import sha256
@@ -474,6 +476,47 @@ class EventoMidia(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:  # pragma: no cover - representação simples
         return f"{self.evento.titulo} - {self.file.name}"
+
+
+class Convite(TimeStampedModel):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="convites")
+    publico_alvo = models.CharField(max_length=100)
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    local = models.CharField(max_length=255)
+    cidade = models.CharField(max_length=100)
+    estado = models.CharField(max_length=2)
+    cronograma = models.TextField(blank=True)
+    informacoes_adicionais = models.TextField(blank=True)
+    numero_participantes = models.PositiveIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1)]
+    )
+    imagem = models.ImageField(
+        upload_to="eventos/convites/",
+        null=True,
+        blank=True,
+        validators=[validate_uploaded_file],
+    )
+    short_code = models.CharField(max_length=16, unique=True, editable=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    @staticmethod
+    def generate_short_code(length: int = 10) -> str:
+        alphabet = string.ascii_letters + string.digits
+        while True:
+            code = "".join(secrets.choice(alphabet) for _ in range(length))
+            if not Convite.objects.filter(short_code=code).exists():
+                return code
+
+    def save(self, *args, **kwargs):  # type: ignore[override]
+        if not self.short_code:
+            self.short_code = self.generate_short_code()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:  # pragma: no cover - representação simples
+        return f"Convite para {self.evento} ({self.short_code})"
 
 
 class EventoLog(TimeStampedModel, SoftDeleteModel):

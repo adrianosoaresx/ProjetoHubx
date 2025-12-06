@@ -27,6 +27,7 @@ from .views import (
 app_name = "eventos"
 
 urlpatterns = [
+    path("c/<str:short_code>/", views.convite_public_view, name="convite_public"),
     path("lista/", views.EventoListView.as_view(), name="lista"),
     path(
         "lista/carousel/",
