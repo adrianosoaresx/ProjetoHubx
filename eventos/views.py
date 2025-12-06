@@ -62,7 +62,7 @@ from .forms import (
     FeedbackForm,
     InscricaoEventoForm,
 )
-from .models import Evento, EventoLog, EventoMidia, FeedbackNota, InscricaoEvento
+from .models import Convite, Evento, EventoLog, EventoMidia, FeedbackNota, InscricaoEvento
 from .querysets import filter_eventos_por_usuario
 
 User = get_user_model()
@@ -2231,7 +2231,17 @@ def convite_create(request, evento_id):
     if request.method == "POST":
         form = ConviteEventoForm(request.POST, request.FILES)
         if form.is_valid():
-            messages.success(request, _("Convite pronto para envio."))
+            convite = form.save(commit=False)
+            convite.evento = evento
+            convite.save()
+            convite_url = request.build_absolute_uri(
+                reverse("eventos:convite_public", args=[convite.short_code])
+            )
+            messages.success(
+                request,
+                _("Convite pronto para envio. Link público: %(link)s")
+                % {"link": convite_url},
+            )
             return redirect(reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk}))
     else:
         form = ConviteEventoForm(initial=initial)
@@ -2248,6 +2258,17 @@ def convite_create(request, evento_id):
     }
 
     return TemplateResponse(request, "eventos/convites/form.html", context)
+
+
+def convite_public_view(request, short_code):
+    convite = get_object_or_404(
+        Convite.objects.select_related("evento"), short_code=short_code
+    )
+    contexto = {
+        "convite": convite,
+        "evento": convite.evento,
+    }
+    return TemplateResponse(request, "eventos/convites/public.html", contexto)
 
 
 # ---------------------------------------------------------------------------

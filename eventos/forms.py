@@ -12,34 +12,30 @@ from accounts.models import MediaTag
 from accounts.forms import ProfileImageFileInput
 
 from .validators import validate_uploaded_file
-from .models import Evento, EventoMidia, FeedbackNota, InscricaoEvento
+from .models import Convite, Evento, EventoMidia, FeedbackNota, InscricaoEvento
 
 
-class ConviteEventoForm(forms.Form):
-    publico_alvo = forms.CharField(label=_("Público-alvo"), max_length=100)
-    data_inicio = forms.DateField(
-        label=_("Data de início"), widget=forms.DateInput(attrs={"type": "date"})
-    )
-    data_fim = forms.DateField(
-        label=_("Data de término"), widget=forms.DateInput(attrs={"type": "date"})
-    )
-    local = forms.CharField(label=_("Local"), max_length=255)
-    cidade = forms.CharField(label=_("Cidade"), max_length=100)
-    estado = forms.CharField(label=_("Estado"), max_length=2)
-    cronograma = forms.CharField(
-        label=_("Cronograma"), widget=forms.Textarea, required=False
-    )
-    informacoes_adicionais = forms.CharField(
-        label=_("Informações adicionais"), widget=forms.Textarea, required=False
-    )
-    numero_participantes = forms.IntegerField(
-        label=_("Número de participantes"), min_value=1, required=False
-    )
-    imagem = forms.ImageField(
-        label=_("Imagem do convite"),
-        required=False,
-        validators=[validate_uploaded_file],
-    )
+class ConviteEventoForm(forms.ModelForm):
+    class Meta:
+        model = Convite
+        fields = [
+            "publico_alvo",
+            "data_inicio",
+            "data_fim",
+            "local",
+            "cidade",
+            "estado",
+            "cronograma",
+            "informacoes_adicionais",
+            "numero_participantes",
+            "imagem",
+        ]
+        widgets = {
+            "data_inicio": forms.DateInput(attrs={"type": "date"}),
+            "data_fim": forms.DateInput(attrs={"type": "date"}),
+            "cronograma": forms.Textarea,
+            "informacoes_adicionais": forms.Textarea,
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
