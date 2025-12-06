@@ -55,6 +55,7 @@ from pagamentos.models import Transacao
 from pagamentos.providers import MercadoPagoProvider
 
 from .forms import (
+    ConviteEventoForm,
     EventoForm,
     EventoMediaForm,
     EventoPortfolioFilterForm,
@@ -2192,6 +2193,61 @@ def checkin_inscricao(request, pk: int):
         return JsonResponse({"status": "ok", "message": "Check-in já realizado."})
     inscricao.realizar_check_in()
     return JsonResponse({"status": "ok"})
+
+
+# ---------------------------------------------------------------------------
+# Convites para eventos
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@no_superadmin_required
+def convite_create(request, evento_id):
+    queryset = _queryset_por_organizacao(request)
+    evento = get_object_or_404(queryset, pk=evento_id)
+
+    allowed_profiles = {
+        UserType.ADMIN.value,
+        UserType.OPERADOR.value,
+        UserType.COORDENADOR.value,
+    }
+    if _get_tipo_usuario(request.user) not in allowed_profiles:
+        raise PermissionDenied()
+
+    initial = {
+        "publico_alvo": evento.get_publico_alvo_display(),
+        "data_inicio": evento.data_inicio.date(),
+        "data_fim": evento.data_fim.date(),
+        "local": evento.local,
+        "cidade": evento.cidade,
+        "estado": evento.estado,
+        "cronograma": evento.cronograma,
+        "informacoes_adicionais": evento.informacoes_adicionais,
+        "numero_participantes": evento.participantes_maximo
+        or evento.numero_presentes
+        or None,
+    }
+
+    if request.method == "POST":
+        form = ConviteEventoForm(request.POST, request.FILES)
+        if form.is_valid():
+            messages.success(request, _("Convite pronto para envio."))
+            return redirect(reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk}))
+    else:
+        form = ConviteEventoForm(initial=initial)
+
+    fallback_url = reverse("eventos:evento_detalhe", kwargs={"pk": evento.pk})
+    back_href = resolve_back_href(request, fallback=fallback_url)
+    context = {
+        "evento": evento,
+        "form": form,
+        "back_href": back_href,
+        "cancel_component_config": {"href": fallback_url, "fallback_href": fallback_url},
+        "title": _("Novo convite"),
+        "subtitle": evento.titulo,
+    }
+
+    return TemplateResponse(request, "eventos/convites/form.html", context)
 
 
 # ---------------------------------------------------------------------------
