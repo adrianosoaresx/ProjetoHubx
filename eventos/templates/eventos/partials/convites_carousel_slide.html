@@ -1,0 +1,102 @@
+{% load i18n %}
+{% if convites %}
+  {% for convite in convites %}
+    <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" data-carousel-page="{{ page_number }}">
+      <div class="h-full">
+        <div class="card h-full space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
+              <span class="text-lg font-semibold">{% trans "Convite" %}</span>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
+              <p class="text-lg font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
+              <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-sm text-[var(--text-secondary)]">
+            <p>
+              {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
+                De {{ inicio }} até {{ fim }}
+              {% endblocktrans %}
+            </p>
+            {% if convite.numero_participantes %}
+              <p>
+                {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+              </p>
+            {% endif %}
+          </div>
+
+          <div class="flex items-center gap-2">
+            <a
+              class="btn btn-secondary btn-sm"
+              href="{% url 'eventos:convite_public' convite.short_code %}"
+              aria-label="{% trans 'Ver convite público' %}"
+            >
+              {% trans "Abrir convite" %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% for convite in convites %}
+    {% if forloop.counter0|divisibleby:3 %}
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" data-carousel-page="{{ page_number }}">
+    {% endif %}
+        <div class="h-full">
+          <div class="card h-full space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)] shadow-lg shadow-[var(--color-primary-500)]/15">
+                <span class="text-lg font-semibold">{% trans "Convite" %}</span>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
+                <p class="text-lg font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm text-[var(--text-secondary)]">
+              <p>
+                {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
+                  De {{ inicio }} até {{ fim }}
+                {% endblocktrans %}
+              </p>
+              {% if convite.numero_participantes %}
+                <p>
+                  {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+                </p>
+              {% endif %}
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a
+                class="btn btn-secondary btn-sm"
+                href="{% url 'eventos:convite_public' convite.short_code %}"
+                aria-label="{% trans 'Ver convite público' %}"
+              >
+                {% trans "Abrir convite" %}
+              </a>
+            </div>
+          </div>
+        </div>
+        {% if forloop.last and not forloop.counter|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+        {% if forloop.last and forloop.counter|add:'-1'|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+    {% if forloop.counter|divisibleby:3 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{% trans "Nenhum convite disponível no momento." %}</p>
+    </div>
+  </div>
+{% endif %}
