@@ -46,6 +46,11 @@ urlpatterns = [
         views.convite_create,
         name="evento_convite_criar",
     ),
+    path(
+        "evento/<uuid:pk>/convites/carousel/",
+        views.EventoConvitesCarouselView.as_view(),
+        name="evento_convites_carousel",
+    ),
     path("evento/<uuid:pk>/inscritos/", EventoInscritosPartialView.as_view(), name="evento_inscritos"),
     path(
         "evento/<uuid:pk>/inscritos/carousel/",

@@ -988,6 +988,12 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     def get_inscritos_paginate_by(self) -> int:
         return getattr(settings, "EVENTOS_INSCRITOS_PAGINATE_BY", 12)
 
+    def get_convites_paginate_by(self) -> int:
+        return getattr(settings, "EVENTOS_CONVITES_PAGINATE_BY", 6)
+
+    def get_convites_page_number(self) -> int:
+        return 1
+
     def get_inscritos_base_queryset(self):
         return (
             InscricaoEvento.objects.filter(
@@ -1111,6 +1117,11 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
         }
+        pode_gerenciar_convites = tipo_usuario in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
+        }
         total_pagamentos_validados = sum(
             1 for inscricao in inscricoes_financeiro if inscricao.pagamento_validado
         )
@@ -1216,6 +1227,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 
         context.update(
             {
+                "pode_gerenciar_convites": pode_gerenciar_convites,
                 "pode_gerenciar_portfolio": pode_gerenciar_portfolio,
                 "portfolio_medias": portfolio_medias,
                 "portfolio_counts": portfolio_counts,
@@ -1228,6 +1240,22 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "portfolio_force_open": portfolio_force_open,
                 "portfolio_query_base": portfolio_query_base,
                 "portfolio_detail_back_url": portfolio_detail_back_url,
+            }
+        )
+
+        convites_queryset = evento.convites.all()
+        convites_paginator = Paginator(
+            convites_queryset, self.get_convites_paginate_by()
+        )
+        convites_page_obj = convites_paginator.get_page(self.get_convites_page_number())
+
+        context.update(
+            {
+                "convites_page_obj": convites_page_obj,
+                "convites_total_count": convites_paginator.count,
+                "convites_carousel_fetch_url": reverse(
+                    "eventos:evento_convites_carousel", args=[evento.pk]
+                ),
             }
         )
 
@@ -1419,6 +1447,48 @@ class EventoInscritosCarouselView(EventoInscritosPartialView):
             },
             request=request,
         )
+        payload = {
+            "html": slides_html,
+            "page": page_number,
+            "total_pages": total_pages,
+            "count": total_count,
+        }
+        return JsonResponse(payload)
+
+
+class EventoConvitesCarouselView(EventoDetailView):
+    def get_convites_page_number(self) -> int:
+        try:
+            return int(self.request.GET.get("page", 1))
+        except (TypeError, ValueError):
+            return 1
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        tipo_usuario = _get_tipo_usuario(request.user)
+        if tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
+        }:
+            raise PermissionDenied
+
+        context = self.get_context_data(object=self.object)
+        page_obj = context.get("convites_page_obj")
+        page_number = getattr(page_obj, "number", 1)
+        paginator = getattr(page_obj, "paginator", None)
+        total_pages = getattr(paginator, "num_pages", 1)
+        total_count = getattr(paginator, "count", 0)
+
+        slides_html = render_to_string(
+            "eventos/partials/convites_carousel_slide.html",
+            {
+                "convites": getattr(page_obj, "object_list", []),
+                "page_number": page_number,
+            },
+            request=request,
+        )
+
         payload = {
             "html": slides_html,
             "page": page_number,
