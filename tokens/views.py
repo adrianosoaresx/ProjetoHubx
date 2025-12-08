@@ -67,6 +67,7 @@ def token(request):
         if form.is_valid():
             tkn = form.cleaned_data["token"]
             request.session["invite_token"] = tkn
+            request.session["invite_email"] = form.cleaned_data["email"]
             return redirect("accounts:usuario")
     return render(request, "register/token.html", {"form": form})
 
