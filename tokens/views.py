@@ -22,6 +22,7 @@ from notificacoes.services.email_client import send_email
 from notificacoes.services.whatsapp_client import send_whatsapp
 
 from core.utils import resolve_back_href
+from eventos.models import Evento
 
 from .forms import (
     Ativar2FAForm,
@@ -54,6 +55,15 @@ def _redirect_root_from_tokens(request):
 
 
 def token(request):
+    raw_event_id = request.GET.get("evento") or request.session.get("invite_event_id")
+    evento = None
+    if raw_event_id:
+        try:
+            evento = Evento.objects.select_related("organizacao").get(pk=raw_event_id)
+            request.session["invite_event_id"] = str(evento.pk)
+        except (Evento.DoesNotExist, ValueError):
+            request.session.pop("invite_event_id", None)
+
     if request.user.is_authenticated:
         redirect_response = _redirect_root_from_tokens(request)
         if redirect_response:
@@ -68,6 +78,35 @@ def token(request):
             tkn = form.cleaned_data["token"]
             request.session["invite_token"] = tkn
             request.session["invite_email"] = form.cleaned_data["email"]
+            token_obj = form.token
+            existing_user = (
+                User.objects.filter(email__iexact=form.cleaned_data["email"])
+                .select_related("organizacao")
+                .first()
+            )
+            if evento and token_obj.organizacao_id and evento.organizacao_id != token_obj.organizacao_id:
+                messages.error(request, _("Convite não corresponde ao evento informado."))
+                return redirect("tokens:token")
+
+            is_member = bool(
+                existing_user
+                and token_obj.organizacao_id
+                and existing_user.organizacao_id == token_obj.organizacao_id
+            )
+            if evento:
+                request.session["invite_event_id"] = str(evento.pk)
+
+            if is_member and evento:
+                inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
+                if not request.user.is_authenticated:
+                    login_url = f"{reverse('accounts:login')}?next={inscricao_url}"
+                    return redirect(login_url)
+                return redirect(inscricao_url)
+
+            if evento and evento.publico_alvo != 0:
+                messages.error(request, _("O evento não está disponível para o público geral."))
+                return redirect("tokens:token")
+
             return redirect("accounts:usuario")
     return render(request, "register/token.html", {"form": form})
 
