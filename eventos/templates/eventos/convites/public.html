@@ -32,25 +32,29 @@
               </button>
             {% endif %}
           </div>
-          {% if convite.imagem or evento.cover %}
-            <div class="h-24 w-24 overflow-hidden rounded-lg border border-[var(--border)]">
-              {% if convite.imagem %}
-                <img
-                  src="{{ convite.imagem.url }}"
-                  alt="{% trans 'Imagem do convite' %}"
-                  class="h-full w-full object-cover"
-                />
-              {% elif evento.cover %}
-                <img
-                  src="{{ evento.cover.url }}"
-                  alt="{% trans 'Imagem do convite' %}"
-                  class="h-full w-full object-cover"
-                />
-              {% endif %}
-            </div>
-          {% endif %}
         </div>
       </div>
+      {% if convite.imagem or evento.cover %}
+        <div class="px-6">
+          <div class="mt-4 h-56 w-full overflow-hidden rounded-xl border border-[var(--border)] md:h-64">
+            {% if convite.imagem %}
+              <img
+                src="{{ convite.imagem.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem do convite para {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% elif evento.cover %}
+              <img
+                src="{{ evento.cover.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
       <div class="card-body grid gap-4 md:grid-cols-2">
         <div class="space-y-2">
           <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h2>
