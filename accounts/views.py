@@ -50,6 +50,7 @@ from core.permissions import (
     IsCoordenador,
 )
 from nucleos.models import ConviteNucleo
+from eventos.models import Evento
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
@@ -1347,6 +1348,26 @@ def termos(request):
         except TokenAcesso.DoesNotExist:
             messages.error(request, "Token inválido.")
             return redirect("tokens:token")
+        invite_event_id = request.session.get("invite_event_id")
+        invite_event = None
+        if invite_event_id:
+            invite_event = (
+                Evento.objects.select_related("organizacao")
+                .filter(pk=invite_event_id)
+                .first()
+            )
+            if not invite_event or (
+                token_obj.organizacao_id
+                and invite_event.organizacao_id != token_obj.organizacao_id
+            ):
+                messages.error(request, _("Convite inválido para este evento."))
+                return redirect("tokens:token")
+            if invite_event.publico_alvo != 0:
+                messages.error(
+                    request,
+                    _("O evento não está disponível para inscrições de convidados."),
+                )
+                return redirect("tokens:token")
         if token_obj.data_expiracao < timezone.now():
             token_obj.estado = TokenAcesso.Estado.EXPIRADO
             token_obj.save(update_fields=["estado"])
@@ -1416,6 +1437,13 @@ def termos(request):
             request.session["termos"] = True
             request.session.pop("cnpj", None)
             request.session.pop("require_cnpj", None)
+            if invite_event:
+                user.backend = "django.contrib.auth.backends.ModelBackend"
+                login(request, user)
+                request.session.pop("invite_token", None)
+                request.session.pop("invite_event_id", None)
+                request.session.pop("invite_email", None)
+                return redirect("eventos:inscricao_criar", pk=invite_event.pk)
             return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
