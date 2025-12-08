@@ -43,6 +43,15 @@ class GerarTokenConviteForm(forms.Form):
 
 
 class ValidarTokenConviteForm(forms.Form):
+    email = forms.EmailField(
+        label=_("Email"),
+        widget=forms.EmailInput(
+            attrs={
+                "placeholder": _("Seu e-mail"),
+                "aria-describedby": "email_help",
+            }
+        ),
+    )
     token = forms.CharField(
         max_length=64,
         label=_("Token de Convite"),
@@ -68,6 +77,23 @@ class ValidarTokenConviteForm(forms.Form):
             raise forms.ValidationError(_("Token expirado"))
         self.token = token
         return token_code
+
+    def clean(self):
+        cleaned_data = super().clean()
+        token = getattr(self, "token", None)
+        email = cleaned_data.get("email")
+
+        if not token or not email:
+            return cleaned_data
+
+        existing_user = User.objects.filter(email__iexact=email).select_related("organizacao").first()
+        if token.organizacao and existing_user and existing_user.organizacao_id != token.organizacao_id:
+            self.add_error(
+                "email",
+                _("O e-mail informado não pertence à organização deste convite."),
+            )
+
+        return cleaned_data
 
 
 class GerarCodigoAutenticacaoForm(forms.Form):

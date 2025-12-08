@@ -18,7 +18,9 @@ def _login(client, user):
 
 
 def test_token_view_rejects_invalid_token(client):
-    resp = client.post(reverse("tokens:token"), {"token": "INVALID"})
+    resp = client.post(
+        reverse("tokens:token"), {"token": "INVALID", "email": "user@example.com"}
+    )
     assert resp.status_code == 200
     assert "Token inválido" in resp.content.decode()
 
@@ -30,11 +32,34 @@ def test_token_view_accepts_valid_token(client):
         tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
     )
 
-    resp = client.post(reverse("tokens:token"), {"token": codigo})
+    resp = client.post(
+        reverse("tokens:token"), {"token": codigo, "email": "valid@example.com"}
+    )
 
     assert resp.status_code == 302
     assert resp.url == reverse("accounts:usuario")
     assert client.session["invite_token"] == codigo
+    assert client.session["invite_email"] == "valid@example.com"
+
+
+def test_token_view_rejects_email_from_other_org(client):
+    org = OrganizacaoFactory()
+    another_org = OrganizacaoFactory()
+    convite_user = UserFactory(organizacao=org)
+    _, codigo = create_invite_token(
+        gerado_por=convite_user,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+        organizacao=org,
+    )
+    existing_user = UserFactory(email="member@example.com", organizacao=another_org)
+
+    resp = client.post(
+        reverse("tokens:token"), {"token": codigo, "email": existing_user.email}
+    )
+
+    assert resp.status_code == 200
+    assert "não pertence à organização" in resp.content.decode()
+    assert "invite_token" not in client.session
 
 
 def test_gerar_convite_form_fields(client):

@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
+      <form id="tokenForm" method="post" action="{% url 'tokens:token' %}" class="space-y-6">
         {% csrf_token %}
         {% if form and form.non_field_errors %}
         <div class="alert alert-error" role="alert">
@@ -52,13 +52,17 @@
         </div>
         {% endif %}
         <div>
+          {% include "_forms/field.html" with field=form.email %}
+          <p id="email_help" class="mt-1 text-sm text-[var(--text-secondary)]">{% trans "Use o e-mail ligado à sua conta ou ao convite" %}</p>
+        </div>
+        <div>
           {% include "_forms/field.html" with field=form.token %}
           <p id="token_help" class="mt-1 text-sm text-[var(--text-secondary)]">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
         </div>
 
         <div class="flex gap-4">
           <a href="{% url 'accounts:login' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
-          <button type="submit" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
+          <button type="submit" id="submitButton" class="btn btn-primary flex-1" disabled>{% trans "Continuar" %}</button>
         </div>
       </form>
 
@@ -71,4 +75,43 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script>
+    (function () {
+      function toggleSubmit() {
+        const form = document.getElementById("tokenForm");
+        if (!form) return;
+
+        const submitButton = document.getElementById("submitButton");
+        const emailInput = document.getElementById("id_email");
+        const tokenInput = document.getElementById("id_token");
+
+        if (!submitButton) return;
+
+        const emailFilled = emailInput && emailInput.value.trim().length > 0 && emailInput.checkValidity();
+        const tokenFilled = tokenInput && tokenInput.value.trim().length > 0;
+
+        submitButton.disabled = !(emailFilled && tokenFilled);
+      }
+
+      htmx.onLoad(function () {
+        toggleSubmit();
+        const emailInput = document.getElementById("id_email");
+        const tokenInput = document.getElementById("id_token");
+
+        if (emailInput) {
+          emailInput.addEventListener("input", toggleSubmit);
+          emailInput.addEventListener("blur", toggleSubmit);
+        }
+
+        if (tokenInput) {
+          tokenInput.addEventListener("input", toggleSubmit);
+          tokenInput.addEventListener("blur", toggleSubmit);
+        }
+      });
+    })();
+  </script>
 {% endblock %}
