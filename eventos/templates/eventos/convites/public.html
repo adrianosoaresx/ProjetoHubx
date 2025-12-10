@@ -6,21 +6,122 @@
 {% block content %}
   <section class="mx-auto max-w-4xl space-y-6">
     <article class="card">
-      <div class="card-header flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p class="text-sm text-[var(--text-secondary)]">{% trans "Convite" %}</p>
-          <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h1>
-          <p class="text-sm text-[var(--text-secondary)]">{{ evento.organizacao|default:_('Evento') }}</p>
+      <form method="post" class="flex flex-col gap-6">
+        {% csrf_token %}
+        <div class="card-header flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Convite" %}</p>
+            <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h1>
+            <p class="text-sm text-[var(--text-secondary)]">{{ evento.organizacao|default:_('Evento') }}</p>
+          </div>
+          <div class="flex flex-col items-end gap-2 md:flex-row md:items-center">
+            <div class="flex gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                aria-label="{% trans 'Inscrever-se no evento' %}"
+              >
+                {% trans "Inscrever-se" %}
+              </button>
+              {% if share_url %}
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-copy-link="{{ share_url }}"
+                  data-copy-success="{% trans 'Link copiado!' %}"
+                >
+                  {% trans "Copiar link" %}
+                </button>
+              {% endif %}
+            </div>
+          </div>
         </div>
-        <div class="flex flex-col items-end gap-2 md:flex-row md:items-center">
-          <div class="flex gap-2">
-            <a
-              href="{{ inscricao_url }}"
+
+        {% if form.non_field_errors %}
+          <div class="mx-6">
+            <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
+          </div>
+        {% endif %}
+
+        {% if convite.imagem or evento.cover %}
+          <div class="px-6">
+            <div class="mt-4 h-56 w-full overflow-hidden rounded-xl border border-[var(--border)] md:h-64">
+              {% if convite.imagem %}
+                <img
+                  src="{{ convite.imagem.url }}"
+                  alt="{% blocktrans with titulo=evento.titulo %}Imagem do convite para {{ titulo }}{% endblocktrans %}"
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              {% elif evento.cover %}
+                <img
+                  src="{{ evento.cover.url }}"
+                  alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="card-body grid gap-4 md:grid-cols-2">
+          <div class="space-y-2">
+            <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h2>
+            <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans with inicio=convite.data_inicio|date:"d/m/Y" fim=convite.data_fim|date:"d/m/Y" %}
+                De {{ inicio }} até {{ fim }}
+              {% endblocktrans %}
+            </p>
+            <p class="text-sm text-[var(--text-secondary)]">{{ convite.local }}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+            {% if convite.numero_participantes %}
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+              </p>
+            {% endif %}
+          </div>
+          <div class="space-y-3">
+            {% if convite.cronograma %}
+              <div class="space-y-1">
+                <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
+                <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.cronograma }}</p>
+              </div>
+            {% endif %}
+            {% if convite.informacoes_adicionais %}
+              <div class="space-y-1">
+                <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
+                <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.informacoes_adicionais }}</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4 border-t border-[var(--border)] px-6 py-4">
+          <div class="space-y-2">
+            <label for="id_email" class="text-sm font-medium text-[var(--text-primary)]">{% trans "Seu e-mail" %}</label>
+            <input
+              type="email"
+              name="email"
+              id="id_email"
+              value="{{ form.email.value|default_if_none:'' }}"
+              required
+              class="input input-bordered w-full"
+              placeholder="{% trans 'Digite seu e-mail para continuar' %}"
+            />
+            {% if form.email.errors %}
+              <p class="text-sm text-[var(--error)]">{{ form.email.errors|join:', ' }}</p>
+            {% endif %}
+          </div>
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+            <button
+              type="submit"
               class="btn btn-primary"
               aria-label="{% trans 'Inscrever-se no evento' %}"
             >
               {% trans "Inscrever-se" %}
-            </a>
+            </button>
             {% if share_url %}
               <button
                 type="button"
@@ -30,89 +131,18 @@
               >
                 {% trans "Copiar link" %}
               </button>
+            {% elif evento %}
+              <a
+                href="{{ evento.get_absolute_url }}"
+                class="btn btn-secondary"
+                aria-label="{% trans 'Cancelar e voltar para o evento' %}"
+              >
+                {% trans "Cancelar" %}
+              </a>
             {% endif %}
           </div>
         </div>
-      </div>
-      {% if convite.imagem or evento.cover %}
-        <div class="px-6">
-          <div class="mt-4 h-56 w-full overflow-hidden rounded-xl border border-[var(--border)] md:h-64">
-            {% if convite.imagem %}
-              <img
-                src="{{ convite.imagem.url }}"
-                alt="{% blocktrans with titulo=evento.titulo %}Imagem do convite para {{ titulo }}{% endblocktrans %}"
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
-            {% elif evento.cover %}
-              <img
-                src="{{ evento.cover.url }}"
-                alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
-                class="h-full w-full object-cover"
-                loading="lazy"
-              />
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
-      <div class="card-body grid gap-4 md:grid-cols-2">
-        <div class="space-y-2">
-          <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h2>
-          <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
-          <p class="text-sm text-[var(--text-secondary)]">
-            {% blocktrans with inicio=convite.data_inicio|date:"d/m/Y" fim=convite.data_fim|date:"d/m/Y" %}
-              De {{ inicio }} até {{ fim }}
-            {% endblocktrans %}
-          </p>
-          <p class="text-sm text-[var(--text-secondary)]">{{ convite.local }}</p>
-          <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
-          {% if convite.numero_participantes %}
-            <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
-            </p>
-          {% endif %}
-        </div>
-        <div class="space-y-3">
-          {% if convite.cronograma %}
-            <div class="space-y-1">
-              <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
-              <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.cronograma }}</p>
-            </div>
-          {% endif %}
-          {% if convite.informacoes_adicionais %}
-            <div class="space-y-1">
-              <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
-              <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.informacoes_adicionais }}</p>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-      <div class="flex flex-col gap-3 border-t border-[var(--border)] px-6 py-4 md:flex-row md:items-center md:justify-end">
-        <a
-          href="{{ inscricao_url }}"
-          class="btn btn-primary"
-          aria-label="{% trans 'Inscrever-se no evento' %}"
-        >
-          {% trans "Inscrever-se" %}
-        </a>
-        {% if share_url %}
-          <a
-            href="{{ share_url }}"
-            class="btn btn-secondary"
-            aria-label="{% trans 'Cancelar e voltar para o compartilhamento do evento' %}"
-          >
-            {% trans "Cancelar" %}
-          </a>
-        {% elif evento %}
-          <a
-            href="{{ evento.get_absolute_url }}"
-            class="btn btn-secondary"
-            aria-label="{% trans 'Cancelar e voltar para o evento' %}"
-          >
-            {% trans "Cancelar" %}
-          </a>
-        {% endif %}
-      </div>
+      </form>
     </article>
   </section>
 {% endblock %}

@@ -61,6 +61,7 @@ from .forms import (
     EventoPortfolioFilterForm,
     FeedbackForm,
     InscricaoEventoForm,
+    PublicInviteEmailForm,
 )
 from .models import Convite, Evento, EventoLog, EventoMidia, FeedbackNota, InscricaoEvento
 from .querysets import filter_eventos_por_usuario
@@ -2324,13 +2325,33 @@ def convite_public_view(request, short_code):
         Convite.objects.select_related("evento"), short_code=short_code
     )
     evento = convite.evento
+    inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
+    share_url = request.build_absolute_uri(
+        reverse("eventos:convite_public", args=[convite.short_code])
+    )
+
+    if request.method == "POST":
+        form = PublicInviteEmailForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            if User.objects.filter(email__iexact=email).exists():
+                login_url = f"{reverse('accounts:login')}?{urlencode({'next': inscricao_url})}"
+                return redirect(login_url)
+
+            request.session["email"] = email
+            register_url = f"{reverse('accounts:email')}?{urlencode({'next': inscricao_url})}"
+            return redirect(register_url)
+    else:
+        form = PublicInviteEmailForm(
+            initial={"email": request.session.get("email", "")}
+        )
+
     contexto = {
         "convite": convite,
         "evento": evento,
-        "inscricao_url": reverse("eventos:inscricao_criar", args=[evento.pk]),
-        "share_url": request.build_absolute_uri(
-            reverse("eventos:convite_public", args=[convite.short_code])
-        ),
+        "inscricao_url": inscricao_url,
+        "share_url": share_url,
+        "form": form,
     }
     return TemplateResponse(request, "eventos/convites/public.html", contexto)
 

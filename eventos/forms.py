@@ -15,6 +15,10 @@ from .validators import validate_uploaded_file
 from .models import Convite, Evento, EventoMidia, FeedbackNota, InscricaoEvento
 
 
+class PublicInviteEmailForm(forms.Form):
+    email = forms.EmailField(label=_("Email"))
+
+
 class ConviteEventoForm(forms.ModelForm):
     _evento_prefilled_fields = (
         "publico_alvo",
