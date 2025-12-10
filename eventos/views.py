@@ -1964,6 +1964,9 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
     template_name = "eventos/inscricoes/inscricao_form.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))
