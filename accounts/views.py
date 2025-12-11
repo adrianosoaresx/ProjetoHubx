@@ -1462,7 +1462,7 @@ def termos(request):
                     _("O evento não está disponível para inscrições de convidados."),
                 )
                 return redirect("tokens:token")
-        if token_obj.data_expiracao < timezone.now():
+        if token_obj.data_expiracao and token_obj.data_expiracao < timezone.now():
             token_obj.estado = TokenAcesso.Estado.EXPIRADO
             token_obj.save(update_fields=["estado"])
             messages.error(request, "Token expirado.")
