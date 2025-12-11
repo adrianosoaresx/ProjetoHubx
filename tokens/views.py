@@ -77,31 +77,13 @@ def token(request):
         if form.is_valid():
             tkn = form.cleaned_data["token"]
             request.session["invite_token"] = tkn
-            request.session["invite_email"] = form.cleaned_data["email"]
             token_obj = form.token
-            existing_user = (
-                User.objects.filter(email__iexact=form.cleaned_data["email"])
-                .select_related("organizacao")
-                .first()
-            )
             if evento and token_obj.organizacao_id and evento.organizacao_id != token_obj.organizacao_id:
                 messages.error(request, _("Convite não corresponde ao evento informado."))
                 return redirect("tokens:token")
 
-            is_member = bool(
-                existing_user
-                and token_obj.organizacao_id
-                and existing_user.organizacao_id == token_obj.organizacao_id
-            )
             if evento:
                 request.session["invite_event_id"] = str(evento.pk)
-
-            if is_member and evento:
-                inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
-                if not request.user.is_authenticated:
-                    login_url = f"{reverse('accounts:login')}?next={inscricao_url}"
-                    return redirect(login_url)
-                return redirect(inscricao_url)
 
             if evento and evento.publico_alvo != 0:
                 messages.error(request, _("O evento não está disponível para o público geral."))
