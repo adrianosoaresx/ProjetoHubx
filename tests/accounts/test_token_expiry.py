@@ -143,3 +143,19 @@ def test_password_reset_token_default_expiry_and_invalidation(client, monkeypatc
         url = reverse("accounts:password_reset_confirm", args=[token.codigo])
         client.get(url, follow=True)
         assert SecurityEvent.objects.filter(usuario=user, evento="senha_redefinicao_falha").exists()
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_marks_token_confirmed(client):
+    user = User.objects.create_user(email="confirm@example.com", username="confirm")
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.PASSWORD_RESET,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+    )
+    url = reverse("accounts:password_reset_confirm", args=[token.codigo])
+    resp = client.get(url)
+    assert resp.status_code == 200
+    token.refresh_from_db()
+    assert token.status == AccountToken.Status.CONFIRMADO
+    assert token.used_at is None
