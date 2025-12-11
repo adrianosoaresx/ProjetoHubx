@@ -109,8 +109,7 @@ def test_convite_public_post_email_novo_redireciona_registro(client):
 
     response = client.post(url, {"email": novo_email})
 
-    inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
-    expected_register = f"{reverse('accounts:email')}?{urlencode({'next': inscricao_url})}"
+    expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk})}"
     assert response.status_code == 302
     assert response["Location"] == expected_register
 
