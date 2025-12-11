@@ -36,8 +36,9 @@ class AccountTokenSerializer(serializers.ModelSerializer):
             "usuario",
             "expires_at",
             "used_at",
+            "status",
         ]
-        read_only_fields = ["codigo", "usuario", "used_at"]
+        read_only_fields = ["codigo", "usuario", "used_at", "status"]
 
 
 class UserRatingSerializer(serializers.ModelSerializer):

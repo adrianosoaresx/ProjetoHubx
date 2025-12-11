@@ -657,6 +657,11 @@ class UserRating(TimeStampedModel, SoftDeleteModel):
 
 
 class AccountToken(TimeStampedModel, SoftDeleteModel):
+    class Status(models.TextChoices):
+        PENDENTE = "pendente", _("Pendente")
+        CONFIRMADO = "confirmado", _("Confirmado")
+        UTILIZADO = "utilizado", _("Utilizado")
+
     class Tipo(models.TextChoices):
         EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
         PASSWORD_RESET = "password_reset", "Redefinição de Senha"
@@ -667,7 +672,20 @@ class AccountToken(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="account_tokens")
     expires_at = models.DateTimeField()
     used_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDENTE)
     ip_gerado = models.GenericIPAddressField(null=True, blank=True)
+
+    def mark_confirmed(self, save: bool = True) -> None:
+        self.status = self.Status.CONFIRMADO
+        if save:
+            self.save(update_fields=["status"])
+
+    def mark_used(self, save: bool = True) -> None:
+        now = timezone.now()
+        self.used_at = now
+        self.status = self.Status.UTILIZADO
+        if save:
+            self.save(update_fields=["used_at", "status"])
 
     class Meta:
         verbose_name = "Token de Conta"

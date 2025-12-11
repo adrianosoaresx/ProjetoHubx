@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from accounts.models import AccountToken
+from accounts.models import AccountToken, SecurityEvent
 
 User = get_user_model()
 
@@ -27,3 +27,38 @@ def test_resend_and_confirm_email(settings, mailoutbox):
     user.refresh_from_db()
     assert user.is_active
     assert user.email_confirmed is True
+
+
+@pytest.mark.django_db
+def test_confirm_email_api_handles_expired_token():
+    user = User.objects.create_user(email="expired@example.com", username="expired", is_active=False)
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        expires_at=timezone.now() - timezone.timedelta(seconds=1),
+    )
+    client = APIClient()
+    url = reverse("accounts_api:account-confirm-email")
+    resp = client.post(url, {"token": token.codigo})
+    assert resp.status_code == 400
+    assert SecurityEvent.objects.filter(usuario=user, evento="email_confirmacao_falha").exists()
+    token.refresh_from_db()
+    assert token.status == AccountToken.Status.PENDENTE
+    assert token.used_at is None
+
+
+@pytest.mark.django_db
+def test_confirm_email_api_marks_token_used():
+    user = User.objects.create_user(email="ok@example.com", username="ok", is_active=False)
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+    )
+    client = APIClient()
+    url = reverse("accounts_api:account-confirm-email")
+    resp = client.post(url, {"token": token.codigo})
+    assert resp.status_code == 200
+    token.refresh_from_db()
+    assert token.status == AccountToken.Status.UTILIZADO
+    assert token.used_at is not None

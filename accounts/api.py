@@ -48,12 +48,16 @@ class AccountViewSet(viewsets.GenericViewSet):
             return Response({"detail": _("Token ausente.")}, status=400)
         token = get_object_or_404(AccountToken, codigo=code, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION)
         if token.expires_at < timezone.now() or token.used_at:
+            SecurityEvent.objects.create(
+                usuario=token.usuario,
+                evento="email_confirmacao_falha",
+                ip=get_client_ip(request),
+            )
             return Response({"detail": _("Token inválido ou expirado.")}, status=400)
-        token.used_at = timezone.now()
-        token.save(update_fields=["used_at"])
         token.usuario.is_active = True
         token.usuario.email_confirmed = True
         token.usuario.save(update_fields=["is_active", "email_confirmed"])
+        token.mark_used()
         SecurityEvent.objects.create(
             usuario=token.usuario,
             evento="email_confirmado",
@@ -101,7 +105,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             usuario=user,
             tipo=AccountToken.Tipo.PASSWORD_RESET,
             used_at__isnull=True,
-        ).update(used_at=timezone.now())
+        ).update(used_at=timezone.now(), status=AccountToken.Status.UTILIZADO)
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -124,6 +128,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             return Response({"detail": _("Dados incompletos.")}, status=400)
         token = get_object_or_404(AccountToken, codigo=code, tipo=AccountToken.Tipo.PASSWORD_RESET)
         if token.expires_at < timezone.now() or token.used_at:
+            SecurityEvent.objects.create(
+                usuario=token.usuario,
+                evento="senha_redefinicao_falha",
+                ip=get_client_ip(request),
+            )
             return Response({"detail": _("Token inválido ou expirado.")}, status=400)
         user = token.usuario
         try:
@@ -139,8 +148,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             evento="senha_redefinida",
             ip=get_client_ip(request),
         )
-        token.used_at = timezone.now()
-        token.save(update_fields=["used_at"])
+        token.mark_used()
         return Response({"detail": _("Senha redefinida.")})
 
     @action(detail=True, methods=["post"], url_path="rate", permission_classes=[IsAuthenticated])

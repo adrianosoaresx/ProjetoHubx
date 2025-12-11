@@ -1039,7 +1039,7 @@ def password_reset(request):
                     usuario=user,
                     tipo=AccountToken.Tipo.PASSWORD_RESET,
                     used_at__isnull=True,
-                ).update(used_at=timezone.now())
+                ).update(used_at=timezone.now(), status=AccountToken.Status.UTILIZADO)
                 token = AccountToken.objects.create(
                     usuario=user,
                     tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -1077,6 +1077,9 @@ def password_reset_confirm(request, code: str):
         messages.error(request, _("Token inv\u00e1lido ou expirado."))
         return redirect("accounts:password_reset")
 
+    if request.method != "POST" and token.status == AccountToken.Status.PENDENTE:
+        token.mark_confirmed()
+
     if request.method == "POST":
         form = SetPasswordForm(token.usuario, request.POST)
         if form.is_valid():
@@ -1084,8 +1087,7 @@ def password_reset_confirm(request, code: str):
             user = token.usuario
             cache.delete(f"failed_login_attempts_user_{user.pk}")
             cache.delete(f"lockout_user_{user.pk}")
-            token.used_at = timezone.now()
-            token.save(update_fields=["used_at"])
+            token.mark_used()
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="senha_redefinida",
@@ -1126,8 +1128,7 @@ def confirmar_email(request, token: str):
         user.is_active = True
         user.email_confirmed = True
         user.save(update_fields=["is_active", "email_confirmed"])
-        token_obj.used_at = timezone.now()
-        token_obj.save(update_fields=["used_at"])
+        token_obj.mark_used()
         SecurityEvent.objects.create(
             usuario=user,
             evento="email_confirmado",
@@ -1155,8 +1156,7 @@ def cancel_delete(request, token: str):
         user.is_active = True
         user.exclusao_confirmada = False
         user.save(update_fields=["deleted", "deleted_at", "is_active", "exclusao_confirmada"])
-        token_obj.used_at = timezone.now()
-        token_obj.save(update_fields=["used_at"])
+        token_obj.mark_used()
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",
@@ -1184,7 +1184,7 @@ def resend_confirmation(request):
                     usuario=user,
                     tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
                     used_at__isnull=True,
-                ).update(used_at=timezone.now())
+                ).update(used_at=timezone.now(), status=AccountToken.Status.UTILIZADO)
                 token = AccountToken.objects.create(
                     usuario=user,
                     tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
