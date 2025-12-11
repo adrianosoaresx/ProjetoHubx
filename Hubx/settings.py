@@ -455,3 +455,16 @@ RATELIMIT_CACHE = "default"
 
 AUDIT_LOG_RETENTION_YEARS = int(os.getenv("AUDIT_LOG_RETENTION_YEARS", "5"))
 WEBHOOK_EVENT_RETENTION_DAYS = int(os.getenv("WEBHOOK_EVENT_RETENTION_DAYS", "30"))
+
+# Email (SMTP)
+EMAIL_DELIVERY_ENABLED=1
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST="smtp.hostinger.com"
+EMAIL_PORT=587
+EMAIL_USE_TLS=1
+EMAIL_USE_SSL=0
+EMAIL_HOST_USER="contato@hubx.space"
+EMAIL_HOST_PASSWORD="M82s#899eE"
+EMAIL_TIMEOUT=30
+DEFAULT_FROM_EMAIL="Hubx <contato@hubx.space>"
+SERVER_EMAIL="Hubx.Space <contato@hubx.space>"
