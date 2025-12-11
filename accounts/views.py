@@ -56,6 +56,7 @@ from core.permissions import (
 from nucleos.models import ConviteNucleo
 from eventos.models import Evento, PreRegistroConvite
 from tokens.models import TokenAcesso
+from tokens.services import find_token_by_code
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
 from feed.models import Bookmark, Flag, Post, Reacao
@@ -1434,8 +1435,11 @@ def termos(request):
     if request.method == "POST" and request.POST.get("aceitar_termos"):
         token_code = request.session.get("invite_token")
         try:
-            token_obj = TokenAcesso.objects.get(codigo=token_code, estado=TokenAcesso.Estado.NOVO)
+            token_obj = find_token_by_code(token_code)
         except TokenAcesso.DoesNotExist:
+            messages.error(request, "Token inválido.")
+            return redirect("tokens:token")
+        if token_obj.estado != TokenAcesso.Estado.NOVO:
             messages.error(request, "Token inválido.")
             return redirect("tokens:token")
         invite_event_id = request.session.get("invite_event_id")
