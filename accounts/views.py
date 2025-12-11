@@ -50,7 +50,7 @@ from core.permissions import (
     IsCoordenador,
 )
 from nucleos.models import ConviteNucleo
-from eventos.models import Evento
+from eventos.models import Evento, PreRegistroConvite
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
@@ -1278,16 +1278,65 @@ def cpf(request):
 
 
 def email(request):
+    prefilled_email = request.session.get("email", "")
+    email_locked = bool(request.session.get("invite_email"))
+
     if request.method == "POST":
         val = request.POST.get("email")
         if val:
+            if email_locked and prefilled_email and val.lower() != prefilled_email.lower():
+                messages.error(request, _("O e-mail confirmado não pode ser alterado."))
+                return redirect("accounts:email")
             if User.objects.filter(email__iexact=val).exists():
                 messages.error(request, _("Este e-mail já está em uso."))
                 return redirect("accounts:email")
             else:
                 request.session["email"] = val
                 return redirect("accounts:senha")
-    return render(request, "register/email.html")
+    context = {
+        "prefilled_email": prefilled_email,
+        "email_locked": email_locked,
+        "email_attrs": 'readonly="readonly"' if email_locked else "",
+    }
+    return render(request, "register/email.html", context)
+
+
+@require_GET
+def confirmar_convite(request):
+    token_code = (request.GET.get("token") or "").strip()
+    email = (request.GET.get("email") or "").strip()
+
+    if not token_code or not email:
+        messages.error(request, _("Link de confirmação inválido."))
+        return redirect("tokens:token")
+
+    preregistro = (
+        PreRegistroConvite.objects.select_related("token")
+        .filter(email__iexact=email, codigo=token_code)
+        .first()
+    )
+    agora = timezone.now()
+
+    if not preregistro or preregistro.status != PreRegistroConvite.Status.ENVIADO:
+        messages.error(request, _("Convite inválido ou já utilizado."))
+        return redirect("tokens:token")
+
+    token_obj = preregistro.token
+    if (
+        token_obj.estado != TokenAcesso.Estado.NOVO
+        or (token_obj.data_expiracao and token_obj.data_expiracao < agora)
+    ):
+        messages.error(request, _("Token expirado ou inválido."))
+        return redirect("tokens:token")
+
+    request.session["invite_token"] = token_code
+    request.session["email"] = email
+    request.session["invite_email"] = email
+    if preregistro.evento_id:
+        request.session["invite_event_id"] = str(preregistro.evento_id)
+
+    query = urlencode({"token": token_code, "email": email})
+    return redirect(f"{reverse('tokens:token')}?{query}")
 
 
 def usuario(request):

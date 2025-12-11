@@ -23,6 +23,11 @@ urlpatterns = [
     path("senha/", views.senha, name="senha"),
     path("foto/", views.foto, name="foto"),
     path("termos/", views.termos, name="termos"),
+    path(
+        "confirmar-convite/",
+        views.confirmar_convite,
+        name="confirmar_convite",
+    ),
     path("registro_sucesso/", views.registro_sucesso, name="registro_sucesso"),
     path("conta-inativa/", views.conta_inativa, name="inactive"),
     # Perfil

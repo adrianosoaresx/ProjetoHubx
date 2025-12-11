@@ -85,6 +85,11 @@ def token(request):
         request.session["invite_token"] = token_code
         return redirect("accounts:usuario")
 
+    prefilled_email = request.GET.get("email")
+    if prefilled_email:
+        request.session["email"] = prefilled_email
+        request.session["invite_email"] = prefilled_email
+
     prefilled_token = request.GET.get("token")
     if prefilled_token:
         prefill_form = ValidarTokenConviteForm({"token": prefilled_token})
