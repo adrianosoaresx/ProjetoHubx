@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
 
 from .auth import validate_totp
@@ -17,6 +18,7 @@ from .auth import validate_totp
 from .models import (
     AREA_ATUACAO_CHOICES,
     AccountToken,
+    LoginAttempt,
     PerfilFeedback,
     SecurityEvent,
     UserRating,
@@ -429,21 +431,16 @@ class InformacoesPessoaisForm(forms.ModelForm):
 class EmailLoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput, label="Senha")
-    totp = forms.CharField(
-        label=_("Código do aplicativo autenticador (2FA)"),
-        required=False,
-        help_text=_("Deixe em branco se não tiver 2FA"),
-    )
 
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
         self.user = None
+        self.requires_totp = False
         super().__init__(*args, **kwargs)
 
     def clean(self):
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
-        totp = self.cleaned_data.get("totp")
         if not email or not password:
             raise forms.ValidationError("Informe e-mail e senha.")
         try:
@@ -464,18 +461,17 @@ class EmailLoginForm(forms.Form):
             raise forms.ValidationError(f"Conta bloqueada. Tente novamente após {lock_until.strftime('%H:%M')}")
         if not user.is_active:
             raise forms.ValidationError("Conta inativa. Confirme seu e-mail.")
+        ip = get_client_ip(self.request) if self.request else None
         if not user.check_password(password):
-            authenticate(self.request, username=email, password=password)
+            self._register_failed_attempt(user, email=email, ip=ip)
             raise forms.ValidationError("Credenciais inválidas.")
-        error = validate_totp(
-            user,
-            totp,
-            email=user.email,
-            ip=get_client_ip(self.request) if self.request else None,
-        )
-        if error:
-            raise forms.ValidationError(error)
-        auth_user = authenticate(self.request, username=email, password=password, totp=totp)
+
+        if self._user_requires_totp(user):
+            self.requires_totp = True
+            self.user = user
+            return self.cleaned_data
+
+        auth_user = authenticate(self.request, username=email, password=password)
         if auth_user is None:
             raise forms.ValidationError("Credenciais inválidas.")
         self.user = auth_user
@@ -483,6 +479,46 @@ class EmailLoginForm(forms.Form):
 
     def get_user(self):
         return self.user
+
+    def _user_requires_totp(self, user: User) -> bool:
+        return (
+            getattr(user, "two_factor_enabled", False)
+            and getattr(user, "two_factor_secret", None)
+            and TOTPDevice.objects.filter(usuario=user).exists()
+        )
+
+    def _register_failed_attempt(self, user: User, *, email: str, ip: str | None) -> None:
+        attempts_key = f"failed_login_attempts_user_{user.pk}"
+        attempts = cache.get(attempts_key, 0) + 1
+        cache.set(attempts_key, attempts, 60 * 15)
+
+        lock_key = f"lockout_user_{user.pk}"
+        now = timezone.now()
+        if attempts >= 3:
+            cache.set(lock_key, now + timezone.timedelta(minutes=15), 60 * 15)
+
+        LoginAttempt.objects.create(usuario=user, email=email, sucesso=False, ip=ip)
+
+
+class TotpLoginForm(forms.Form):
+    totp = forms.CharField(label=_("Código do aplicativo autenticador (2FA)"))
+
+    def __init__(self, user: User, request=None, *args, **kwargs):
+        self.user = user
+        self.request = request
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        code = self.cleaned_data.get("totp")
+        error = validate_totp(
+            self.user,
+            code,
+            email=self.user.email,
+            ip=get_client_ip(self.request) if self.request else None,
+        )
+        if error:
+            raise forms.ValidationError(error)
+        return self.cleaned_data
 
 
 class PerfilFeedbackForm(forms.ModelForm):

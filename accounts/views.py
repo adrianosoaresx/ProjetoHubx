@@ -20,6 +20,7 @@ from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, BooleanField, Count, Exists, OuterRef, Q, Value
 from django.db.models.functions import Lower
+from django.core.cache import cache
 from django.http import (
     Http404,
     HttpResponse,
@@ -55,7 +56,7 @@ from core.permissions import (
 )
 from nucleos.models import ConviteNucleo
 from eventos.models import Evento, PreRegistroConvite
-from tokens.models import TokenAcesso
+from tokens.models import TOTPDevice, TokenAcesso
 from tokens.services import find_token_by_code
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
@@ -65,10 +66,11 @@ from .forms import (
     IDENTIFIER_REQUIRED_ERROR,
     EmailLoginForm,
     InformacoesPessoaisForm,
+    TotpLoginForm,
     UserRatingForm,
 )
 from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
-from .models import AccountToken, SecurityEvent, UserRating, UserType
+from .models import AccountToken, LoginAttempt, SecurityEvent, UserRating, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
@@ -870,6 +872,53 @@ def check_2fa(request):
     return HttpResponse(status=204)
 
 
+def _user_requires_totp(user: User) -> bool:
+    return (
+        getattr(user, "two_factor_enabled", False)
+        and getattr(user, "two_factor_secret", None)
+        and TOTPDevice.objects.filter(usuario=user).exists()
+    )
+
+
+def _clear_pending_2fa(request):
+    request.session.pop("pending_2fa_user_id", None)
+    request.session.modified = True
+
+
+def _get_pending_2fa_user(request):
+    user_id = request.session.get("pending_2fa_user_id")
+    if not user_id:
+        return None
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        _clear_pending_2fa(request)
+        return None
+    if not user.is_active:
+        _clear_pending_2fa(request)
+        return None
+    lock_until = cache.get(f"lockout_user_{user.pk}")
+    if lock_until and lock_until > timezone.now():
+        _clear_pending_2fa(request)
+        return None
+    if not _user_requires_totp(user):
+        _clear_pending_2fa(request)
+        return None
+    return user
+
+
+def _register_login_success(user: User, request):
+    login(request, user, backend="accounts.backends.EmailBackend")
+    cache.delete(f"failed_login_attempts_user_{user.pk}")
+    cache.delete(f"lockout_user_{user.pk}")
+    LoginAttempt.objects.create(
+        usuario=user,
+        email=user.email,
+        sucesso=True,
+        ip=get_client_ip(request),
+    )
+
+
 # ====================== AUTENTICAÇÃO ======================
 
 
@@ -880,14 +929,14 @@ def login_view(request):
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
-        user = authenticate(
-            request,
-            username=form.cleaned_data["email"],
-            password=form.cleaned_data["password"],
-            totp=form.cleaned_data.get("totp"),
-        )
+        if form.requires_totp:
+            request.session["pending_2fa_user_id"] = form.get_user().pk
+            request.session.modified = True
+            return redirect("accounts:login_totp")
+
+        user = form.get_user()
         if user and user.is_active:
-            login(request, user)
+            _register_login_success(user, request)
             return redirect("accounts:perfil")
         if user and not user.is_active:
             messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
@@ -895,6 +944,24 @@ def login_view(request):
             messages.error(request, _("Credenciais inválidas."))
 
     return render(request, "login/login.html", {"form": form})
+
+
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
+def login_totp(request):
+    if request.user.is_authenticated:
+        return redirect("accounts:perfil")
+
+    user = _get_pending_2fa_user(request)
+    if not user:
+        return redirect("accounts:login")
+
+    form = TotpLoginForm(user, request=request, data=request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        _clear_pending_2fa(request)
+        _register_login_success(user, request)
+        return redirect("accounts:perfil")
+
+    return render(request, "login/totp.html", {"form": form, "email": user.email})
 
 
 def logout_view(request):
