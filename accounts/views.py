@@ -1,7 +1,8 @@
+import json
+import logging
 import os
 import uuid
 from pathlib import Path
-import json
 
 from django.conf import settings
 
@@ -37,6 +38,9 @@ from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 
 from rest_framework.permissions import IsAuthenticated
+
+
+logger = logging.getLogger(__name__)
 
 from accounts.serializers import UserSerializer
 from accounts.tasks import (
@@ -1107,21 +1111,51 @@ def password_reset_confirm(request, code: str):
 
 def confirmar_email(request, token: str):
     """Valida token de confirmação de e-mail."""
+    base_context = {
+        "status": "erro",
+        "message": _("Link inválido ou expirado."),
+    }
     try:
         token_obj = AccountToken.objects.select_related("usuario").get(
             codigo=token,
             tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
         )
     except AccountToken.DoesNotExist:
-        return render(request, "accounts/email_confirm.html", {"status": "erro"})
+        return render(request, "accounts/email_confirm.html", base_context)
 
+    SecurityEvent.objects.create(
+        usuario=token_obj.usuario,
+        evento="email_confirmacao_link_acessado",
+        ip=get_client_ip(request),
+    )
+
+    if token_obj.used_at:
+        context = {
+            "status": "expirado",
+            "message": _("Este link já foi utilizado. Solicite um novo e-mail de confirmação."),
+        }
+        SecurityEvent.objects.create(
+            usuario=token_obj.usuario,
+            evento="email_confirmacao_falha",
+            ip=get_client_ip(request),
+        )
+        return render(request, "accounts/email_confirm.html", context)
     if token_obj.expires_at < timezone.now() or token_obj.used_at:
         SecurityEvent.objects.create(
             usuario=token_obj.usuario,
             evento="email_confirmacao_falha",
             ip=get_client_ip(request),
         )
-        return render(request, "accounts/email_confirm.html", {"status": "erro"})
+        return render(
+            request,
+            "accounts/email_confirm.html",
+            {
+                "status": "expirado",
+                "message": _(
+                    "Seu link expirou. Solicite um novo e-mail de confirmação para continuar."
+                ),
+            },
+        )
 
     with transaction.atomic():
         user = token_obj.usuario
@@ -1134,7 +1168,14 @@ def confirmar_email(request, token: str):
             evento="email_confirmado",
             ip=get_client_ip(request),
         )
-    return render(request, "accounts/email_confirm.html", {"status": "sucesso"})
+    return render(
+        request,
+        "accounts/email_confirm.html",
+        {
+            "status": "sucesso",
+            "message": _("Seu e-mail foi confirmado com sucesso."),
+        },
+    )
 
 def cancel_delete(request, token: str):
     """Reativa a conta utilizando um token de cancelamento."""
@@ -1459,6 +1500,15 @@ def termos(request):
                     _("Nome de usuário já cadastrado."),
                 )
                 request.session.pop("usuario", None)
+                logger.warning(
+                    "accounts.registro.integrity_error",
+                    extra={
+                        "username": username,
+                        "email": email_val,
+                        "token": token_code,
+                        "ip": get_client_ip(request),
+                    },
+                )
                 return redirect("accounts:usuario")
 
             convite_nucleo = ConviteNucleo.objects.select_related("nucleo").filter(token_obj=token_obj).first()
@@ -1482,6 +1532,11 @@ def termos(request):
                 ip_gerado=get_client_ip(request),
             )
             send_confirmation_email.delay(token.id)
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="registro_sucesso",
+                ip=get_client_ip(request),
+            )
 
             request.session["termos"] = True
             request.session.pop("cnpj", None)
@@ -1496,6 +1551,15 @@ def termos(request):
             return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
+        logger.warning(
+            "accounts.registro.falha",
+            extra={
+                "token": token_code,
+                "username": username,
+                "email": email_val,
+                "ip": get_client_ip(request),
+            },
+        )
         return redirect("accounts:usuario")
 
     return render(request, "register/termos.html")

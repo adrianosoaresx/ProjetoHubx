@@ -4,7 +4,6 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
-
 from freezegun import freeze_time
 
 from accounts.models import AccountToken, SecurityEvent

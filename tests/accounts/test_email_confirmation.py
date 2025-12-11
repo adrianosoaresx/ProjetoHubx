@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import AccountToken, SecurityEvent
+from accounts.tasks import send_confirmation_email
 
 User = get_user_model()
 
@@ -62,3 +63,22 @@ def test_confirm_email_api_marks_token_used():
     token.refresh_from_db()
     assert token.status == AccountToken.Status.UTILIZADO
     assert token.used_at is not None
+
+
+@pytest.mark.django_db
+def test_send_confirmation_email_logs_event(settings, monkeypatch):
+    settings.FRONTEND_URL = "http://testserver"
+    user = User.objects.create_user(email="notify@example.com", username="notify")
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+        ip_gerado="127.0.0.1",
+    )
+    monkeypatch.setattr("accounts.tasks.enviar_para_usuario", lambda *args, **kwargs: None)
+
+    send_confirmation_email(token.id)
+
+    assert SecurityEvent.objects.filter(
+        usuario=user, evento="email_confirmacao_enviado", ip="127.0.0.1"
+    ).exists()
