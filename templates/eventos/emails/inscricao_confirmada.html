@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <body style="font-family: Arial, sans-serif; color: #0f172a;">
+    <h2>Inscrição confirmada</h2>
+    <p>Olá {{ usuario.display_name|default:usuario.get_full_name|default:usuario.username }},</p>
+    <p>
+      Sua inscrição para o evento <strong>{{ evento.titulo }}</strong> foi confirmada.
+      Guarde o QR code abaixo para realizar o check-in no dia do evento.
+    </p>
+    <p>
+      <strong>Data de início:</strong> {{ evento.data_inicio|date:"d/m/Y H:i" }}<br />
+      <strong>Local:</strong> {{ evento.local }} - {{ evento.cidade }}/{{ evento.estado }}
+    </p>
+    <p>
+      <img src="{{ qrcode_data_url }}" alt="QR code da inscrição" style="max-width: 240px;" />
+    </p>
+    <p>
+      Caso não consiga visualizar a imagem, o QR code também está anexado ao e-mail como
+      arquivo <strong>.png</strong>.
+    </p>
+  </body>
+</html>
