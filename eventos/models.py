@@ -32,6 +32,7 @@ from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 from pagamentos.models import Transacao
+from tokens.models import TokenAcesso
 
 from .validators import validate_uploaded_file
 
@@ -517,6 +518,38 @@ class Convite(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - representação simples
         return f"Convite para {self.evento} ({self.short_code})"
+
+
+class PreRegistroConvite(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDENTE = "pendente", _("Pendente")
+        ENVIADO = "enviado", _("Enviado")
+
+    email = models.EmailField()
+    evento = models.ForeignKey(
+        Evento,
+        on_delete=models.CASCADE,
+        related_name="pre_registros",
+    )
+    codigo = models.CharField(max_length=128)
+    token = models.ForeignKey(
+        TokenAcesso,
+        on_delete=models.CASCADE,
+        related_name="pre_registros_convite",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDENTE,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("email", "evento")
+
+    def marcar_enviado(self) -> None:
+        self.status = self.Status.ENVIADO
+        self.save(update_fields=["status", "updated_at"])
 
 
 class EventoLog(TimeStampedModel, SoftDeleteModel):

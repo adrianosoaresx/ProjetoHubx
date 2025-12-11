@@ -9,7 +9,7 @@ from django.views.i18n import JavaScriptCatalog
 
 from accounts.models import User, UserType
 from eventos.forms import PublicInviteEmailForm
-from eventos.models import Convite, Evento
+from eventos.models import Convite, Evento, PreRegistroConvite
 from organizacoes.models import Organizacao
 
 
@@ -44,6 +44,16 @@ pytestmark = pytest.mark.django_db
 
 def _criar_convite_publico():
     organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
+    admin_user = User.objects.create_user(
+        username="admin_org",
+        email="admin@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.ADMIN,
+        is_staff=True,
+    )
+    organizacao.created_by = admin_user
+    organizacao.save(update_fields=["created_by"])
     evento = Evento.objects.create(
         titulo="Evento Público",
         descricao="Desc",
@@ -69,12 +79,12 @@ def _criar_convite_publico():
         estado=evento.estado,
     )
     url = reverse("eventos:convite_public", args=[convite.short_code])
-    return convite, evento, url
+    return convite, evento, url, admin_user
 
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
 def test_convite_public_get_exibe_formulario(client):
-    convite, _, url = _criar_convite_publico()
+    convite, _, url, _ = _criar_convite_publico()
 
     response = client.get(url)
 
@@ -85,7 +95,7 @@ def test_convite_public_get_exibe_formulario(client):
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
 def test_convite_public_post_email_existente_redireciona_login(client):
-    convite, evento, url = _criar_convite_publico()
+    convite, evento, url, _ = _criar_convite_publico()
     user = User.objects.create_user(
         username="usuario",
         email="usuario@example.com",
@@ -104,14 +114,39 @@ def test_convite_public_post_email_existente_redireciona_login(client):
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
 def test_convite_public_post_email_novo_redireciona_registro(client):
-    convite, evento, url = _criar_convite_publico()
+    convite, evento, url, _ = _criar_convite_publico()
     novo_email = "novo@example.com"
 
     response = client.post(url, {"email": novo_email})
 
-    expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk})}"
+    preregistro = PreRegistroConvite.objects.get(email=novo_email, evento=evento)
+    expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk, 'token': preregistro.codigo})}"
     assert response.status_code == 302
     assert response["Location"] == expected_register
 
     session = client.session
     assert session["email"] == novo_email
+
+
+@override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
+def test_convite_public_post_email_novo_envia_token(monkeypatch, client):
+    convite, evento, url, _ = _criar_convite_publico()
+    enviado: dict[str, str] = {}
+
+    def fake_send_email(user, subject, body):
+        enviado["email"] = user.email
+        enviado["subject"] = subject
+        enviado["body"] = body
+
+    monkeypatch.setattr("eventos.views.send_email", fake_send_email)
+
+    response = client.post(url, {"email": "novo@example.com"})
+
+    preregistro = PreRegistroConvite.objects.get(email="novo@example.com", evento=evento)
+    expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk, 'token': preregistro.codigo})}"
+
+    assert response.status_code == 302
+    assert response["Location"] == expected_register
+    assert preregistro.status == PreRegistroConvite.Status.ENVIADO
+    assert preregistro.codigo in enviado.get("body", "")
+    assert enviado.get("email") == "novo@example.com"

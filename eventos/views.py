@@ -1,5 +1,6 @@
 import calendar
 from collections import Counter
+from types import SimpleNamespace
 from decimal import Decimal
 from datetime import date, timedelta
 from io import BytesIO
@@ -50,9 +51,12 @@ from core.permissions import (
     no_superadmin_required,
 )
 from core.utils import resolve_back_href
+from notificacoes.services.email_client import send_email
 from pagamentos.forms import CheckoutForm
 from pagamentos.models import Transacao
 from pagamentos.providers import MercadoPagoProvider
+from tokens.models import TokenAcesso
+from tokens.services import create_invite_token
 
 from .forms import (
     ConviteEventoForm,
@@ -63,7 +67,15 @@ from .forms import (
     InscricaoEventoForm,
     PublicInviteEmailForm,
 )
-from .models import Convite, Evento, EventoLog, EventoMidia, FeedbackNota, InscricaoEvento
+from .models import (
+    Convite,
+    Evento,
+    EventoLog,
+    EventoMidia,
+    FeedbackNota,
+    InscricaoEvento,
+    PreRegistroConvite,
+)
 from .querysets import filter_eventos_por_usuario
 
 User = get_user_model()
@@ -94,6 +106,53 @@ def _get_tipo_usuario(user) -> str | None:
     if hasattr(tipo, "value"):
         return tipo.value  # pragma: no cover - compatibilidade defensiva
     return tipo
+
+
+def _get_public_invite_token_generator(evento: Evento):
+    if getattr(evento, "organizacao", None) and evento.organizacao.created_by:
+        return evento.organizacao.created_by
+
+    staff_user = User.objects.filter(is_staff=True).order_by("id").first()
+    if staff_user:
+        return staff_user
+
+    return User.objects.filter(is_superuser=True).order_by("id").first()
+
+
+def _criar_token_convite_publico(evento: Evento, email: str):
+    generator = _get_public_invite_token_generator(evento)
+    if generator is None:
+        return None, None
+
+    preregistro = (
+        PreRegistroConvite.objects.filter(email__iexact=email, evento=evento)
+        .select_related("token")
+        .first()
+    )
+    agora = timezone.now()
+    if (
+        preregistro
+        and preregistro.token.estado == TokenAcesso.Estado.NOVO
+        and (not preregistro.token.data_expiracao or preregistro.token.data_expiracao > agora)
+    ):
+        return preregistro, preregistro.codigo
+
+    token, codigo = create_invite_token(
+        gerado_por=generator,
+        tipo_destino=TokenAcesso.TipoUsuario.CONVIDADO.value,
+        organizacao=evento.organizacao,
+    )
+
+    preregistro, _ = PreRegistroConvite.objects.update_or_create(
+        email=email,
+        evento=evento,
+        defaults={
+            "token": token,
+            "codigo": codigo,
+            "status": PreRegistroConvite.Status.PENDENTE,
+        },
+    )
+    return preregistro, codigo
 
 
 def _portfolio_counts(medias) -> dict[str, int]:
@@ -2337,10 +2396,30 @@ def convite_public_view(request, short_code):
             if User.objects.filter(email__iexact=email).exists():
                 login_url = f"{reverse('accounts:login')}?{urlencode({'next': inscricao_url})}"
                 return redirect(login_url)
+            preregistro, codigo = _criar_token_convite_publico(evento, email)
+            if not preregistro or not codigo:
+                messages.error(request, _("Não foi possível gerar um token para o seu cadastro."))
+                return redirect("tokens:token")
 
             request.session["email"] = email
             request.session["invite_event_id"] = str(evento.pk)
-            register_url = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk})}"
+
+            register_url = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk, 'token': codigo})}"
+            token_link = request.build_absolute_uri(register_url)
+
+            email_context = {
+                "evento": evento,
+                "codigo": codigo,
+                "token_link": token_link,
+            }
+            subject = _("Confirme sua inscrição em %(evento)s") % {"evento": evento.titulo}
+            body = render_to_string("eventos/emails/public_invite.txt", email_context)
+            send_email(SimpleNamespace(email=email), subject, body)
+            preregistro.marcar_enviado()
+            messages.success(
+                request,
+                _("Enviamos um token para o seu e-mail. Verifique sua caixa de entrada para continuar."),
+            )
             return redirect(register_url)
     else:
         form = PublicInviteEmailForm(
