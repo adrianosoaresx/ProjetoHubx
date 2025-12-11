@@ -71,25 +71,40 @@ def token(request):
         if request.user.is_superuser or request.user.get_tipo_usuario == UserType.ADMIN.value:
             return redirect("tokens:listar_convites")
 
+    def _handle_token_success(token_obj, token_code):
+        if evento and token_obj.organizacao_id and evento.organizacao_id != token_obj.organizacao_id:
+            messages.error(request, _("Convite não corresponde ao evento informado."))
+            return redirect("tokens:token")
+
+        if evento:
+            request.session["invite_event_id"] = str(evento.pk)
+            if evento.publico_alvo != 0:
+                messages.error(request, _("O evento não está disponível para o público geral."))
+                return redirect("tokens:token")
+
+        request.session["invite_token"] = token_code
+        return redirect("accounts:usuario")
+
+    prefilled_token = request.GET.get("token")
+    if prefilled_token:
+        prefill_form = ValidarTokenConviteForm({"token": prefilled_token})
+        if prefill_form.is_valid():
+            token_obj = prefill_form.token
+            response = _handle_token_success(token_obj, prefilled_token)
+            if response:
+                return response
+        else:
+            messages.error(request, _("Token inválido."))
+
     form = ValidarTokenConviteForm()
     if request.method == "POST":
         form = ValidarTokenConviteForm(request.POST)
         if form.is_valid():
             tkn = form.cleaned_data["token"]
-            request.session["invite_token"] = tkn
             token_obj = form.token
-            if evento and token_obj.organizacao_id and evento.organizacao_id != token_obj.organizacao_id:
-                messages.error(request, _("Convite não corresponde ao evento informado."))
-                return redirect("tokens:token")
-
-            if evento:
-                request.session["invite_event_id"] = str(evento.pk)
-
-            if evento and evento.publico_alvo != 0:
-                messages.error(request, _("O evento não está disponível para o público geral."))
-                return redirect("tokens:token")
-
-            return redirect("accounts:usuario")
+            response = _handle_token_success(token_obj, tkn)
+            if response:
+                return response
     return render(request, "register/token.html", {"form": form})
 
 

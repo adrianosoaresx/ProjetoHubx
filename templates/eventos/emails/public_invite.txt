@@ -1,0 +1,9 @@
+{% load i18n %}{% blocktrans with titulo=evento.titulo %}Você solicitou participação no evento "{{ titulo }}".{% endblocktrans %}
+
+{% trans "Use o token abaixo para concluir seu cadastro:" %}
+{{ codigo }}
+
+{% trans "Você pode confirmar diretamente pelo link:" %}
+{{ token_link }}
+
+{% trans "Se você não solicitou esta participação, ignore esta mensagem." %}
