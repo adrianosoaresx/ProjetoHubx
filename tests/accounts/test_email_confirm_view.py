@@ -24,6 +24,9 @@ def test_email_confirm_view_success(client):
     assert token.used_at is not None
     assert user.is_active
     assert SecurityEvent.objects.filter(usuario=user, evento="email_confirmado").exists()
+    assert SecurityEvent.objects.filter(
+        usuario=user, evento="email_confirmacao_link_acessado"
+    ).exists()
 
 
 @pytest.mark.django_db
@@ -32,3 +35,21 @@ def test_email_confirm_view_error(client):
     resp = client.get(url)
     assert resp.status_code == 200
     assert b"Link inv\xc3\xa1lido" in resp.content
+
+
+@pytest.mark.django_db
+def test_email_confirm_view_expired_token(client):
+    user = User.objects.create_user(email="expired@example.com", username="expired", is_active=False)
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        expires_at=timezone.now() - timezone.timedelta(minutes=1),
+    )
+
+    url = reverse("accounts:confirmar_email", args=[token.codigo])
+    resp = client.get(url)
+
+    assert resp.status_code == 200
+    assert "Seu link expirou" in resp.content.decode()
+    assert SecurityEvent.objects.filter(usuario=user, evento="email_confirmacao_link_acessado").exists()
+    assert SecurityEvent.objects.filter(usuario=user, evento="email_confirmacao_falha").exists()

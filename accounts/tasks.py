@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import AccountToken, User
+from .models import AccountToken, SecurityEvent, User
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,11 @@ def send_confirmation_email(token_id: int) -> None:
         token.usuario,
         "email_confirmation",
         {"url": url, "nome": token.usuario.contato},
+    )
+    SecurityEvent.objects.create(
+        usuario=token.usuario,
+        evento="email_confirmacao_enviado",
+        ip=token.ip_gerado,
     )
 
 
