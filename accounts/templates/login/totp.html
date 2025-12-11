@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block extra_css %}
+  {% include '_force_sidebar_collapsed.html' %}
+{% endblock %}
+
+{% block title %}{% trans "Verificação em duas etapas" %} - HubX{% endblock %}
+
+{% block hero %}
+  {% translate "Verifique sua identidade" as totp_hero_title %}
+  {% translate "Digite o código do seu aplicativo autenticador para continuar." as totp_hero_subtitle %}
+  {% include '_components/hero_auth.html' with title=totp_hero_title subtitle=totp_hero_subtitle %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="card" role="dialog">
+    <div class="card-body space-y-6">
+      <p class="text-center text-sm text-[var(--text-secondary)]">
+        {% blocktrans %}Informe o código de verificação para {{ email }}.{% endblocktrans %}
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <form method="post" action="{% url 'accounts:login_totp' %}" class="space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+          {% include '_forms/field.html' with field=field %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary w-full">
+          {% trans "Confirmar" %}
+        </button>
+      </form>
+
+      <div class="text-center text-sm">
+        <a href="{% url 'accounts:login' %}" class="text-[var(--primary)] hover:underline">
+          {% trans "Trocar de conta" %}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -46,9 +46,10 @@ def test_login_requires_totp_when_enabled(client):
     TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     url = reverse("accounts:login")
     resp = client.post(url, {"email": "b@b.com", "password": "Strong!123"})
-    assert "Código de verificação obrigatório" in resp.content.decode()
+    assert resp.status_code == 302
+    assert resp.url == reverse("accounts:login_totp")
     code = pyotp.TOTP(secret).now()
-    resp = client.post(url, {"email": "b@b.com", "password": "Strong!123", "totp": code})
+    resp = client.post(reverse("accounts:login_totp"), {"totp": code})
     assert resp.status_code == 302
 
 
