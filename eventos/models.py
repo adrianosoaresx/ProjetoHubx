@@ -117,6 +117,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                 confirmados = evento.inscricoes.filter(status="confirmada").count()
                 if confirmados >= evento.participantes_maximo:
                     raise ValueError(_("Evento lotado."))
+            qrcode_bytes: bytes | None = None
             update_fields = [
                 "status",
                 "data_confirmacao",
@@ -130,13 +131,20 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                 self.valor_pago = valor_evento
                 update_fields.append("valor_pago")
             if not self.qrcode_url:
-                self.gerar_qrcode()
+                qrcode_bytes = self.gerar_qrcode()
             self.save(update_fields=update_fields)
             EventoLog.objects.create(
                 evento=self.evento,
                 usuario=self.user,
                 acao="inscricao_confirmada",
             )
+            if qrcode_bytes:
+                try:
+                    from .services.email import enviar_email_confirmacao_inscricao
+
+                    enviar_email_confirmacao_inscricao(self, qrcode_bytes)
+                except Exception:
+                    logger.exception("erro_email_confirmacao_inscricao", extra={"inscricao": self.pk})
 
     def cancelar_inscricao(self) -> None:
         if self.pagamento_validado:
@@ -174,7 +182,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                 acao="check_in",
             )
 
-    def gerar_qrcode(self) -> None:
+    def gerar_qrcode(self) -> bytes:
         """Gera um QRCode único com detalhes da inscrição e salva no armazenamento padrão."""
 
         inscricao_id = str(self.pk) if self.pk else None
@@ -186,9 +194,11 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         img = qrcode.make(qrcode_payload)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
+        content = buffer.getvalue()
         filename = f"inscricoes/qrcodes/{self.pk}.png"
-        path = default_storage.save(filename, ContentFile(buffer.getvalue()))
+        path = default_storage.save(filename, ContentFile(content))
         self.qrcode_url = default_storage.url(path)
+        return content
 
     @staticmethod
     def gerar_checksum(inscricao_id: str | None) -> str | None:

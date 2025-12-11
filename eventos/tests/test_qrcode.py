@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 from django.urls import reverse, path, include
 
+from django.core import mail
 from django.core.files.storage import default_storage
 from django.utils.timezone import make_aware
 from django.test import override_settings
@@ -65,6 +66,53 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
     inscricao = InscricaoEvento.objects.get(user=usuario, evento=evento)
     assert inscricao.status == "confirmada"
     assert inscricao.qrcode_url
+
+
+@override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
+def test_envia_email_com_qrcode_apos_inscricao(client, monkeypatch):
+    def fake_gerar_qrcode(self):
+        self.qrcode_url = "/fake-qrcode.png"
+        return b"fake-qrcode-bytes"
+
+    monkeypatch.setattr(InscricaoEvento, "gerar_qrcode", fake_gerar_qrcode)
+    organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
+    usuario = User.objects.create_user(
+        username="usuario-email",
+        email="email@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.NUCLEADO,
+    )
+    client.force_login(usuario)
+
+    evento = Evento.objects.create(
+        titulo="Evento",
+        descricao="Desc",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        local="Rua 1",
+        cidade="Cidade",
+        estado="ST",
+        cep="12345-678",
+        organizacao=organizacao,
+        status=Evento.Status.ATIVO,
+        publico_alvo=0,
+        numero_presentes=0,
+        participantes_maximo=10,
+    )
+
+    url = reverse("eventos:evento_subscribe", args=[evento.pk])
+    response = client.post(url)
+
+    assert response.status_code == 302
+    assert len(mail.outbox) == 1
+    email = mail.outbox[0]
+    assert "Inscrição confirmada" in email.subject
+    assert email.to == [usuario.email]
+    assert any(
+        alternative[0].find("data:image/png;base64,") >= 0 for alternative in email.alternatives
+    )
+    assert any(att[0].endswith(".png") for att in email.attachments)
 
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
