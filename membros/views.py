@@ -156,7 +156,14 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
 
 
 class MembroListDataMixin:
-    sections = ("sem_nucleo", "nucleados", "consultores", "coordenadores", "inativos")
+    sections = (
+        "sem_nucleo",
+        "nucleados",
+        "consultores",
+        "coordenadores",
+        "inativos",
+        "leads",
+    )
     paginate_by = 6
 
     def get_paginate_by(self) -> int:
@@ -195,6 +202,7 @@ class MembroListDataMixin:
                         UserType.NUCLEADO.value,
                         UserType.COORDENADOR.value,
                         UserType.CONSULTOR.value,
+                        UserType.CONVIDADO.value,
                     ]
                 )
                 | Q(is_coordenador=True)
@@ -239,6 +247,8 @@ class MembroListDataMixin:
             return base_queryset.filter(self.get_coordenador_filter(), is_active=True)
         if section == "inativos":
             return base_queryset.filter(is_active=False)
+        if section == "leads":
+            return base_queryset.filter(user_type=UserType.CONVIDADO.value, is_active=True)
         raise ValueError(f"Unknown section '{section}'")
 
     def get_section_page(self, base_queryset, section: str, *, page_number=None):
@@ -255,6 +265,7 @@ class MembroListDataMixin:
             "consultores": _("Nenhum consultor encontrado."),
             "coordenadores": _("Nenhum coordenador encontrado."),
             "inativos": _("Nenhum usuário inativo encontrado."),
+            "leads": _("Nenhum lead encontrado."),
         }
         return messages.get(section, _("Nenhum usuário encontrado."))
 
@@ -269,6 +280,7 @@ class MembroListDataMixin:
                 "total_consultores": 0,
                 "total_coordenadores": 0,
                 "total_inativos": 0,
+                "total_leads": 0,
             }
 
         base_queryset = User.objects.filter(organizacao=organizacao)
@@ -324,6 +336,9 @@ class MembroListDataMixin:
             .distinct()
             .count(),
             "total_inativos": total_inativos,
+            "total_leads": base_queryset.filter(
+                user_type=UserType.CONVIDADO.value, is_active=True
+            ).count(),
         }
 
 
@@ -368,6 +383,8 @@ class MembroListView(
                 "membros_coordenadores_count": section_pages["coordenadores"]["count"],
                 "membros_inativos_page": section_pages["inativos"]["page"],
                 "membros_inativos_count": section_pages["inativos"]["count"],
+                "membros_leads_page": section_pages["leads"]["page"],
+                "membros_leads_count": section_pages["leads"]["count"],
                 "membros_section_empty_messages": {
                     section: self.get_empty_message(section)
                     for section in self.sections

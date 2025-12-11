@@ -100,6 +100,32 @@
       </div>
     </details>
 
+    <details class="card group" data-membros-section="leads" id="membros-section-leads" {% if open_section == 'leads' %}open{% endif %}>
+      <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+        <div class="flex items-start gap-3">
+          <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)] shadow-lg shadow-[var(--color-primary-500)]/15">
+            {% lucide 'user-search' class='h-6 w-6' aria_hidden='true' %}
+          </span>
+          <div class="space-y-1">
+            <p class="text-xl font-semibold">{% trans "Leads de Associação" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% blocktrans count count=membros_leads_count %}
+                {{ count }} lead de associação no total
+              {% plural %}
+                {{ count }} leads de associação no total
+              {% endblocktrans %}
+            </p>
+          </div>
+        </div>
+        <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+          {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+        </span>
+      </summary>
+      <div>
+        {% include 'membros/_carousel.html' with page=membros_leads_page section='leads' empty_message=membros_section_empty_messages.leads fetch_url=membros_fetch_url search_term=search_term %}
+      </div>
+    </details>
+
     <details class="card group" data-membros-section="consultores" id="membros-section-consultores" {% if open_section == 'consultores' %}open{% endif %}>
       <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
         <div class="flex items-start gap-3">
