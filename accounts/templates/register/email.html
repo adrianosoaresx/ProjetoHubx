@@ -36,9 +36,12 @@
       <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
         {% csrf_token %}
         <div>
-          {% include "_forms/field.html" with id="email" name="email" type="email" label=_("Email") placeholder=_("Seu e-mail") required=True autofocus=True describedby="email_help email_validation" %}
+          {% include "_forms/field.html" with id="email" name="email" type="email" label=_("Email") placeholder=_("Seu e-mail") value=prefilled_email required=True autofocus=True describedby="email_help email_validation" attrs=email_attrs %}
           <div class="text-sm text-[var(--error)]" id="email_validation"></div>
           <small id="email_help" class="text-sm text-[var(--text-secondary)]">{% trans "Enviaremos um link de confirmação" %}</small>
+          {% if email_locked %}
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Este e-mail foi preenchido automaticamente e não pode ser alterado." %}</p>
+          {% endif %}
         </div>
 
         <div class="flex gap-4">
