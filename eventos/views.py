@@ -2339,7 +2339,8 @@ def convite_public_view(request, short_code):
                 return redirect(login_url)
 
             request.session["email"] = email
-            register_url = f"{reverse('accounts:email')}?{urlencode({'next': inscricao_url})}"
+            request.session["invite_event_id"] = str(evento.pk)
+            register_url = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk})}"
             return redirect(register_url)
     else:
         form = PublicInviteEmailForm(
