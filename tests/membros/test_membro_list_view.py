@@ -73,3 +73,43 @@ class MembrosListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.json()["html"]
         self.assertIn("Promover", html)
+
+    def test_leads_include_inactive_users_in_counts_and_carousel(self):
+        lead_ativo = UserFactory(
+            username="lead-ativo",
+            contato="Lead Ativo",
+            organizacao=self.organizacao,
+            user_type=UserType.CONVIDADO.value,
+            is_active=True,
+        )
+        lead_inativo = UserFactory(
+            username="lead-inativo",
+            contato="Lead Inativo",
+            organizacao=self.organizacao,
+            user_type=UserType.CONVIDADO.value,
+            is_active=False,
+        )
+        UserFactory(
+            username="lead-outra-org",
+            contato="Lead Outra Org",
+            organizacao=OrganizacaoFactory(),
+            user_type=UserType.CONVIDADO.value,
+            is_active=False,
+        )
+
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, 200)
+
+        leads_page = response.context["membros_leads_page"].object_list
+        self.assertIn(lead_ativo, leads_page)
+        self.assertIn(lead_inativo, leads_page)
+        self.assertEqual(response.context["membros_leads_count"], 2)
+        self.assertEqual(response.context["total_leads"], 2)
+
+        api_response = self.client.get(self.api_url, {"section": "leads"})
+        self.assertEqual(api_response.status_code, 200)
+        api_data = api_response.json()
+        self.assertEqual(api_data["count"], 2)
+        html = api_data["html"]
+        self.assertIn("Lead Ativo", html)
+        self.assertIn("Lead Inativo", html)
