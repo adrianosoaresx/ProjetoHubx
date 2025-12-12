@@ -56,7 +56,7 @@ ALLOWED_HOSTS = [
 ]
 
 # URL base do frontend para geração de links em e-mails
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8000")
 #chat gpt
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_DEFAULT_MODEL = os.getenv("OPENAI_DEFAULT_MODEL", "gpt-4o-mini")
