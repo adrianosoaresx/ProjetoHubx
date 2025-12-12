@@ -24,6 +24,7 @@ urlpatterns = [
     path("senha/", views.senha, name="senha"),
     path("foto/", views.foto, name="foto"),
     path("termos/", views.termos, name="termos"),
+    path("confirm-email/", views.confirm_email, name="confirm_email"),
     path(
         "confirmar-convite/",
         views.confirmar_convite,
