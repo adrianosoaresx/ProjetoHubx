@@ -1552,6 +1552,18 @@ def termos(request):
                 messages.error(request, _("Convite inválido."))
                 return redirect("tokens:token")
             mapped_user_type = UserType.CONVIDADO
+            convite_nucleo = (
+                ConviteNucleo.objects.select_related("nucleo__organizacao")
+                .filter(token_obj=token_obj)
+                .first()
+            )
+            organizacao = None
+            nucleo = None
+            if convite_nucleo and convite_nucleo.nucleo_id:
+                nucleo = convite_nucleo.nucleo
+                organizacao = convite_nucleo.nucleo.organizacao
+            else:
+                organizacao = token_obj.organizacao
             try:
                 with transaction.atomic():
                     user = User.objects.create(
@@ -1564,6 +1576,8 @@ def termos(request):
                         user_type=mapped_user_type,
                         is_active=False,
                         email_confirmed=False,
+                        organizacao=organizacao,
+                        nucleo=nucleo,
                     )
             except IntegrityError:
                 messages.error(
@@ -1582,10 +1596,6 @@ def termos(request):
                 )
                 return redirect("accounts:usuario")
 
-            convite_nucleo = ConviteNucleo.objects.select_related("nucleo").filter(token_obj=token_obj).first()
-            if convite_nucleo and convite_nucleo.nucleo_id:
-                user.nucleo = convite_nucleo.nucleo
-                user.save(update_fields=["nucleo"])
             foto_path = request.session.get("foto")
             if foto_path:
                 with default_storage.open(foto_path, "rb") as f:
