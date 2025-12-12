@@ -16,9 +16,24 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
   <div class="card">
-    <div class="card-body space-y-6 text-center">
+    <div class="card-body space-y-8 text-center">
+      <div>
+        {% with step=9 total=9 %}
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+          {% widthratio step total 100 as progress %}
+          <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
+        </div>
+        <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+          <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
+        </div>
+        {% endwith %}
+      </div>
+
       <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Bem-vindo ao HubX!" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
+      <p class="text-[var(--text-secondary)]">
+        {% trans "Seu cadastro foi concluído. Enviamos um e-mail para confirmação do seu endereço. Assim que ativar, você poderá acessar sua conta." %}
+      </p>
       <a href="{% url 'accounts:login' %}" class="btn btn-primary inline-flex justify-center">{% trans "Ir para login" %}</a>
     </div>
   </div>
