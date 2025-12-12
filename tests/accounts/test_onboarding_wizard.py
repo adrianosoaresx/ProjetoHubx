@@ -48,7 +48,8 @@ def test_onboarding_wizard_flow(client, monkeypatch):
     resp = client.post(reverse("accounts:foto"))
     assert resp.status_code == 302
     resp = client.post(reverse("accounts:termos"), {"aceitar_termos": "on"})
-    assert resp.status_code == 302
+    assert resp.status_code == 200
+    assert b"Verifique seu e-mail para ativar sua conta" in resp.content
 
     user = User.objects.get(username="wizard")
     assert not user.is_active
@@ -112,7 +113,7 @@ def test_onboarding_concurrent_username(client, monkeypatch):
     client2.post(reverse("accounts:foto"))
 
     resp1 = client1.post(reverse("accounts:termos"), {"aceitar_termos": "on"})
-    assert resp1.status_code == 302
+    assert resp1.status_code == 200
 
     resp2 = client2.post(reverse("accounts:termos"), {"aceitar_termos": "on"}, follow=True)
     assert resp2.request["PATH_INFO"] == reverse("accounts:usuario")
