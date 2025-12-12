@@ -31,6 +31,25 @@
   );
 }
 
+/* Congratulation */
+.neural-bg-congratulation {
+  background: radial-gradient(
+      ellipse at 30% 30%,
+      rgba(34, 197, 94, 0.18) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 70% 70%,
+      rgba(14, 165, 233, 0.16) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at center,
+      rgba(16, 185, 129, 0.14) 0%,
+      transparent 60%
+    );
+}
+
 /* Portfólio */
 .neural-bg-portfolio {
   background: radial-gradient(

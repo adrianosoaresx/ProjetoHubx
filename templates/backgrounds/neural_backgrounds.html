@@ -160,6 +160,95 @@
   </svg>
 </div>
 
+  {% elif background == "congratulation" %}
+<!-- Congratulation Background -->
+<div class="neural-bg-base neural-bg-congratulation">
+  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="congrats-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#22c55e" stop-opacity="0.9" />
+        <stop offset="50%" stop-color="#10b981" stop-opacity="0.8" />
+        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.85" />
+      </linearGradient>
+      <radialGradient id="congrats-glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#34d399" stop-opacity="1" />
+        <stop offset="100%" stop-color="#22c55e" stop-opacity="0.4" />
+      </radialGradient>
+      <filter id="congrats-soft" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Central ribbon pulse -->
+    <rect x="120" y="240" width="560" height="120" rx="40" fill="url(#congrats-gradient)" filter="url(#congrats-soft)" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;0.8;0.6" dur="6s" repeatCount="indefinite" />
+    </rect>
+
+    <!-- Spark nodes -->
+    <g fill="#fff" opacity="0.9">
+      <circle cx="200" cy="190" r="6">
+        <animate attributeName="r" values="6;8;6" dur="3s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="600" cy="180" r="7">
+        <animate attributeName="r" values="7;9;7" dur="3.5s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="650" cy="420" r="6">
+        <animate attributeName="r" values="6;8;6" dur="3.2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="180" cy="430" r="7">
+        <animate attributeName="r" values="7;9;7" dur="3.8s" repeatCount="indefinite" />
+      </circle>
+    </g>
+
+    <!-- Confetti trails -->
+    <g stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.6">
+      <path d="M150,160 q20,40 0,80" >
+        <animate attributeName="d" values="M150,160 q20,40 0,80; M150,150 q25,50 -5,85; M150,160 q20,40 0,80" dur="5s" repeatCount="indefinite" />
+      </path>
+      <path d="M650,150 q-20,40 0,80" >
+        <animate attributeName="d" values="M650,150 q-20,40 0,80; M650,140 q-25,55 5,90; M650,150 q-20,40 0,80" dur="5.5s" repeatCount="indefinite" />
+      </path>
+      <path d="M700,380 q-30,45 -10,90" >
+        <animate attributeName="d" values="M700,380 q-30,45 -10,90; M700,370 q-35,55 -5,95; M700,380 q-30,45 -10,90" dur="6s" repeatCount="indefinite" />
+      </path>
+      <path d="M120,380 q25,35 5,80" >
+        <animate attributeName="d" values="M120,380 q25,35 5,80; M120,370 q30,50 0,90; M120,380 q25,35 5,80" dur="6.2s" repeatCount="indefinite" />
+      </path>
+    </g>
+
+    <!-- Central badge -->
+    <g transform="translate(400 300)">
+      <circle r="70" fill="url(#congrats-glow)" opacity="0.85" filter="url(#congrats-soft)">
+        <animate attributeName="r" values="70;74;70" dur="4.5s" repeatCount="indefinite" />
+      </circle>
+      <circle r="40" fill="#22c55e" opacity="0.9">
+        <animate attributeName="r" values="40;44;40" dur="4s" repeatCount="indefinite" />
+      </circle>
+      <path d="M-20,5 l15,15 20,-35" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- Floating particles -->
+    <g fill="#bbf7d0" opacity="0.6">
+      <circle cx="320" cy="250" r="4">
+        <animate attributeName="cy" values="250;240;250" dur="4s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="480" cy="250" r="4">
+        <animate attributeName="cy" values="250;235;250" dur="4.2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="420" cy="380" r="5">
+        <animate attributeName="cy" values="380;395;380" dur="4.4s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="360" cy="380" r="5">
+        <animate attributeName="cy" values="380;395;380" dur="4.6s" repeatCount="indefinite" />
+      </circle>
+    </g>
+  </svg>
+</div>
+
   {% elif background == "portfolio" %}
 <!-- Portfólio Background -->
 <div class="neural-bg-base neural-bg-portfolio">
