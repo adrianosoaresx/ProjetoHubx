@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "E-mail confirmado" %} - HubX{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero.html' with title=_('E-mail confirmado') %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto text-center">
+  <div class="p-8 rounded-2xl card bg-[var(--bg-secondary)] border border-[var(--border)] space-y-6">
+    <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-[var(--success-light)] text-[var(--success)]">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <div class="space-y-2">
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Parabéns!" %}</h2>
+      <p class="text-[var(--text-secondary)]">{% trans "Seu e-mail foi confirmado com sucesso. Agora você pode acessar sua conta." %}</p>
+    </div>
+    <div>
+      <a class="btn btn-primary w-full md:w-auto" href="{% url 'accounts:login' %}">{% trans "Ir para login" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
