@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirmação de e-mail" %} | Hubx{% endblock %}
+
+{% block hero %}
+  {% translate "Seja bem vindo ao Hubx.Space" as hero_title %}
+  {% translate "Seu e-mail foi confirmado com sucesso. Agora você pode explorar todas as experiências da comunidade." as hero_subtitle %}
+  {% include '_components/hero.html' with title=hero_title subtitle=hero_subtitle neural_background='congratulation' alignment='center' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="card">
+    <div class="card-body space-y-6 text-center">
+      <p class="text-lg text-[var(--text-secondary)]">{% trans "Obrigado por confirmar seu e-mail. Sua conta está pronta para criar conexões, participar de eventos e compartilhar conquistas." %}</p>
+      <div class="flex flex-col md:flex-row gap-3 justify-center">
+        <a href="/" class="btn btn-primary">{% trans "Ir para a página inicial" %}</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost">{% trans "Acessar minha conta" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
