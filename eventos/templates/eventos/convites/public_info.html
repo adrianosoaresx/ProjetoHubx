@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Informações para continuar a inscrição" %}{% endblock %}
+
+{% block hero %}
+  {% translate "Informações" as hero_title %}
+  {% translate "Enviamos um link de confirmação para o seu e-mail. Acesse-o para seguir com a inscrição." as hero_subtitle %}
+  {% include '_components/hero.html' with title=hero_title subtitle=hero_subtitle neural_background='notificacoes' alignment='center' %}
+{% endblock %}
+
+{% block content %}
+  <section class="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
+    <article class="card">
+      <div class="card-body space-y-4">
+        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Como continuar" %}</h2>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% blocktrans with email=email %}
+            Enviamos um e-mail para <strong class="font-semibold text-[var(--text-primary)]">{{ email }}</strong> com o link de confirmação.
+            Acesse sua caixa de entrada e siga as orientações para concluir a inscrição no evento.
+          {% endblocktrans %}
+        </p>
+        <div class="space-y-2 rounded-lg bg-[var(--bg-muted)] px-4 py-3">
+          <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Dicas rápidas" %}</p>
+          <ul class="list-disc space-y-1 pl-5 text-sm text-[var(--text-secondary)]">
+            <li>{% trans "Verifique também as pastas de spam ou promoções." %}</li>
+            <li>{% trans "O link do e-mail é o único caminho para finalizar sua inscrição." %}</li>
+            <li>{% trans "Caso não receba, aguarde alguns minutos e tente reenviar a partir do convite." %}</li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+          <a href="{{ share_url|default:request.path }}" class="btn btn-secondary">{% trans "Voltar ao convite" %}</a>
+          <a href="{{ evento.get_absolute_url }}" class="btn btn-ghost">{% trans "Ver detalhes do evento" %}</a>
+        </div>
+      </div>
+    </article>
+  </section>
+{% endblock %}
