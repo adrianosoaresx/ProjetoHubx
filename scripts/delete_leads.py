@@ -16,9 +16,6 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
-from scripts.delete_membros import hard_delete_queryset, purge_user, setup_django
-
-
 def _ensure_scripts_on_path() -> None:
     """Garante que a pasta raiz do projeto esteja no ``sys.path``."""
 
@@ -27,8 +24,12 @@ def _ensure_scripts_on_path() -> None:
         sys.path.append(str(root_dir))
 
 
+_ensure_scripts_on_path()
+
+from scripts.delete_membros import hard_delete_queryset, purge_user, setup_django
+
+
 def main() -> None:
-    _ensure_scripts_on_path()
     setup_django()
 
     from django.contrib.auth import get_user_model
