@@ -113,7 +113,7 @@ def test_convite_public_post_email_existente_redireciona_login(client):
 
 
 @override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
-def test_convite_public_post_email_novo_redireciona_registro(client):
+def test_convite_public_post_email_novo_exibe_instrucoes(client):
     convite, evento, url, _ = _criar_convite_publico()
     novo_email = "novo@example.com"
 
@@ -121,8 +121,12 @@ def test_convite_public_post_email_novo_redireciona_registro(client):
 
     preregistro = PreRegistroConvite.objects.get(email=novo_email, evento=evento)
     expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk, 'token': preregistro.codigo})}"
-    assert response.status_code == 302
-    assert response["Location"] == expected_register
+
+    assert response.status_code == 200
+    templates = [template.name for template in response.templates]
+    assert "eventos/convites/public_info.html" in templates
+    assert response.context["email"] == novo_email
+    assert response.context["register_url"] == expected_register
 
     session = client.session
     assert session["email"] == novo_email
@@ -143,10 +147,10 @@ def test_convite_public_post_email_novo_envia_token(monkeypatch, client):
     response = client.post(url, {"email": "novo@example.com"})
 
     preregistro = PreRegistroConvite.objects.get(email="novo@example.com", evento=evento)
-    expected_register = f"{reverse('tokens:token')}?{urlencode({'evento': evento.pk, 'token': preregistro.codigo})}"
 
-    assert response.status_code == 302
-    assert response["Location"] == expected_register
+    assert response.status_code == 200
+    templates = [template.name for template in response.templates]
+    assert "eventos/convites/public_info.html" in templates
     assert preregistro.status == PreRegistroConvite.Status.ENVIADO
     assert preregistro.codigo in enviado.get("body", "")
     assert enviado.get("email") == "novo@example.com"

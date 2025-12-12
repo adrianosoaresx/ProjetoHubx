@@ -2420,7 +2420,16 @@ def convite_public_view(request, short_code):
                 request,
                 _("Enviamos um token para o seu e-mail. Verifique sua caixa de entrada para continuar."),
             )
-            return redirect(register_url)
+            info_context = {
+                "convite": convite,
+                "evento": evento,
+                "email": email,
+                "share_url": share_url,
+                "register_url": register_url,
+            }
+            return TemplateResponse(
+                request, "eventos/convites/public_info.html", info_context
+            )
     else:
         form = PublicInviteEmailForm(
             initial={"email": request.session.get("email", "")}
