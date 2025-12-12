@@ -7,12 +7,15 @@ from django.contrib.staticfiles.views import serve as static_serve
 from django.urls import include, path
 from django.views.generic import RedirectView
 from django.views.i18n import JavaScriptCatalog
+from accounts.views import confirm_email
 
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
     # Página inicial (app core)
     path("", include(("core.urls", "core"), namespace="core")),
+    # Compatibilidade: link público de confirmação enviado por e-mail
+    path("confirm-email/", confirm_email, name="confirm_email_public"),
     # Apps de autenticação/usuário
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("portfolio/", include(("portfolio.urls", "portfolio"), namespace="portfolio")),
