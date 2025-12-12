@@ -1647,7 +1647,7 @@ def termos(request):
                 request.session.pop("invite_email", None)
                 return redirect("eventos:inscricao_criar", pk=invite_event.pk)
 
-            return render(request, "register/registro_sucesso.html")
+            return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
         logger.warning(
