@@ -1581,6 +1581,7 @@ def termos(request):
                 organizacao = convite_nucleo.nucleo.organizacao
             else:
                 organizacao = token_obj.organizacao
+            is_invite_event = bool(invite_event)
             try:
                 with transaction.atomic():
                     user = User.objects.create(
@@ -1591,8 +1592,8 @@ def termos(request):
                         cpf=cpf_val,
                         cnpj=cnpj_val,
                         user_type=mapped_user_type,
-                        is_active=False,
-                        email_confirmed=False,
+                        is_active=is_invite_event,
+                        email_confirmed=is_invite_event,
                         organizacao=organizacao,
                         nucleo=nucleo,
                     )
@@ -1623,13 +1624,14 @@ def termos(request):
             token_obj.estado = TokenAcesso.Estado.USADO
             token_obj.save(update_fields=["estado"])
 
-            token = AccountToken.objects.create(
-                usuario=user,
-                tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
-                expires_at=timezone.now() + timezone.timedelta(hours=24),
-                ip_gerado=get_client_ip(request),
-            )
-            send_confirmation_email.delay(token.id)
+            if not is_invite_event:
+                token = AccountToken.objects.create(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                    expires_at=timezone.now() + timezone.timedelta(hours=24),
+                    ip_gerado=get_client_ip(request),
+                )
+                send_confirmation_email.delay(token.id)
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="registro_sucesso",
