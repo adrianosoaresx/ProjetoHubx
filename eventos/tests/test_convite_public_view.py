@@ -150,3 +150,18 @@ def test_convite_public_post_email_novo_envia_token(monkeypatch, client):
     assert preregistro.status == PreRegistroConvite.Status.ENVIADO
     assert preregistro.codigo in enviado.get("body", "")
     assert enviado.get("email") == "novo@example.com"
+
+
+@override_settings(ROOT_URLCONF="eventos.tests.test_convite_public_view")
+def test_convite_public_link_prefills_token(client):
+    _, evento, _, _ = _criar_convite_publico()
+    invalid_token = "INVALID123"
+
+    response = client.get(
+        f"{reverse('tokens:token')}?"
+        f"{urlencode({'evento': evento.pk, 'token': invalid_token})}"
+    )
+
+    assert response.status_code == 200
+    assert response.context["form"]["token"].value() == invalid_token
+    assert f'value="{invalid_token}"' in response.content.decode()

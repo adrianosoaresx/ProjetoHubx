@@ -101,7 +101,13 @@ def token(request):
         else:
             messages.error(request, _("Token inválido."))
 
-    form = ValidarTokenConviteForm()
+    initial_token = prefilled_token or request.session.get("invite_token")
+
+    form = (
+        ValidarTokenConviteForm(initial={"token": initial_token})
+        if initial_token
+        else ValidarTokenConviteForm()
+    )
     if request.method == "POST":
         form = ValidarTokenConviteForm(request.POST)
         if form.is_valid():
