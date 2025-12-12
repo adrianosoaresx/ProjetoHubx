@@ -82,3 +82,26 @@ def test_send_confirmation_email_logs_event(settings, monkeypatch):
     assert SecurityEvent.objects.filter(
         usuario=user, evento="email_confirmacao_enviado", ip="127.0.0.1"
     ).exists()
+
+
+@pytest.mark.django_db
+def test_confirm_email_view_accepts_querystring_token(client):
+    user = User.objects.create_user(email="query@example.com", username="query", is_active=False)
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+    )
+
+    url = reverse("accounts:confirm_email") + f"?token={token.codigo}"
+
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+    user.refresh_from_db()
+    token.refresh_from_db()
+
+    assert user.is_active is True
+    assert user.email_confirmed is True
+    assert token.status == AccountToken.Status.UTILIZADO

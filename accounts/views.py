@@ -1245,6 +1245,23 @@ def confirmar_email(request, token: str):
         },
     )
 
+
+def confirm_email(request):
+    """Aceita tokens via querystring e delega para ``confirmar_email``."""
+
+    token = request.GET.get("token")
+    if not token:
+        return render(
+            request,
+            "accounts/email_confirm.html",
+            {
+                "status": "erro",
+                "message": _("Token não fornecido na URL."),
+            },
+        )
+
+    return confirmar_email(request, token)
+
 def cancel_delete(request, token: str):
     """Reativa a conta utilizando um token de cancelamento."""
     try:
