@@ -248,7 +248,7 @@ class MembroListDataMixin:
         if section == "inativos":
             return base_queryset.filter(is_active=False)
         if section == "leads":
-            return base_queryset.filter(user_type=UserType.CONVIDADO.value, is_active=True)
+            return base_queryset.filter(user_type=UserType.CONVIDADO.value)
         raise ValueError(f"Unknown section '{section}'")
 
     def get_section_page(self, base_queryset, section: str, *, page_number=None):
@@ -336,9 +336,7 @@ class MembroListDataMixin:
             .distinct()
             .count(),
             "total_inativos": total_inativos,
-            "total_leads": base_queryset.filter(
-                user_type=UserType.CONVIDADO.value, is_active=True
-            ).count(),
+            "total_leads": base_queryset.filter(user_type=UserType.CONVIDADO.value).count(),
         }
 
 
@@ -419,8 +417,12 @@ class MembroSectionListView(
             base_queryset, section, page_number=request.GET.get("page")
         )
 
+        slide_template = "membros/_carousel_slide.html"
+        if show_promote_button:
+            slide_template = "membros/partials/promover_carousel_slide.html"
+
         html = render_to_string(
-            "membros/_carousel_slide.html",
+            slide_template,
             {
                 "usuarios": page_obj.object_list,
                 "page_number": page_obj.number,
