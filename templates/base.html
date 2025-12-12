@@ -1,8 +1,15 @@
 {% load static i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full bg-[var(--bg-primary)]">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="no-js h-full bg-[var(--bg-primary)]">
 <head>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      root.classList.remove('no-js');
+      root.classList.add('js');
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="{% static 'manifest.json' %}">
@@ -42,16 +49,16 @@
   {% block extra_css %}{% endblock %}
   <style>
     .preload { opacity: 0; }
+    .no-js .preload { opacity: 1; }
+    .js .js-warning { display: none; }
+    .no-js .js-warning { display: block; }
   </style>
 </head>
 
 <body class="preload min-h-screen flex flex-col md:flex-row font-sans text-[var(--text-primary)]" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
-  <noscript>
-    <style>body.preload { opacity: 1; }</style>
-    <div class="p-4 text-center bg-[var(--error)] text-[var(--text-inverse)]">
-      {% trans "Este site requer JavaScript. Por favor, habilite-o para continuar." %}
-    </div>
-  </noscript>
+  <div class="js-warning hidden p-4 text-center bg-[var(--error)] text-[var(--text-inverse)]">
+    {% trans "Este site requer JavaScript. Por favor, habilite-o para continuar." %}
+  </div>
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
   {% if not hide_nav %}
     {% include '_partials/sidebar.html' %}
