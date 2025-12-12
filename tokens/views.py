@@ -54,8 +54,21 @@ def _redirect_root_from_tokens(request):
     return None
 
 
+def _get_query_param(request, key: str):
+    """Recupera um parâmetro da query string, incluindo variantes com ``amp;``.
+
+    Alguns provedores de e-mail podem escapar os separadores de query string e
+    enviar links contendo ``amp;`` no lugar do ``&``. Ao abrir o link, o
+    navegador interpreta ``amp;token`` como o nome do parâmetro, o que faz com
+    que ``request.GET.get("token")`` retorne ``None``. Este helper cobre esse
+    cenário mantendo compatibilidade com o parâmetro correto.
+    """
+
+    return request.GET.get(key) or request.GET.get(f"amp;{key}")
+
+
 def token(request):
-    raw_event_id = request.GET.get("evento") or request.session.get("invite_event_id")
+    raw_event_id = _get_query_param(request, "evento") or request.session.get("invite_event_id")
     evento = None
     if raw_event_id:
         try:
@@ -85,12 +98,12 @@ def token(request):
         request.session["invite_token"] = token_code
         return redirect("accounts:usuario")
 
-    prefilled_email = request.GET.get("email")
+    prefilled_email = _get_query_param(request, "email")
     if prefilled_email:
         request.session["email"] = prefilled_email
         request.session["invite_email"] = prefilled_email
 
-    prefilled_token = request.GET.get("token")
+    prefilled_token = _get_query_param(request, "token")
     if prefilled_token:
         prefill_form = ValidarTokenConviteForm({"token": prefilled_token})
         if prefill_form.is_valid():
