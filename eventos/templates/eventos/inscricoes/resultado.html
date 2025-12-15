@@ -22,16 +22,6 @@
         </div>
         <div class="flex flex-col items-end gap-2 md:flex-row md:items-center">
           <div class="flex gap-2">
-            {% if share_url %}
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-copy-link="{{ share_url }}"
-                data-copy-success="{% trans 'Link copiado!' %}"
-              >
-                {% trans "Copiar link" %}
-              </button>
-            {% endif %}
             <a href="{{ evento.get_absolute_url }}" class="btn btn-ghost text-sm">{% trans "Ver evento" %}</a>
           </div>
         </div>
@@ -159,30 +149,4 @@
 
 {% block scripts %}
   {{ block.super }}
-  <script>
-    (function () {
-      const copyButton = document.querySelector('[data-copy-link]');
-      if (!copyButton || !navigator.clipboard) {
-        return;
-      }
-
-      const originalText = copyButton.textContent.trim();
-      const successText = copyButton.dataset.copySuccess || originalText;
-
-      copyButton.addEventListener('click', async () => {
-        const link = copyButton.getAttribute('data-copy-link');
-        try {
-          await navigator.clipboard.writeText(link);
-          copyButton.textContent = successText;
-          copyButton.disabled = true;
-          setTimeout(() => {
-            copyButton.textContent = originalText;
-            copyButton.disabled = false;
-          }, 1500);
-        } catch (err) {
-          console.error('Erro ao copiar link do evento', err);
-        }
-      });
-    })();
-  </script>
 {% endblock %}
