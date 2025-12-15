@@ -31,9 +31,11 @@
       </div>
 
       <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Bem-vindo ao HubX!" %}</h1>
+      {% if not invite_registration_url %}
       <p class="text-[var(--text-secondary)]">
         {% trans "Seu cadastro foi concluído. Enviamos um e-mail para confirmação do seu endereço. Assim que ativar, você poderá acessar sua conta." %}
       </p>
+      {% endif %}
       {% if invite_registration_url %}
       <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
         <a
