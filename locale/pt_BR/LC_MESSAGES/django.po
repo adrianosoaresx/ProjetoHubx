@@ -143,6 +143,18 @@ msgstr ""
 msgid "Termos"
 msgstr ""
 
+#: accounts/templates/accounts/resend_confirmation.html:6
+msgid "Informe o e-mail cadastrado para reenviar o link de confirmação."
+msgstr "Informe o e-mail cadastrado para reenviar o link de confirmação."
+
+#: accounts/templates/accounts/resend_confirmation.html:20
+msgid "Informe um e-mail válido."
+msgstr "Informe um e-mail válido."
+
+#: accounts/views.py:1388
+msgid "Se o e-mail estiver cadastrado, enviaremos nova confirmação."
+msgstr "Se o e-mail estiver cadastrado, enviaremos nova confirmação."
+
 #: accounts/templates/perfil/partials/publico_informacoes.html:41
 msgid "Redes sociais"
 msgstr "Redes sociais"
