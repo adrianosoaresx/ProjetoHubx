@@ -108,6 +108,10 @@ def _get_tipo_usuario(user) -> str | None:
     return tipo
 
 
+def _is_guest_user(user) -> bool:
+    return _get_tipo_usuario(user) == UserType.CONVIDADO.value
+
+
 def _get_public_invite_token_generator(evento: Evento):
     if getattr(evento, "organizacao", None) and evento.organizacao.created_by:
         return evento.organizacao.created_by
@@ -263,6 +267,9 @@ def _get_nucleos_coordenacao_consultoria_ids(user) -> set[int]:
 
 
 def _resolve_planejamento_permissions(user):
+    if _is_guest_user(user):
+        return False, None
+
     tipo_usuario = _get_tipo_usuario(user)
     can_view = tipo_usuario not in {
         UserType.ASSOCIADO.value,
@@ -301,6 +308,15 @@ def build_evento_carousel_sections(
 ):
     if section_pages is None:
         section_pages = {}
+
+    if _is_guest_user(request.user):
+        return {
+            "sections": {},
+            "fetch_url": reverse("eventos:eventos_carousel_api"),
+            "search_term": request.GET.get("q", "").strip(),
+            "status_filter": "todos",
+            "can_view_planejamento_cancelados": False,
+        }
 
     if can_view_planejamento_cancelados is None or (
         can_view_planejamento_cancelados and nucleo_ids_limit is None
@@ -426,6 +442,8 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
     def get_queryset(self):
         qs = self.get_base_queryset()
+        if _is_guest_user(self.request.user):
+            return qs.none()
         status_filter = self.request.GET.get("status")
         if status_filter == "planejamento":
             qs = qs.filter(status=Evento.Status.PLANEJAMENTO)
@@ -450,12 +468,14 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
+        is_guest_user = _is_guest_user(user)
         ctx["title"] = _("Eventos")
         ctx["subtitle"] = None
         ctx["is_admin_org"] = user.get_tipo_usuario in {
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
         }
+        ctx["show_event_sections"] = not is_guest_user
         current_filter = self.request.GET.get("status") or ""
         if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
             current_filter = "todos"
@@ -488,10 +508,12 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         )
 
         tipo_usuario = _get_tipo_usuario(user)
-        can_view_planejamento_cancelados = tipo_usuario not in {
-            UserType.ASSOCIADO.value,
-            UserType.NUCLEADO.value,
-        }
+        can_view_planejamento_cancelados = False
+        if not is_guest_user:
+            can_view_planejamento_cancelados = tipo_usuario not in {
+                UserType.ASSOCIADO.value,
+                UserType.NUCLEADO.value,
+            }
         ctx["can_view_planejamento_cancelados"] = can_view_planejamento_cancelados
 
         nucleo_ids_limit: set[int] | None = None
@@ -511,7 +533,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             return qs.filter(nucleo_id__in=nucleo_ids_limit)
 
         base_qs = self.get_base_queryset()
-        qs = self.get_queryset()
+        if is_guest_user:
+            base_qs = base_qs.none()
+            qs = base_qs
+        else:
+            qs = self.get_queryset()
         planejamento_filter = Q(status=Evento.Status.PLANEJAMENTO)
         cancelados_filter = Q(status=Evento.Status.CANCELADO)
         ctx["total_eventos"] = base_qs.count()
@@ -661,6 +687,9 @@ class EventoListCarouselView(LoginRequiredMixin, NoSuperadminMixin, View):
     sections = {"ativos", "planejamento", "realizados", "cancelados"}
 
     def get(self, request, *args, **kwargs):
+        if _is_guest_user(request.user):
+            return JsonResponse({"error": _("Seção indisponível para o usuário.")}, status=403)
+
         section = request.GET.get("section")
         if section not in self.sections:
             return JsonResponse({"error": _("Seção inválida.")}, status=400)
