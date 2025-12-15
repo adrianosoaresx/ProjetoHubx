@@ -9,6 +9,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
+from feed.models import Post
 
 
 class NovaPostagemViewTest(TestCase):
@@ -36,3 +37,21 @@ class NovaPostagemViewTest(TestCase):
         self.assertRedirects(response, expected_url)
         mock_inc.assert_called_once_with()
         mock_notify.assert_called_once()
+
+    def test_guest_user_cannot_create_post(self):
+        organizacao = OrganizacaoFactory()
+        user = UserFactory(organizacao=organizacao)
+        user.user_type = UserType.CONVIDADO
+        user.save()
+
+        self.client.force_login(user)
+        data = {
+            "tipo_feed": "global",
+            "organizacao": str(organizacao.id),
+            "conteudo": "Olá como convidado",
+        }
+
+        response = self.client.post(reverse("feed:nova_postagem"), data)
+
+        self.assertRedirects(response, reverse("feed:listar"))
+        self.assertFalse(Post.objects.filter(conteudo="Olá como convidado").exists())

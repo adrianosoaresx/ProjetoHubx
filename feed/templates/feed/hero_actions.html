@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 <div class="flex flex-wrap gap-3">
 
-  {% if request.user.user_type != 'root' %}
+{% if request.user.user_type != 'root' and request.user.user_type != 'convidado' %}
   {# Exceção: abertura em nova aba mantém o formulário de postagem ativo #}
   {% url 'feed:nova_postagem' as nova_postagem_base %}
   {% with fallback_url=nova_postagem_base|add:'?back=feed' %}

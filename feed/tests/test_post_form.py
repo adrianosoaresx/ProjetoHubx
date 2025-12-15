@@ -8,6 +8,7 @@ from unittest.mock import patch
 from django.urls import reverse
 
 from accounts.factories import UserFactory
+from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 from feed.forms import PostForm
 from feed.models import Post
@@ -17,6 +18,8 @@ class PostFormTest(TestCase):
     def setUp(self) -> None:
         org = OrganizacaoFactory()
         self.user = UserFactory(organizacao=org)
+        self.user.user_type = UserType.ASSOCIADO
+        self.user.save()
 
     @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
     @patch("feed.services._upload_media", return_value="ok")
