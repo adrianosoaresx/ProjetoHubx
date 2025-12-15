@@ -34,7 +34,19 @@
       <p class="text-[var(--text-secondary)]">
         {% trans "Seu cadastro foi concluído. Enviamos um e-mail para confirmação do seu endereço. Assim que ativar, você poderá acessar sua conta." %}
       </p>
+      {% if invite_registration_url %}
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <a
+          href="{{ invite_registration_url }}"
+          class="btn btn-primary inline-flex justify-center"
+        >
+          {% trans "Prosseguir para inscrição" %}
+        </a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost inline-flex justify-center">{% trans "Ir para login" %}</a>
+      </div>
+      {% else %}
       <a href="{% url 'accounts:login' %}" class="btn btn-primary inline-flex justify-center">{% trans "Ir para login" %}</a>
+      {% endif %}
     </div>
   </div>
 </div>
