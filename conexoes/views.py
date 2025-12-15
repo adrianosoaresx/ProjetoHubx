@@ -26,6 +26,7 @@ from .forms import ConnectionsSearchForm
 User = get_user_model()
 
 ROOT_CONNECTIONS_FORBIDDEN_MESSAGE = _("Recursos de conexão não estão disponíveis para usuários root.")
+GUEST_CONNECTIONS_FORBIDDEN_MESSAGE = _("Recursos de conexão não estão disponíveis para usuários convidados.")
 CONNECTION_NOTIFICATION_TEMPLATES = {
     "request": "connection_request",
     "accepted": "connection_accepted",
@@ -42,12 +43,21 @@ def _get_display_name(user):
 
 
 def _deny_root_connections_access(request):
-    user_type = getattr(request.user, "get_tipo_usuario", None)
+    user_type = getattr(request.user, "get_tipo_usuario", None) or getattr(request.user, "user_type", None)
+    if isinstance(user_type, UserType):
+        user_type = user_type.value
+
     if user_type == UserType.ROOT.value:
-        if is_htmx_or_ajax(request):
-            return HttpResponseForbidden(ROOT_CONNECTIONS_FORBIDDEN_MESSAGE)
-        messages.error(request, ROOT_CONNECTIONS_FORBIDDEN_MESSAGE)
-        return redirect("organizacoes:list")
+        message = ROOT_CONNECTIONS_FORBIDDEN_MESSAGE
+    elif user_type == UserType.CONVIDADO.value:
+        message = GUEST_CONNECTIONS_FORBIDDEN_MESSAGE
+    else:
+        return None
+
+    if is_htmx_or_ajax(request):
+        return HttpResponseForbidden(message)
+    messages.error(request, message)
+    return redirect("organizacoes:list")
     return None
 
 

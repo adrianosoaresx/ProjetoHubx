@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -13,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.utils import resolve_back_href
 
-from accounts.models import UserMedia
+from accounts.models import UserMedia, UserType
 
 from .forms import MediaForm, PortfolioFilterForm
 
@@ -31,8 +32,19 @@ def _media_counts_for(user) -> dict[str, int]:
     }
 
 
+def _deny_guest_portfolio_access(request: HttpRequest) -> None:
+    user_type = getattr(request.user, "user_type", None)
+    if isinstance(user_type, UserType):
+        user_type = user_type.value
+
+    if user_type == UserType.CONVIDADO.value:
+        raise PermissionDenied(_("Portfólio não está disponível para usuários convidados."))
+
+
 @login_required
 def list_portfolio(request: HttpRequest) -> HttpResponse:
+    _deny_guest_portfolio_access(request)
+
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
 
     filter_form = PortfolioFilterForm(request.GET or None)
@@ -86,6 +98,8 @@ def list_portfolio(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def detail(request: HttpRequest, pk: int) -> HttpResponse:
+    _deny_guest_portfolio_access(request)
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
 
     counts = _media_counts_for(request.user)
@@ -106,6 +120,8 @@ def detail(request: HttpRequest, pk: int) -> HttpResponse:
 
 @login_required
 def edit(request: HttpRequest, pk: int) -> HttpResponse:
+    _deny_guest_portfolio_access(request)
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
 
     if request.method == "POST":
@@ -141,6 +157,8 @@ def edit(request: HttpRequest, pk: int) -> HttpResponse:
 
 @login_required
 def delete(request: HttpRequest, pk: int) -> HttpResponse:
+    _deny_guest_portfolio_access(request)
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
 
     if request.method == "POST":

@@ -148,6 +148,18 @@ def _user_can_manage_nucleacao_requests(
 
 
 class NucleoVisibilityMixin:
+    guest_forbidden_message = _("Núcleos não estão disponíveis para usuários convidados.")
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        user_type = getattr(request.user, "get_tipo_usuario", None) or getattr(request.user, "user_type", None)
+        if isinstance(user_type, UserType):
+            user_type = user_type.value
+
+        if user_type == UserType.CONVIDADO.value:
+            raise PermissionDenied(self.guest_forbidden_message)
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_allowed_classificacao_keys(self) -> set[str]:
         if not hasattr(self, "_allowed_classificacao_keys"):
             self._allowed_classificacao_keys = _get_allowed_classificacao_keys(self.request.user)
@@ -320,7 +332,7 @@ def build_nucleo_sections(
     return sections
 
 
-class NucleoPainelRenderMixin:
+class NucleoPainelRenderMixin(NucleoVisibilityMixin):
     painel_template_name = "nucleos/detail.html"
     partial_template_name: str | None = None
 
@@ -820,7 +832,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         return ctx
 
 
-class NucleoListCarouselView(NoSuperadminMixin, LoginRequiredMixin, View):
+class NucleoListCarouselView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, View):
     http_method_names = ["get"]
 
     def get_paginate_by(self) -> int:
@@ -1422,7 +1434,7 @@ class NucleoMembrosCarouselView(NucleoMembrosPartialView):
         )
 
 
-class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
+class NucleoMetricsView(NucleoVisibilityMixin, NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/metrics.html"
 
@@ -1443,7 +1455,7 @@ class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         return ctx
 
 
-class NucleoMidiaBaseMixin(LoginRequiredMixin, NoSuperadminMixin):
+class NucleoMidiaBaseMixin(LoginRequiredMixin, NoSuperadminMixin, NucleoVisibilityMixin):
     model = NucleoMidia
 
     def get_object(self, queryset=None):
