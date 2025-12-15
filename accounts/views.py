@@ -1183,9 +1183,11 @@ def password_reset(request):
 
     return render(request, "accounts/password_reset.html")
 
-
 def password_reset_confirm(request, code: str):
     """Define nova senha a partir de um token."""
+    status = None
+    message = None
+    show_form = True
     token = get_object_or_404(
         AccountToken,
         codigo=code,
@@ -1197,34 +1199,44 @@ def password_reset_confirm(request, code: str):
             evento="senha_redefinicao_falha",
             ip=get_client_ip(request),
         )
-        messages.error(request, _("Token inv\u00e1lido ou expirado."))
-        return redirect("accounts:password_reset")
+        status = "error"
+        message = _("Token inválido ou expirado.")
+        show_form = False
 
-    if request.method != "POST" and token.status == AccountToken.Status.PENDENTE:
+    form = None
+
+    if show_form and request.method != "POST" and token.status == AccountToken.Status.PENDENTE:
         token.mark_confirmed()
 
-    if request.method == "POST":
-        form = SetPasswordForm(token.usuario, request.POST)
-        if form.is_valid():
-            form.save()
-            user = token.usuario
-            cache.delete(f"failed_login_attempts_user_{user.pk}")
-            cache.delete(f"lockout_user_{user.pk}")
-            token.mark_used()
-            SecurityEvent.objects.create(
-                usuario=user,
-                evento="senha_redefinida",
-                ip=get_client_ip(request),
-            )
-            messages.success(request, _("Senha redefinida com sucesso."))
-            return redirect("accounts:login")
-    else:
-        form = SetPasswordForm(token.usuario)
+    if show_form:
+        if request.method == "POST":
+            form = SetPasswordForm(token.usuario, request.POST)
+            if form.is_valid():
+                form.save()
+                user = token.usuario
+                cache.delete(f"failed_login_attempts_user_{user.pk}")
+                cache.delete(f"lockout_user_{user.pk}")
+                token.mark_used()
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="senha_redefinida",
+                    ip=get_client_ip(request),
+                )
+                status = "success"
+                message = _("Senha redefinida com sucesso.")
+                show_form = False
+        else:
+            form = SetPasswordForm(token.usuario)
 
     return render(
         request,
         "accounts/password_reset_confirm.html",
-        {"form": form},
+        {
+            "form": form if show_form else None,
+            "status": status,
+            "message": message,
+            "show_form": show_form,
+        },
     )
 
 
