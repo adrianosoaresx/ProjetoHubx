@@ -27,39 +27,87 @@
         </div>
       </div>
 
-      {% if evento.cover %}
+      {% if convite and convite.imagem or evento.cover %}
         <div class="px-6">
           <div class="mt-4 h-56 w-full overflow-hidden rounded-xl border border-[var(--border)] md:h-64">
-            <img
-              src="{{ evento.cover.url }}"
-              alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
-              class="h-full w-full object-cover"
-              loading="lazy"
-            />
+            {% if convite and convite.imagem %}
+              <img
+                src="{{ convite.imagem.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem do convite para {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% elif evento.cover %}
+              <img
+                src="{{ evento.cover.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% endif %}
           </div>
         </div>
       {% endif %}
 
       <div class="card-body space-y-4">
-        <div class="grid gap-3 rounded-lg bg-[var(--bg-muted)] px-4 py-3 md:grid-cols-3">
-          <div class="space-y-1">
-            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Público-alvo" %}</p>
-            <p class="text-sm text-[var(--text-primary)]">{{ evento.get_publico_alvo_display }}</p>
+        {% if convite %}
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+              <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h2>
+              <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo|default:evento.get_publico_alvo_display }}</p>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% with inicio=convite.data_inicio|default:evento.data_inicio fim=convite.data_fim|default:evento.data_fim %}
+                  {% blocktrans with inicio=inicio|date:"d/m/Y" fim=fim|date:"d/m/Y" %}
+                    De {{ inicio }} até {{ fim }}
+                  {% endblocktrans %}
+                {% endwith %}
+              </p>
+              <p class="text-sm text-[var(--text-secondary)]">{{ convite.local|default:evento.local }}</p>
+              {% with cidade=convite.cidade|default:evento.cidade estado=convite.estado|default:evento.estado %}
+                <p class="text-sm text-[var(--text-secondary)]">{{ cidade }}{% if cidade and estado %} - {% endif %}{{ estado }}</p>
+              {% endwith %}
+              {% if convite.numero_participantes %}
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+                </p>
+              {% endif %}
+            </div>
+            <div class="space-y-3">
+              {% if convite.cronograma %}
+                <div class="space-y-1">
+                  <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
+                  <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.cronograma }}</p>
+                </div>
+              {% endif %}
+              {% if convite.informacoes_adicionais %}
+                <div class="space-y-1">
+                  <h3 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
+                  <p class="whitespace-pre-line text-sm text-[var(--text-secondary)]">{{ convite.informacoes_adicionais }}</p>
+                </div>
+              {% endif %}
+            </div>
           </div>
-          <div class="space-y-1">
-            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Datas" %}</p>
-            <p class="text-sm text-[var(--text-primary)]">
-              {% blocktrans with inicio=evento.data_inicio|date:"d/m/Y H:i" fim=evento.data_fim|date:"d/m/Y H:i" %}
-                De {{ inicio }} até {{ fim }}
-              {% endblocktrans %}
-            </p>
+        {% else %}
+          <div class="grid gap-3 rounded-lg bg-[var(--bg-muted)] px-4 py-3 md:grid-cols-3">
+            <div class="space-y-1">
+              <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Público-alvo" %}</p>
+              <p class="text-sm text-[var(--text-primary)]">{{ evento.get_publico_alvo_display }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Datas" %}</p>
+              <p class="text-sm text-[var(--text-primary)]">
+                {% blocktrans with inicio=evento.data_inicio|date:"d/m/Y H:i" fim=evento.data_fim|date:"d/m/Y H:i" %}
+                  De {{ inicio }} até {{ fim }}
+                {% endblocktrans %}
+              </p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Local" %}</p>
+              <p class="text-sm text-[var(--text-primary)]">{{ evento.local }}</p>
+              <p class="text-xs text-[var(--text-secondary)]">{{ evento.cidade }}{% if evento.cidade and evento.estado %} - {% endif %}{{ evento.estado }}</p>
+            </div>
           </div>
-          <div class="space-y-1">
-            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Local" %}</p>
-            <p class="text-sm text-[var(--text-primary)]">{{ evento.local }}</p>
-            <p class="text-xs text-[var(--text-secondary)]">{{ evento.cidade }}{% if evento.cidade and evento.estado %} - {% endif %}{{ evento.estado }}</p>
-          </div>
-        </div>
+        {% endif %}
 
         {% if status == 'error' %}
           <div class="space-y-3 rounded-lg border border-[var(--error)] bg-[var(--error)]/10 px-4 py-3">
