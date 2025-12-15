@@ -367,7 +367,15 @@ def _get_menu_items() -> List[MenuItem]:
                     path=ai_chat_path,
                     label="Hubx.IA",
                     icon=ICON_CHAT,
-                    permissions=["authenticated"],
+                    permissions=[
+                        UserType.ASSOCIADO,
+                        UserType.COORDENADOR,
+                        UserType.NUCLEADO,
+                        UserType.CONSULTOR,
+                        "admin",
+                        "operador",
+                        UserType.ROOT,
+                    ],
                 )
             ]
             if (ai_chat_path := _safe_reverse("ai_chat:chat"))

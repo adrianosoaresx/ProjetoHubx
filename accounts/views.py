@@ -55,7 +55,7 @@ from core.permissions import (
     IsCoordenador,
 )
 from nucleos.models import ConviteNucleo
-from eventos.models import Evento, PreRegistroConvite
+from eventos.models import Evento, InscricaoEvento, PreRegistroConvite
 from tokens.models import TOTPDevice, TokenAcesso
 from tokens.services import find_token_by_code
 from tokens.utils import get_client_ip
@@ -86,6 +86,13 @@ PERFIL_OWNER_SECTION_URLS = {
 }
 
 RATINGS_PER_PAGE = 6
+PERFIL_INSCRICOES_ALLOWED_TYPES = {
+    UserType.ASSOCIADO.value,
+    UserType.COORDENADOR.value,
+    UserType.NUCLEADO.value,
+    UserType.CONVIDADO.value,
+    UserType.CONSULTOR.value,
+}
 
 
 def _get_rating_stats(rating_qs):
@@ -98,6 +105,12 @@ def _get_rating_stats(rating_qs):
 def _get_rating_page(rating_qs, *, page_number=1):
     paginator = Paginator(rating_qs.order_by("-created_at"), RATINGS_PER_PAGE)
     return paginator.get_page(page_number)
+
+
+def _resolve_user_type(value):
+    if isinstance(value, UserType):
+        return value.value
+    return value
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
@@ -306,6 +319,35 @@ def perfil(request):
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
 
+    perfil_tipo_usuario = _resolve_user_type(
+        getattr(target_user, "get_tipo_usuario", None)
+    )
+    show_profile_cards = perfil_tipo_usuario != UserType.CONVIDADO.value
+    show_inscricoes_card = is_owner and perfil_tipo_usuario in PERFIL_INSCRICOES_ALLOWED_TYPES
+
+    perfil_inscricoes = []
+    if show_inscricoes_card:
+        inscricoes_qs = (
+            InscricaoEvento.objects.filter(
+                user=target_user,
+                status="confirmada",
+                deleted=False,
+                evento__status=Evento.Status.ATIVO,
+                evento__deleted=False,
+            )
+            .select_related("evento", "user")
+            .order_by("evento__data_inicio", "evento__titulo")
+        )
+        perfil_inscricoes = list(inscricoes_qs)
+        for inscricao in perfil_inscricoes:
+            valor_exibicao = inscricao.valor_pago
+            if valor_exibicao is None:
+                valor_exibicao = inscricao.get_valor_evento()
+            inscricao.valor_exibicao = valor_exibicao
+            if not inscricao.qrcode_url:
+                inscricao.gerar_qrcode()
+                inscricao.save(update_fields=["qrcode_url"])
+
     portfolio_medias = list(
         target_user.medias.visible_to(viewer, target_user)
         .select_related("user")
@@ -399,6 +441,11 @@ def perfil(request):
             "Nenhuma avaliação disponível até o momento."
         ),
         "perfil_feedback_exists": user_rating is not None,
+        "perfil_show_posts_card": show_profile_cards,
+        "perfil_show_portfolio_card": show_profile_cards,
+        "perfil_show_ratings_card": show_profile_cards,
+        "perfil_show_inscricoes_card": show_inscricoes_card,
+        "perfil_minhas_inscricoes": perfil_inscricoes,
     }
 
     default_section, default_url = _perfil_default_section_url(
@@ -518,6 +565,9 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_avaliacoes_empty_message": _(
             "Nenhuma avaliação disponível até o momento."
         ),
+        "perfil_show_posts_card": show_profile_cards,
+        "perfil_show_portfolio_card": show_profile_cards,
+        "perfil_show_ratings_card": show_profile_cards,
     }
 
     default_section, default_url = _perfil_default_section_url(request)

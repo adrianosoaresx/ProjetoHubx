@@ -40,58 +40,131 @@
         </section>
       {% endwith %}
 
-      <section id="perfil-posts-accordion" class="card" data-accordion>
-        <div class="card-header flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            class="flex w-full items-center justify-between gap-3 text-left sm:flex-1"
-            data-accordion-toggle
-            aria-expanded="false"
-            aria-controls="perfil-posts-panel"
+      {% if perfil_show_posts_card %}
+        <section id="perfil-posts-accordion" class="card" data-accordion>
+          <div class="card-header flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 text-left sm:flex-1"
+              data-accordion-toggle
+              aria-expanded="false"
+              aria-controls="perfil-posts-panel"
+            >
+              <div class="flex items-start gap-3">
+                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                  {% lucide 'newspaper' class='h-6 w-6' aria_hidden='true' %}
+                </span>
+                <div class="space-y-1">
+                  <h3 class="text-xl font-semibold">{% trans "Minhas postagens" %}</h3>
+                  <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe todas as publicações feitas por você." %}</p>
+                </div>
+              </div>
+              <svg
+                class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
+                data-accordion-icon
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            {% if is_owner %}
+              <a
+                href="{% url 'feed:nova_postagem' %}?tipo_feed=usuario&back=minhas-postagens"
+                class="btn btn-primary w-full sm:w-auto"
+              >
+                {% trans "Nova postagem" %}
+              </a>
+            {% endif %}
+          </div>
+
+          <div
+            id="perfil-posts-panel"
+            class="card-body space-y-6 border-t border-[var(--border)] hidden"
+            data-accordion-panel
           >
+            {% include "feed/_grid.html" with posts=profile_posts back_origin='minhas-postagens' %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if perfil_show_inscricoes_card %}
+        <details class="card group">
+          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-start gap-3">
-              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
-                {% lucide 'newspaper' class='h-6 w-6' aria_hidden='true' %}
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-success-500)]/10 text-[var(--color-success-600)] shadow-lg shadow-[var(--color-success-500)]/15">
+                {% lucide 'qr-code' class='h-6 w-6' aria_hidden='true' %}
               </span>
               <div class="space-y-1">
-                <h3 class="text-xl font-semibold">{% trans "Minhas postagens" %}</h3>
-                <p class="text-sm text-[var(--text-secondary)]">{% trans "Acompanhe todas as publicações feitas por você." %}</p>
+                <p class="text-xl font-semibold">{% trans "Minhas inscrições" %}</p>
+                <p class="text-sm text-[var(--text-secondary)]">{% trans "Acesse seus ingressos e confira o QR Code para o check-in." %}</p>
               </div>
             </div>
-            <svg
-              class="h-5 w-5 shrink-0 text-[var(--text-secondary)] transition-transform duration-200"
-              data-accordion-icon
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-          {% if is_owner %}
-            <a
-              href="{% url 'feed:nova_postagem' %}?tipo_feed=usuario&back=minhas-postagens"
-              class="btn btn-primary w-full sm:w-auto"
-            >
-              {% trans "Nova postagem" %}
-            </a>
-          {% endif %}
-        </div>
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+              {% lucide 'chevron-down' class='w-5 h-5' aria_hidden='true' %}
+            </span>
+          </summary>
+          <div class="card-body space-y-4">
+            {% if perfil_minhas_inscricoes %}
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {% for inscricao in perfil_minhas_inscricoes %}
+                  <section class="flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 shadow-sm">
+                    {% if inscricao.qrcode_url %}
+                      <div class="flex flex-col items-center gap-2">
+                        <img
+                          src="{{ inscricao.qrcode_url }}"
+                          alt="{% trans 'QR Code da inscrição' %}"
+                          class="h-40 w-40 rounded-md border border-[var(--border)] bg-white p-2"
+                          loading="lazy"
+                        />
+                        <p class="text-xs text-[var(--text-secondary)]">{% trans "Apresente este QR Code para realizar o check-in." %}</p>
+                      </div>
+                    {% else %}
+                      <p class="text-sm text-[var(--text-secondary)]">{% trans "QR Code indisponível no momento." %}</p>
+                    {% endif %}
+                    <div class="space-y-4">
+                      <div class="space-y-1">
+                        <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ inscricao.evento.titulo }}</h3>
+                        <p class="text-sm text-[var(--text-secondary)]">
+                          {{ inscricao.evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }} · {{ inscricao.evento.local }}
+                        </p>
+                      </div>
+                      <div class="rounded-lg border border-[var(--border)] bg-[var(--background-primary)] px-3 py-4">
+                        <dl class="grid grid-cols-1 gap-3 text-sm">
+                          <div class="flex flex-col gap-1">
+                            <dt class="text-[var(--text-secondary)]">{% trans "Valor pago" %}</dt>
+                            <dd class="font-medium text-[var(--text-primary)]">
+                              {% if inscricao.valor_exibicao %}
+                                {{ inscricao.valor_exibicao|localize }}
+                              {% else %}
+                                {% trans "Não informado" %}
+                              {% endif %}
+                            </dd>
+                          </div>
+                          <div class="flex flex-col gap-1">
+                            <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+                            <dd class="font-medium text-[var(--text-primary)]">{{ inscricao.get_status_display }}</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </div>
+                  </section>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Você ainda não possui inscrições confirmadas em eventos ativos." %}</p>
+            {% endif %}
+          </div>
+        </details>
+      {% endif %}
 
-        <div
-          id="perfil-posts-panel"
-          class="card-body space-y-6 border-t border-[var(--border)] hidden"
-          data-accordion-panel
-        >
-          {% include "feed/_grid.html" with posts=profile_posts back_origin='minhas-postagens' %}
-        </div>
-      </section>
-
+      {% if perfil_show_portfolio_card %}
       <details class="card group">
         <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
           <div class="flex items-start gap-3">
@@ -222,7 +295,10 @@
     </div>
   </details>
 
-      <section id="perfil-ratings-accordion" class="card" data-accordion>
+      {% endif %}
+
+      {% if perfil_show_ratings_card %}
+        <section id="perfil-ratings-accordion" class="card" data-accordion>
         <div class="card-header flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
@@ -264,7 +340,8 @@
         >
           {% include 'perfil/partials/avaliacoes_carousel.html' with page=perfil_avaliacoes_page fetch_url=perfil_avaliacoes_fetch_url empty_message=perfil_avaliacoes_empty_message %}
         </div>
-      </section>
+        </section>
+      {% endif %}
 
 </div>
 
