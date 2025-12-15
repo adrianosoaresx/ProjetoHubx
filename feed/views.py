@@ -413,6 +413,13 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         }
 
     def dispatch(self, request, *args, **kwargs):
+        if request.user.user_type == UserType.CONVIDADO:
+            messages.error(request, _("Convidados não podem criar novas postagens."))
+            fallback_map = self._get_back_fallback_map()
+            back_origin = (request.GET.get("back") or request.POST.get("back") or "").strip()
+            fallback_url = fallback_map.get(back_origin) or reverse("feed:listar")
+            return redirect(fallback_url)
+
         if request.method == "POST" and is_ratelimited(
             request,
             group="feed_posts_create",
