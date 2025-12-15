@@ -1357,9 +1357,15 @@ def cancel_delete(request, token: str):
 
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def resend_confirmation(request):
+    context = {}
+
     if request.method == "POST":
-        email = request.POST.get("email")
-        if email:
+        email = (request.POST.get("email") or "").strip()
+        context["email"] = email
+
+        if not email:
+            messages.error(request, _("Informe um e-mail válido."))
+        else:
             try:
                 user = User.objects.get(
                     email__iexact=email,
@@ -1386,12 +1392,13 @@ def resend_confirmation(request):
                     evento="resend_confirmation",
                     ip=get_client_ip(request),
                 )
-        messages.success(
-            request,
-            _("Se o e-mail estiver cadastrado, enviaremos nova confirmação."),
-        )
-        return redirect("accounts:login")
-    return render(request, "accounts/resend_confirmation.html")
+
+            messages.success(
+                request,
+                _("Se o e-mail estiver cadastrado, enviaremos nova confirmação."),
+            )
+
+    return render(request, "accounts/resend_confirmation.html", context)
 
 
 # ====================== REGISTRO MULTIETAPAS ======================
