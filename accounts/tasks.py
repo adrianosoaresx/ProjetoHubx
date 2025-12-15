@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+from urllib.parse import urljoin
 
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
+from django.urls import reverse
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -19,7 +21,10 @@ def send_password_reset_email(token_id: int) -> None:
     token = AccountToken.objects.select_related("usuario").get(pk=token_id)
     if token.used_at or token.expires_at < timezone.now():
         return
-    url = f"{settings.FRONTEND_URL}/reset-password/?token={token.codigo}"
+    path = reverse(
+        "accounts:password_reset_confirm", args=[token.codigo], urlconf="Hubx.urls"
+    )
+    url = urljoin(settings.FRONTEND_URL, path)
     enviar_para_usuario(
         token.usuario,
         "password_reset",

@@ -4,6 +4,7 @@ from django.views.i18n import JavaScriptCatalog
 
 from rest_framework.routers import DefaultRouter
 
+from Hubx.urls import legacy_password_reset_redirect
 from tokens.api import TokenViewSet
 
 tokens_api_router = DefaultRouter()
@@ -11,6 +12,7 @@ tokens_api_router.register(r"tokens", TokenViewSet, basename="token")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("reset-password/", legacy_password_reset_redirect, name="password_reset_legacy"),
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("conexoes/", include(("conexoes.urls", "conexoes"), namespace="conexoes")),
     path("core/", include(("core.urls", "core"), namespace="core")),

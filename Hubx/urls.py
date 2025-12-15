@@ -5,9 +5,17 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.views import serve as static_serve
 from django.urls import include, path
-from django.views.generic import RedirectView
+from django.shortcuts import redirect
 from django.views.i18n import JavaScriptCatalog
 from accounts.views import confirm_email
+
+
+def legacy_password_reset_redirect(request):
+    token = request.GET.get("token")
+    if token:
+        return redirect("accounts:password_reset_confirm", code=token)
+    return redirect("accounts:password_reset")
+
 
 urlpatterns = [
     # Django admin
@@ -16,6 +24,8 @@ urlpatterns = [
     path("", include(("core.urls", "core"), namespace="core")),
     # Compatibilidade: link público de confirmação enviado por e-mail
     path("confirm-email/", confirm_email, name="confirm_email_public"),
+    # Compatibilidade: link legado de redefinição de senha com query string
+    path("reset-password/", legacy_password_reset_redirect, name="password_reset_legacy"),
     # Apps de autenticação/usuário
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("portfolio/", include(("portfolio.urls", "portfolio"), namespace="portfolio")),
