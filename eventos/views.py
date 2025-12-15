@@ -2289,6 +2289,7 @@ def inscricao_resultado(request, pk: int):
     message = request.GET.get("message")
     share_url = request.build_absolute_uri(evento.get_absolute_url())
     inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
+    convite = evento.convites.first()
 
     context = {
         "evento": evento,
@@ -2297,6 +2298,7 @@ def inscricao_resultado(request, pk: int):
         "message": message,
         "share_url": share_url,
         "inscricao_url": inscricao_url,
+        "convite": convite,
         "title": _("Status da inscrição"),
     }
     return TemplateResponse(request, "eventos/inscricoes/resultado.html", context)
