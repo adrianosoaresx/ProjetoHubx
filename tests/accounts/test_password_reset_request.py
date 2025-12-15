@@ -1,9 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import AccountToken
+from accounts.tasks import send_password_reset_email
 
 User = get_user_model()
 
@@ -38,3 +40,27 @@ def test_request_password_reset(monkeypatch, settings):
         ).count()
         == 1
     )
+
+
+@pytest.mark.django_db
+def test_send_password_reset_email_uses_backend_route(settings, monkeypatch):
+    settings.FRONTEND_URL = "http://testserver"
+    user = User.objects.create_user(email="route@example.com", username="route")
+    token = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.PASSWORD_RESET,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+    )
+
+    captured = {}
+
+    def fake_enviar_para_usuario(usuario, template, context):
+        captured.update({"usuario": usuario, "template": template, "context": context})
+
+    monkeypatch.setattr("accounts.tasks.enviar_para_usuario", fake_enviar_para_usuario)
+
+    send_password_reset_email(token.id)
+
+    assert captured["template"] == "password_reset"
+    assert captured["usuario"] == user
+    assert captured["context"]["url"] == f"http://testserver/accounts/password_reset/{token.codigo}/"
