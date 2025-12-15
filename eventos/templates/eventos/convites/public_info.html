@@ -28,7 +28,49 @@
         </div>
       </div>
 
+      {% if convite.imagem or evento.cover %}
+        <div class="px-6">
+          <div class="mt-4 h-56 w-full overflow-hidden rounded-xl border border-[var(--border)] md:h-64">
+            {% if convite.imagem %}
+              <img
+                src="{{ convite.imagem.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem do convite para {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% elif evento.cover %}
+              <img
+                src="{{ evento.cover.url }}"
+                alt="{% blocktrans with titulo=evento.titulo %}Imagem de capa do evento {{ titulo }}{% endblocktrans %}"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
       <div class="card-body space-y-4">
+        <div class="grid gap-3 rounded-lg bg-[var(--bg-muted)] px-4 py-3 md:grid-cols-3">
+          <div class="space-y-1">
+            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Público-alvo" %}</p>
+            <p class="text-sm text-[var(--text-primary)]">{{ convite.publico_alvo }}</p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Datas" %}</p>
+            <p class="text-sm text-[var(--text-primary)]">
+              {% blocktrans with inicio=convite.data_inicio|date:"d/m/Y" fim=convite.data_fim|date:"d/m/Y" %}
+                De {{ inicio }} até {{ fim }}
+              {% endblocktrans %}
+            </p>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Local" %}</p>
+            <p class="text-sm text-[var(--text-primary)]">{{ convite.local }}</p>
+            <p class="text-xs text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+          </div>
+        </div>
+
         <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Como continuar" %}</h2>
         <p class="text-sm text-[var(--text-secondary)]">
           {% blocktrans with email=email %}
