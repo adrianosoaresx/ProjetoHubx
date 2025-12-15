@@ -303,12 +303,27 @@ def _get_menu_items() -> List[MenuItem]:
     perfil_children: list[MenuItem] = []
 
     conexoes_dashboard_url = reverse("conexoes:perfil_sections_conexoes")
+    authenticated_non_guests = [
+        "root",
+        "admin",
+        "coordenador",
+        "nucleado",
+        "associado",
+        "operador",
+        "consultor",
+        UserType.ROOT,
+        UserType.ADMIN,
+        UserType.COORDENADOR,
+        UserType.NUCLEADO,
+        UserType.ASSOCIADO,
+        UserType.OPERADOR,
+        UserType.CONSULTOR,
+    ]
     non_root_authenticated_users = [
         "admin",
         "coordenador",
         "nucleado",
         "associado",
-        "convidado",
         "operador",
         "consultor",
     ]
@@ -358,7 +373,7 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("portfolio:index"),
             label="Portfólio",
             icon=ICON_BRIEFCASE,
-            permissions=["authenticated"],
+            permissions=authenticated_non_guests,
         ),
         *(
             [
@@ -407,7 +422,6 @@ def _get_menu_items() -> List[MenuItem]:
                 "coordenador",
                 "nucleado",
                 "associado",
-                "convidado",
                 "consultor",
                 UserType.CONSULTOR,
             ],
