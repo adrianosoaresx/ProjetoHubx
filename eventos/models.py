@@ -22,6 +22,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -308,6 +309,9 @@ class Evento(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return self.titulo
+
+    def get_absolute_url(self) -> str:
+        return reverse("eventos:evento_detalhe", args=[self.pk])
 
     def calcular_media_feedback(self):
         agg = self.feedbacks.aggregate(media=models.Avg("nota"))
