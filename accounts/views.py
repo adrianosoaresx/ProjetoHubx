@@ -1178,7 +1178,8 @@ def password_reset(request):
             request,
             _("Se o e-mail estiver cadastrado, enviaremos instru\u00e7\u00f5es."),
         )
-        return redirect("accounts:password_reset")
+        redirect_url = f"{reverse('accounts:password_reset')}?{urlencode({'sent': 1})}"
+        return redirect(redirect_url)
 
     return render(request, "accounts/password_reset.html")
 
