@@ -1578,6 +1578,7 @@ def termos(request):
             return redirect("tokens:token")
         invite_event_id = request.session.get("invite_event_id")
         invite_event = None
+        invite_registration_url = None
         if invite_event_id:
             invite_event = (
                 Evento.objects.select_related("organizacao")
@@ -1596,6 +1597,9 @@ def termos(request):
                     _("O evento não está disponível para inscrições de convidados."),
                 )
                 return redirect("tokens:token")
+            invite_registration_url = reverse(
+                "eventos:inscricao_criar", args=[invite_event.pk]
+            )
         if token_obj.data_expiracao and token_obj.data_expiracao < timezone.now():
             token_obj.estado = TokenAcesso.Estado.EXPIRADO
             token_obj.save(update_fields=["estado"])
@@ -1697,7 +1701,9 @@ def termos(request):
                 request.session.pop("invite_token", None)
                 request.session.pop("invite_event_id", None)
                 request.session.pop("invite_email", None)
-                return redirect("eventos:inscricao_criar", pk=invite_event.pk)
+                request.session["invite_inscricao_url"] = invite_registration_url
+            else:
+                request.session.pop("invite_inscricao_url", None)
 
             return redirect("accounts:registro_sucesso")
 
@@ -1717,7 +1723,12 @@ def termos(request):
 
 
 def registro_sucesso(request):
-    return render(request, "register/registro_sucesso.html")
+    invite_registration_url = request.session.pop("invite_inscricao_url", None)
+    return render(
+        request,
+        "register/registro_sucesso.html",
+        {"invite_registration_url": invite_registration_url},
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
