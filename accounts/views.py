@@ -1560,8 +1560,7 @@ def foto(request):
             temp_name = f"temp/{uuid.uuid4()}_{arquivo.name}"
             path = default_storage.save(temp_name, ContentFile(arquivo.read()))
             request.session["foto"] = path
-            return redirect("accounts:termos")
-        return redirect("accounts:foto")
+        return redirect("accounts:termos")
     return render(request, "register/foto.html")
 
 

@@ -30,7 +30,7 @@
 
       <div class="space-y-2 text-center">
         <h1 class="text-3xl font-bold text-[var(--text-primary)]">{% trans "Adicione uma foto de perfil" %}</h1>
-        <p class="text-[var(--text-secondary)]">{% trans "Personalize sua presença na comunidade" %}</p>
+        <p class="text-[var(--text-secondary)]">{% trans "Personalize sua presença na comunidade (opcional)" %}</p>
       </div>
 
       <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6">
@@ -45,6 +45,10 @@
           <a href="{% url 'accounts:senha' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
           <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
         </div>
+
+        <a href="{% url 'accounts:termos' %}" class="btn btn-ghost w-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          {% trans "Pular esta etapa" %}
+        </a>
       </form>
     </div>
   </div>
