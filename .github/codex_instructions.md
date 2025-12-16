@@ -91,3 +91,8 @@ Arquivos **permitidos**: `.py`, `.md`, `.html`, `.css`, `.js`, `.json`, `.yaml/.
   <path d="M8 12h8" stroke="currentColor" fill="none"/>
 </svg>
 ```
+## cobertura de testes 
+- NÃO criar testes automatizados
+- NÃO criar arquivos de test (pytest, unittest, jest, etc.)
+- NÃO alterar ou adicionar cobertura de testes
+- Focar exclusivamente no código solicitado
