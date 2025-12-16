@@ -7,12 +7,33 @@
 
 {% block content %}
   <div class="space-y-6">
-    <article class="card">
-      <div class="card-header">
-        <h2 class="text-lg font-semibold">{% trans "Resumo da inscrição" %}</h2>
-      </div>
-      <div class="card-body space-y-4">
-        <div class="flex items-center justify-between rounded-lg bg-[var(--surface-secondary)] px-3 py-2">
+    <article class="card overflow-hidden">
+      {% if evento.cover %}
+        <div class="relative aspect-[16/7] w-full overflow-hidden bg-[var(--surface-secondary)]">
+          <img
+            src="{{ evento.cover.url }}"
+            alt="{{ evento.titulo }}"
+            class="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      {% endif %}
+      <div class="card-body space-y-6">
+        <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div class="space-y-2">
+            <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Visão geral da inscrição" %}</p>
+            <h2 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h2>
+            {% if evento.subtitulo %}
+              <p class="text-[var(--text-secondary)]">{{ evento.subtitulo }}</p>
+            {% endif %}
+          </div>
+
+          <a href="{{ cta_url }}" class="btn btn-primary" role="button">
+            {{ cta_label }}
+          </a>
+        </header>
+
+        <div class="flex flex-col gap-4 rounded-lg bg-[var(--surface-secondary)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="space-y-1">
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Valor" %}</p>
             {% if evento_pago %}
@@ -47,34 +68,6 @@
             </div>
           </section>
         {% endif %}
-
-        <div class="pt-2">
-          <a href="{{ cta_url }}" class="btn btn-primary w-full text-center" role="button">
-            {{ cta_label }}
-          </a>
-        </div>
-      </div>
-    </article>
-
-    <article class="card overflow-hidden">
-      {% if evento.cover %}
-        <div class="relative aspect-[16/7] w-full overflow-hidden bg-[var(--surface-secondary)]">
-          <img
-            src="{{ evento.cover.url }}"
-            alt="{{ evento.titulo }}"
-            class="h-full w-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      {% endif %}
-      <div class="card-body space-y-6">
-        <header class="flex flex-col gap-2">
-          <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Visão geral da inscrição" %}</p>
-          <h2 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h2>
-          {% if evento.subtitulo %}
-            <p class="text-[var(--text-secondary)]">{{ evento.subtitulo }}</p>
-          {% endif %}
-        </header>
 
         <dl class="grid gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
@@ -115,5 +108,11 @@
         {% endif %}
       </div>
     </article>
+
+    <div class="flex justify-end">
+      <a href="{{ cta_url }}" class="btn btn-primary" role="button">
+        {{ cta_label }}
+      </a>
+    </div>
   </div>
 {% endblock %}
