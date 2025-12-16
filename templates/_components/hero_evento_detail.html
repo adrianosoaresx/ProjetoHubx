@@ -53,8 +53,7 @@
                     </noscript>
                   </form>
                 {% elif not inscricao and inscricao_permitida %}
-                  <form method="post" action="{% url 'eventos:inscricao_criar' evento.pk %}" class="flex">
-                    {% csrf_token %}
+                  <form method="get" action="{% url 'eventos:inscricao_overview' evento.pk %}" class="flex">
                     <button
                       type="submit"
                       class="btn btn-primary"
@@ -98,7 +97,7 @@
                     <p class="text-sm text-[var(--text-secondary)]">{% trans 'Inscrições esgotadas' %}</p>
                   {% else %}
                     <a
-                      href="{% url 'eventos:inscricao_criar' evento.pk %}"
+                      href="{% url 'eventos:inscricao_overview' evento.pk %}"
                       class="btn btn-primary"
                       role="button"
                       aria-label="{% trans 'Quero me inscrever' %}"

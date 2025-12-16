@@ -36,7 +36,7 @@ from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 try:  # pragma: no cover - fallback for optional dependency
     from xhtml2pdf import pisa
@@ -2077,7 +2077,33 @@ class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequ
         return context
 
 
-class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
+class InscricaoEventoBaseView(LoginRequiredMixin, NoSuperadminMixin):
+    evento: Evento
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
+        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
+            messages.error(request, _("Administradores não podem se inscrever em eventos."))
+            return redirect("eventos:evento_detalhe", pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_valor_evento_usuario(self):
+        return self.evento.get_valor_para_usuario(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("evento", self.evento)
+        context.setdefault("title", self.evento.titulo)
+        fallback = reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
+        context.setdefault("back_href", resolve_back_href(self.request, fallback=fallback))
+        context.setdefault("valor_evento_usuario", self.get_valor_evento_usuario())
+        return context
+
+
+class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
     template_name = "eventos/inscricoes/inscricao_form.html"
@@ -2090,27 +2116,6 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         if params:
             url = f"{url}?{urlencode(params)}"
         return redirect(url)
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
-
-        self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
-        if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
-            messages.error(request, _("Administradores não podem se inscrever em eventos."))
-            return redirect("eventos:evento_detalhe", pk=kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["evento"] = self.evento
-        context["title"] = self.evento.titulo
-        fallback = reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
-        context["back_href"] = resolve_back_href(self.request, fallback=fallback)
-        context["valor_evento_usuario"] = self.evento.get_valor_para_usuario(
-            user=self.request.user
-        )
-        return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -2169,6 +2174,54 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
 
     def get_success_url(self):
         return reverse_lazy("eventos:inscricao_resultado", kwargs={"pk": self.object.pk})
+
+
+class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
+    template_name = "eventos/inscricoes/inscricao_overview.html"
+
+    def _evento_pago(self, valor_evento_usuario: Decimal | None) -> bool:
+        if getattr(self.evento, "gratuito", False):
+            return False
+        if valor_evento_usuario is None:
+            return False
+        return Decimal(valor_evento_usuario) > 0
+
+    def _build_cta_url(self, is_pago: bool) -> str:
+        if is_pago:
+            base_url = reverse("eventos:inscricao_pagamentos_criar", kwargs={"pk": self.evento.pk})
+        else:
+            base_url = reverse("eventos:inscricao_criar", kwargs={"pk": self.evento.pk})
+
+        querystring = self.request.GET.urlencode()
+        if querystring:
+            return f"{base_url}?{querystring}"
+        return base_url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        valor_evento_usuario = context.get("valor_evento_usuario")
+        if valor_evento_usuario is None:
+            valor_evento_usuario = self.get_valor_evento_usuario()
+
+        form_overview = InscricaoEventoForm(evento=self.evento, user=self.request.user)
+        metodo_pagamento_field = None
+        if "metodo_pagamento" in form_overview.fields:
+            form_overview.fields["metodo_pagamento"].disabled = True
+            form_overview.fields["metodo_pagamento"].required = False
+            metodo_pagamento_field = form_overview["metodo_pagamento"]
+
+        evento_pago = self._evento_pago(valor_evento_usuario)
+
+        context.update(
+            {
+                "valor_evento_usuario": valor_evento_usuario,
+                "metodo_pagamento_field": metodo_pagamento_field,
+                "evento_pago": evento_pago,
+                "cta_label": _("Efetuar pagamento") if evento_pago else _("Confirmar inscrição"),
+                "cta_url": self._build_cta_url(evento_pago),
+            }
+        )
+        return context
 
 
 class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
@@ -2347,7 +2400,7 @@ def inscricao_resultado(request, pk: int):
     status = request.GET.get("status", "success")
     message = request.GET.get("message")
     share_url = request.build_absolute_uri(evento.get_absolute_url())
-    inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
+    inscricao_url = reverse("eventos:inscricao_overview", args=[evento.pk])
     convite = evento.convites.first()
 
     context = {
@@ -2498,7 +2551,7 @@ def convite_public_view(request, short_code):
         Convite.objects.select_related("evento"), short_code=short_code
     )
     evento = convite.evento
-    inscricao_url = reverse("eventos:inscricao_criar", args=[evento.pk])
+    inscricao_url = reverse("eventos:inscricao_overview", args=[evento.pk])
     share_url = request.build_absolute_uri(
         reverse("eventos:convite_public", args=[convite.short_code])
     )

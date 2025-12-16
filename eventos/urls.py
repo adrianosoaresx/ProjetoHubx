@@ -19,6 +19,7 @@ from .views import (
     EventoUpdateView,
     InscricaoEventoCreateView,
     InscricaoEventoPagamentoCreateView,
+    InscricaoEventoOverviewView,
     InscricaoEventoUpdateView,
     InscricaoTogglePagamentoValidacaoView,
     InscricaoEventoListView,
@@ -65,6 +66,11 @@ urlpatterns = [
     ),
     path("evento/<uuid:pk>/editar/", EventoUpdateView.as_view(), name="evento_editar"),
     path("evento/<uuid:pk>/excluir/", EventoDeleteView.as_view(), name="evento_excluir"),
+    path(
+        "evento/<uuid:pk>/inscricao/overview/",
+        InscricaoEventoOverviewView.as_view(),
+        name="inscricao_overview",
+    ),
     path(
         "evento/<uuid:pk>/inscricao/",
         InscricaoEventoCreateView.as_view(),
