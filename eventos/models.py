@@ -110,6 +110,20 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     class Meta:
         unique_together = ("user", "evento")
 
+    @property
+    def motivo_cancelamento_bloqueado(self) -> str | None:
+        if self.status == "cancelada":
+            return _("Inscrição já cancelada.")
+        if self.pagamento_validado:
+            return _("Não é possível cancelar após a validação do pagamento.")
+        if timezone.now() >= self.evento.data_inicio:
+            return _("Não é possível cancelar após o início do evento.")
+        return None
+
+    @property
+    def cancelamento_permitido(self) -> bool:
+        return self.motivo_cancelamento_bloqueado is None
+
     def confirmar_inscricao(self) -> None:
         with transaction.atomic():
             evento = Evento.objects.select_for_update().get(pk=self.evento.pk)
