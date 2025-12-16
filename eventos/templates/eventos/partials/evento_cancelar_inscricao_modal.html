@@ -81,6 +81,14 @@
     cancelButtons.forEach((button) => {
       button.addEventListener('click', closeModal);
     });
+    const cancelForm = dialog.querySelector('form[hx-post]');
+    if (cancelForm) {
+      cancelForm.addEventListener('htmx:afterRequest', (event) => {
+        if (event.detail?.successful) {
+          closeModal(event);
+        }
+      });
+    }
     modalContainer.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         closeModal(event);
