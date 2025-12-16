@@ -100,23 +100,15 @@
                 <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.descricao }}</p>
               </section>
             {% endif %}
-
-            {% if evento.cronograma %}
-              <section class="space-y-2">
-                <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
-                <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.cronograma }}</p>
-              </section>
-            {% endif %}
-
-            {% if evento.informacoes_adicionais %}
-              <section class="space-y-2">
-                <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
-                <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.informacoes_adicionais }}</p>
-              </section>
-            {% endif %}
           </div>
         </div>
       </div>
+
+      {% if evento_pago %}
+        <footer class="card-footer flex justify-end">
+          <a href="{{ cta_url }}" class="btn btn-primary" role="button">{% trans "Efetuar pagamento" %}</a>
+        </footer>
+      {% endif %}
     </article>
   </div>
 {% endblock %}
