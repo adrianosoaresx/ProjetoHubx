@@ -97,9 +97,17 @@
 
           {% if metodo_pagamento_field %}
             <section class="space-y-2">
-              <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Métodos de pagamento" %}</p>
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Selecione um método na próxima etapa para finalizar o pagamento." %}</p>
-              {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=metodo_pagamento_field %}
+              <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Metodos de pagamento" %}</p>
+              <p class="text-sm text-[var(--text-secondary)]">{% trans "Confira abaixo as formas disponíveis para concluir seu pagamento." %}</p>
+              <div class="flex flex-wrap gap-2">
+                {% for value, label in metodo_pagamento_field.field.choices %}
+                  {% if value %}
+                    <span class="inline-flex items-center rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-sm font-semibold text-[var(--text-primary)]">
+                      {{ label }}
+                    </span>
+                  {% endif %}
+                {% endfor %}
+              </div>
             </section>
           {% endif %}
 

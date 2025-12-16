@@ -325,6 +325,7 @@ class InscricaoEventoForm(forms.ModelForm):
         metodo_field = self.fields.get("metodo_pagamento")
         if metodo_field:
             metodo_field.required = not self._is_evento_gratuito()
+            metodo_field.label = _("Metodos de pagamento")
 
     def _resolve_evento(self):
         if self.evento is not None:
