@@ -453,6 +453,18 @@
   </script>
   <script>
     (function () {
+      function handleModalClose() {
+        const modalContainer = document.getElementById('modal');
+        if (!modalContainer) {
+          return;
+        }
+        modalContainer.innerHTML = '';
+        if (window.HubxModalTrigger && typeof window.HubxModalTrigger.focus === 'function') {
+          window.HubxModalTrigger.focus();
+          window.HubxModalTrigger = null;
+        }
+      }
+
       function ensureModalContainer() {
         if (document.getElementById('modal')) {
           return;
@@ -469,6 +481,8 @@
       } else {
         ensureModalContainer();
       }
+
+      document.addEventListener('modal:close', handleModalClose);
     })();
   </script>
   {% block extra_js %}
