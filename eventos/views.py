@@ -2515,6 +2515,7 @@ class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, Templat
                 "provider_public_key": provider.public_key,
                 "transacao": transacao,
                 "inscricao": self.inscricao,
+                "evento": self.evento,
             }
         )
         return context
