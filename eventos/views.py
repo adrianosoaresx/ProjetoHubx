@@ -1913,6 +1913,8 @@ class InscricaoEventoUpdateView(
     model = InscricaoEvento
     form_class = InscricaoEventoForm
     template_name = "eventos/inscricoes/inscricao_form.html"
+    slug_field = "uuid"
+    slug_url_kwarg = "uuid"
 
     def get_queryset(self):
         eventos_qs = _queryset_por_organizacao(self.request)
@@ -1965,10 +1967,10 @@ class InscricaoTogglePagamentoValidacaoView(
 ):
     template_name = "eventos/partials/financeiro_validacao_button.html"
 
-    def post(self, request, pk):
+    def post(self, request, uuid):
         inscricao = get_object_or_404(
             InscricaoEvento.objects.select_related("evento", "user"),
-            pk=pk,
+            uuid=uuid,
             deleted=False,
         )
         tipo_usuario = _get_tipo_usuario(request.user)
@@ -2112,7 +2114,9 @@ class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
         params = {"status": status}
         if message:
             params["message"] = message
-        url = reverse("eventos:inscricao_resultado", args=[self.object.pk])
+        url = reverse(
+            "eventos:inscricao_resultado", kwargs={"uuid": self.object.uuid}
+        )
         if params:
             url = f"{url}?{urlencode(params)}"
         return redirect(url)
@@ -2173,7 +2177,9 @@ class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
         return self._redirect_to_result()
 
     def get_success_url(self):
-        return reverse_lazy("eventos:inscricao_resultado", kwargs={"pk": self.object.pk})
+        return reverse_lazy(
+            "eventos:inscricao_resultado", kwargs={"uuid": self.object.uuid}
+        )
 
 
 class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
@@ -2192,7 +2198,8 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
         if is_pago:
             if inscricao:
                 base_url = reverse(
-                    "eventos:inscricao_pagamento_checkout", args=[inscricao.pk]
+                    "eventos:inscricao_pagamento_checkout",
+                    kwargs={"uuid": inscricao.uuid},
                 )
             else:
                 base_url = reverse(
@@ -2387,7 +2394,10 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             info_message = _("Pagamento iniciado. Confirme após a aprovação do checkout.")
             messages.info(self.request, info_message)
             return redirect(
-                reverse("eventos:inscricao_pagamento_checkout", args=[self.object.pk])
+                reverse(
+                    "eventos:inscricao_pagamento_checkout",
+                    kwargs={"uuid": self.object.uuid},
+                )
             )
 
         should_confirm = self._should_confirm_inscricao(transacao)
@@ -2408,13 +2418,16 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
         return response or self._redirect_to_result()
 
 
-class InscricaoEventoCheckoutView(InscricaoEventoBaseView, TemplateView):
+class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, TemplateView):
     template_name = "eventos/inscricoes/inscricao_pagamento_checkout.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
         self.inscricao = get_object_or_404(
             InscricaoEvento.all_objects.select_related("evento", "user"),
-            pk=kwargs.get("pk"),
+            uuid=kwargs.get("uuid"),
         )
         self.evento = self.inscricao.evento
         if request.user != self.inscricao.user and not _usuario_tem_acesso_restrito_evento(
@@ -2425,7 +2438,7 @@ class InscricaoEventoCheckoutView(InscricaoEventoBaseView, TemplateView):
         transacao = getattr(self.inscricao, "transacao", None)
         if transacao and transacao.status == Transacao.Status.APROVADA:
             return redirect(
-                reverse("eventos:inscricao_resultado", args=[self.inscricao.pk])
+                reverse("eventos:inscricao_resultado", kwargs={"uuid": self.inscricao.uuid})
             )
 
         return super().dispatch(request, *args, **kwargs)
@@ -2507,10 +2520,15 @@ class InscricaoEventoCheckoutView(InscricaoEventoBaseView, TemplateView):
         return context
 
     def get_success_url(self):
-        return reverse("eventos:inscricao_pagamento_checkout", args=[self.inscricao.pk])
+        return reverse(
+            "eventos:inscricao_pagamento_checkout",
+            kwargs={"uuid": self.inscricao.uuid},
+        )
 
     def _redirect_to_result(self):
-        return redirect(reverse("eventos:inscricao_resultado", args=[self.inscricao.pk]))
+        return redirect(
+            reverse("eventos:inscricao_resultado", kwargs={"uuid": self.inscricao.uuid})
+        )
 
     def post(self, request, *args, **kwargs):
         transacao = self._get_checkout_transacao()
@@ -2556,9 +2574,9 @@ class InscricaoEventoCheckoutView(InscricaoEventoBaseView, TemplateView):
 
 @login_required
 @no_superadmin_required
-def inscricao_resultado(request, pk: int):
+def inscricao_resultado(request, uuid: str):
     inscricao = get_object_or_404(
-        InscricaoEvento.objects.select_related("evento", "user"), pk=pk
+        InscricaoEvento.objects.select_related("evento", "user"), uuid=uuid
     )
     evento = inscricao.evento
 
