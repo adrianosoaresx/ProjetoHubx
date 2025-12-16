@@ -1,4 +1,5 @@
 import calendar
+import json
 from collections import Counter
 from types import SimpleNamespace
 from decimal import Decimal
@@ -1848,6 +1849,7 @@ class EventoRemoveInscritoView(
     View,
 ):
     def post(self, request, pk, user_id):  # pragma: no cover
+        is_htmx = bool(request.headers.get("HX-Request"))
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         tipo_usuario = _get_tipo_usuario(request.user)
         if (
@@ -1870,6 +1872,22 @@ class EventoRemoveInscritoView(
             acao="inscricao_removida",
             detalhes={"inscrito_id": inscrito.id},
         )
+        if is_htmx:
+            inscritos_view = EventoInscritosPartialView()
+            inscritos_view.request = request
+            inscritos_view.object = evento
+            inscritos_view.kwargs = {"pk": pk}
+            context = inscritos_view.get_context_data(object=evento)
+            html = render_to_string(
+                "eventos/partials/inscritos_list.html", context, request=request
+            )
+            response = HttpResponse(html)
+            response["HX-Retarget"] = "#inscritos-list"
+            response["HX-Reswap"] = "innerHTML"
+            response["HX-Trigger"] = json.dumps(
+                {"modal:close": True, "inscritos:refresh": True}
+            )
+            return response
         messages.success(request, _("Inscrito removido."))  # pragma: no cover
         return redirect("eventos:evento_detalhe", pk=pk)
 
