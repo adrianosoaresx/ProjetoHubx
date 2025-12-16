@@ -6,224 +6,104 @@
 {% block hero %}{% include '_components/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
 
 {% block content %}
-
-    <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      <article class="card">
-        <div class="card-header">
-          <h2 class="text-xl font-semibold">
-            {% blocktrans with event_title=evento.titulo %}Inscrição {{ event_title }}{% endblocktrans %}
-          </h2>
-        </div>
-        <div class="card-body">
-          {% url 'eventos:evento_detalhe' evento.pk as event_detail_url %}
-          <form id="inscricao-form" method="post" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            <input type="hidden" name="transacao_id" id="id_transacao_id" value="{{ transacao.id|default_if_none:'' }}">
-            {% for field in form %}
-              {% with field_name=field.name %}
-                {% if evento.gratuito and field_name == 'valor_pago' %}
-                  {# Campo de valor omitido para eventos gratuitos #}
-                {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
-                  {# Campo de método de pagamento omitido para eventos gratuitos #}
-                {% else %}
-                  {% if field_name == 'metodo_pagamento' %}
-                    {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
-                  {% elif field_name == 'comprovante_pagamento' %}
-                    {% with field_value=field.value %}
-                      <div class="space-y-1" data-payment-proof-field>
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-                          {{ field.label }}{% if field.field.required %} *{% endif %}
+  
+    <article class="card">
+      <div class="card-header">
+        <h2 class="text-xl font-semibold">
+          {% blocktrans with event_title=evento.titulo %}Inscrição {{ event_title }}{% endblocktrans %}
+        </h2>
+      </div>
+      <div class="card-body">
+        {% url 'eventos:evento_detalhe' evento.pk as event_detail_url %}
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          {% for field in form %}
+            {% with field_name=field.name %}
+              {% if evento.gratuito and field_name == 'valor_pago' %}
+                {# Campo de valor omitido para eventos gratuitos #}
+              {% elif evento.gratuito and field_name == 'metodo_pagamento' %}
+                {# Campo de método de pagamento omitido para eventos gratuitos #}
+              {% else %}
+                {% if field_name == 'metodo_pagamento' %}
+                  {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
+                {% elif field_name == 'comprovante_pagamento' %}
+                  {% with field_value=field.value %}
+                    <div class="space-y-1" data-payment-proof-field>
+                      <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                        {{ field.label }}{% if field.field.required %} *{% endif %}
+                      </label>
+                      <div class="flex flex-wrap items-center gap-3">
+                        <label
+                          for="{{ field.id_for_label }}"
+                          class="btn btn-secondary"
+                          data-payment-proof-trigger
+                        >
+                          {% trans "Enviar comprovante" %}
                         </label>
-                        <div class="flex flex-wrap items-center gap-3">
-                          <label
-                            for="{{ field.id_for_label }}"
-                            class="btn btn-secondary"
-                            data-payment-proof-trigger
-                          >
-                            {% trans "Enviar comprovante" %}
-                          </label>
-                          <span
-                            class="text-sm text-[var(--text-secondary)]"
-                            data-payment-proof-text
-                            data-default-text="{{ _('Nenhum comprovante enviado')|escape }}"
-                            {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
-                          >
-                            {% if field_value %}
-                              {{ field_value.name|default:field_value }}
-                            {% else %}
-                              {% trans "Nenhum comprovante enviado" %}
-                            {% endif %}
-                          </span>
-                          <button
-                            type="button"
-                            class="text-sm font-medium text-primary-500 hover:underline {% if not field_value %}hidden{% endif %}"
-                            data-payment-proof-remove
-                          >
-                            {% trans "Remover comprovante" %}
-                          </button>
-                          {% if field_value and field_value.url %}
-                            <a
-                              href="{{ field_value.url|escape }}"
-                              class="text-sm font-medium text-primary-500 hover:underline"
-                              target="_blank"
-                              rel="noopener"
-                              data-payment-proof-preview
-                              data-initial-url="{{ field_value.url|escape }}"
-                            >
-                              {% trans "Ver comprovante atual" %}
-                            </a>
+                        <span
+                          class="text-sm text-[var(--text-secondary)]"
+                          data-payment-proof-text
+                          data-default-text="{{ _('Nenhum comprovante enviado')|escape }}"
+                          {% if field_value %}data-initial-text="{{ field_value.name|default:field_value|escape }}"{% endif %}
+                        >
+                          {% if field_value %}
+                            {{ field_value.name|default:field_value }}
                           {% else %}
-                            <span class="hidden" data-payment-proof-preview></span>
+                            {% trans "Nenhum comprovante enviado" %}
                           {% endif %}
-                        </div>
-                        {% if field.errors %}
-                          <ul class="errorlist">
-                            {% for error in field.errors %}
-                              <li>{{ error }}</li>
-                            {% endfor %}
-                          </ul>
+                        </span>
+                        <button
+                          type="button"
+                          class="text-sm font-medium text-primary-500 hover:underline {% if not field_value %}hidden{% endif %}"
+                          data-payment-proof-remove
+                        >
+                          {% trans "Remover comprovante" %}
+                        </button>
+                        {% if field_value and field_value.url %}
+                          <a
+                            href="{{ field_value.url|escape }}"
+                            class="text-sm font-medium text-primary-500 hover:underline"
+                            target="_blank"
+                            rel="noopener"
+                            data-payment-proof-preview
+                            data-initial-url="{{ field_value.url|escape }}"
+                          >
+                            {% trans "Ver comprovante atual" %}
+                          </a>
+                        {% else %}
+                          <span class="hidden" data-payment-proof-preview></span>
                         {% endif %}
-                        {% if field.help_text %}
-                          <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
-                        {% endif %}
-                        {% render_field field %}
                       </div>
-                    {% endwith %}
-                  {% else %}
-                    {% include '_forms/field.html' with field=field %}
-                  {% endif %}
+                      {% if field.errors %}
+                        <ul class="errorlist">
+                          {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                      {% if field.help_text %}
+                        <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                      {% endif %}
+                      {% render_field field %}
+                    </div>
+                  {% endwith %}
+                {% else %}
+                  {% include '_forms/field.html' with field=field %}
                 {% endif %}
-              {% endwith %}
-            {% endfor %}
-            <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-              <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
-            </div>
-          </form>
-        </div>
-      </article>
-
-      <aside class="space-y-4">
-        <article class="card">
-          <div class="card-header">
-            <h3 class="text-lg font-semibold flex items-center gap-2">
-              {% trans "Pagamento via Mercado Pago" %}
-            </h3>
-            <p class="text-sm text-[var(--text-secondary)]">{% trans "Tokenização client-side usando as chaves de teste da organização." %}</p>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+            <button type="submit" class="btn btn-primary" aria-label="{% trans 'Fazer inscrição' %}">{% trans "Fazer inscrição" %}</button>
           </div>
-          <div class="card-body space-y-4">
-            <form
-              id="inscricao-checkout-form"
-              hx-post="{% url 'pagamentos:checkout' %}"
-              hx-target="#checkout-result"
-              hx-swap="outerHTML"
-              method="post"
-              class="space-y-4"
-            >
-              {% csrf_token %}
-              {{ checkout_form.organizacao_id }}
-              <div class="grid gap-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--text-primary)]" for="id_valor">{% trans "Valor" %}</label>
-                    {{ checkout_form.valor|add_class:"mt-1 w-full"|attr:"readonly aria-readonly=true" }}
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--text-primary)]" for="id_metodo">{% trans "Método de pagamento" %}</label>
-                    {{ checkout_form.metodo|add_class:"mt-1 w-full"|attr:"data-metodo-select=true" }}
-                    <p class="text-xs text-[var(--text-secondary)] mt-1">{% trans "Cartão, boleto e Pix usam a API de teste do Mercado Pago." %}</p>
-                  </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--text-primary)]" for="id_nome">{% trans "Nome completo" %}</label>
-                    {{ checkout_form.nome|add_class:"mt-1 w-full" }}
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--text-primary)]" for="id_email">{% trans "E-mail" %}</label>
-                    {{ checkout_form.email|add_class:"mt-1 w-full" }}
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-[var(--text-primary)]" for="id_documento">{% trans "Documento (CPF/CNPJ)" %}</label>
-                  {{ checkout_form.documento|add_class:"mt-1 w-full" }}
-                </div>
+        </form>
+      </div>
+    </article>
 
-                <div class="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-4 space-y-4" data-card-section>
-                  <div class="flex items-center justify-between gap-2">
-                    <h4 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Cartão de crédito" %}</h4>
-                    <span class="text-xs text-[var(--text-secondary)]">{% trans "Tokenização Mercado Pago" %}</span>
-                  </div>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-[var(--text-secondary)]" for="card-number">{% trans "Número do cartão" %}</label>
-                      <input id="card-number" class="input" autocomplete="cc-number" data-card-field data-card-required="true" />
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-[var(--text-secondary)]" for="security-code">{% trans "CVV" %}</label>
-                      <input id="security-code" class="input" autocomplete="cc-csc" data-card-field data-card-required="true" />
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label class="block text-xs font-medium text-[var(--text-secondary)]" for="card-expiration-month">{% trans "Mês" %}</label>
-                      <input id="card-expiration-month" class="input" placeholder="MM" data-card-field data-card-required="true" />
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-[var(--text-secondary)]" for="card-expiration-year">{% trans "Ano" %}</label>
-                      <input id="card-expiration-year" class="input" placeholder="YYYY" data-card-field data-card-required="true" />
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_parcelas">{% trans "Parcelas" %}</label>
-                      {{ checkout_form.parcelas|add_class:"input"|attr:"data-card-field data-card-required=true" }}
-                    </div>
-                  </div>
-                  <input id="document-type" type="hidden" value="CPF" />
-                  {{ checkout_form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
-                  <p class="text-[10px] text-[var(--text-secondary)]">{% trans "O token do cartão é enviado ao backend sem armazenar dados sensíveis." %}</p>
-                </div>
-
-                <div class="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-4 space-y-3" data-boleto-section>
-                  <h4 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Boleto bancário" %}</h4>
-                  <div>
-                    <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
-                    {{ checkout_form.vencimento|add_class:"input" }}
-                    <p class="text-[10px] text-[var(--text-secondary)]">{% trans "Use uma data futura para evitar recusa automática." %}</p>
-                  </div>
-                </div>
-
-                <div class="flex justify-end">
-                  <button type="submit" class="btn btn-secondary w-full" aria-label="{% trans 'Gerar pagamento' %}">
-                    {% trans "Gerar pagamento" %}
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            <div id="checkout-result" class="rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] p-4" data-checkout-result>
-              {% include "pagamentos/partials/checkout_resultado.html" with form=checkout_form transacao=transacao %}
-            </div>
-          </div>
-        </article>
-      </aside>
-    </div>
-
-    <script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
     <script>
       (() => {
         const initializedProofs = new WeakSet();
-
-        const publicKey = "{{ provider_public_key|default:"" }}";
-        let mpInstance = null;
-        let cardFormInstance = null;
-
-        const cardSection = document.querySelector('[data-card-section]');
-        const cardFields = Array.from(document.querySelectorAll('[data-card-field]'));
-        const metodoSelect = document.querySelector('[data-metodo-select]');
-        const boletoSection = document.querySelector('[data-boleto-section]');
-        const boletoFields = boletoSection ? Array.from(boletoSection.querySelectorAll('input, select, textarea')) : [];
-        const tokenField = document.getElementById('id_token_cartao');
-        const metodoInscricaoField = document.getElementById('id_metodo_pagamento');
 
         function updateDisplay(container) {
           if (!container) {
@@ -336,155 +216,25 @@
           containers.forEach((container) => initPaymentProof(container));
         }
 
-        function setCardFieldsState(isCard) {
-          if (cardSection) {
-            cardSection.classList.toggle('hidden', !isCard);
-          }
-
-          cardFields.forEach((field) => {
-            if (isCard) {
-              if (field.dataset.cardRequired === 'true') {
-                field.setAttribute('required', 'required');
-              }
-              field.removeAttribute('disabled');
-            } else {
-              if (field.hasAttribute('required')) {
-                field.dataset.cardRequired = 'true';
-              }
-              field.removeAttribute('required');
-              field.setAttribute('disabled', 'disabled');
-            }
-          });
-
-          if (!isCard && tokenField) {
-            tokenField.value = '';
-          }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => initAll(document));
+        } else {
+          initAll(document);
         }
-
-        function destroyCardForm() {
-          if (cardFormInstance?.unmount) {
-            cardFormInstance.unmount();
-          }
-          cardFormInstance = null;
-        }
-
-        function mountCardForm() {
-          if (!publicKey || cardFormInstance) return;
-          if (!mpInstance) {
-            mpInstance = new MercadoPago(publicKey);
-          }
-
-          cardFormInstance = mpInstance.cardForm({
-            amount: document.getElementById('id_valor')?.value || '0',
-            autoMount: true,
-            form: {
-              id: 'inscricao-checkout-form',
-              cardNumber: 'card-number',
-              securityCode: 'security-code',
-              expirationMonth: 'card-expiration-month',
-              expirationYear: 'card-expiration-year',
-              cardholderName: 'id_nome',
-              cardholderEmail: 'id_email',
-              identificationType: 'document-type',
-              identificationNumber: 'id_documento',
-              installments: 'id_parcelas',
-              cardToken: 'id_token_cartao'
-            },
-            callbacks: {
-              onFormMounted: (error) => { if (error) console.error(error); },
-              onError: (error) => console.error('MP error', error),
-            }
-          });
-        }
-
-        function setBoletoFieldsState(isBoleto) {
-          if (boletoSection) {
-            boletoSection.classList.toggle('hidden', !isBoleto);
-          }
-          boletoFields.forEach((field) => {
-            if (isBoleto) {
-              field.removeAttribute('disabled');
-              field.setAttribute('required', 'required');
-            } else {
-              field.removeAttribute('required');
-              field.setAttribute('disabled', 'disabled');
-            }
-          });
-          if (!isBoleto) {
-            const vencimento = document.getElementById('id_vencimento');
-            if (vencimento) {
-              vencimento.value = '';
-            }
-          }
-        }
-
-        function handleMetodoChange() {
-          const metodoSelecionado = metodoSelect?.value;
-          const isCard = metodoSelecionado === 'card';
-          const isBoleto = metodoSelecionado === 'boleto';
-          setCardFieldsState(isCard);
-          setBoletoFieldsState(isBoleto);
-          if (metodoInscricaoField && metodoSelecionado) {
-            metodoInscricaoField.value = metodoSelecionado;
-          }
-          if (isCard) {
-            mountCardForm();
-          } else {
-            destroyCardForm();
-          }
-        }
-
-        function syncTransacaoIdFromResult(target) {
-          const transacaoContainer = target.querySelector('[data-transacao-id]');
-          const transacaoId = transacaoContainer?.dataset.transacaoId;
-          const transacaoStatus = transacaoContainer?.dataset.transacaoStatus;
-          const input = document.getElementById('id_transacao_id');
-          if (input) {
-            input.value = transacaoId || '';
-          }
-          if (transacaoStatus && metodoInscricaoField && !metodoInscricaoField.value && transacaoContainer?.dataset.metodo) {
-            metodoInscricaoField.value = transacaoContainer.dataset.metodo;
-          }
-        }
-
-        function initAllPaymentProofs() {
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => initAll(document));
-          } else {
-            initAll(document);
-          }
-
-          document.addEventListener('payment-proof-visibility-change', (event) => {
-            const container = event.detail?.container;
-            if (!container) {
-              return;
-            }
-            if (event.detail.hidden) {
-              clearSelection(container, { preserveInitial: true });
-            } else {
-              updateDisplay(container);
-            }
-          });
-        }
-
-        handleMetodoChange();
-        metodoSelect?.addEventListener('change', handleMetodoChange);
-        initAllPaymentProofs();
 
         document.addEventListener('htmx:afterSwap', (event) => {
-          if (event.detail?.target?.matches?.('#checkout-result')) {
-            syncTransacaoIdFromResult(event.target || event.detail.target);
-          }
           initAll(event.target);
         });
 
-        document.addEventListener('click', (event) => {
-          if (event.target.matches('[data-copy]')) {
-            const code = event.target.getAttribute('data-copy');
-            navigator.clipboard.writeText(code || '').then(() => {
-              event.target.innerText = event.target.dataset.labelCopied;
-              setTimeout(() => { event.target.innerText = event.target.dataset.label; }, 1200);
-            });
+        document.addEventListener('payment-proof-visibility-change', (event) => {
+          const container = event.detail?.container;
+          if (!container) {
+            return;
+          }
+          if (event.detail.hidden) {
+            clearSelection(container, { preserveInitial: true });
+          } else {
+            updateDisplay(container);
           }
         });
       })();

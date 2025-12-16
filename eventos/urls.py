@@ -19,6 +19,7 @@ from .views import (
     EventoUpdateView,
     InscricaoEventoCreateView,
     InscricaoEventoPagamentoCreateView,
+    InscricaoEventoCheckoutView,
     InscricaoEventoOverviewView,
     InscricaoEventoUpdateView,
     InscricaoTogglePagamentoValidacaoView,
@@ -80,6 +81,11 @@ urlpatterns = [
         "evento/<uuid:pk>/inscricao/checkout/",
         InscricaoEventoPagamentoCreateView.as_view(),
         name="inscricao_pagamentos_criar",
+    ),
+    path(
+        "inscricoes/<int:pk>/checkout/",
+        InscricaoEventoCheckoutView.as_view(),
+        name="inscricao_pagamento_checkout",
     ),
     path(
         "inscricoes/<int:pk>/resultado/",
