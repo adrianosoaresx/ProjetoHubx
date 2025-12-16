@@ -2186,9 +2186,18 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
             return False
         return Decimal(valor_evento_usuario) > 0
 
-    def _build_cta_url(self, is_pago: bool) -> str:
+    def _build_cta_url(
+        self, is_pago: bool, inscricao: InscricaoEvento | None = None
+    ) -> str:
         if is_pago:
-            base_url = reverse("eventos:inscricao_pagamentos_criar", kwargs={"pk": self.evento.pk})
+            if inscricao:
+                base_url = reverse(
+                    "eventos:inscricao_pagamento_checkout", args=[inscricao.pk]
+                )
+            else:
+                base_url = reverse(
+                    "eventos:inscricao_pagamentos_criar", kwargs={"pk": self.evento.pk}
+                )
         else:
             base_url = reverse("eventos:inscricao_criar", kwargs={"pk": self.evento.pk})
 
@@ -2211,6 +2220,13 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
             metodo_pagamento_field = form_overview["metodo_pagamento"]
 
         evento_pago = self._evento_pago(valor_evento_usuario)
+        inscricao_existente = (
+            InscricaoEvento.all_objects.filter(
+                user=self.request.user, evento=self.evento
+            )
+            .order_by("-created_at")
+            .first()
+        )
 
         context.update(
             {
@@ -2218,7 +2234,8 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
                 "metodo_pagamento_field": metodo_pagamento_field,
                 "evento_pago": evento_pago,
                 "cta_label": _("Efetuar pagamento") if evento_pago else _("Confirmar inscrição"),
-                "cta_url": self._build_cta_url(evento_pago),
+                "cta_url": self._build_cta_url(evento_pago, inscricao_existente),
+                "inscricao_existente": inscricao_existente,
             }
         )
         return context
@@ -2307,6 +2324,8 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             return None
 
     def _should_confirm_inscricao(self, transacao: Transacao | None) -> bool:
+        if self._checkout_required():
+            return transacao is not None and transacao.status == Transacao.Status.APROVADA
         if transacao is None:
             return True
         return transacao.status == Transacao.Status.APROVADA
@@ -2316,10 +2335,6 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
         if transacao and not form.cleaned_data.get("metodo_pagamento"):
             form.cleaned_data["metodo_pagamento"] = transacao.metodo
-
-        if self._checkout_required() and transacao is None:
-            form.add_error(None, _("Finalize o checkout do pagamento antes de concluir a inscrição."))
-            return self.form_invalid(form)
 
         existing_inscricao = InscricaoEvento.all_objects.filter(
             user=self.request.user,
@@ -2366,6 +2381,15 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
     def _handle_confirmation_and_redirect(
         self, transacao: Transacao | None, response=None
     ):
+        if self._checkout_required() and (
+            transacao is None or transacao.status != Transacao.Status.APROVADA
+        ):
+            info_message = _("Pagamento iniciado. Confirme após a aprovação do checkout.")
+            messages.info(self.request, info_message)
+            return redirect(
+                reverse("eventos:inscricao_pagamento_checkout", args=[self.object.pk])
+            )
+
         should_confirm = self._should_confirm_inscricao(transacao)
         if should_confirm:
             try:
@@ -2380,8 +2404,154 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
                 self.request,
                 info_message,
             )
-            return self._redirect_to_result(status="info", message=info_message)
+        return self._redirect_to_result(status="info", message=info_message)
         return response or self._redirect_to_result()
+
+
+class InscricaoEventoCheckoutView(InscricaoEventoBaseView, TemplateView):
+    template_name = "eventos/inscricoes/inscricao_pagamento_checkout.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.inscricao = get_object_or_404(
+            InscricaoEvento.all_objects.select_related("evento", "user"),
+            pk=kwargs.get("pk"),
+        )
+        self.evento = self.inscricao.evento
+        if request.user != self.inscricao.user and not _usuario_tem_acesso_restrito_evento(
+            request.user, self.evento
+        ):
+            return HttpResponseForbidden()
+
+        transacao = getattr(self.inscricao, "transacao", None)
+        if transacao and transacao.status == Transacao.Status.APROVADA:
+            return redirect(
+                reverse("eventos:inscricao_resultado", args=[self.inscricao.pk])
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _evento_gratuito(self) -> bool:
+        valor_evento = self.evento.get_valor_para_usuario(user=self.inscricao.user)
+        return bool(self.evento.gratuito) or (valor_evento is not None and Decimal(valor_evento) == 0)
+
+    def _checkout_required(self) -> bool:
+        provider = MercadoPagoProvider.from_organizacao(self.evento.organizacao)
+        if not provider.public_key:
+            return False
+        if self._evento_gratuito():
+            return False
+        valor_evento = self.evento.get_valor_para_usuario(user=self.inscricao.user)
+        if valor_evento is None:
+            return False
+        return Decimal(valor_evento) > 0
+
+    def _get_checkout_transacao(self) -> Transacao | None:
+        transacao_id = self.request.POST.get("transacao_id")
+        if transacao_id:
+            try:
+                return Transacao.objects.get(pk=transacao_id)
+            except (TypeError, ValueError, Transacao.DoesNotExist):
+                return None
+        return getattr(self.inscricao, "transacao", None)
+
+    def _get_initial_checkout(self) -> dict[str, Any]:
+        valor_evento = self.evento.get_valor_para_usuario(user=self.inscricao.user)
+        initial_checkout: dict[str, Any] = {}
+        if valor_evento is not None:
+            initial_checkout["valor"] = valor_evento
+
+        usuario = getattr(self.inscricao, "user", None)
+        if usuario:
+            nome = ""
+            if hasattr(usuario, "get_full_name"):
+                nome = usuario.get_full_name() or ""
+            initial_checkout["nome"] = nome or getattr(usuario, "name", "") or getattr(
+                usuario, "username", ""
+            )
+            if getattr(usuario, "email", None):
+                initial_checkout["email"] = usuario.email
+            initial_checkout["documento"] = getattr(usuario, "cpf", "") or getattr(
+                usuario, "cnpj", ""
+            )
+
+        if not initial_checkout.get("metodo"):
+            initial_checkout["metodo"] = Transacao.Metodo.PIX
+        return initial_checkout
+
+    def _get_checkout_form(self) -> CheckoutForm:
+        form = CheckoutForm(
+            self.request.POST or None,
+            initial=self._get_initial_checkout(),
+            user=getattr(self, "inscricao", None) and self.inscricao.user,
+            organizacao=self.evento.organizacao,
+        )
+        parcelas_field = form.fields.get("parcelas")
+        if parcelas_field:
+            parcelas_field.max_value = 3
+            parcelas_field.widget.attrs["max"] = 3
+            parcelas_field.help_text = _("Associados podem parcelar em até 3 vezes.")
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        provider = MercadoPagoProvider.from_organizacao(self.evento.organizacao)
+        transacao = self._get_checkout_transacao()
+        context.update(
+            {
+                "checkout_form": self._get_checkout_form(),
+                "provider_public_key": provider.public_key,
+                "transacao": transacao,
+                "inscricao": self.inscricao,
+            }
+        )
+        return context
+
+    def get_success_url(self):
+        return reverse("eventos:inscricao_pagamento_checkout", args=[self.inscricao.pk])
+
+    def _redirect_to_result(self):
+        return redirect(reverse("eventos:inscricao_resultado", args=[self.inscricao.pk]))
+
+    def post(self, request, *args, **kwargs):
+        transacao = self._get_checkout_transacao()
+        metodo = request.POST.get("metodo_pagamento") or getattr(transacao, "metodo", None)
+
+        if self._checkout_required() and transacao is None and not metodo:
+            messages.error(
+                request,
+                _("Finalize o checkout do pagamento antes de confirmar a inscrição."),
+            )
+            return redirect(self.get_success_url())
+
+        valor_evento = self.evento.get_valor_para_usuario(user=self.inscricao.user)
+        if valor_evento is not None:
+            self.inscricao.valor_pago = valor_evento
+
+        if transacao:
+            self.inscricao.transacao = transacao
+            self.inscricao.metodo_pagamento = transacao.metodo
+            self.inscricao.pagamento_validado = (
+                transacao.status == Transacao.Status.APROVADA
+            )
+        elif metodo:
+            self.inscricao.metodo_pagamento = metodo
+
+        self.inscricao.save()
+
+        if transacao and transacao.status == Transacao.Status.APROVADA:
+            try:
+                self.inscricao.confirmar_inscricao()
+            except ValueError as exc:
+                messages.error(request, str(exc))
+                return redirect(self.get_success_url())
+            messages.success(request, _("Inscrição confirmada após aprovação do pagamento."))
+            return self._redirect_to_result()
+
+        messages.info(
+            request,
+            _("Pagamento iniciado. Confirmaremos a inscrição após a aprovação."),
+        )
+        return redirect(self.get_success_url())
 
 
 @login_required
