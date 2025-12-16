@@ -23,42 +23,52 @@
 </div>
 <p class="mt-4 text-xs tracking-wide text-[var(--text-muted)]">@{{ inscrito.username }}</p>
 {% if pode_gerenciar_inscricoes %}
-  <div class="mt-4 flex flex-wrap gap-2 sm:justify-end relative z-20">
-    <a
-      href="{% url 'eventos:inscricao_editar' inscricao.pk %}"
-      class="btn btn-secondary btn-sm"
-      aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Editar inscrição de {{ username }}{% endblocktrans %}"
-    >
-      {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
-    </a>
-    <div class="inline-flex">
-      <button
-        type="button"
-        class="btn btn-danger btn-sm"
-        hx-get="{% url 'eventos:evento_remover_inscrito_modal' object.pk inscrito.pk %}"
-        hx-target="#modal"
-        hx-trigger="click"
-        hx-swap="innerHTML"
-        hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
-        aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+  {% with cancel_block_reason=inscricao.motivo_cancelamento_bloqueado %}
+    <div class="mt-4 flex flex-wrap gap-2 sm:justify-end relative z-20">
+      <a
+        href="{% url 'eventos:inscricao_editar' inscricao.pk %}"
+        class="btn btn-secondary btn-sm"
+        aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Editar inscrição de {{ username }}{% endblocktrans %}"
       >
-        {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
-      </button>
-      <noscript>
-        <form
-          method="post"
-          action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
+        {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+      </a>
+      <div class="inline-flex">
+        <button
+          type="button"
+          class="btn btn-danger btn-sm {% if cancel_block_reason %}opacity-60 cursor-not-allowed{% endif %}"
+          hx-get="{% url 'eventos:evento_remover_inscrito_modal' object.pk inscrito.pk %}"
+          hx-target="#modal"
+          hx-trigger="click"
+          hx-swap="innerHTML"
+          hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+          aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+          {% if cancel_block_reason %}disabled aria-disabled="true" title="{{ cancel_block_reason }}"{% endif %}
         >
-          {% csrf_token %}
-          <button
-            type="submit"
-            class="btn btn-danger btn-sm"
-            aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+          {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+          {% if cancel_block_reason %}
+            <span class="sr-only">{{ cancel_block_reason }}</span>
+          {% endif %}
+        </button>
+        <noscript>
+          <form
+            method="post"
+            action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}"
           >
-            {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
-          </button>
-        </form>
-      </noscript>
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-danger btn-sm"
+              aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Excluir inscrição de {{ username }}{% endblocktrans %}"
+              {% if cancel_block_reason %}disabled aria-disabled="true" title="{{ cancel_block_reason }}"{% endif %}
+            >
+              {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+              {% if cancel_block_reason %}
+                <span class="sr-only">{{ cancel_block_reason }}</span>
+              {% endif %}
+            </button>
+          </form>
+        </noscript>
+      </div>
     </div>
-  </div>
+  {% endwith %}
 {% endif %}

@@ -1865,7 +1865,19 @@ class EventoRemoveInscritoView(
             return redirect("eventos:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
         inscricao = get_object_or_404(InscricaoEvento, user=inscrito, evento=evento)
-        inscricao.cancelar_inscricao()
+
+        try:
+            inscricao.cancelar_inscricao()
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            if is_htmx:
+                response = HttpResponse(
+                    render_to_string("_partials/toasts.html", request=request)
+                )
+                response["HX-Trigger"] = json.dumps({"modal:close": True})
+                return response
+            return redirect("eventos:evento_detalhe", pk=pk)
+
         EventoLog.objects.create(
             evento=evento,
             usuario=request.user,
