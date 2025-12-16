@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Pagamento da inscrição') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
+{% block hero %}{% include '_components/hero_evento_detail.html' with evento=evento %}{% endblock %}
 
 {% block content %}
   <article class="card">
