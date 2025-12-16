@@ -2,9 +2,9 @@
 {% load i18n %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto py-10">
+<div class="max-w-5xl mx-auto py-10 space-y-6">
   <div class="bg-white shadow rounded-xl p-8">
-    <div class="flex items-start justify-between gap-4 mb-6">
+    <div class="flex items-start justify-between gap-4">
       <div>
         <p class="text-sm text-slate-500 uppercase font-semibold">{% trans "Pagamento" %}</p>
         <h1 class="text-3xl font-bold text-slate-900">{% trans "Checkout Hubx" %}</h1>
@@ -15,16 +15,28 @@
         <p class="text-sm font-semibold text-slate-900">{% trans "Mercado Pago e PayPal" %}</p>
       </div>
     </div>
-    <form
-      id="checkout-form"
-      hx-post=""
-      hx-target="#checkout-result"
-      hx-swap="outerHTML"
-      method="post"
-      class="grid grid-cols-1 lg:grid-cols-2 gap-8"
-    >
-      {% csrf_token %}
-      {{ form.organizacao_id }}
+  </div>
+
+  <form
+    id="checkout-form"
+    hx-post=""
+    hx-target="#checkout-result"
+    hx-swap="outerHTML"
+    method="post"
+    class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+  >
+    {% csrf_token %}
+    {{ form.organizacao_id }}
+
+    <div class="bg-white shadow rounded-xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs uppercase font-semibold text-slate-500">{% trans "Dados do pagamento" %}</p>
+          <h2 class="text-xl font-semibold text-slate-900">{% trans "Informações" %}</h2>
+        </div>
+        <span class="text-sm text-slate-500">{% trans "Mercado Pago" %}</span>
+      </div>
+
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
@@ -50,7 +62,7 @@
           {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
         </div>
         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-card-section>
-          <h2 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h2>
+          <h3 class="text-lg font-semibold text-slate-900">{% trans "Cartão de crédito" %}</h3>
           <p class="text-sm text-slate-600">{% trans "Os dados do cartão são tokenizados pelo script oficial do Mercado Pago." %}</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -105,7 +117,7 @@
           <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
         </div>
         <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-boleto-section>
-          <h2 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h2>
+          <h3 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h3>
           <div>
             <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data e hora de vencimento" %}</label>
             {{ form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
@@ -119,11 +131,21 @@
           {% trans "Finalizar pagamento" %}
         </button>
       </div>
-      <div id="checkout-result" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+    </div>
+
+    <div class="bg-white shadow rounded-xl p-6" id="checkout-result">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="text-xs uppercase font-semibold text-slate-500">{% trans "Transação" %}</p>
+          <h2 class="text-xl font-semibold text-slate-900">{% trans "Status e resumo" %}</h2>
+        </div>
+        <span class="text-sm text-slate-500">{% trans "Atualizado em tempo real" %}</span>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
         {% include "pagamentos/partials/checkout_resultado.html" %}
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>
 
 <script src="https://sdk.mercadopago.com/js/v2" integrity="sha384-oVdfFvNz9sGD73SlTY+IfPVd7MFLRmd2fKcr79pCcHnX3qO71F9vE1E7aNgH6B9H" crossorigin="anonymous"></script>
