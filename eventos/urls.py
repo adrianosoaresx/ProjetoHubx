@@ -83,22 +83,22 @@ urlpatterns = [
         name="inscricao_pagamentos_criar",
     ),
     path(
-        "inscricoes/<int:pk>/checkout/",
+        "inscricoes/<uuid:uuid>/checkout/",
         InscricaoEventoCheckoutView.as_view(),
         name="inscricao_pagamento_checkout",
     ),
     path(
-        "inscricoes/<int:pk>/resultado/",
+        "inscricoes/<uuid:uuid>/resultado/",
         inscricao_resultado,
         name="inscricao_resultado",
     ),
     path(
-        "inscricoes/<int:pk>/editar/",
+        "inscricoes/<uuid:uuid>/editar/",
         InscricaoEventoUpdateView.as_view(),
         name="inscricao_editar",
     ),
     path(
-        "inscricoes/<int:pk>/validacao/",
+        "inscricoes/<uuid:uuid>/validacao/",
         InscricaoTogglePagamentoValidacaoView.as_view(),
         name="inscricao_toggle_validacao",
     ),

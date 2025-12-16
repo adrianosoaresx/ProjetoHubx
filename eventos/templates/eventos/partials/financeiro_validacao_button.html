@@ -1,9 +1,9 @@
 {% load i18n lucide_icons %}
 <form
   method="post"
-  action="{% url 'eventos:inscricao_toggle_validacao' inscricao.pk %}"
+  action="{% url 'eventos:inscricao_toggle_validacao' inscricao.uuid %}"
   class="inline-flex"
-  hx-post="{% url 'eventos:inscricao_toggle_validacao' inscricao.pk %}"
+  hx-post="{% url 'eventos:inscricao_toggle_validacao' inscricao.uuid %}"
   hx-target="closest form"
   hx-swap="outerHTML"
   hx-disabled-elt="button"

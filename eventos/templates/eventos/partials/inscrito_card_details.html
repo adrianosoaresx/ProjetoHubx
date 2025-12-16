@@ -26,7 +26,7 @@
   {% with cancel_block_reason=inscricao.motivo_cancelamento_bloqueado %}
     <div class="mt-4 flex flex-wrap gap-2 sm:justify-end relative z-20">
       <a
-        href="{% url 'eventos:inscricao_editar' inscricao.pk %}"
+        href="{% url 'eventos:inscricao_editar' inscricao.uuid %}"
         class="btn btn-secondary btn-sm"
         aria-label="{% blocktrans with username=inscrito.display_name|default:inscrito.username %}Editar inscrição de {{ username }}{% endblocktrans %}"
       >
