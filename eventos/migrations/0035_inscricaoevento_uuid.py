@@ -4,6 +4,15 @@ import uuid
 from django.db import migrations, models
 
 
+def _populate_uuids(apps, schema_editor):
+    InscricaoEvento = apps.get_model("eventos", "InscricaoEvento")
+    qs = InscricaoEvento.objects.all()
+    for obj in qs.iterator():
+        if not getattr(obj, "uuid", None):
+            obj.uuid = uuid.uuid4()
+            obj.save(update_fields=["uuid"])
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -12,6 +21,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
+            model_name="inscricaoevento",
+            name="uuid",
+            field=models.UUIDField(null=True, editable=False),
+        ),
+        migrations.RunPython(_populate_uuids, reverse_code=migrations.RunPython.noop),
+        migrations.AlterField(
             model_name="inscricaoevento",
             name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
