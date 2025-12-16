@@ -6,118 +6,114 @@
 {% block hero %}{% include '_components/hero_evento_detail.html' with evento=evento %}{% endblock %}
 
 {% block content %}
-  <div class="grid gap-6 lg:grid-cols-3">
-    <section class="space-y-6 lg:col-span-2">
-      <article class="card overflow-hidden">
-        {% if evento.cover %}
-          <div class="relative aspect-[16/7] w-full overflow-hidden bg-[var(--surface-secondary)]">
-            <img
-              src="{{ evento.cover.url }}"
-              alt="{{ evento.titulo }}"
-              class="h-full w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        {% endif %}
-        <div class="card-body space-y-6">
-          <header class="flex flex-col gap-2">
-            <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Visão geral da inscrição" %}</p>
-            <h2 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h2>
-            {% if evento.subtitulo %}
-              <p class="text-[var(--text-secondary)]">{{ evento.subtitulo }}</p>
-            {% endif %}
-          </header>
-
-          <dl class="grid gap-4 sm:grid-cols-2">
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Início" %}</dt>
-              <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</dd>
-            </div>
-            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-              <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Fim" %}</dt>
-              <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.data_fim|date:'SHORT_DATETIME_FORMAT' }}</dd>
-            </div>
-            {% if evento.local %}
-              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2">
-                <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Local" %}</dt>
-                <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.local }}</dd>
-              </div>
-            {% endif %}
-          </dl>
-
-          {% if evento.descricao %}
-            <section class="space-y-2">
-              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h3>
-              <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.descricao }}</p>
-            </section>
-          {% endif %}
-
-          {% if evento.cronograma %}
-            <section class="space-y-2">
-              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
-              <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.cronograma }}</p>
-            </section>
-          {% endif %}
-
-          {% if evento.informacoes_adicionais %}
-            <section class="space-y-2">
-              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
-              <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.informacoes_adicionais }}</p>
-            </section>
-          {% endif %}
-        </div>
-      </article>
-    </section>
-
-    <aside class="space-y-4">
-      <article class="card">
-        <div class="card-header">
-          <h2 class="text-lg font-semibold">{% trans "Resumo da inscrição" %}</h2>
-        </div>
-        <div class="card-body space-y-4">
-          <div class="flex items-center justify-between rounded-lg bg-[var(--surface-secondary)] px-3 py-2">
-            <div class="space-y-1">
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Valor" %}</p>
-              {% if evento_pago %}
-                <p class="text-xl font-semibold text-[var(--text-primary)]">{{ valor_evento_usuario|localize }}</p>
-              {% else %}
-                <p class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Evento gratuito" %}</p>
-              {% endif %}
-            </div>
+  <div class="space-y-6">
+    <article class="card">
+      <div class="card-header">
+        <h2 class="text-lg font-semibold">{% trans "Resumo da inscrição" %}</h2>
+      </div>
+      <div class="card-body space-y-4">
+        <div class="flex items-center justify-between rounded-lg bg-[var(--surface-secondary)] px-3 py-2">
+          <div class="space-y-1">
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Valor" %}</p>
             {% if evento_pago %}
-              <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-600">
-                {% trans "Pagamento necessário" %}
-              </span>
+              <p class="text-xl font-semibold text-[var(--text-primary)]">{{ valor_evento_usuario|localize }}</p>
             {% else %}
-              <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
-                {% trans "Sem custo" %}
-              </span>
+              <p class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Evento gratuito" %}</p>
             {% endif %}
           </div>
-
-          {% if metodo_pagamento_field %}
-            <section class="space-y-2">
-              <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Metodos de pagamento" %}</p>
-              <p class="text-sm text-[var(--text-secondary)]">{% trans "Confira abaixo as formas disponíveis para concluir seu pagamento." %}</p>
-              <div class="flex flex-wrap gap-2">
-                {% for value, label in metodo_pagamento_field.field.choices %}
-                  {% if value %}
-                    <span class="inline-flex items-center rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-sm font-semibold text-[var(--text-primary)]">
-                      {{ label }}
-                    </span>
-                  {% endif %}
-                {% endfor %}
-              </div>
-            </section>
+          {% if evento_pago %}
+            <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-600">
+              {% trans "Pagamento necessário" %}
+            </span>
+          {% else %}
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+              {% trans "Sem custo" %}
+            </span>
           {% endif %}
-
-          <div class="pt-2">
-            <a href="{{ cta_url }}" class="btn btn-primary w-full text-center" role="button">
-              {{ cta_label }}
-            </a>
-          </div>
         </div>
-      </article>
-    </aside>
+
+        {% if metodo_pagamento_field %}
+          <section class="space-y-2">
+            <p class="text-sm font-medium text-[var(--text-primary)]">{% trans "Metodos de pagamento" %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Confira abaixo as formas disponíveis para concluir seu pagamento." %}</p>
+            <div class="flex flex-wrap gap-2">
+              {% for value, label in metodo_pagamento_field.field.choices %}
+                {% if value %}
+                  <span class="inline-flex items-center rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-sm font-semibold text-[var(--text-primary)]">
+                    {{ label }}
+                  </span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+
+        <div class="pt-2">
+          <a href="{{ cta_url }}" class="btn btn-primary w-full text-center" role="button">
+            {{ cta_label }}
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <article class="card overflow-hidden">
+      {% if evento.cover %}
+        <div class="relative aspect-[16/7] w-full overflow-hidden bg-[var(--surface-secondary)]">
+          <img
+            src="{{ evento.cover.url }}"
+            alt="{{ evento.titulo }}"
+            class="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      {% endif %}
+      <div class="card-body space-y-6">
+        <header class="flex flex-col gap-2">
+          <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Visão geral da inscrição" %}</p>
+          <h2 class="text-2xl font-semibold text-[var(--text-primary)]">{{ evento.titulo }}</h2>
+          {% if evento.subtitulo %}
+            <p class="text-[var(--text-secondary)]">{{ evento.subtitulo }}</p>
+          {% endif %}
+        </header>
+
+        <dl class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Início" %}</dt>
+            <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Fim" %}</dt>
+            <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.data_fim|date:'SHORT_DATETIME_FORMAT' }}</dd>
+          </div>
+          {% if evento.local %}
+            <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{% trans "Local" %}</dt>
+              <dd class="text-sm font-medium text-[var(--text-primary)]">{{ evento.local }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        {% if evento.descricao %}
+          <section class="space-y-2">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações" %}</h3>
+            <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.descricao }}</p>
+          </section>
+        {% endif %}
+
+        {% if evento.cronograma %}
+          <section class="space-y-2">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Cronograma" %}</h3>
+            <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.cronograma }}</p>
+          </section>
+        {% endif %}
+
+        {% if evento.informacoes_adicionais %}
+          <section class="space-y-2">
+            <h3 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Informações adicionais" %}</h3>
+            <p class="whitespace-pre-line text-[var(--text-secondary)]">{{ evento.informacoes_adicionais }}</p>
+          </section>
+        {% endif %}
+      </div>
+    </article>
   </div>
 {% endblock %}
