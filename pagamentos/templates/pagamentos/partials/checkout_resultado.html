@@ -23,30 +23,34 @@
   >
     <div class="flex items-center justify-between" data-metodo="{{ transacao.metodo }}">
       <div>
-        <p class="text-sm text-slate-500 uppercase font-semibold">{% trans "Transação" %} #{{ transacao.id }}</p>
-        <p class="text-lg font-bold text-slate-900">{{ transacao.get_metodo_display }}</p>
-        <p class="text-sm text-slate-600">{% trans "Status" %}: {{ transacao.get_status_display }}</p>
+        <p class="text-sm text-[var(--text-secondary)] uppercase font-semibold">{% trans "Transação" %} #{{ transacao.id }}</p>
+        <p class="text-lg font-bold text-[var(--text-primary)]">{{ transacao.get_metodo_display }}</p>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Status" %}: {{ transacao.get_status_display }}</p>
       </div>
       {% if transacao.external_id %}
-        <span class="px-3 py-1 text-xs bg-slate-100 text-slate-700 rounded-full">{% trans "ID externo" %}: {{ transacao.external_id }}</span>
+        <span
+          class="px-3 py-1 text-xs bg-[var(--surface-secondary)] text-[var(--text-secondary)] border border-[var(--border)] rounded-full"
+        >{% trans "ID externo" %}: {{ transacao.external_id }}</span>
       {% endif %}
     </div>
 
     {% if transacao.metodo == 'pix' and transacao.pix_qr_code %}
-      <div class="bg-white rounded-lg border border-slate-200 p-4 flex flex-col md:flex-row gap-4 items-start">
+      <div
+        class="bg-[var(--surface-secondary)] rounded-lg border border-[var(--border)] p-4 flex flex-col md:flex-row gap-4 items-start"
+      >
         {% if transacao.pix_qr_code_base64 %}
           <img
             src="data:image/png;base64,{{ transacao.pix_qr_code_base64 }}"
             alt="{% trans "QR Code Pix" %}"
-            class="w-40 h-40 border border-slate-200 rounded"
+            class="w-40 h-40 border border-[var(--border)] rounded"
           />
         {% endif %}
         <div class="flex-1 space-y-2">
-          <p class="text-sm text-slate-700">{% trans "Use o QR Code ou copie o código Pix abaixo" %}</p>
+          <p class="text-sm text-[var(--text-primary)]">{% trans "Use o QR Code ou copie o código Pix abaixo" %}</p>
           <div class="flex flex-wrap sm:flex-nowrap items-start gap-2">
             <div class="flex-1 min-w-0">
               <code
-                class="block max-w-full overflow-x-auto break-all whitespace-pre-wrap text-xs bg-slate-100 border border-slate-200 rounded px-2 py-1"
+                class="block max-w-full overflow-x-auto break-all whitespace-pre-wrap text-xs bg-[var(--surface-tertiary)] text-[var(--text-primary)] border border-[var(--border)] rounded px-2 py-1"
               >{{ transacao.pix_qr_code }}</code>
             </div>
             <button
@@ -62,9 +66,9 @@
     {% endif %}
 
     {% if transacao.metodo == 'paypal' %}
-      <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
-        <p class="font-semibold text-slate-900">{% trans "Pagamento pelo PayPal" %}</p>
-        <p class="text-sm text-slate-600">{% trans "Abriremos uma ordem no PayPal para aprovação e captura." %}</p>
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 space-y-2">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Pagamento pelo PayPal" %}</p>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Abriremos uma ordem no PayPal para aprovação e captura." %}</p>
         {% if transacao.paypal_approval_url %}
           <a
             href="{{ transacao.paypal_approval_url }}"
@@ -74,19 +78,19 @@
           >
             {% trans "Acessar ordem no PayPal" %}
           </a>
-          <p class="text-xs text-slate-500">{% trans "Após aprovar, retornaremos aqui para confirmar o status." %}</p>
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Após aprovar, retornaremos aqui para confirmar o status." %}</p>
         {% else %}
-          <p class="text-xs text-slate-500">{% trans "Aguardando o provedor liberar o link de aprovação." %}</p>
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Aguardando o provedor liberar o link de aprovação." %}</p>
         {% endif %}
       </div>
     {% endif %}
 
     {% if transacao.metodo == 'boleto' and transacao.boleto_url %}
-      <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 flex items-center justify-between">
         <div>
-          <p class="font-semibold text-slate-900">{% trans "Boleto disponível" %}</p>
+          <p class="font-semibold text-[var(--text-primary)]">{% trans "Boleto disponível" %}</p>
           {% if transacao.boleto_expiracao %}
-            <p class="text-sm text-slate-600">{% blocktrans with data=transacao.boleto_expiracao %}Vencimento: {{ data }}{% endblocktrans %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% blocktrans with data=transacao.boleto_expiracao %}Vencimento: {{ data }}{% endblocktrans %}</p>
           {% endif %}
         </div>
         <a href="{{ transacao.boleto_url }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener">
@@ -115,5 +119,5 @@
     {% endif %}
   </div>
 {% else %}
-  <p class="text-sm text-slate-600">{% trans "Envie o formulário para gerar a cobrança e acompanhar por aqui." %}</p>
+  <p class="text-sm text-[var(--text-secondary)]">{% trans "Envie o formulário para gerar a cobrança e acompanhar por aqui." %}</p>
 {% endif %}
