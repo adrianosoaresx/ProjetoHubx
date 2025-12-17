@@ -39,7 +39,7 @@ class CheckoutForm(forms.Form):
                 )
 
         valor_field = self.fields.get("valor")
-        if valor_field:
+        if valor_field and self.initial.get("valor") is not None:
             valor_field.widget.attrs.update(
                 {"readonly": "readonly", "aria-readonly": "true", "class": "bg-slate-50"}
             )
