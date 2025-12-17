@@ -6,6 +6,7 @@ from django.urls import URLPattern, path
 
 from pagamentos.views import (
     CheckoutView,
+    MercadoPagoRetornoView,
     PayPalWebhookView,
     TransacaoCSVExportView,
     TransacaoRevisaoView,
@@ -16,6 +17,11 @@ from pagamentos.views import (
 urlpatterns: List[URLPattern] = [
     path("checkout/", CheckoutView.as_view(), name="checkout"),
     path("checkout/status/<int:pk>/", TransacaoStatusView.as_view(), name="status"),
+    path(
+        "mp/retorno/<str:status>/",
+        MercadoPagoRetornoView.as_view(),
+        name="mercadopago-retorno",
+    ),
     path("webhook/mercadopago/", WebhookView.as_view(), name="webhook-mercadopago"),
     path("webhook/paypal/", PayPalWebhookView.as_view(), name="webhook-paypal"),
     path("relatorios/transacoes/", TransacaoRevisaoView.as_view(), name="relatorios"),

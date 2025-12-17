@@ -69,6 +69,8 @@ Para habilitar o checkout e os webhooks do Mercado Pago, configure:
 - `MERCADO_PAGO_ACCESS_TOKEN`: token privado usado para criar, consultar e estornar cobranças.
 - `MERCADO_PAGO_PUBLIC_KEY`: chave pública usada pelo JavaScript do checkout para tokenizar cartões.
 - `MERCADO_PAGO_WEBHOOK_SECRET`: segredo opcional para validar a assinatura `X-Signature` recebida no webhook.
+- `MERCADO_PAGO_RETURN_BASE_URL`: base usada para montar os links de retorno do checkout (padrão `https://hubx.space`).
+- `MERCADO_PAGO_SUCCESS_URL`, `MERCADO_PAGO_FAILURE_URL`, `MERCADO_PAGO_PENDING_URL`: URLs completas para retorno de sucesso, falha e pendência (sobrepõem a base quando definidas).
 
 Para habilitar PayPal como método adicional:
 
@@ -80,6 +82,7 @@ Para habilitar PayPal como método adicional:
 Endpoints envolvidos:
 
 - `/pagamentos/checkout/` – formulário HTMX com Pix, cartão e boleto.
+- `/pagamentos/mp/retorno/<status>/` – rota de retorno do Mercado Pago (`sucesso`, `falha` ou `pendente`).
 - `/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas.
 - `/pagamentos/webhook/paypal/` – webhook opcional para sincronizar ordens do PayPal.
 
