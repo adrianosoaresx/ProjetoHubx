@@ -43,8 +43,12 @@
         {% endif %}
         <div class="flex-1 space-y-2">
           <p class="text-sm text-slate-700">{% trans "Use o QR Code ou copie o código Pix abaixo" %}</p>
-          <div class="flex items-center gap-2">
-            <code class="text-xs bg-slate-100 border border-slate-200 rounded px-2 py-1 overflow-x-auto">{{ transacao.pix_qr_code }}</code>
+          <div class="flex flex-wrap sm:flex-nowrap items-start gap-2">
+            <div class="flex-1 min-w-0">
+              <code
+                class="block max-w-full overflow-x-auto break-all whitespace-pre-wrap text-xs bg-slate-100 border border-slate-200 rounded px-2 py-1"
+              >{{ transacao.pix_qr_code }}</code>
+            </div>
             <button
               type="button"
               class="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
