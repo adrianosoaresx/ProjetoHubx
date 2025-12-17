@@ -23,6 +23,11 @@ urlpatterns: List[URLPattern] = [
         name="mercadopago-retorno",
     ),
     path("webhook/mercadopago/", WebhookView.as_view(), name="webhook-mercadopago"),
+    path(
+        "api/payments/mercadopago/webhook/",
+        WebhookView.as_view(),
+        name="webhook-mercadopago-api",
+    ),
     path("webhook/paypal/", PayPalWebhookView.as_view(), name="webhook-paypal"),
     path("relatorios/transacoes/", TransacaoRevisaoView.as_view(), name="relatorios"),
     path("relatorios/transacoes.csv", TransacaoCSVExportView.as_view(), name="transacoes-csv"),
