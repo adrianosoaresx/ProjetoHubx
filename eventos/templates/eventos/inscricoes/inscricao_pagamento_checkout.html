@@ -9,9 +9,9 @@
   <article class="card">
     <div class="card-header">
       <h2 class="text-xl font-semibold flex items-center gap-2">
-        {% trans "Pagamento via Mercado Pago" %}
+        {% trans "Pagamento" %}
       </h2>
-      <p class="text-sm text-[var(--text-secondary)]">{% trans "Tokenização client-side usando as chaves da organização." %}</p>
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Preencha os dados para concluir o pagamento com segurança." %}</p>
     </div>
     <div class="card-body space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -33,7 +33,7 @@
                 <h4 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Dados do titular" %}</h4>
                 <span class="text-xs text-[var(--text-secondary)]">{% trans "Usaremos os dados do perfil quando disponível." %}</span>
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_nome">{% trans "Nome completo" %}</label>
                   {{ checkout_form.nome|add_class:"input" }}
@@ -42,19 +42,30 @@
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_email">{% trans "E-mail" %}</label>
                   {{ checkout_form.email|add_class:"input" }}
                 </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_documento">{% trans "CPF/CNPJ" %}</label>
                   {{ checkout_form.documento|add_class:"input" }}
                 </div>
-                <div>
-                  <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_valor">{% trans "Valor" %}</label>
-                  {{ checkout_form.valor|add_class:"input" }}
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_metodo">{% trans "Método" %}</label>
-                  {{ checkout_form.metodo|add_class:"input"|attr:"data-metodo-select" }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_valor">{% trans "Valor" %}</label>
+                    {{ checkout_form.valor|add_class:"input" }}
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_metodo">{% trans "Método" %}</label>
+                    <select
+                      name="{{ checkout_form.metodo.html_name }}"
+                      id="{{ checkout_form.metodo.id_for_label }}"
+                      class="input"
+                      data-metodo-select
+                    >
+                      {% for value, label in checkout_form.metodo.field.choices %}
+                        {% if value != 'paypal' %}
+                          <option value="{{ value }}" {% if checkout_form.metodo.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
