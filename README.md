@@ -83,8 +83,14 @@ Endpoints envolvidos:
 
 - `/pagamentos/checkout/` – formulário HTMX com Pix, cartão e boleto.
 - `/pagamentos/mp/retorno/<status>/` – rota de retorno do Mercado Pago (`sucesso`, `falha` ou `pendente`).
-- `/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas.
+- `https://hubx.space/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas (em dev use `http://127.0.0.1:8000/pagamentos/webhook/mercadopago/`). O endpoint valida o cabeçalho `X-Signature` com o valor de `MERCADO_PAGO_WEBHOOK_SECRET` e também está disponível em `/api/payments/mercadopago/webhook/` para compatibilidade com o painel do Mercado Pago.
 - `/pagamentos/webhook/paypal/` – webhook opcional para sincronizar ordens do PayPal.
+
+### Testes locais do webhook do Mercado Pago
+
+- Ao expor o projeto via túnel (ex.: `ngrok http 8000`), configure a URL pública apontando para `http://127.0.0.1:8000/pagamentos/webhook/mercadopago/` (ou para `/api/payments/mercadopago/webhook/` caso o painel exija esse caminho).
+- Defina `MERCADO_PAGO_WEBHOOK_SECRET` no `.env` com o mesmo valor registrado na configuração do webhook do Mercado Pago; a view valida o cabeçalho `X-Signature` enviado pelo provedor usando HMAC com esse segredo.
+- Em produção, mantenha o endpoint configurado como `https://hubx.space/pagamentos/webhook/mercadopago/` para receber notificações oficiais.
 
 Exemplo de configuração no `.env`:
 
