@@ -36,27 +36,27 @@
               <div class="space-y-4">
                 <div>
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_nome">{% trans "Nome completo" %}</label>
-                  {{ checkout_form.nome|add_class:"input" }}
+                  {{ checkout_form.nome|add_class:"input w-full" }}
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_email">{% trans "E-mail" %}</label>
-                  {{ checkout_form.email|add_class:"input" }}
+                  {{ checkout_form.email|add_class:"input w-full" }}
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_documento">{% trans "CPF/CNPJ" %}</label>
-                  {{ checkout_form.documento|add_class:"input" }}
+                  {{ checkout_form.documento|add_class:"input w-full" }}
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_valor">{% trans "Valor" %}</label>
-                    {{ checkout_form.valor|add_class:"input" }}
+                    {{ checkout_form.valor|add_class:"input w-full" }}
                   </div>
                   <div>
                     <label class="block text-xs font-medium text-[var(--text-secondary)]" for="id_metodo">{% trans "Método" %}</label>
                     <select
                       name="{{ checkout_form.metodo.html_name }}"
                       id="{{ checkout_form.metodo.id_for_label }}"
-                      class="input"
+                      class="input w-full"
                       data-metodo-select
                     >
                       {% for value, label in checkout_form.metodo.field.choices %}
