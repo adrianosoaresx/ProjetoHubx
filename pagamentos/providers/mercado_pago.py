@@ -7,6 +7,7 @@ from datetime import datetime, timezone as dt_timezone
 from typing import Any
 
 import requests
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -34,6 +35,25 @@ class MercadoPagoProvider(PaymentProvider):
         self.public_key = public_key or os.getenv("MERCADO_PAGO_PUBLIC_KEY", "")
         self.base_url = base_url or os.getenv("MERCADO_PAGO_API_URL", "https://api.mercadopago.com")
         self.session = session or requests.Session()
+        retorno_base_url = getattr(settings, "MERCADO_PAGO_RETURN_BASE_URL", "https://hubx.space")
+        self.back_urls = {
+            "success": getattr(
+                settings,
+                "MERCADO_PAGO_SUCCESS_URL",
+                f"{retorno_base_url.rstrip('/')}/pagamentos/mp/retorno/sucesso/",
+            ),
+            "failure": getattr(
+                settings,
+                "MERCADO_PAGO_FAILURE_URL",
+                f"{retorno_base_url.rstrip('/')}/pagamentos/mp/retorno/falha/",
+            ),
+            "pending": getattr(
+                settings,
+                "MERCADO_PAGO_PENDING_URL",
+                f"{retorno_base_url.rstrip('/')}/pagamentos/mp/retorno/pendente/",
+            ),
+        }
+        self.auto_return = getattr(settings, "MERCADO_PAGO_AUTO_RETURN", "approved")
 
     @classmethod
     def from_organizacao(cls, organizacao, **kwargs: Any) -> "MercadoPagoProvider":
@@ -100,6 +120,8 @@ class MercadoPagoProvider(PaymentProvider):
             "description": dados_pagamento.get("descricao") or "Pagamento Hubx",
             "payer": self._payer_data(dados_pagamento),
             "date_of_expiration": expiracao,
+            "back_urls": self.back_urls,
+            "auto_return": self.auto_return,
         }
 
     def _build_cartao_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
@@ -113,6 +135,8 @@ class MercadoPagoProvider(PaymentProvider):
             "installments": parcelas,
             "payment_method_id": dados_pagamento.get("payment_method_id", "visa"),
             "payer": self._payer_data(dados_pagamento),
+            "back_urls": self.back_urls,
+            "auto_return": self.auto_return,
         }
 
     def _build_boleto_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
@@ -127,6 +151,8 @@ class MercadoPagoProvider(PaymentProvider):
             "payment_method_id": "bolbradesco",
             "payer": self._payer_data(dados_pagamento),
             "date_of_expiration": vencimento_formatado,
+            "back_urls": self.back_urls,
+            "auto_return": self.auto_return,
         }
 
     def _payer_data(self, dados_pagamento: dict[str, Any]) -> dict[str, Any]:

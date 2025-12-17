@@ -178,6 +178,64 @@ class TransacaoStatusView(APIView):
         return MercadoPagoProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
 
 
+class MercadoPagoRetornoView(APIView):
+    permission_classes = [AllowAny]
+    template_name = "pagamentos/retorno.html"
+
+    def get(self, request: HttpRequest, status: str) -> HttpResponse:
+        retorno_status = status.lower()
+        if retorno_status not in {"sucesso", "falha", "pendente"}:
+            return HttpResponseBadRequest("invalid status")
+
+        transacao = self._buscar_transacao(request)
+        organizacao = getattr(getattr(transacao, "pedido", None), "organizacao", None)
+        if transacao:
+            provider = MercadoPagoProvider.from_organizacao(organizacao)
+            service = PagamentoService(provider)
+            try:
+                service.confirmar_pagamento(transacao)
+                transacao.refresh_from_db()
+            except Exception:
+                logger.exception(
+                    "retorno_mp_confirmacao_falhou",
+                    extra={"transacao_id": transacao.id, "external_id": transacao.external_id},
+                )
+
+        contexto = {
+            "mensagem": self._mensagem(retorno_status, transacao is not None),
+            "transacao": transacao,
+            "form": CheckoutForm(organizacao=organizacao),
+            "retorno_status": retorno_status,
+        }
+        return render(request, self.template_name, contexto)
+
+    def _buscar_transacao(self, request: HttpRequest) -> Transacao | None:
+        payment_id = (
+            request.GET.get("payment_id")
+            or request.GET.get("collection_id")
+            or request.GET.get("id")
+        )
+        external_reference = request.GET.get("external_reference")
+
+        queryset = Transacao.objects.select_related("pedido", "pedido__organizacao")
+        if payment_id:
+            transacao = queryset.filter(external_id=str(payment_id)).first()
+            if transacao:
+                return transacao
+        if external_reference:
+            return queryset.filter(external_id=str(external_reference)).first()
+        return None
+
+    def _mensagem(self, status: str, possui_transacao: bool) -> str:
+        if not possui_transacao:
+            return _("Não localizamos a transação informada. Verifique os dados ou tente novamente.")
+        if status == "sucesso":
+            return _("Pagamento confirmado. Estamos validando seus dados.")
+        if status == "falha":
+            return _("Pagamento não foi concluído. Você pode tentar novamente ou escolher outro método.")
+        return _("Pagamento em análise. Assim que houver atualização, atualizaremos este status.")
+
+
 @method_decorator(csrf_exempt, name="dispatch")
 class WebhookView(APIView):
     permission_classes = [AllowAny]

@@ -68,6 +68,20 @@ OPENAI_REQUEST_TIMEOUT = int(os.getenv("OPENAI_REQUEST_TIMEOUT", "30"))
 MERCADO_PAGO_PUBLIC_KEY = os.getenv("MERCADO_PAGO_PUBLIC_KEY", "")
 MERCADO_PAGO_ACCESS_TOKEN = os.getenv("MERCADO_PAGO_ACCESS_TOKEN", "")
 MERCADO_PAGO_WEBHOOK_SECRET = os.getenv("MERCADO_PAGO_WEBHOOK_SECRET", "")
+MERCADO_PAGO_RETURN_BASE_URL = os.getenv("MERCADO_PAGO_RETURN_BASE_URL", "https://hubx.space")
+MERCADO_PAGO_SUCCESS_URL = os.getenv(
+    "MERCADO_PAGO_SUCCESS_URL",
+    f"{MERCADO_PAGO_RETURN_BASE_URL.rstrip('/')}/pagamentos/mp/retorno/sucesso/",
+)
+MERCADO_PAGO_FAILURE_URL = os.getenv(
+    "MERCADO_PAGO_FAILURE_URL",
+    f"{MERCADO_PAGO_RETURN_BASE_URL.rstrip('/')}/pagamentos/mp/retorno/falha/",
+)
+MERCADO_PAGO_PENDING_URL = os.getenv(
+    "MERCADO_PAGO_PENDING_URL",
+    f"{MERCADO_PAGO_RETURN_BASE_URL.rstrip('/')}/pagamentos/mp/retorno/pendente/",
+)
+MERCADO_PAGO_AUTO_RETURN = os.getenv("MERCADO_PAGO_AUTO_RETURN", "approved")
 
 
 # Application definition
