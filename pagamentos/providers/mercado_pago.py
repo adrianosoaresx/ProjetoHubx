@@ -227,7 +227,8 @@ class MercadoPagoProvider(PaymentProvider):
         dt: datetime | None = None
 
         if isinstance(value, str):
-            normalized = value.replace("Z", "+00:00").replace("UTC", "+00:00")
+            clean_value = value.split(";", 1)[0].strip()
+            normalized = clean_value.replace("Z", "+00:00").replace("UTC", "+00:00")
             for fmt in (
                 "%d-%m-%YT%H:%M:%S%z",
                 "%Y-%m-%dT%H:%M:%S%z",
@@ -241,7 +242,7 @@ class MercadoPagoProvider(PaymentProvider):
                 try:
                     dt = datetime.fromisoformat(normalized)
                 except ValueError:
-                    return value
+                    return clean_value
         elif hasattr(value, "isoformat"):
             dt = value
         else:
