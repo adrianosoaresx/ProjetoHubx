@@ -117,11 +117,19 @@ class MercadoPagoProvider(PaymentProvider):
 
     def _build_boleto_payload(self, pedido: Pedido, dados_pagamento: dict[str, Any]) -> dict[str, Any]:
         vencimento = dados_pagamento.get("vencimento")
-        if not vencimento:
+        if vencimento is None:
             raise PagamentoInvalidoError(_("Data de vencimento obrigatória para boleto."))
-        if vencimento <= timezone.now():
+
+        vencimento_dt = self._parse_datetime(vencimento)
+        if vencimento_dt <= timezone.now():
             raise PagamentoInvalidoError(_("Boleto expirado ou com vencimento inválido."))
-        vencimento_formatado = self._format_datetime(vencimento)
+
+        vencimento_formatado = self._format_datetime(vencimento_dt)
+        if not isinstance(vencimento_formatado, str):
+            raise PagamentoInvalidoError(
+                _("Data de vencimento inválida para envio ao Mercado Pago.")
+            )
+
         return {
             "transaction_amount": float(pedido.valor),
             "payment_method_id": "bolbradesco",
@@ -219,39 +227,60 @@ class MercadoPagoProvider(PaymentProvider):
         return uuid.uuid4().hex
 
     @staticmethod
-    def _format_datetime(value: Any) -> Any:
-        """Converte objetos datetime para ISO 8601 para envio na API."""
-        if value is None:
-            return value
-
-        dt: datetime | None = None
-
-        if isinstance(value, str):
+    def _parse_datetime(value: Any) -> datetime:
+        if isinstance(value, datetime):
+            dt = value
+        elif isinstance(value, str):
             clean_value = value.split(";", 1)[0].strip()
             normalized = clean_value.replace("Z", "+00:00").replace("UTC", "+00:00")
-            for fmt in (
-                "%d-%m-%YT%H:%M:%S%z",
+            dt: datetime | None = None
+
+            candidates = [normalized]
+            if len(normalized) >= 6 and normalized[-3] == ":" and normalized[-6] in "+-":
+                candidates.append(f"{normalized[:-3]}{normalized[-2:]}")
+
+            formats = (
                 "%Y-%m-%dT%H:%M:%S%z",
-            ):
+                "%Y-%m-%d %H:%M:%S%z",
+                "%d/%m/%Y %H:%M:%S %z",
+                "%d/%m/%Y %H:%M:%S%z",
+                "%d/%m/%YT%H:%M:%S%z",
+            )
+
+            for candidate in candidates:
                 try:
-                    dt = datetime.strptime(normalized, fmt)
+                    dt = datetime.fromisoformat(candidate)
                     break
                 except ValueError:
-                    continue
+                    pass
+
+                for fmt in formats:
+                    try:
+                        dt = datetime.strptime(candidate, fmt)
+                        break
+                    except ValueError:
+                        continue
+                if dt is not None:
+                    break
+
             if dt is None:
-                try:
-                    dt = datetime.fromisoformat(normalized)
-                except ValueError:
-                    return clean_value
-        elif hasattr(value, "isoformat"):
-            dt = value
+                raise PagamentoInvalidoError(_("Data de pagamento inválida ou em formato não reconhecido."))
         else:
-            return value
+            raise PagamentoInvalidoError(_("Data de pagamento inválida ou em formato não reconhecido."))
 
         if timezone.is_naive(dt):
             dt = timezone.make_aware(dt, timezone=UTC)
         else:
             dt = dt.astimezone(UTC)
+
+        return dt
+
+    def _format_datetime(self, value: Any) -> str | None:
+        """Converte objetos datetime para ISO 8601 para envio na API."""
+        if value is None:
+            return None
+
+        dt = self._parse_datetime(value)
 
         formatted = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
 
