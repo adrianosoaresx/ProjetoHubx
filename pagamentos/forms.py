@@ -27,8 +27,8 @@ class CheckoutForm(forms.Form):
     vencimento = forms.DateTimeField(
         label=_("Vencimento"),
         required=False,
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
-        input_formats=("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=("%Y-%m-%d", "%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"),
     )
 
     def __init__(self, *args, user=None, organizacao=None, **kwargs):

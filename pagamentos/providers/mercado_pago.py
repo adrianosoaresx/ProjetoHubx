@@ -4,7 +4,8 @@ import logging
 import os
 import re
 import uuid
-from datetime import datetime, timezone as dt_timezone
+from datetime import date as dt_date
+from datetime import datetime, time, timezone as dt_timezone
 from typing import Any
 
 import requests
@@ -234,6 +235,10 @@ class MercadoPagoProvider(PaymentProvider):
     def _parse_datetime(value: Any) -> datetime:
         if isinstance(value, datetime):
             dt = value
+            date_only_input = False
+        elif isinstance(value, dt_date):
+            dt = datetime.combine(value, time(hour=23, minute=59, second=59))
+            date_only_input = True
         elif isinstance(value, str):
             clean_value = value.split(";", 1)[0].strip()
             normalized = clean_value.replace("Z", "+00:00").replace("UTC", "+00:00")
@@ -242,10 +247,17 @@ class MercadoPagoProvider(PaymentProvider):
                 candidates.append(f"{normalized[:-3]}{normalized[-2:]}")
 
             patterns = (
+                r"^\d{4}-\d{2}-\d{2}$",
+                r"^\d{2}/\d{2}/\d{4}$",
+                r"^\d{2}-\d{2}-\d{4}$",
                 r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
                 r"^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2} (?:[+-]\d{2}:?\d{2})$",
                 r"^\d{2}/\d{2}/\d{4}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
                 r"^\d{2}-\d{2}-\d{4}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
+            )
+
+            date_only_input = any(
+                re.match(pattern, candidate) for pattern in patterns[:3] for candidate in candidates
             )
 
             if not any(re.match(pattern, candidate) for pattern in patterns for candidate in candidates):
@@ -253,6 +265,9 @@ class MercadoPagoProvider(PaymentProvider):
 
             dt: datetime | None = None
             formats = (
+                "%Y-%m-%d",
+                "%d/%m/%Y",
+                "%d-%m-%Y",
                 "%Y-%m-%dT%H:%M:%S%z",
                 "%Y-%m-%d %H:%M:%S%z",
                 "%d/%m/%Y %H:%M:%S %z",
@@ -281,6 +296,9 @@ class MercadoPagoProvider(PaymentProvider):
                 raise PagamentoInvalidoError(_("Data de pagamento inválida ou em formato não reconhecido."))
         else:
             raise PagamentoInvalidoError(_("Data de pagamento inválida ou em formato não reconhecido."))
+
+        if date_only_input:
+            dt = datetime.combine(dt.date(), time(hour=23, minute=59, second=59), tzinfo=dt.tzinfo)
 
         if timezone.is_naive(dt):
             dt = timezone.make_aware(dt, timezone=UTC)
