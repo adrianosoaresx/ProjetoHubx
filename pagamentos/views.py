@@ -64,6 +64,9 @@ class CheckoutView(APIView):
         organizacao = self._obter_organizacao(request)
         form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
         if not form.is_valid():
+            logger.warning(
+                "checkout_form_invalido", extra={"errors": form.errors.as_json()}
+            )
             return self._render_response(
                 request,
                 form=form,
@@ -87,7 +90,11 @@ class CheckoutView(APIView):
             "checkout_iniciar_pagamento",
             extra={
                 "pedido_id": pedido.id,
-                "dados_pagamento": {k: v for k, v in dados_pagamento.items() if k != "token"},
+                "dados_pagamento": {
+                    k: v
+                    for k, v in dados_pagamento.items()
+                    if k not in {"token", "document_number"}
+                },
             },
         )
         try:
@@ -102,21 +109,35 @@ class CheckoutView(APIView):
                 "provider_public_key": provider.public_key,
                 "status": 400,
             }
-            logger.warning(
-                "checkout_pagamento_provedor_erro",
-                exc_info=exc,
-                extra={"pedido_id": pedido.id},
+            logger.error(
+                "erro_no_provedor",
+                extra={
+                    "erro": str(exc),
+                    "dados_pagamento": {
+                        k: v
+                        for k, v in dados_pagamento.items()
+                        if k
+                        not in {
+                            "token",
+                            "token_cartao",
+                            "document_number",
+                            "documento",
+                        }
+                    },
+                    "pedido_id": pedido.id,
+                },
             )
             return self._render_response(request, **contexto)
         except Exception as exc:  # pragma: no cover - erro inesperado
             logger.exception(
-                "checkout_pagamento_erro_desconhecido",
-                extra={"pedido_id": pedido.id},
+                "erro_inesperado_checkout", extra={"erro": str(exc), "pedido_id": pedido.id}
             )
             contexto = {
                 "form": form,
                 "transacao": None,
-                "mensagem": _("Erro ao processar pagamento, tente novamente."),
+                "mensagem": _(
+                    "Ocorreu um erro inesperado. Tente novamente ou entre em contato com o suporte."
+                ),
                 "provider_public_key": provider.public_key,
                 "status": 500,
             }
@@ -188,6 +209,12 @@ class CheckoutView(APIView):
             "city": cleaned_data.get("cidade"),
             "federal_unit": cleaned_data.get("estado"),
             "state": cleaned_data.get("estado"),
+            "cep": cleaned_data.get("cep"),
+            "logradouro": cleaned_data.get("logradouro"),
+            "numero": cleaned_data.get("numero"),
+            "bairro": cleaned_data.get("bairro"),
+            "cidade": cleaned_data.get("cidade"),
+            "estado": cleaned_data.get("estado"),
             "token": cleaned_data.get("token_cartao"),
             "payment_method_id": cleaned_data.get("payment_method_id"),
             "parcelas": cleaned_data.get("parcelas"),

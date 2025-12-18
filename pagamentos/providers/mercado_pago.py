@@ -155,11 +155,16 @@ class MercadoPagoProvider(PaymentProvider):
             last_name = dados_pagamento.get("last_name") or first_name
         address = {
             "zip_code": dados_pagamento.get("zip_code") or dados_pagamento.get("cep"),
-            "street_name": dados_pagamento.get("street_name"),
-            "street_number": dados_pagamento.get("street_number"),
-            "neighborhood": dados_pagamento.get("neighborhood"),
-            "city": dados_pagamento.get("city"),
-            "federal_unit": dados_pagamento.get("federal_unit") or dados_pagamento.get("state"),
+            "street_name": dados_pagamento.get("street_name")
+            or dados_pagamento.get("logradouro"),
+            "street_number": dados_pagamento.get("street_number")
+            or dados_pagamento.get("numero"),
+            "neighborhood": dados_pagamento.get("neighborhood")
+            or dados_pagamento.get("bairro"),
+            "city": dados_pagamento.get("city") or dados_pagamento.get("cidade"),
+            "federal_unit": dados_pagamento.get("federal_unit")
+            or dados_pagamento.get("state")
+            or dados_pagamento.get("estado"),
         }
         return {
             "email": email,
