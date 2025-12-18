@@ -308,17 +308,22 @@ class MercadoPagoProvider(PaymentProvider):
         return dt
 
     def _format_datetime(self, value: Any) -> str | None:
-        """Converte objetos datetime para ISO 8601 para envio na API."""
+        """
+        Converte objetos datetime/str/date em ISO 8601 com milissegundos e fuso horário local.
+        Retorna None se value for None.
+        Formato final esperado: yyyy-MM-dd'T'HH:mm:ss.SSS±hh:mm (ex.: 2025-12-18T23:59:59.000-03:00).
+        """
         if value is None:
             return None
 
         dt = self._parse_datetime(value)
 
-        iso_value = dt.astimezone(UTC).isoformat(timespec="seconds")
+        tz = timezone.get_default_timezone()
+        dt_local = dt.astimezone(tz)
 
-        # Garantir separador de fuso com dois pontos, conforme esperado pela API
-        # do Mercado Pago (ex.: 2025-12-17T21:50:13-03:00).
-        if iso_value and iso_value[-3] != ":":
+        iso_value: str = dt_local.isoformat(timespec="milliseconds")
+
+        if iso_value[-3] != ":":
             iso_value = f"{iso_value[:-2]}:{iso_value[-2:]}"
 
         return iso_value

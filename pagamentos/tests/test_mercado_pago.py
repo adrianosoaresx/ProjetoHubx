@@ -10,7 +10,7 @@ from django.utils import timezone
 if not settings.configured:
     settings.configure(
         USE_TZ=True,
-        TIME_ZONE="UTC",
+        TIME_ZONE="America/Sao_Paulo",
         INSTALLED_APPS=[],
         SECRET_KEY="testing",
     )
@@ -70,25 +70,31 @@ def test_format_datetime_from_datetime(provider: MercadoPagoProvider) -> None:
 
     formatted = provider._format_datetime(dt_value)
 
-    assert formatted == "2025-12-17T21:50:13+00:00"
+    assert formatted == "2025-12-17T18:50:13.000-03:00"
 
 
 def test_format_datetime_from_iso_string_with_offset(provider: MercadoPagoProvider) -> None:
     formatted = provider._format_datetime("2025-12-17T21:50:13-03:00")
 
-    assert formatted == "2025-12-18T00:50:13+00:00"
+    assert formatted == "2025-12-17T21:50:13.000-03:00"
 
 
 def test_format_datetime_from_br_format_with_timezone(provider: MercadoPagoProvider) -> None:
     formatted = provider._format_datetime("17/12/2025 21:50:13 -03:00")
 
-    assert formatted == "2025-12-18T00:50:13+00:00"
+    assert formatted == "2025-12-17T21:50:13.000-03:00"
 
 
 def test_format_datetime_from_dash_format_with_metadata(provider: MercadoPagoProvider) -> None:
     formatted = provider._format_datetime("18-12-2025T13:14:54UTC;2a602e83-fe52-457e-86cb-d606530f6443")
 
-    assert formatted == "2025-12-18T13:14:54+00:00"
+    assert formatted == "2025-12-18T10:14:54.000-03:00"
+
+
+def test_format_datetime_from_date(provider: MercadoPagoProvider) -> None:
+    formatted = provider._format_datetime(datetime(2025, 12, 18).date())
+
+    assert formatted == "2025-12-18T20:59:59.000-03:00"
 
 
 def test_format_datetime_rejects_invalid_string(provider: MercadoPagoProvider) -> None:
@@ -112,7 +118,7 @@ def test_build_boleto_payload_rejects_invalid_expiration(provider: MercadoPagoPr
 
     payload = provider._build_boleto_payload(pedido, dados_pagamento)
 
-    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
+    assert payload["date_of_expiration"] == "2099-12-17T20:59:59.000-03:00"
 
 
 def test_build_boleto_payload_rejects_dash_only_date(provider: MercadoPagoProvider) -> None:
@@ -121,7 +127,7 @@ def test_build_boleto_payload_rejects_dash_only_date(provider: MercadoPagoProvid
 
     payload = provider._build_boleto_payload(pedido, dados_pagamento)
 
-    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
+    assert payload["date_of_expiration"] == "2099-12-17T20:59:59.000-03:00"
 
 
 def test_build_boleto_payload_accepts_date_object(provider: MercadoPagoProvider) -> None:
@@ -131,7 +137,7 @@ def test_build_boleto_payload_accepts_date_object(provider: MercadoPagoProvider)
 
     payload = provider._build_boleto_payload(pedido, dados_pagamento)
 
-    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
+    assert payload["date_of_expiration"] == "2099-12-17T20:59:59.000-03:00"
 
 
 def test_build_boleto_payload_strips_metadata(provider: MercadoPagoProvider) -> None:
@@ -141,7 +147,7 @@ def test_build_boleto_payload_strips_metadata(provider: MercadoPagoProvider) -> 
 
     payload = provider._build_boleto_payload(pedido, dados_pagamento)
 
-    assert payload["date_of_expiration"] == "2099-12-17T21:50:13+00:00"
+    assert payload["date_of_expiration"] == "2099-12-17T18:50:13.000-03:00"
 
 
 def test_build_boleto_payload_accepts_timezone_aware_datetime(
@@ -153,7 +159,7 @@ def test_build_boleto_payload_accepts_timezone_aware_datetime(
 
     payload = provider._build_boleto_payload(pedido, dados_pagamento)
 
-    assert payload["date_of_expiration"] == "2099-12-18T00:50:13+00:00"
+    assert payload["date_of_expiration"] == "2099-12-17T21:50:13.000-03:00"
 
 
 def test_build_cartao_payload_respects_payment_method(provider: MercadoPagoProvider) -> None:
