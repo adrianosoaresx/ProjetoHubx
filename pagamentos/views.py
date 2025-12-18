@@ -97,16 +97,29 @@ class CheckoutView(APIView):
         except PagamentoProviderError as exc:
             contexto = {
                 "form": form,
-                "mensagem": str(exc),
                 "transacao": None,
+                "mensagem": str(exc),
                 "provider_public_key": provider.public_key,
-                "status": 500,
+                "status": 400,
             }
-            logger.error(
+            logger.warning(
                 "checkout_pagamento_provedor_erro",
                 exc_info=exc,
                 extra={"pedido_id": pedido.id},
             )
+            return self._render_response(request, **contexto)
+        except Exception as exc:  # pragma: no cover - erro inesperado
+            logger.exception(
+                "checkout_pagamento_erro_desconhecido",
+                extra={"pedido_id": pedido.id},
+            )
+            contexto = {
+                "form": form,
+                "transacao": None,
+                "mensagem": _("Erro ao processar pagamento, tente novamente."),
+                "provider_public_key": provider.public_key,
+                "status": 500,
+            }
             return self._render_response(request, **contexto)
         contexto = {
             "form": form,
@@ -174,6 +187,7 @@ class CheckoutView(APIView):
             "neighborhood": cleaned_data.get("bairro"),
             "city": cleaned_data.get("cidade"),
             "federal_unit": cleaned_data.get("estado"),
+            "state": cleaned_data.get("estado"),
             "token": cleaned_data.get("token_cartao"),
             "payment_method_id": cleaned_data.get("payment_method_id"),
             "parcelas": cleaned_data.get("parcelas"),

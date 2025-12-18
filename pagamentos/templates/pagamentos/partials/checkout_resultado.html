@@ -1,17 +1,19 @@
 {% load i18n %}
-{% if mensagem %}
-  <div class="alert {% if transacao %}alert-success{% else %}alert-warning{% endif %}">{{ mensagem }}</div>
-{% endif %}
 {% if form and form.errors %}
-  <div class="alert alert-error">
-    <p class="font-semibold mb-2">{% trans "Corrija os erros abaixo:" %}</p>
-    <ul class="list-disc list-inside space-y-1">
+  <div class="rounded-lg border border-red-300 bg-red-50 p-4 mb-4">
+    <p class="font-semibold text-red-700 mb-2">{{ _("Corrija os erros abaixo:") }}</p>
+    <ul class="list-disc list-inside text-red-700 text-sm space-y-1">
       {% for field, errors in form.errors.items %}
         {% for error in errors %}
           <li>{% if field != '__all__' %}{{ field|capfirst }}: {% endif %}{{ error }}</li>
         {% endfor %}
       {% endfor %}
     </ul>
+  </div>
+{% endif %}
+{% if mensagem %}
+  <div class="rounded-lg border border-orange-300 bg-orange-50 p-4 mb-4">
+    <p class="font-semibold text-orange-800">{{ mensagem }}</p>
   </div>
 {% endif %}
 {% if transacao %}
