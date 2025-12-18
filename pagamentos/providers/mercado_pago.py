@@ -296,11 +296,11 @@ class MercadoPagoProvider(PaymentProvider):
 
         dt = self._parse_datetime(value)
 
-        formatted = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+        iso_value = dt.astimezone(UTC).isoformat(timespec="seconds")
 
         # Garantir separador de fuso com dois pontos, conforme esperado pela API
         # do Mercado Pago (ex.: 2025-12-17T21:50:13-03:00).
-        if formatted and formatted[-3] != ":":
-            formatted = f"{formatted[:-2]}:{formatted[-2:]}"
+        if iso_value and iso_value[-3] != ":":
+            iso_value = f"{iso_value[:-2]}:{iso_value[-2:]}"
 
-        return formatted
+        return iso_value
