@@ -474,6 +474,8 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     hero_title, hero_subtitle = _profile_hero_names(perfil)
 
     viewer = request.user if request.user.is_authenticated else None
+    perfil_tipo_usuario = _resolve_user_type(getattr(perfil, "get_tipo_usuario", None))
+    show_profile_cards = perfil_tipo_usuario != UserType.CONVIDADO.value
     portfolio_medias = list(
         perfil.medias.visible_to(viewer, perfil).select_related("user").order_by("-created_at")
     )
