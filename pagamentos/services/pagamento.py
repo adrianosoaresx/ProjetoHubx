@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
-
 import logging
 import time
+from typing import Any, Iterable
 
 from django.conf import settings
 from django.db import OperationalError, connections, transaction
 
-from pagamentos.exceptions import PagamentoInvalidoError
 from pagamentos import metrics
+from pagamentos.exceptions import PagamentoInvalidoError
 from pagamentos.models import Pedido, Transacao
 from pagamentos.notifications import enviar_email_pagamento_aprovado
 from pagamentos.providers.base import PaymentProvider
-
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +153,11 @@ class PagamentoService:
     def _row_locking_enabled(self, alias: str) -> bool:
         if not getattr(settings, "PAGAMENTOS_ROW_LOCKS_ENABLED", True):
             return False
-        return connections[alias].features.supports_select_for_update
+        features = connections[alias].features
+        has_select_for_update = getattr(features, "has_select_for_update", None)
+        if has_select_for_update is not None:
+            return bool(has_select_for_update)
+        return bool(getattr(features, "supports_select_for_update", False))
 
     def _sincronizar_pedido(
         self, pedido: Pedido, status_transacao: str, external_id: str | None
