@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import time
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db import OperationalError
 from django.db.models import Q
 from django.utils.decorators import method_decorator
@@ -19,6 +19,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from payments import PaymentStatus, RedirectNeeded, get_payment_model
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 
@@ -26,12 +27,22 @@ from eventos.models import InscricaoEvento
 from organizacoes.models import Organizacao
 from pagamentos.forms import CheckoutForm
 from pagamentos.exceptions import PagamentoProviderError
-from pagamentos.models import Pedido, Transacao
-from pagamentos.providers import MercadoPagoProvider, PayPalProvider, PaymentProvider
+from pagamentos.models import Pagamento, Pedido, Transacao
+from pagamentos.providers import MercadoPagoProvider, PayPalProvider
 from pagamentos.serializers import CheckoutResponseSerializer, CheckoutSerializer, WebhookSerializer
 from pagamentos.services import PagamentoService
 
 logger = logging.getLogger(__name__)
+
+
+def _mapear_status_pagamento(status: str) -> str:
+    if status == PaymentStatus.CONFIRMED:
+        return Transacao.Status.APROVADA
+    if status == PaymentStatus.REFUNDED:
+        return Transacao.Status.ESTORNADA
+    if status in {PaymentStatus.REJECTED, PaymentStatus.ERROR}:
+        return Transacao.Status.FALHOU
+    return Transacao.Status.PENDENTE
 
 
 class CheckoutView(APIView):
@@ -45,13 +56,8 @@ class CheckoutView(APIView):
     )
     def get(self, request: HttpRequest) -> HttpResponse:
         organizacao = self._obter_organizacao(request)
-        provider = MercadoPagoProvider.from_organizacao(organizacao)
         form = CheckoutForm(organizacao=organizacao)
-        return self._render_response(
-            request,
-            form=form,
-            provider_public_key=provider.public_key,
-        )
+        return self._render_response(request, form=form)
 
     @extend_schema(
         methods=["POST"],
@@ -64,109 +70,60 @@ class CheckoutView(APIView):
         organizacao = self._obter_organizacao(request)
         form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
         if not form.is_valid():
-            dados_enviados = {
-                chave: valor
-                for chave, valor in request.POST.items()
-                if chave not in {"csrfmiddlewaretoken", "token_cartao", "token"}
-            }
-            logger.warning(
-                "checkout_form_invalido", extra={"errors": form.errors.as_json()}
-            )
-            logger.info(
-                "checkout_form_payload",
-                extra={
-                    "dados_enviados": dados_enviados,
-                    "non_field_errors": form.non_field_errors(),
-                },
-            )
-            return self._render_response(
-                request,
-                form=form,
-                provider_public_key=MercadoPagoProvider.from_organizacao(organizacao).public_key,
-                status=400,
-            )
+            logger.warning("checkout_form_invalido", extra={"errors": form.errors.as_json()})
+            return self._render_response(request, form=form, status=400)
 
-        organizacao = self._obter_organizacao(request, str(form.cleaned_data.get("organizacao_id") or ""))
-        provider = self._provider_for_method(form.cleaned_data.get("metodo"), organizacao)
-
+        organizacao = self._obter_organizacao(
+            request, str(form.cleaned_data.get("organizacao_id") or "")
+        )
         pedido = Pedido.objects.create(
             valor=form.cleaned_data["valor"],
             email=form.cleaned_data.get("email"),
-            nome=form.cleaned_data.get("nome"),
-            documento=form.cleaned_data.get("documento"),
+            nome=form.cleaned_data.get("nome_completo"),
             organizacao=organizacao,
         )
-        service = PagamentoService(provider)
-        dados_pagamento = self._dados_pagamento(form.cleaned_data)
-        logger.debug(
-            "checkout_iniciar_pagamento",
-            extra={
-                "pedido_id": pedido.id,
-                "dados_pagamento": {
-                    k: v
-                    for k, v in dados_pagamento.items()
-                    if k not in {"token", "document_number"}
-                },
-            },
-        )
+
+        PaymentModel = get_payment_model()
+        primeiro_nome, *sobrenome = (form.cleaned_data["nome_completo"] or "").split()
+        payment_kwargs = {
+            "pedido": pedido,
+            "variant": form.cleaned_data.get("metodo") or "mercadopago",
+            "description": form.cleaned_data.get("descricao") or _("Pagamento Hubx"),
+            "total": form.cleaned_data["valor"],
+            "currency": "BRL",
+            "billing_email": form.cleaned_data.get("email"),
+            "billing_first_name": primeiro_nome,
+            "billing_last_name": " ".join(sobrenome) if sobrenome else primeiro_nome,
+        }
+        pagamento: Pagamento = PaymentModel.objects.create(**payment_kwargs)
+
+        redirect_url: str | None = None
         try:
-            transacao = service.iniciar_pagamento(
-                pedido, form.cleaned_data["metodo"], dados_pagamento
-            )
-        except PagamentoProviderError as exc:
-            contexto = {
-                "form": form,
-                "transacao": None,
-                "mensagem": str(exc),
-                "provider_public_key": provider.public_key,
-                "status": 400,
-            }
-            logger.error(
-                "erro_no_provedor",
-                extra={
-                    "erro": str(exc),
-                    "dados_pagamento": {
-                        k: v
-                        for k, v in dados_pagamento.items()
-                        if k
-                        not in {
-                            "token",
-                            "token_cartao",
-                            "document_number",
-                            "documento",
-                        }
-                    },
-                    "pedido_id": pedido.id,
-                },
-            )
-            return self._render_response(request, **contexto)
-        except Exception as exc:  # pragma: no cover - erro inesperado
-            logger.exception(
-                "erro_inesperado_checkout", extra={"erro": str(exc), "pedido_id": pedido.id}
-            )
-            contexto = {
-                "form": form,
-                "transacao": None,
-                "mensagem": _(
-                    "Ocorreu um erro inesperado. Tente novamente ou entre em contato com o suporte."
-                ),
-                "provider_public_key": provider.public_key,
-                "status": 500,
-            }
-            return self._render_response(request, **contexto)
+            pagamento.get_form()
+        except RedirectNeeded as redirect_to:
+            redirect_url = str(redirect_to)
+            pagamento.change_status(PaymentStatus.WAITING)
+
+        transacao = Transacao.objects.create(
+            pedido=pedido,
+            valor=pedido.valor,
+            status=Transacao.Status.PENDENTE,
+            metodo=Transacao.Metodo.PIX,
+            external_id=pagamento.token,
+            detalhes={"payment_id": pagamento.pk, "redirect_url": redirect_url},
+        )
+
         contexto = {
             "form": form,
             "transacao": transacao,
+            "pagamento": pagamento,
+            "redirect_url": redirect_url,
             "mensagem": _("Pagamento iniciado com sucesso."),
-            "provider_public_key": provider.public_key,
             "status": 201,
         }
+        if redirect_url:
+            return redirect(redirect_url)
         return self._render_response(request, **contexto)
-
-    def _provider_for_method(self, metodo: str | None, organizacao: Organizacao | None = None) -> PaymentProvider:
-        if metodo == Transacao.Metodo.PAYPAL:
-            return PayPalProvider.from_organizacao(organizacao)
-        return MercadoPagoProvider.from_organizacao(organizacao)
 
     def _obter_organizacao(
         self, request: HttpRequest, organizacao_id: str | None = None
@@ -208,30 +165,6 @@ class CheckoutView(APIView):
         status = contexto.pop("status", 200)
         return render(request, template, contexto, status=status)
 
-    def _dados_pagamento(self, cleaned_data: dict[str, Any]) -> dict[str, Any]:
-        return {
-            "email": cleaned_data["email"],
-            "nome": cleaned_data["nome"],
-            "document_number": cleaned_data["documento"],
-            "vencimento": cleaned_data.get("vencimento"),
-            "zip_code": cleaned_data.get("cep"),
-            "street_name": cleaned_data.get("logradouro"),
-            "street_number": cleaned_data.get("numero"),
-            "neighborhood": cleaned_data.get("bairro"),
-            "city": cleaned_data.get("cidade"),
-            "federal_unit": cleaned_data.get("estado"),
-            "state": cleaned_data.get("estado"),
-            "cep": cleaned_data.get("cep"),
-            "logradouro": cleaned_data.get("logradouro"),
-            "numero": cleaned_data.get("numero"),
-            "bairro": cleaned_data.get("bairro"),
-            "cidade": cleaned_data.get("cidade"),
-            "estado": cleaned_data.get("estado"),
-            "token": cleaned_data.get("token_cartao"),
-            "payment_method_id": cleaned_data.get("payment_method_id"),
-            "parcelas": cleaned_data.get("parcelas"),
-        }
-
 
 class ConfirmarPagamentoMixin:
     confirm_retry_delays = (0.0, 0.25, 0.5, 1.0)
@@ -255,6 +188,30 @@ class ConfirmarPagamentoMixin:
         if last_error:
             raise last_error
 
+    def _sincronizar_pagamento_model(self, transacao: Transacao) -> None:
+        payment_id = (transacao.detalhes or {}).get("payment_id")
+        if not payment_id:
+            return
+        PaymentModel = get_payment_model()
+        pagamento = PaymentModel.objects.filter(pk=payment_id).first()
+        if not pagamento:
+            return
+
+        status_mapeado = _mapear_status_pagamento(pagamento.status)
+        atualizacoes = []
+        if transacao.status != status_mapeado:
+            transacao.status = status_mapeado
+            atualizacoes.append("status")
+        if pagamento.transaction_id and transacao.external_id != pagamento.transaction_id:
+            transacao.external_id = pagamento.transaction_id
+            atualizacoes.append("external_id")
+        detalhes = transacao.detalhes or {}
+        detalhes.update({"payment_status": pagamento.status, "payment_token": pagamento.token})
+        transacao.detalhes = detalhes
+        atualizacoes.append("detalhes")
+        if atualizacoes:
+            transacao.save(update_fields=list(dict.fromkeys([*atualizacoes, "atualizado_em"])))
+
 
 class TransacaoStatusView(ConfirmarPagamentoMixin, APIView):
     permission_classes = [AllowAny]
@@ -267,26 +224,13 @@ class TransacaoStatusView(ConfirmarPagamentoMixin, APIView):
             return HttpResponseBadRequest("invalid transaction")
 
         if transacao.status == Transacao.Status.PENDENTE:
-            provider = self._provider_for_transacao(transacao)
-            service = PagamentoService(provider)
-            try:
-                self._confirmar_pagamento_com_retry(service, transacao)
-                transacao.refresh_from_db()
-            except Exception:
-                logger.exception(
-                    "polling_status_failed", extra={"transacao_id": transacao.id}
-                )
+            self._sincronizar_pagamento_model(transacao)
 
         return render(
             request,
             "pagamentos/partials/checkout_resultado.html",
             {"transacao": transacao, "form": CheckoutForm()},
         )
-
-    def _provider_for_transacao(self, transacao: Transacao) -> PaymentProvider:
-        if transacao.metodo == Transacao.Metodo.PAYPAL:
-            return PayPalProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
-        return MercadoPagoProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
 
 
 class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
@@ -299,18 +243,9 @@ class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
             return HttpResponseBadRequest("invalid status")
 
         transacao = self._buscar_transacao(request)
-        organizacao = getattr(getattr(transacao, "pedido", None), "organizacao", None)
         if transacao:
-            provider = MercadoPagoProvider.from_organizacao(organizacao)
-            service = PagamentoService(provider)
-            try:
-                self._confirmar_pagamento_com_retry(service, transacao)
-                transacao.refresh_from_db()
-            except Exception:
-                logger.exception(
-                    "retorno_mp_confirmacao_falhou",
-                    extra={"transacao_id": transacao.id, "external_id": transacao.external_id},
-                )
+            self._sincronizar_pagamento_model(transacao)
+        organizacao = getattr(getattr(transacao, "pedido", None), "organizacao", None)
 
         contexto = {
             "mensagem": self._mensagem(retorno_status, transacao is not None),
@@ -321,20 +256,23 @@ class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
         return render(request, self.template_name, contexto)
 
     def _buscar_transacao(self, request: HttpRequest) -> Transacao | None:
+        payment_token = request.GET.get("token") or request.GET.get("external_reference")
         payment_id = (
             request.GET.get("payment_id")
             or request.GET.get("collection_id")
             or request.GET.get("id")
         )
-        external_reference = request.GET.get("external_reference")
 
         queryset = Transacao.objects.select_related("pedido", "pedido__organizacao")
-        if payment_id:
-            transacao = queryset.filter(external_id=str(payment_id)).first()
+        if payment_token:
+            transacao = queryset.filter(external_id=str(payment_token)).first()
             if transacao:
                 return transacao
-        if external_reference:
-            return queryset.filter(external_id=str(external_reference)).first()
+            transacao = queryset.filter(detalhes__payment_token=str(payment_token)).first()
+            if transacao:
+                return transacao
+        if payment_id:
+            return queryset.filter(external_id=str(payment_id)).first()
         return None
 
     def _mensagem(self, status: str, possui_transacao: bool) -> str:

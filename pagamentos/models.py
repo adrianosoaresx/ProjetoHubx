@@ -3,7 +3,11 @@ from __future__ import annotations
 from decimal import Decimal
 
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+from payments import PurchasedItem
+from payments.models import BasePayment
 
 from organizacoes.models import Organizacao
 
@@ -131,3 +135,35 @@ class Transacao(models.Model):
     @property
     def _transaction_data(self) -> dict | None:
         return (self.detalhes or {}).get("point_of_interaction", {}).get("transaction_data")
+
+
+class Pagamento(BasePayment):
+    pedido: Pedido | None = models.ForeignKey(
+        Pedido,
+        related_name="pagamentos",
+        verbose_name=_("Pedido"),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Pagamento")
+        verbose_name_plural = _("Pagamentos")
+
+    def get_purchased_items(self) -> list[PurchasedItem]:
+        return [
+            PurchasedItem(
+                name=self.description or str(self.pedido) or _("Pagamento Hubx"),
+                sku=str(self.pedido_id or self.pk),
+                quantity=1,
+                price=self.total,
+                currency=self.currency,
+            )
+        ]
+
+    def get_failure_url(self) -> str:
+        return reverse("pagamentos:mercadopago-retorno", kwargs={"status": "falha"}) + f"?token={self.token}"
+
+    def get_success_url(self) -> str:
+        return reverse("pagamentos:mercadopago-retorno", kwargs={"status": "sucesso"}) + f"?token={self.token}"

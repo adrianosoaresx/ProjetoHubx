@@ -64,10 +64,10 @@ Para notificações push, defina também:
 
 ### Pagamentos (Mercado Pago e PayPal)
 
-Para habilitar o checkout e os webhooks do Mercado Pago, configure:
+O checkout usa o `django-payments` com o backend `django-payments-mercadopago`. Defina:
 
-- `MERCADO_PAGO_ACCESS_TOKEN`: token privado usado para criar, consultar e estornar cobranças.
-- `MERCADO_PAGO_PUBLIC_KEY`: chave pública usada pelo JavaScript do checkout para tokenizar cartões.
+- `MERCADO_PAGO_ACCESS_TOKEN`: token privado para o backend do Mercado Pago.
+- `PAYMENT_HOST`: host público usado pelo `django-payments` para montar URLs de retorno (por padrão, usamos o host do `FRONTEND_URL`).
 - `MERCADO_PAGO_WEBHOOK_SECRET`: segredo opcional para validar a assinatura `X-Signature` recebida no webhook.
 - `MERCADO_PAGO_RETURN_BASE_URL`: base usada para montar os links de retorno do checkout (padrão `https://hubx.space`).
 - `MERCADO_PAGO_SUCCESS_URL`, `MERCADO_PAGO_FAILURE_URL`, `MERCADO_PAGO_PENDING_URL`: URLs completas para retorno de sucesso, falha e pendência (sobrepõem a base quando definidas).
@@ -81,7 +81,7 @@ Para habilitar PayPal como método adicional:
 
 Endpoints envolvidos:
 
-- `/pagamentos/checkout/` – formulário HTMX com Pix, cartão e boleto.
+- `/pagamentos/checkout/` – formulário HTMX com fluxo simplificado usando o `django-payments`.
 - `/pagamentos/mp/retorno/<status>/` – rota de retorno do Mercado Pago (`sucesso`, `falha` ou `pendente`).
 - `https://hubx.space/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas (em dev use `http://127.0.0.1:8000/pagamentos/webhook/mercadopago/`). O endpoint valida o cabeçalho `X-Signature` com o valor de `MERCADO_PAGO_WEBHOOK_SECRET` e também está disponível em `/api/payments/mercadopago/webhook/` para compatibilidade com o painel do Mercado Pago.
 - `/pagamentos/webhook/paypal/` – webhook opcional para sincronizar ordens do PayPal.

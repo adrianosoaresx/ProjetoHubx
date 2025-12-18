@@ -14,6 +14,7 @@ import base64
 import os
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlparse
 
 import sentry_sdk
 from celery.schedules import crontab
@@ -83,6 +84,21 @@ MERCADO_PAGO_PENDING_URL = os.getenv(
 )
 MERCADO_PAGO_AUTO_RETURN = os.getenv("MERCADO_PAGO_AUTO_RETURN", "approved")
 
+PAYMENT_HOST = os.getenv("PAYMENT_HOST") or urlparse(FRONTEND_URL).netloc or "localhost"
+PAYMENT_MODEL = "pagamentos.Pagamento"
+PAYMENT_VARIANTS = {
+    "mercadopago": (
+        "payments_mercadopago.MercadoPagoProvider",
+        {
+            "access_token": os.getenv("MERCADO_PAGO_ACCESS_TOKEN"),
+            "sandbox_mode": DEBUG,
+        },
+    ),
+}
+CHECKOUT_PAYMENT_CHOICES = [
+    ("mercadopago", "Mercado Pago"),
+]
+
 
 # Application definition
 
@@ -107,6 +123,8 @@ INSTALLED_APPS = [
     "simple_history",
     "silk",
     "storages",
+    "payments",
+    "payments_mercadopago",
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "accounts.apps.AccountsConfig",
