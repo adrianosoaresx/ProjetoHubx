@@ -20,7 +20,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <form
       id="checkout-form"
-      hx-post=""
+      hx-post="{% url 'pagamentos:checkout' %}"
       hx-target="#checkout-result-content"
       hx-swap="innerHTML"
       method="post"
@@ -163,6 +163,7 @@
   const boletoSection = document.querySelector('[data-boleto-section]');
   const boletoFields = boletoSection ? Array.from(boletoSection.querySelectorAll('input, select, textarea')) : [];
   const checkoutForm = document.getElementById('checkout-form');
+  const valorInput = document.getElementById('id_valor');
 
   const syncCardMetadata = () => {
     if (!cardFormInstance?.getCardFormData) return;
@@ -242,6 +243,14 @@
     cardFormInstance = null;
   };
 
+  const remountCardForm = () => {
+    if (cardFormInstance?.unmount) {
+      cardFormInstance.unmount();
+    }
+    cardFormInstance = null;
+    mountCardForm();
+  };
+
   const setBoletoFieldsState = (isBoleto) => {
     if (boletoSection) {
       boletoSection.classList.toggle('hidden', !isBoleto);
@@ -279,6 +288,11 @@
   handleMetodoChange();
   metodoSelect?.addEventListener('change', handleMetodoChange);
   checkoutForm?.addEventListener('submit', syncCardMetadata);
+  valorInput?.addEventListener('input', () => {
+    if (metodoSelect?.value === 'card') {
+      remountCardForm();
+    }
+  });
 
   document.addEventListener('click', (event) => {
     if (event.target.matches('[data-copy]')) {
