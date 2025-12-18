@@ -248,6 +248,7 @@ class MercadoPagoProvider(PaymentProvider):
                 "%d/%m/%Y %H:%M:%S %z",
                 "%d/%m/%Y %H:%M:%S%z",
                 "%d/%m/%YT%H:%M:%S%z",
+                "%d-%m-%YT%H:%M:%S%z",
             )
 
             for candidate in candidates:
