@@ -23,6 +23,7 @@ class CheckoutForm(forms.Form):
     documento = forms.CharField(label=_("Documento"), max_length=20)
     parcelas = forms.IntegerField(label=_("Parcelas"), min_value=1, required=False)
     token_cartao = forms.CharField(label=_("Token do cartão"), required=False)
+    payment_method_id = forms.CharField(label=_("Bandeira do cartão"), required=False)
     vencimento = forms.DateTimeField(label=_("Vencimento"), required=False)
 
     def __init__(self, *args, user=None, organizacao=None, **kwargs):
@@ -58,6 +59,10 @@ class CheckoutForm(forms.Form):
         if metodo == Transacao.Metodo.CARTAO:
             if not cleaned.get("token_cartao"):
                 self.add_error("token_cartao", _("Token do cartão é obrigatório."))
+            if not (cleaned.get("payment_method_id") or "").strip():
+                self.add_error(
+                    "payment_method_id", _("A bandeira do cartão é obrigatória para processar o pagamento."),
+                )
         if metodo == Transacao.Metodo.BOLETO and not cleaned.get("vencimento"):
             self.add_error("vencimento", _("Data de vencimento é obrigatória."))
         if metodo == Transacao.Metodo.BOLETO and cleaned.get("vencimento"):

@@ -106,12 +106,15 @@ class MercadoPagoProvider(PaymentProvider):
         token = dados_pagamento.get("token")
         if not token:
             raise PagamentoInvalidoError(_("Token do cartão não informado."))
+        payment_method_id = (dados_pagamento.get("payment_method_id") or "").strip()
+        if not payment_method_id:
+            raise PagamentoInvalidoError(_("Bandeira do cartão não informada."))
         parcelas = int(dados_pagamento.get("parcelas", 1))
         return {
             "transaction_amount": float(pedido.valor),
             "token": token,
             "installments": parcelas,
-            "payment_method_id": dados_pagamento.get("payment_method_id", "visa"),
+            "payment_method_id": payment_method_id,
             "payer": self._payer_data(dados_pagamento),
         }
 

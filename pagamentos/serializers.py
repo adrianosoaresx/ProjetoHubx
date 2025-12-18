@@ -16,6 +16,7 @@ class CheckoutSerializer(serializers.Serializer):
     documento = serializers.CharField(max_length=40)
     parcelas = serializers.IntegerField(required=False, min_value=1)
     token_cartao = serializers.CharField(required=False, allow_blank=True)
+    payment_method_id = serializers.CharField(required=False, allow_blank=True)
     vencimento = serializers.DateTimeField(required=False)
 
 

@@ -115,6 +115,7 @@
             </div>
             <input id="document-type" type="hidden" value="CPF" />
             {{ form.token_cartao|add_class:"hidden"|attr:"id=id_token_cartao" }}
+            {{ form.payment_method_id|add_class:"hidden"|attr:"id=id_payment_method_id" }}
             <p class="text-xs text-slate-500">{% trans "O token é enviado ao backend, sem armazenar dados sensíveis no servidor." %}</p>
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-boleto-section>
@@ -161,6 +162,20 @@
   const metodoSelect = document.getElementById('id_metodo');
   const boletoSection = document.querySelector('[data-boleto-section]');
   const boletoFields = boletoSection ? Array.from(boletoSection.querySelectorAll('input, select, textarea')) : [];
+  const checkoutForm = document.getElementById('checkout-form');
+
+  const syncCardMetadata = () => {
+    if (!cardFormInstance?.getCardFormData) return;
+    const cardData = cardFormInstance.getCardFormData();
+    const paymentMethodField = document.getElementById('id_payment_method_id');
+    if (paymentMethodField) {
+      paymentMethodField.value = cardData?.paymentMethodId || '';
+    }
+    const tokenField = document.getElementById('id_token_cartao');
+    if (tokenField && cardData?.token) {
+      tokenField.value = cardData.token;
+    }
+  };
 
   const setCardFieldsState = (isCard) => {
     if (cardSection) {
@@ -215,6 +230,7 @@
       callbacks: {
         onFormMounted: (error) => { if (error) console.error(error); },
         onError: (error) => console.error('MP error', error),
+        onSubmit: () => syncCardMetadata(),
       }
     });
   };
@@ -262,6 +278,7 @@
 
   handleMetodoChange();
   metodoSelect?.addEventListener('change', handleMetodoChange);
+  checkoutForm?.addEventListener('submit', syncCardMetadata);
 
   document.addEventListener('click', (event) => {
     if (event.target.matches('[data-copy]')) {

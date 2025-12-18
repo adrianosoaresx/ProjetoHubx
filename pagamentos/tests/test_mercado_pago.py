@@ -106,3 +106,42 @@ def test_build_boleto_payload_rejects_invalid_expiration(provider: MercadoPagoPr
 
     with pytest.raises(PagamentoInvalidoError):
         provider._build_boleto_payload(pedido, dados_pagamento)
+
+
+def test_build_cartao_payload_respects_payment_method(provider: MercadoPagoProvider) -> None:
+    pedido = DummyPedido(120)
+    dados_pagamento = {
+        "token": "master-token",
+        "payment_method_id": "master",
+        "email": "cliente@example.com",
+    }
+
+    payload = provider._build_cartao_payload(pedido, dados_pagamento)
+
+    assert payload["payment_method_id"] == "master"
+
+
+def test_build_cartao_payload_accepts_different_brands(provider: MercadoPagoProvider) -> None:
+    pedido = DummyPedido(80)
+    dados_pagamento = {
+        "token": "amex-token",
+        "payment_method_id": "amex",
+        "email": "cliente@example.com",
+    }
+
+    payload = provider._build_cartao_payload(pedido, dados_pagamento)
+
+    assert payload["payment_method_id"] == "amex"
+
+
+def test_build_cartao_payload_requires_payment_method(provider: MercadoPagoProvider) -> None:
+    pedido = DummyPedido(75)
+    dados_pagamento = {
+        "token": "missing-brand-token",
+        "email": "cliente@example.com",
+    }
+
+    with pytest.raises(PagamentoInvalidoError) as excinfo:
+        provider._build_cartao_payload(pedido, dados_pagamento)
+
+    assert "Bandeira" in str(excinfo.value)
