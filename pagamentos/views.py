@@ -25,6 +25,7 @@ from rest_framework.views import APIView
 from eventos.models import InscricaoEvento
 from organizacoes.models import Organizacao
 from pagamentos.forms import CheckoutForm
+from pagamentos.exceptions import PagamentoProviderError
 from pagamentos.models import Pedido, Transacao
 from pagamentos.providers import MercadoPagoProvider, PayPalProvider, PaymentProvider
 from pagamentos.serializers import CheckoutResponseSerializer, CheckoutSerializer, WebhookSerializer
@@ -82,7 +83,31 @@ class CheckoutView(APIView):
         )
         service = PagamentoService(provider)
         dados_pagamento = self._dados_pagamento(form.cleaned_data)
-        transacao = service.iniciar_pagamento(pedido, form.cleaned_data["metodo"], dados_pagamento)
+        logger.debug(
+            "checkout_iniciar_pagamento",
+            extra={
+                "pedido_id": pedido.id,
+                "dados_pagamento": {k: v for k, v in dados_pagamento.items() if k != "token"},
+            },
+        )
+        try:
+            transacao = service.iniciar_pagamento(
+                pedido, form.cleaned_data["metodo"], dados_pagamento
+            )
+        except PagamentoProviderError as exc:
+            contexto = {
+                "form": form,
+                "mensagem": str(exc),
+                "transacao": None,
+                "provider_public_key": provider.public_key,
+                "status": 500,
+            }
+            logger.error(
+                "checkout_pagamento_provedor_erro",
+                exc_info=exc,
+                extra={"pedido_id": pedido.id},
+            )
+            return self._render_response(request, **contexto)
         contexto = {
             "form": form,
             "transacao": transacao,
@@ -143,12 +168,12 @@ class CheckoutView(APIView):
             "nome": cleaned_data["nome"],
             "document_number": cleaned_data["documento"],
             "vencimento": cleaned_data.get("vencimento"),
-            "cep": cleaned_data.get("cep"),
+            "zip_code": cleaned_data.get("cep"),
             "street_name": cleaned_data.get("logradouro"),
             "street_number": cleaned_data.get("numero"),
             "neighborhood": cleaned_data.get("bairro"),
             "city": cleaned_data.get("cidade"),
-            "state": cleaned_data.get("estado"),
+            "federal_unit": cleaned_data.get("estado"),
             "token": cleaned_data.get("token_cartao"),
             "payment_method_id": cleaned_data.get("payment_method_id"),
             "parcelas": cleaned_data.get("parcelas"),
