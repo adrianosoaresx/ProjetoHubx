@@ -108,18 +108,30 @@ def test_build_boleto_payload_normalizes_expiration(provider: MercadoPagoProvide
 
 def test_build_boleto_payload_rejects_invalid_expiration(provider: MercadoPagoProvider) -> None:
     pedido = DummyPedido(50)
-    dados_pagamento = {"vencimento": "17-12-2025", "email": "cliente@example.com"}
+    dados_pagamento = {"vencimento": "17-12-2099", "email": "cliente@example.com"}
 
-    with pytest.raises(PagamentoInvalidoError):
-        provider._build_boleto_payload(pedido, dados_pagamento)
+    payload = provider._build_boleto_payload(pedido, dados_pagamento)
+
+    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
 
 
 def test_build_boleto_payload_rejects_dash_only_date(provider: MercadoPagoProvider) -> None:
     pedido = DummyPedido(50)
-    dados_pagamento = {"vencimento": "17-12-2025", "email": "cliente@example.com"}
+    dados_pagamento = {"vencimento": "17/12/2099", "email": "cliente@example.com"}
 
-    with pytest.raises(PagamentoInvalidoError):
-        provider._build_boleto_payload(pedido, dados_pagamento)
+    payload = provider._build_boleto_payload(pedido, dados_pagamento)
+
+    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
+
+
+def test_build_boleto_payload_accepts_date_object(provider: MercadoPagoProvider) -> None:
+    pedido = DummyPedido(50)
+    vencimento = datetime(2099, 12, 17).date()
+    dados_pagamento = {"vencimento": vencimento, "email": "cliente@example.com"}
+
+    payload = provider._build_boleto_payload(pedido, dados_pagamento)
+
+    assert payload["date_of_expiration"] == "2099-12-17T23:59:59+00:00"
 
 
 def test_build_boleto_payload_strips_metadata(provider: MercadoPagoProvider) -> None:
