@@ -24,7 +24,12 @@ class CheckoutForm(forms.Form):
     parcelas = forms.IntegerField(label=_("Parcelas"), min_value=1, required=False)
     token_cartao = forms.CharField(label=_("Token do cartão"), required=False)
     payment_method_id = forms.CharField(label=_("Bandeira do cartão"), required=False)
-    vencimento = forms.DateTimeField(label=_("Vencimento"), required=False)
+    vencimento = forms.DateTimeField(
+        label=_("Vencimento"),
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        input_formats=("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"),
+    )
 
     def __init__(self, *args, user=None, organizacao=None, **kwargs):
         self.user = user
