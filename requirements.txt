@@ -46,6 +46,8 @@ django-extensions==4.1
 django-formtools==2.5.1
 django-lucide-icons==0.2.2
 django-model-utils==5.0.0
+django-payments==3.1.0
+django-payments-mercadopago==0.4.1
 django-phonenumber-field==8.1.0
 django-prometheus==2.4.1
 django-ratelimit==4.1.0
