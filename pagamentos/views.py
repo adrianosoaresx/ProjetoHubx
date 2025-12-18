@@ -140,6 +140,7 @@ class CheckoutView(APIView):
             "nome": cleaned_data["nome"],
             "document_number": cleaned_data["documento"],
             "token": cleaned_data.get("token_cartao"),
+            "payment_method_id": cleaned_data.get("payment_method_id"),
             "parcelas": cleaned_data.get("parcelas"),
             "vencimento": cleaned_data.get("vencimento"),
         }
