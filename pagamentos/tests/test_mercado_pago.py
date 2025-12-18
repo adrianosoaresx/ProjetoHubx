@@ -96,12 +96,12 @@ def test_payer_data_includes_address(provider: MercadoPagoProvider) -> None:
         "nome": "Carlos Alberto",
         "email": "carlos@example.com",
         "document_number": "98765432100",
-        "cep": "12345678",
+        "zip_code": "12345678",
         "street_name": "Rua das Flores",
         "street_number": "123",
         "neighborhood": "Centro",
         "city": "São Paulo",
-        "state": "SP",
+        "federal_unit": "SP",
     }
 
     payer = provider._payer_data(dados_pagamento)
