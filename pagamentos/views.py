@@ -142,10 +142,16 @@ class CheckoutView(APIView):
             "email": cleaned_data["email"],
             "nome": cleaned_data["nome"],
             "document_number": cleaned_data["documento"],
+            "vencimento": cleaned_data.get("vencimento"),
+            "cep": cleaned_data.get("cep"),
+            "street_name": cleaned_data.get("logradouro"),
+            "street_number": cleaned_data.get("numero"),
+            "neighborhood": cleaned_data.get("bairro"),
+            "city": cleaned_data.get("cidade"),
+            "state": cleaned_data.get("estado"),
             "token": cleaned_data.get("token_cartao"),
             "payment_method_id": cleaned_data.get("payment_method_id"),
             "parcelas": cleaned_data.get("parcelas"),
-            "vencimento": cleaned_data.get("vencimento"),
         }
 
 

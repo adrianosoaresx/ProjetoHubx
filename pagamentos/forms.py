@@ -21,6 +21,12 @@ class CheckoutForm(forms.Form):
     email = forms.EmailField(label=_("E-mail"))
     nome = forms.CharField(label=_("Nome"), max_length=100)
     documento = forms.CharField(label=_("Documento"), max_length=20)
+    cep = forms.CharField(label=_("CEP"), max_length=9, required=False)
+    logradouro = forms.CharField(label=_("Endereço"), max_length=100, required=False)
+    numero = forms.CharField(label=_("Número"), max_length=10, required=False)
+    bairro = forms.CharField(label=_("Bairro"), max_length=50, required=False)
+    cidade = forms.CharField(label=_("Cidade"), max_length=50, required=False)
+    estado = forms.CharField(label=_("Estado"), max_length=2, required=False)
     parcelas = forms.IntegerField(label=_("Parcelas"), min_value=1, required=False)
     token_cartao = forms.CharField(label=_("Token do cartão"), required=False)
     payment_method_id = forms.CharField(label=_("Bandeira do cartão"), required=False)
@@ -68,12 +74,40 @@ class CheckoutForm(forms.Form):
                 self.add_error(
                     "payment_method_id", _("A bandeira do cartão é obrigatória para processar o pagamento."),
                 )
-        if metodo == Transacao.Metodo.BOLETO and not cleaned.get("vencimento"):
-            self.add_error("vencimento", _("Data de vencimento é obrigatória."))
-        if metodo == Transacao.Metodo.BOLETO and cleaned.get("vencimento"):
-            vencimento = cleaned["vencimento"]
-            if vencimento <= timezone.now():
-                self.add_error("vencimento", _("A data de vencimento deve ser futura."))
+        if metodo == Transacao.Metodo.BOLETO:
+            required_address_fields = {
+                "cep": _("CEP é obrigatório para boleto."),
+                "logradouro": _("Endereço é obrigatório para boleto."),
+                "numero": _("Número é obrigatório para boleto."),
+                "bairro": _("Bairro é obrigatório para boleto."),
+                "cidade": _("Cidade é obrigatória para boleto."),
+                "estado": _("Estado é obrigatório para boleto."),
+            }
+            for field_name, message in required_address_fields.items():
+                if not (cleaned.get(field_name) or "").strip():
+                    self.add_error(field_name, message)
+
+            cep_value = cleaned.get("cep")
+            if cep_value:
+                cep_digits = "".join(char for char in cep_value if char.isdigit())
+                if len(cep_digits) != 8:
+                    self.add_error("cep", _("Informe um CEP válido com 8 dígitos."))
+                else:
+                    cleaned["cep"] = cep_digits
+
+            estado_value = (cleaned.get("estado") or "").strip().upper()
+            if estado_value:
+                if len(estado_value) != 2 or not estado_value.isalpha():
+                    self.add_error("estado", _("Informe a sigla do estado com 2 letras."))
+                else:
+                    cleaned["estado"] = estado_value
+
+            if not cleaned.get("vencimento"):
+                self.add_error("vencimento", _("Data de vencimento é obrigatória."))
+            if cleaned.get("vencimento"):
+                vencimento = cleaned["vencimento"]
+                if vencimento <= timezone.now():
+                    self.add_error("vencimento", _("A data de vencimento deve ser futura."))
 
         if self.user:
             profile_data = self._get_profile_data(self.user)

@@ -91,6 +91,31 @@ def test_payer_data_with_single_name(provider: MercadoPagoProvider) -> None:
     assert payer["last_name"] == "Maria"
 
 
+def test_payer_data_includes_address(provider: MercadoPagoProvider) -> None:
+    dados_pagamento = {
+        "nome": "Carlos Alberto",
+        "email": "carlos@example.com",
+        "document_number": "98765432100",
+        "cep": "12345678",
+        "street_name": "Rua das Flores",
+        "street_number": "123",
+        "neighborhood": "Centro",
+        "city": "São Paulo",
+        "state": "SP",
+    }
+
+    payer = provider._payer_data(dados_pagamento)
+
+    assert payer["address"] == {
+        "zip_code": "12345678",
+        "street_name": "Rua das Flores",
+        "street_number": "123",
+        "neighborhood": "Centro",
+        "city": "São Paulo",
+        "federal_unit": "SP",
+    }
+
+
 def test_format_datetime_from_datetime(provider: MercadoPagoProvider) -> None:
     dt_value = datetime(2025, 12, 17, 21, 50, 13, tzinfo=dt_timezone.utc)
 

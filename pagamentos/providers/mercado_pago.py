@@ -153,6 +153,14 @@ class MercadoPagoProvider(PaymentProvider):
             last_name = dados_pagamento.get("last_name") or partes[-1]
         else:
             last_name = dados_pagamento.get("last_name") or first_name
+        address = {
+            "zip_code": dados_pagamento.get("cep"),
+            "street_name": dados_pagamento.get("street_name"),
+            "street_number": dados_pagamento.get("street_number"),
+            "neighborhood": dados_pagamento.get("neighborhood"),
+            "city": dados_pagamento.get("city"),
+            "federal_unit": dados_pagamento.get("state"),
+        }
         return {
             "email": email,
             "first_name": first_name,
@@ -161,6 +169,7 @@ class MercadoPagoProvider(PaymentProvider):
                 "type": dados_pagamento.get("document_type", "CPF"),
                 "number": dados_pagamento.get("document_number"),
             },
+            "address": address,
         }
 
     def _headers(self, idempotency_key: str | None = None) -> dict[str, str]:

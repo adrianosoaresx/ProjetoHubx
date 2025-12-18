@@ -120,6 +120,32 @@
           </div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4" data-boleto-section>
             <h3 class="text-lg font-semibold text-slate-900">{% trans "Boleto bancário" %}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 boleto-fields">
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_cep">{% trans "CEP" %}</label>
+                {{ form.cep|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_logradouro">{% trans "Endereço" %}</label>
+                {{ form.logradouro|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_numero">{% trans "Número" %}</label>
+                {{ form.numero|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_bairro">{% trans "Bairro" %}</label>
+                {{ form.bairro|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_cidade">{% trans "Cidade" %}</label>
+                {{ form.cidade|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700" for="id_estado">{% trans "Estado" %}</label>
+                {{ form.estado|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              </div>
+            </div>
             <div>
               <label class="block text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Data de vencimento" %}</label>
               {{ form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
@@ -262,6 +288,7 @@
       } else {
         field.removeAttribute('required');
         field.setAttribute('disabled', 'disabled');
+        field.value = '';
       }
     });
     if (!isBoleto) {
