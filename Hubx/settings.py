@@ -225,6 +225,13 @@ DATABASES = {
     }
 }
 
+PAGAMENTOS_ROW_LOCKS_ENABLED = os.getenv("PAGAMENTOS_ROW_LOCKS_ENABLED", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
 CACHE_URL = os.getenv("CACHE_URL")
 if CACHE_URL:
     CACHES = {

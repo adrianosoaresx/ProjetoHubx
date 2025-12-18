@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 import logging
-from django.db import transaction
+import time
+
+from django.conf import settings
+from django.db import OperationalError, connections, transaction
 
 from pagamentos.exceptions import PagamentoInvalidoError
 from pagamentos import metrics
@@ -17,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 class PagamentoService:
     """Serviço de domínio para orquestrar operações de pagamento."""
+
+    db_retry_delays = (0.1, 0.25, 0.5)
 
     def __init__(self, provider: PaymentProvider) -> None:
         self.provider = provider
@@ -70,9 +75,13 @@ class PagamentoService:
             )
             raise
         status = self._mapear_status(resposta.get("status"))
-        with transaction.atomic():
-            self._atualizar_transacao(transacao, status, resposta)
-            self._sincronizar_pedido(transacao.pedido, status, resposta.get("order_id"))
+        transacao = self._atualizar_com_retry(
+            transacao,
+            status,
+            resposta,
+            provider_order_id=resposta.get("order_id"),
+            fase="confirmacao",
+        )
         return transacao
 
     def estornar_pagamento(self, transacao: Transacao) -> Transacao:
@@ -88,11 +97,65 @@ class PagamentoService:
             )
             raise
         status = self._mapear_status(resposta.get("status") or Transacao.Status.ESTORNADA)
-        with transaction.atomic():
-            self._atualizar_transacao(transacao, status, resposta)
-            self._sincronizar_pedido(transacao.pedido, status, resposta.get("order_id"))
+        transacao = self._atualizar_com_retry(
+            transacao,
+            status,
+            resposta,
+            provider_order_id=resposta.get("order_id"),
+            fase="estorno",
+        )
         metrics.pagamentos_estornados_total.labels(metodo=transacao.metodo).inc()
         return transacao
+
+    def _atualizar_com_retry(
+        self,
+        transacao: Transacao,
+        status: str,
+        detalhes: dict | None,
+        provider_order_id: str | None,
+        fase: str,
+    ) -> Transacao:
+        last_error: Exception | None = None
+        for tentativa, delay in enumerate((0.0, *self.db_retry_delays), start=1):
+            if delay:
+                time.sleep(delay)
+            try:
+                with transaction.atomic():
+                    locked_transacao = self._lock_transacao(transacao)
+                    self._atualizar_transacao(locked_transacao, status, detalhes)
+                    self._sincronizar_pedido(
+                        locked_transacao.pedido, status, provider_order_id
+                    )
+                    return locked_transacao
+            except OperationalError as exc:
+                last_error = exc
+                logger.warning(
+                    "pagamento_operational_retry",
+                    extra={
+                        "transacao_id": transacao.id,
+                        "fase": fase,
+                        "tentativa": tentativa,
+                    },
+                )
+        if last_error:
+            raise last_error
+        return transacao
+
+    def _lock_transacao(self, transacao: Transacao) -> Transacao:
+        alias = transacao._state.db or "default"
+        if not self._row_locking_enabled(alias):
+            return transacao
+        return (
+            Transacao.objects.using(alias)
+            .select_related("pedido")
+            .select_for_update()
+            .get(pk=transacao.pk)
+        )
+
+    def _row_locking_enabled(self, alias: str) -> bool:
+        if not getattr(settings, "PAGAMENTOS_ROW_LOCKS_ENABLED", True):
+            return False
+        return connections[alias].features.supports_select_for_update
 
     def _sincronizar_pedido(
         self, pedido: Pedido, status_transacao: str, external_id: str | None

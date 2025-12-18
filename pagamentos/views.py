@@ -8,8 +8,11 @@ from hashlib import sha256
 from typing import Any
 from urllib.parse import urlparse
 
+import time
+
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render
+from django.db import OperationalError
 from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
@@ -148,6 +151,7 @@ class CheckoutView(APIView):
 
 class TransacaoStatusView(APIView):
     permission_classes = [AllowAny]
+    confirm_retry_delays = (0.0, 0.25, 0.5, 1.0)
 
     @extend_schema(tags=["Pagamentos"], responses=CheckoutResponseSerializer)
     def get(self, request: HttpRequest, pk: int) -> HttpResponse:
@@ -160,7 +164,7 @@ class TransacaoStatusView(APIView):
             provider = self._provider_for_transacao(transacao)
             service = PagamentoService(provider)
             try:
-                service.confirmar_pagamento(transacao)
+                self._confirmar_pagamento_com_retry(service, transacao)
                 transacao.refresh_from_db()
             except Exception:
                 logger.exception(
@@ -194,7 +198,7 @@ class MercadoPagoRetornoView(APIView):
             provider = MercadoPagoProvider.from_organizacao(organizacao)
             service = PagamentoService(provider)
             try:
-                service.confirmar_pagamento(transacao)
+                self._confirmar_pagamento_com_retry(service, transacao)
                 transacao.refresh_from_db()
             except Exception:
                 logger.exception(
@@ -284,13 +288,32 @@ class WebhookView(APIView):
             else self.provider_class()
         )
         service = PagamentoService(provider)
-        service.confirmar_pagamento(transacao)
+        self._confirmar_pagamento_com_retry(service, transacao)
         logger.info(
             "webhook_pagamento_confirmado",
             extra={"transacao_id": transacao.id, "external_id": external_id},
         )
         self._atualizar_inscricao(transacao)
         return HttpResponse(status=200)
+
+    def _confirmar_pagamento_com_retry(
+        self, service: PagamentoService, transacao: Transacao
+    ) -> None:
+        last_error: Exception | None = None
+        for tentativa, delay in enumerate(self.confirm_retry_delays, start=1):
+            if delay:
+                time.sleep(delay)
+            try:
+                service.confirmar_pagamento(transacao)
+                return
+            except OperationalError as exc:
+                last_error = exc
+                logger.warning(
+                    "confirmar_pagamento_operational_error",
+                    extra={"transacao_id": transacao.id, "tentativa": tentativa},
+                )
+        if last_error:
+            raise last_error
 
     def _atualizar_inscricao(self, transacao: Transacao) -> None:
         try:
