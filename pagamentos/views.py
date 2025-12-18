@@ -149,9 +149,31 @@ class CheckoutView(APIView):
         }
 
 
-class TransacaoStatusView(APIView):
-    permission_classes = [AllowAny]
+class ConfirmarPagamentoMixin:
     confirm_retry_delays = (0.0, 0.25, 0.5, 1.0)
+
+    def _confirmar_pagamento_com_retry(
+        self, service: PagamentoService, transacao: Transacao
+    ) -> None:
+        last_error: Exception | None = None
+        for tentativa, delay in enumerate(self.confirm_retry_delays, start=1):
+            if delay:
+                time.sleep(delay)
+            try:
+                service.confirmar_pagamento(transacao)
+                return
+            except OperationalError as exc:
+                last_error = exc
+                logger.warning(
+                    "confirmar_pagamento_operational_error",
+                    extra={"transacao_id": transacao.id, "tentativa": tentativa},
+                )
+        if last_error:
+            raise last_error
+
+
+class TransacaoStatusView(ConfirmarPagamentoMixin, APIView):
+    permission_classes = [AllowAny]
 
     @extend_schema(tags=["Pagamentos"], responses=CheckoutResponseSerializer)
     def get(self, request: HttpRequest, pk: int) -> HttpResponse:
@@ -183,7 +205,7 @@ class TransacaoStatusView(APIView):
         return MercadoPagoProvider.from_organizacao(getattr(transacao.pedido, "organizacao", None))
 
 
-class MercadoPagoRetornoView(APIView):
+class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
     permission_classes = [AllowAny]
     template_name = "pagamentos/retorno.html"
 
@@ -242,7 +264,7 @@ class MercadoPagoRetornoView(APIView):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class WebhookView(APIView):
+class WebhookView(ConfirmarPagamentoMixin, APIView):
     permission_classes = [AllowAny]
     authentication_classes: list[type] = []
     provider_class = MercadoPagoProvider
@@ -295,25 +317,6 @@ class WebhookView(APIView):
         )
         self._atualizar_inscricao(transacao)
         return HttpResponse(status=200)
-
-    def _confirmar_pagamento_com_retry(
-        self, service: PagamentoService, transacao: Transacao
-    ) -> None:
-        last_error: Exception | None = None
-        for tentativa, delay in enumerate(self.confirm_retry_delays, start=1):
-            if delay:
-                time.sleep(delay)
-            try:
-                service.confirmar_pagamento(transacao)
-                return
-            except OperationalError as exc:
-                last_error = exc
-                logger.warning(
-                    "confirmar_pagamento_operational_error",
-                    extra={"transacao_id": transacao.id, "tentativa": tentativa},
-                )
-        if last_error:
-            raise last_error
 
     def _atualizar_inscricao(self, transacao: Transacao) -> None:
         try:
