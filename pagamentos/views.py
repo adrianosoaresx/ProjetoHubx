@@ -64,8 +64,20 @@ class CheckoutView(APIView):
         organizacao = self._obter_organizacao(request)
         form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
         if not form.is_valid():
+            dados_enviados = {
+                chave: valor
+                for chave, valor in request.POST.items()
+                if chave not in {"csrfmiddlewaretoken", "token_cartao", "token"}
+            }
             logger.warning(
                 "checkout_form_invalido", extra={"errors": form.errors.as_json()}
+            )
+            logger.info(
+                "checkout_form_payload",
+                extra={
+                    "dados_enviados": dados_enviados,
+                    "non_field_errors": form.non_field_errors(),
+                },
             )
             return self._render_response(
                 request,
