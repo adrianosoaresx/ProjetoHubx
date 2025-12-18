@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import uuid
 from datetime import datetime, timezone as dt_timezone
 from typing import Any
@@ -236,12 +237,21 @@ class MercadoPagoProvider(PaymentProvider):
         elif isinstance(value, str):
             clean_value = value.split(";", 1)[0].strip()
             normalized = clean_value.replace("Z", "+00:00").replace("UTC", "+00:00")
-            dt: datetime | None = None
-
             candidates = [normalized]
             if len(normalized) >= 6 and normalized[-3] == ":" and normalized[-6] in "+-":
                 candidates.append(f"{normalized[:-3]}{normalized[-2:]}")
 
+            patterns = (
+                r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
+                r"^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2} (?:[+-]\d{2}:?\d{2})$",
+                r"^\d{2}/\d{2}/\d{4}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
+                r"^\d{2}-\d{2}-\d{4}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:?\d{2})$",
+            )
+
+            if not any(re.match(pattern, candidate) for pattern in patterns for candidate in candidates):
+                raise PagamentoInvalidoError(_("Data de pagamento inválida ou em formato não reconhecido."))
+
+            dt: datetime | None = None
             formats = (
                 "%Y-%m-%dT%H:%M:%S%z",
                 "%Y-%m-%d %H:%M:%S%z",
