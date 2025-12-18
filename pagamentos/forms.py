@@ -26,6 +26,10 @@ class CheckoutForm(forms.Form):
     token_cartao = forms.CharField(label=_("Token do cartão"), max_length=255, required=False)
     payment_method_id = forms.CharField(label=_("Bandeira do cartão"), max_length=50, required=False)
     vencimento = forms.DateTimeField(label=_("Vencimento do boleto"), required=False)
+    pix_descricao = forms.CharField(label=_("Descrição do Pix"), max_length=140, required=False)
+    pix_expiracao = forms.DateTimeField(
+        label=_("Expiração do Pix"), required=False, widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
+    )
     cep = forms.CharField(label=_("CEP"), max_length=9, required=False)
     logradouro = forms.CharField(label=_("Logradouro"), max_length=120, required=False)
     numero = forms.CharField(label=_("Número"), max_length=20, required=False)
@@ -113,6 +117,9 @@ class CheckoutForm(forms.Form):
         elif metodo == Transacao.Metodo.PIX:
             if not cleaned_data.get("documento"):
                 errors["documento"] = _("Documento é obrigatório para Pix.")
+            expiracao = cleaned_data.get("pix_expiracao")
+            if expiracao and expiracao <= timezone.now():
+                errors["pix_expiracao"] = _("Defina um prazo futuro para expiração do Pix.")
 
         for field, message in errors.items():
             self.add_error(field, message)

@@ -57,7 +57,10 @@ class CheckoutView(APIView):
     def get(self, request: HttpRequest) -> HttpResponse:
         organizacao = self._obter_organizacao(request)
         form = CheckoutForm(organizacao=organizacao)
-        return self._render_response(request, form=form)
+        provider = MercadoPagoProvider.from_organizacao(organizacao)
+        return self._render_response(
+            request, form=form, provider_public_key=provider.public_key
+        )
 
     @extend_schema(
         methods=["POST"],
@@ -71,7 +74,10 @@ class CheckoutView(APIView):
         form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
         if not form.is_valid():
             logger.warning("checkout_form_invalido", extra={"errors": form.errors.as_json()})
-            return self._render_response(request, form=form, status=400)
+            provider = MercadoPagoProvider.from_organizacao(organizacao)
+            return self._render_response(
+                request, form=form, status=400, provider_public_key=provider.public_key
+            )
 
         organizacao = self._obter_organizacao(
             request, str(form.cleaned_data.get("organizacao_id") or "")
@@ -108,6 +114,15 @@ class CheckoutView(APIView):
             )
         elif metodo_pagamento == Transacao.Metodo.BOLETO:
             dados_pagamento.update({"vencimento": form.cleaned_data.get("vencimento")})
+        elif metodo_pagamento == Transacao.Metodo.PIX:
+            dados_pagamento.update(
+                {
+                    "descricao": form.cleaned_data.get("pix_descricao")
+                    or form.cleaned_data.get("descricao")
+                    or _("Pagamento Hubx"),
+                    "expiracao": form.cleaned_data.get("pix_expiracao"),
+                }
+            )
 
         provider = MercadoPagoProvider.from_organizacao(organizacao)
         service = PagamentoService(provider)

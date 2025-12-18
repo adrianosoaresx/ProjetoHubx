@@ -18,6 +18,8 @@ class CheckoutSerializer(serializers.Serializer):
     token_cartao = serializers.CharField(required=False, allow_blank=True)
     payment_method_id = serializers.CharField(required=False, allow_blank=True)
     vencimento = serializers.DateTimeField(required=False)
+    pix_descricao = serializers.CharField(required=False, allow_blank=True, max_length=140)
+    pix_expiracao = serializers.DateTimeField(required=False)
 
 
 class CheckoutResponseSerializer(serializers.Serializer):
