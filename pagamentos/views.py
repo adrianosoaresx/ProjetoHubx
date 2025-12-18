@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-from payments import PaymentStatus, RedirectNeeded, get_payment_model
+from payments import PaymentStatus, get_payment_model
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 
@@ -27,7 +27,7 @@ from eventos.models import InscricaoEvento
 from organizacoes.models import Organizacao
 from pagamentos.forms import CheckoutForm
 from pagamentos.exceptions import PagamentoProviderError
-from pagamentos.models import Pagamento, Pedido, Transacao
+from pagamentos.models import Pedido, Transacao
 from pagamentos.providers import MercadoPagoProvider, PayPalProvider
 from pagamentos.serializers import CheckoutResponseSerializer, CheckoutSerializer, WebhookSerializer
 from pagamentos.services import PagamentoService
@@ -79,44 +79,56 @@ class CheckoutView(APIView):
         pedido = Pedido.objects.create(
             valor=form.cleaned_data["valor"],
             email=form.cleaned_data.get("email"),
-            nome=form.cleaned_data.get("nome_completo"),
+            nome=form.cleaned_data.get("nome"),
             organizacao=organizacao,
         )
 
-        PaymentModel = get_payment_model()
-        primeiro_nome, *sobrenome = (form.cleaned_data["nome_completo"] or "").split()
-        payment_kwargs = {
-            "pedido": pedido,
-            "variant": form.cleaned_data.get("metodo") or "mercadopago",
-            "description": form.cleaned_data.get("descricao") or _("Pagamento Hubx"),
-            "total": form.cleaned_data["valor"],
-            "currency": "BRL",
-            "billing_email": form.cleaned_data.get("email"),
-            "billing_first_name": primeiro_nome,
-            "billing_last_name": " ".join(sobrenome) if sobrenome else primeiro_nome,
+        metodo_pagamento = form.cleaned_data.get("metodo")
+        dados_pagamento = {
+            "email": form.cleaned_data.get("email"),
+            "nome": form.cleaned_data.get("nome"),
+            "descricao": form.cleaned_data.get("descricao") or _("Pagamento Hubx"),
+            "document_number": form.cleaned_data.get("documento"),
+            "document_type": "CPF",
+            "cep": form.cleaned_data.get("cep"),
+            "logradouro": form.cleaned_data.get("logradouro"),
+            "numero": form.cleaned_data.get("numero"),
+            "bairro": form.cleaned_data.get("bairro"),
+            "cidade": form.cleaned_data.get("cidade"),
+            "estado": form.cleaned_data.get("estado"),
         }
-        pagamento: Pagamento = PaymentModel.objects.create(**payment_kwargs)
 
+        if metodo_pagamento == Transacao.Metodo.CARTAO:
+            dados_pagamento.update(
+                {
+                    "token": form.cleaned_data.get("token_cartao"),
+                    "payment_method_id": form.cleaned_data.get("payment_method_id"),
+                    "parcelas": form.cleaned_data.get("parcelas") or 1,
+                }
+            )
+        elif metodo_pagamento == Transacao.Metodo.BOLETO:
+            dados_pagamento.update({"vencimento": form.cleaned_data.get("vencimento")})
+
+        provider = MercadoPagoProvider.from_organizacao(organizacao)
+        service = PagamentoService(provider)
         redirect_url: str | None = None
         try:
-            pagamento.get_form()
-        except RedirectNeeded as redirect_to:
-            redirect_url = str(redirect_to)
-            pagamento.change_status(PaymentStatus.WAITING)
-
-        transacao = Transacao.objects.create(
-            pedido=pedido,
-            valor=pedido.valor,
-            status=Transacao.Status.PENDENTE,
-            metodo=Transacao.Metodo.PIX,
-            external_id=pagamento.token,
-            detalhes={"payment_id": pagamento.pk, "redirect_url": redirect_url},
-        )
+            transacao = service.iniciar_pagamento(pedido, metodo_pagamento, dados_pagamento)
+            redirect_url = (transacao.detalhes or {}).get("redirect_url")
+        except PagamentoProviderError as exc:
+            form.add_error(None, str(exc))
+            return self._render_response(request, form=form, status=400)
+        except Exception:
+            logger.exception(
+                "erro_checkout_pagamento",
+                extra={"pedido_id": pedido.id, "metodo": metodo_pagamento},
+            )
+            form.add_error(None, _("Não foi possível iniciar o pagamento."))
+            return self._render_response(request, form=form, status=500)
 
         contexto = {
             "form": form,
             "transacao": transacao,
-            "pagamento": pagamento,
             "redirect_url": redirect_url,
             "mensagem": _("Pagamento iniciado com sucesso."),
             "status": 201,
