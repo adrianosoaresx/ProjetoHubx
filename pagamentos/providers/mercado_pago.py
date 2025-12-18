@@ -146,10 +146,17 @@ class MercadoPagoProvider(PaymentProvider):
         email = dados_pagamento.get("email")
         if not email:
             raise PagamentoInvalidoError(_("E-mail do pagador é obrigatório."))
+        nome_completo = (dados_pagamento.get("nome") or "").strip()
+        partes = nome_completo.split()
+        first_name = dados_pagamento.get("first_name") or (partes[0] if partes else "")
+        if len(partes) > 1:
+            last_name = dados_pagamento.get("last_name") or partes[-1]
+        else:
+            last_name = dados_pagamento.get("last_name") or first_name
         return {
             "email": email,
-            "first_name": dados_pagamento.get("first_name") or dados_pagamento.get("nome"),
-            "last_name": dados_pagamento.get("last_name"),
+            "first_name": first_name,
+            "last_name": last_name,
             "identification": {
                 "type": dados_pagamento.get("document_type", "CPF"),
                 "number": dados_pagamento.get("document_number"),

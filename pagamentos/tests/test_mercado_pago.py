@@ -65,6 +65,32 @@ def provider() -> MercadoPagoProvider:
     return MercadoPagoProvider(access_token="test", public_key="test", base_url="https://example.com")
 
 
+def test_payer_data_with_full_name(provider: MercadoPagoProvider) -> None:
+    dados_pagamento = {
+        "nome": "João Silva",
+        "email": "joao@example.com",
+        "document_number": "12345678901",
+    }
+
+    payer = provider._payer_data(dados_pagamento)
+
+    assert payer["first_name"] == "João"
+    assert payer["last_name"] == "Silva"
+
+
+def test_payer_data_with_single_name(provider: MercadoPagoProvider) -> None:
+    dados_pagamento = {
+        "nome": "Maria",
+        "email": "maria@example.com",
+        "document_number": "10987654321",
+    }
+
+    payer = provider._payer_data(dados_pagamento)
+
+    assert payer["first_name"] == "Maria"
+    assert payer["last_name"] == "Maria"
+
+
 def test_format_datetime_from_datetime(provider: MercadoPagoProvider) -> None:
     dt_value = datetime(2025, 12, 17, 21, 50, 13, tzinfo=dt_timezone.utc)
 
