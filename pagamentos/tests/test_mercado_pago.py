@@ -85,6 +85,12 @@ def test_format_datetime_from_br_format_with_timezone(provider: MercadoPagoProvi
     assert formatted == "2025-12-18T00:50:13+00:00"
 
 
+def test_format_datetime_from_dash_format_with_metadata(provider: MercadoPagoProvider) -> None:
+    formatted = provider._format_datetime("18-12-2025T13:14:54UTC;2a602e83-fe52-457e-86cb-d606530f6443")
+
+    assert formatted == "2025-12-18T13:14:54+00:00"
+
+
 def test_format_datetime_rejects_invalid_string(provider: MercadoPagoProvider) -> None:
     with pytest.raises(PagamentoInvalidoError):
         provider._format_datetime("17-12-2025 21:50")
