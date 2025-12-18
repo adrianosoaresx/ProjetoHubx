@@ -84,6 +84,9 @@
           </div>
         </div>
       </div>
+      {% if transacao.detalhes.date_of_expiration %}
+        <p class="text-xs text-[var(--text-secondary)]">{% blocktrans with data=transacao.detalhes.date_of_expiration %}Válido até {{ data }}{% endblocktrans %}</p>
+      {% endif %}
     {% endif %}
 
     {% if transacao.metodo == 'paypal' %}
@@ -117,6 +120,22 @@
         <a href="{{ transacao.boleto_url }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener">
           {% trans "Baixar PDF" %}
         </a>
+      </div>
+    {% elif transacao.metodo == 'boleto' and transacao.detalhes.transaction_details.external_resource_url %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Link do boleto" %}</p>
+        <a href="{{ transacao.detalhes.transaction_details.external_resource_url }}" class="text-blue-600 underline" target="_blank" rel="noopener">{% trans "Abrir boleto" %}</a>
+      </div>
+    {% endif %}
+
+    {% if transacao.detalhes.instructions %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 space-y-2">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Instruções do provedor" %}</p>
+        <ul class="list-disc list-inside text-sm text-[var(--text-secondary)]">
+          {% for instrucao in transacao.detalhes.instructions %}
+            <li>{{ instrucao }}</li>
+          {% endfor %}
+        </ul>
       </div>
     {% endif %}
 
