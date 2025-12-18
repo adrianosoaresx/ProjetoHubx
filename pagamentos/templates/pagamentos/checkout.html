@@ -41,17 +41,65 @@
 
     <div class="space-y-4">
       <div>
-        <label class="text-sm font-medium text-slate-700" for="id_nome_completo">{% trans "Nome completo" %}</label>
-        {{ form.nome_completo|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        <label class="text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
+        {{ form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
       </div>
       <div>
         <label class="text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
         {{ form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
       </div>
       <div>
+        <label class="text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento" %}</label>
+        {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+      </div>
+      <div>
         <label class="text-sm font-medium text-slate-700" for="id_descricao">{% trans "Descrição" %}</label>
         {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
         <p class="text-xs text-slate-500">{% trans "Texto curto para identificar a cobrança." %}</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_parcelas">{% trans "Parcelas" %}</label>
+          {{ form.parcelas|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_token_cartao">{% trans "Token do cartão" %}</label>
+          {{ form.token_cartao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_payment_method_id">{% trans "Bandeira do cartão" %}</label>
+          {{ form.payment_method_id|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_vencimento">{% trans "Vencimento do boleto" %}</label>
+          {{ form.vencimento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_cep">{% trans "CEP" %}</label>
+          {{ form.cep|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_logradouro">{% trans "Logradouro" %}</label>
+          {{ form.logradouro|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_numero">{% trans "Número" %}</label>
+          {{ form.numero|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_bairro">{% trans "Bairro" %}</label>
+          {{ form.bairro|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_cidade">{% trans "Cidade" %}</label>
+          {{ form.cidade|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700" for="id_estado">{% trans "Estado" %}</label>
+          {{ form.estado|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+        </div>
       </div>
     </div>
 
