@@ -86,6 +86,10 @@ Endpoints envolvidos:
 - `https://hubx.space/pagamentos/webhook/mercadopago/` – recepção das notificações assíncronas (em dev use `http://127.0.0.1:8000/pagamentos/webhook/mercadopago/`). O endpoint valida o cabeçalho `X-Signature` com o valor de `MERCADO_PAGO_WEBHOOK_SECRET` e também está disponível em `/api/payments/mercadopago/webhook/` para compatibilidade com o painel do Mercado Pago.
 - `/pagamentos/webhook/paypal/` – webhook opcional para sincronizar ordens do PayPal.
 
+#### Banco de dados recomendado para pagamentos
+
+Em produção, priorize PostgreSQL para reduzir contenção de locks durante o *polling* e o processamento concorrente de webhooks. O mecanismo de `SELECT FOR UPDATE` é usado para proteger as atualizações de `Transacao`/`Pedido` e pode ser controlado pela variável `PAGAMENTOS_ROW_LOCKS_ENABLED` (ativada por padrão). Em ambientes locais com SQLite, ajuste para `0/false/no/off` caso encontre `OperationalError` por falta de suporte a locks.
+
 ### Testes locais do webhook do Mercado Pago
 
 - Ao expor o projeto via túnel (ex.: `ngrok http 8000`), configure a URL pública apontando para `http://127.0.0.1:8000/pagamentos/webhook/mercadopago/` (ou para `/api/payments/mercadopago/webhook/` caso o painel exija esse caminho).
