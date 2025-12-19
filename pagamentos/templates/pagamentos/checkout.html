@@ -166,6 +166,11 @@
     const faturamentoInputs = Array.from(document.querySelectorAll('input[name="faturamento"]'));
     const pixButton = document.querySelector('[data-acao-botao="pix"]');
     const faturamentoButton = document.querySelector('[data-acao-botao="faturamento"]');
+    const metodoHiddenInput = document.querySelector('input[name="metodo"]');
+    const metodoPorModo = {
+      pix: 'pix',
+      faturamento: 'pix',
+    };
 
     if (!metodoInputs.find((input) => input.checked) && metodoInputs[0]) {
       metodoInputs[0].checked = true;
@@ -206,6 +211,9 @@
     function handleMetodoChange() {
       const selected = metodoInputs.find((input) => input.checked)?.value;
       setSectionVisibility(selected);
+      if (metodoHiddenInput) {
+        metodoHiddenInput.value = metodoPorModo[selected] || 'pix';
+      }
       if (selected !== 'pix') {
         pixFields.forEach((field) => { field.value = ''; });
       }
