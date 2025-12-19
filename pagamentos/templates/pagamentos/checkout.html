@@ -199,7 +199,12 @@
             input.removeAttribute('required');
             input.setAttribute('disabled', 'disabled');
             if (input.tagName === 'INPUT') {
-              input.value = '';
+              const inputType = (input.getAttribute('type') || '').toLowerCase();
+              if (inputType === 'radio' || inputType === 'checkbox') {
+                input.checked = false;
+              } else {
+                input.value = '';
+              }
             }
           }
         });
