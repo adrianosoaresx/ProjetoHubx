@@ -3,10 +3,10 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-10 space-y-6">
-  <div class="bg-white shadow rounded-xl p-6 space-y-2 border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
-    <p class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">{% trans "Pagamento" %}</p>
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{% trans "Checkout Hubx" %}</h1>
-    <p class="text-slate-600 dark:text-slate-300">{% trans "Escolha a melhor forma de pagamento e acompanhe o status em tempo real." %}</p>
+  <div class="bg-[var(--bg-secondary)] shadow rounded-xl p-6 space-y-2 border border-[var(--border)]">
+    <p class="text-xs uppercase font-semibold text-[var(--text-muted)]">{% trans "Pagamento" %}</p>
+    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Checkout Hubx" %}</h1>
+    <p class="text-[var(--text-secondary)]">{% trans "Escolha a melhor forma de pagamento e acompanhe o status em tempo real." %}</p>
   </div>
 
   <form
@@ -15,7 +15,7 @@
     hx-target="#checkout-result-content"
     hx-swap="innerHTML"
     method="post"
-    class="bg-white shadow rounded-xl p-6 space-y-5 border border-slate-100 dark:bg-slate-900 dark:border-slate-800"
+    class="bg-[var(--bg-secondary)] shadow rounded-xl p-6 space-y-5 border border-[var(--border)]"
   >
     {% csrf_token %}
     {{ form.organizacao_id }}
@@ -26,118 +26,118 @@
 
     <div class="space-y-6">
       <div class="space-y-2">
-        <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_valor">{% trans "Valor" %}</label>
-        {{ form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
-        <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Mostramos o total logo no início para evitar surpresas." %}</p>
+        <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_valor">{% trans "Valor" %}</label>
+        {{ form.valor|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+        <p class="text-xs text-[var(--text-muted)]">{% trans "Mostramos o total logo no início para evitar surpresas." %}</p>
       </div>
 
       <fieldset class="space-y-3">
-        <legend class="text-sm font-medium text-slate-700 dark:text-slate-200">{% trans "Escolha a forma de pagamento" %}</legend>
+        <legend class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Escolha a forma de pagamento" %}</legend>
         <div class="grid grid-cols-1 gap-3" data-metodo-wrapper>
-          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
+          <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
             <input
               type="radio"
               name="modo_exibicao"
               value="pix"
               checked
-              class="peer mt-1 text-blue-600 focus:ring-blue-500"
+              class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
               data-metodo-input
             />
             <div>
-              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Pix" %}</span>
-              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
+              <span class="font-semibold text-[var(--text-primary)]">{% trans "Pix" %}</span>
+              <p class="text-xs text-[var(--text-muted)]">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
             </div>
           </label>
-          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
+          <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
             <input
               type="radio"
               name="modo_exibicao"
               value="faturamento"
-              class="peer mt-1 text-blue-600 focus:ring-blue-500"
+              class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
               data-metodo-input
             />
             <div>
-              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturamento interno" %}</span>
-              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Registre a cobrança sem integração com o provedor." %}</p>
+              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</span>
+              <p class="text-xs text-[var(--text-muted)]">{% trans "Registre a cobrança sem integração com o provedor." %}</p>
             </div>
           </label>
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
+        <p class="text-xs text-[var(--text-muted)]">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
       </fieldset>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_nome">{% trans "Nome completo" %}</label>
-          {{ form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+          <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_nome">{% trans "Nome completo" %}</label>
+          {{ form.nome|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_email">{% trans "E-mail" %}</label>
-          {{ form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+          <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_email">{% trans "E-mail" %}</label>
+          {{ form.email|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_documento">{% trans "Documento" %}</label>
-          {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
-          <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Usamos o documento para validar o pagador e o método escolhido." %}</p>
+          <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_documento">{% trans "Documento" %}</label>
+          {{ form.documento|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+          <p class="text-xs text-[var(--text-muted)]">{% trans "Usamos o documento para validar o pagador e o método escolhido." %}</p>
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_descricao">{% trans "Descrição" %}</label>
-          {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
-          <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Texto curto para identificar a cobrança." %}</p>
+          <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_descricao">{% trans "Descrição" %}</label>
+          {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+          <p class="text-xs text-[var(--text-muted)]">{% trans "Texto curto para identificar a cobrança." %}</p>
         </div>
       </div>
 
       <div class="space-y-4">
-        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-section="pix">
-          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Pagamento via Pix" %}</legend>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+        <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="pix">
+          <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Pagamento via Pix" %}</legend>
+          <p class="text-xs text-[var(--text-muted)]">
             {% trans "Personalize a descrição do comprovante ou use o padrão do pedido." %}
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_pix_descricao">{% trans "Descrição no comprovante" %}</label>
-              {{ form.pix_descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
-              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Deixe em branco para usar o padrão do pedido." %}</p>
+              <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_pix_descricao">{% trans "Descrição no comprovante" %}</label>
+              {{ form.pix_descricao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+              <p class="text-xs text-[var(--text-muted)]">{% trans "Deixe em branco para usar o padrão do pedido." %}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_pix_expiracao">{% trans "Expira em" %}</label>
-              {{ form.pix_expiracao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
-              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Se não definir, usamos a expiração padrão do sistema." %}</p>
+              <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_pix_expiracao">{% trans "Expira em" %}</label>
+              {{ form.pix_expiracao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+              <p class="text-xs text-[var(--text-muted)]">{% trans "Se não definir, usamos a expiração padrão do sistema." %}</p>
             </div>
           </div>
         </fieldset>
 
-        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-section="faturamento">
-          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Faturamento" %}</legend>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+        <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="faturamento">
+          <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Faturamento" %}</legend>
+          <p class="text-xs text-[var(--text-muted)]">
             {% trans "Opção interna para registro no financeiro, sem integração com o Mercado Pago." %}
           </p>
           <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
+            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_avista"
-                class="peer text-blue-600 focus:ring-blue-500"
+                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
               />
-              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar à vista" %}</span>
+              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar à vista" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
+            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_2x"
-                class="peer text-blue-600 focus:ring-blue-500"
+                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
               />
-              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 2x" %}</span>
+              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 2x" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
+            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_3x"
-                class="peer text-blue-600 focus:ring-blue-500"
+                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
               />
-              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 3x" %}</span>
+              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 3x" %}</span>
             </label>
           </div>
         </fieldset>
@@ -153,14 +153,14 @@
     </div>
   </form>
 
-  <div class="bg-white shadow rounded-xl p-6 border border-slate-100 dark:bg-slate-900 dark:border-slate-800" id="checkout-result">
+  <div class="bg-[var(--bg-secondary)] shadow rounded-xl p-6 border border-[var(--border)]" id="checkout-result">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <p class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">{% trans "Resumo" %}</p>
-        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">{% trans "Status do pagamento" %}</h2>
+        <p class="text-xs uppercase font-semibold text-[var(--text-muted)]">{% trans "Resumo" %}</p>
+        <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Status do pagamento" %}</h2>
       </div>
     </div>
-    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 dark:bg-slate-800/40 dark:border-slate-700" id="checkout-result-content">
+    <div class="bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg p-4" id="checkout-result-content">
       {% include "pagamentos/partials/checkout_resultado.html" %}
     </div>
   </div>
