@@ -74,7 +74,8 @@ class CheckoutForm(forms.Form):
                 self.initial.setdefault(field_name, value)
         modo_exibicao = None
         if self.is_bound:
-            modo_exibicao = self.data.get(self.add_prefix("modo_exibicao"))
+            modo_exibicao_values = self.data.getlist(self.add_prefix("modo_exibicao"))
+            modo_exibicao = next((value for value in reversed(modo_exibicao_values) if value), None)
         modo_exibicao = modo_exibicao or self.initial.get("modo_exibicao") or "pix"
         self.initial.setdefault("modo_exibicao", modo_exibicao)
         if not self.initial.get("metodo") and self.fields["metodo"].choices:
