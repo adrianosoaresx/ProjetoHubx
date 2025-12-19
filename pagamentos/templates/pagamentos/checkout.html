@@ -31,45 +31,48 @@
         <p class="text-xs text-[var(--text-muted)]">{% trans "Mostramos o total logo no início para evitar surpresas." %}</p>
       </div>
 
-      <fieldset class="space-y-3">
-        <legend class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Escolha a forma de pagamento" %}</legend>
-        <div class="grid grid-cols-1 gap-3" data-metodo-wrapper>
-          <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
-            <input
-              type="radio"
-              name="modo_exibicao"
-              value="pix"
-              checked
-              class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
-              data-metodo-input
-            />
-            <div>
-              <span class="font-semibold text-[var(--text-primary)]">{% trans "Pix" %}</span>
-              <p class="text-xs text-[var(--text-muted)]">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
-            </div>
-          </label>
-          <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
-            <input
-              type="radio"
-              name="modo_exibicao"
-              value="faturamento"
-              class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
-              data-metodo-input
-            />
-            <div>
-              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</span>
-              <p class="text-xs text-[var(--text-muted)]">{% trans "Registre a cobrança sem integração com o provedor." %}</p>
-            </div>
-          </label>
-        </div>
-        <p class="text-xs text-[var(--text-muted)]">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
-      </fieldset>
-      <input
-        type="hidden"
-        name="modo_exibicao"
-        value="{{ form.modo_exibicao.value|default:'pix' }}"
-        data-modo-exibicao-hidden
-      >
+      {% with modo_exibicao=form.data.modo_exibicao|default:form.initial.modo_exibicao|default:'pix' %}
+        <fieldset class="space-y-3">
+          <legend class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Escolha a forma de pagamento" %}</legend>
+          <div class="grid grid-cols-1 gap-3" data-metodo-wrapper>
+            <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
+              <input
+                type="radio"
+                name="modo_exibicao"
+                value="pix"
+                {% if modo_exibicao == 'pix' %}checked{% endif %}
+                class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
+                data-metodo-input
+              />
+              <div>
+                <span class="font-semibold text-[var(--text-primary)]">{% trans "Pix" %}</span>
+                <p class="text-xs text-[var(--text-muted)]">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
+              </div>
+            </label>
+            <label class="flex items-start gap-3 border border-[var(--border)] rounded-lg px-4 py-4 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
+              <input
+                type="radio"
+                name="modo_exibicao"
+                value="faturamento"
+                {% if modo_exibicao == 'faturamento' %}checked{% endif %}
+                class="peer mt-1 text-[var(--primary)] focus:ring-[var(--border-focus)]"
+                data-metodo-input
+              />
+              <div>
+                <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</span>
+                <p class="text-xs text-[var(--text-muted)]">{% trans "Registre a cobrança sem integração com o provedor." %}</p>
+              </div>
+            </label>
+          </div>
+          <p class="text-xs text-[var(--text-muted)]">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
+        </fieldset>
+        <input
+          type="hidden"
+          name="modo_exibicao"
+          value="{{ modo_exibicao }}"
+          data-modo-exibicao-hidden
+        >
+      {% endwith %}
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-2">
@@ -227,7 +230,7 @@
       if (selected !== 'pix') {
         pixFields.forEach((field) => { field.value = ''; });
       }
-      updateActionButtons(selected);
+      window.requestAnimationFrame(() => updateActionButtons(selected));
     }
 
     metodoInputs.forEach((input) => {
