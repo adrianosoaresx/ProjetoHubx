@@ -66,12 +66,6 @@
           </div>
           <p class="text-xs text-[var(--text-muted)]">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
         </fieldset>
-        <input
-          type="hidden"
-          name="modo_exibicao"
-          value="{{ modo_exibicao }}"
-          data-modo-exibicao-hidden
-        >
       {% endwith %}
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +170,6 @@
     const pixButton = document.querySelector('[data-acao-botao="pix"]');
     const faturamentoButton = document.querySelector('[data-acao-botao="faturamento"]');
     const metodoHiddenInput = document.querySelector('input[name="metodo"]');
-    const modoExibicaoHiddenInput = document.querySelector('[data-modo-exibicao-hidden]');
     const metodoPorModo = {
       pix: 'pix',
       faturamento: 'pix',
@@ -223,9 +216,6 @@
       setSectionVisibility(selected);
       if (metodoHiddenInput) {
         metodoHiddenInput.value = metodoPorModo[selected] || 'pix';
-      }
-      if (modoExibicaoHiddenInput && selected) {
-        modoExibicaoHiddenInput.value = selected;
       }
       if (selected !== 'pix') {
         pixFields.forEach((field) => { field.value = ''; });
