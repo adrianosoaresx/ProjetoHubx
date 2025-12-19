@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-10 space-y-6">
@@ -19,6 +19,9 @@
   >
     {% csrf_token %}
     {{ form.organizacao_id }}
+    {% if inscricao %}
+      <input type="hidden" name="inscricao_uuid" value="{{ inscricao.uuid }}">
+    {% endif %}
 
     <div class="space-y-6">
       <div class="space-y-2">
