@@ -1,7 +1,7 @@
 {% load i18n %}
 {% if form.errors or form.non_field_errors %}
   <div class="rounded-lg border border-red-300 bg-red-50 p-4 mb-4 dark:border-red-500/40 dark:bg-red-500/10">
-    <p class="font-semibold text-red-700 mb-2 dark:text-red-200">{{ _("Corrija os erros abaixo:") }}</p>
+    <p class="font-semibold text-red-700 mb-2 dark:text-red-200">{% trans "Corrija os erros abaixo:" %}</p>
     {% if form.non_field_errors %}
       <ul class="list-disc list-inside text-red-700 text-sm mb-2 dark:text-red-200">
         {% for error in form.non_field_errors %}
