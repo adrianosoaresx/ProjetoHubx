@@ -84,6 +84,7 @@ class CheckoutView(APIView):
         if modo_exibicao == "faturamento":
             inscricao = self._registrar_faturamento_inscricao(
                 request,
+                inscricao_uuid=form.cleaned_data.get("inscricao_uuid"),
                 faturamento=form.cleaned_data.get("faturamento"),
                 valor=form.cleaned_data["valor"],
             )
@@ -173,12 +174,13 @@ class CheckoutView(APIView):
     def _registrar_faturamento_inscricao(
         self,
         request: HttpRequest,
+        inscricao_uuid: str | None,
         faturamento: str | None,
         valor: Any,
     ) -> InscricaoEvento | None:
         if not faturamento:
             return None
-        inscricao_uuid = (request.POST.get("inscricao_uuid") or "").strip()
+        inscricao_uuid = (inscricao_uuid or "").strip()
         if not inscricao_uuid or not request.user.is_authenticated:
             return None
         try:

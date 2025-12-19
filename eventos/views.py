@@ -2496,6 +2496,7 @@ class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, Templat
         initial_checkout: dict[str, Any] = {}
         if valor_evento is not None:
             initial_checkout["valor"] = valor_evento
+        initial_checkout["inscricao_uuid"] = self.inscricao.uuid
 
         usuario = getattr(self.inscricao, "user", None)
         if usuario:
