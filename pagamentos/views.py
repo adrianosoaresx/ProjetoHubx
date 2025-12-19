@@ -267,6 +267,8 @@ class CheckoutView(APIView):
         )
 
     def _render_response(self, request: HttpRequest, **contexto: Any) -> HttpResponse:
+        if "form" not in contexto:
+            contexto["form"] = CheckoutForm()
         template = (
             "pagamentos/partials/checkout_resultado.html"
             if request.headers.get("HX-Request")
