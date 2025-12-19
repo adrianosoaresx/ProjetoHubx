@@ -125,12 +125,21 @@
       </div>
     </div>
 
-    <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-      <div class="mt-0.5 h-2 w-2 rounded-full bg-amber-400"></div>
-      <div class="space-y-1">
-        <p class="text-sm font-semibold">{% trans "Geração de pagamento indisponível" %}</p>
-        <p class="text-xs">{% trans "No momento, o pagamento é gerado por outro canal. Preencha os dados para manter o registro atualizado." %}</p>
-      </div>
+    <div class="flex flex-col gap-3">
+      <button
+        type="submit"
+        class="hidden w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+        data-acao-botao="pix"
+      >
+        {% trans "Gerar pagamento" %}
+      </button>
+      <button
+        type="submit"
+        class="hidden w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+        data-acao-botao="faturamento"
+      >
+        {% trans "Faturar" %}
+      </button>
     </div>
   </form>
 
@@ -151,6 +160,9 @@
     const metodoInputs = Array.from(document.querySelectorAll('[data-metodo-input]'));
     const sections = document.querySelectorAll('[data-metodo-section]');
     const pixFields = document.querySelectorAll('[data-metodo-section="pix"] input');
+    const faturamentoInputs = Array.from(document.querySelectorAll('input[name="faturamento"]'));
+    const pixButton = document.querySelector('[data-acao-botao="pix"]');
+    const faturamentoButton = document.querySelector('[data-acao-botao="faturamento"]');
 
     if (!metodoInputs.find((input) => input.checked) && metodoInputs[0]) {
       metodoInputs[0].checked = true;
@@ -178,15 +190,30 @@
       });
     }
 
+    function updateActionButtons(selected) {
+      if (pixButton) {
+        pixButton.classList.toggle('hidden', selected !== 'pix');
+      }
+      if (faturamentoButton) {
+        const faturamentoSelecionado = faturamentoInputs.some((input) => input.checked);
+        faturamentoButton.classList.toggle('hidden', selected !== 'faturamento' || !faturamentoSelecionado);
+      }
+    }
+
     function handleMetodoChange() {
       const selected = metodoInputs.find((input) => input.checked)?.value;
       setSectionVisibility(selected);
       if (selected !== 'pix') {
         pixFields.forEach((field) => { field.value = ''; });
       }
+      updateActionButtons(selected);
     }
 
     metodoInputs.forEach((input) => {
+      input.addEventListener('change', handleMetodoChange);
+    });
+
+    faturamentoInputs.forEach((input) => {
       input.addEventListener('change', handleMetodoChange);
     });
 
