@@ -2249,7 +2249,7 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
 
 
 class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
-    template_name = "eventos/inscricoes/inscricao_pagamentos_form.html"
+    template_name = "eventos/inscricoes/inscricao_form.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -2437,7 +2437,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
 
 class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, TemplateView):
-    template_name = "eventos/inscricoes/inscricao_pagamento_checkout.html"
+    template_name = "pagamentos/checkout.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -2539,7 +2539,7 @@ class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, Templat
         transacao = self._get_checkout_transacao()
         context.update(
             {
-                "checkout_form": self._get_checkout_form(),
+                "form": self._get_checkout_form(),
                 "provider_public_key": provider.public_key,
                 "transacao": transacao,
                 "inscricao": self.inscricao,

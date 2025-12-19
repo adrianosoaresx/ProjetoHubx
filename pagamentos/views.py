@@ -130,6 +130,7 @@ class CheckoutView(APIView):
         try:
             transacao = service.iniciar_pagamento(pedido, metodo_pagamento, dados_pagamento)
             redirect_url = (transacao.detalhes or {}).get("redirect_url")
+            self._vincular_transacao_inscricao(request, transacao)
         except PagamentoProviderError as exc:
             form.add_error(None, str(exc))
             return self._render_response(request, form=form, status=400)
@@ -182,6 +183,33 @@ class CheckoutView(APIView):
                 if netloc and (host == netloc or host.endswith(netloc)):
                     return candidate
         return None
+
+    def _vincular_transacao_inscricao(
+        self, request: HttpRequest, transacao: Transacao
+    ) -> None:
+        inscricao_uuid = (request.POST.get("inscricao_uuid") or "").strip()
+        if not inscricao_uuid or not request.user.is_authenticated:
+            return
+        try:
+            inscricao = InscricaoEvento.objects.select_related("user").get(
+                uuid=inscricao_uuid
+            )
+        except InscricaoEvento.DoesNotExist:
+            logger.warning("checkout_inscricao_nao_encontrada", extra={"uuid": inscricao_uuid})
+            return
+        if inscricao.user != request.user:
+            logger.warning(
+                "checkout_inscricao_usuario_invalido",
+                extra={"uuid": inscricao_uuid, "user_id": request.user.id},
+            )
+            return
+
+        inscricao.transacao = transacao
+        inscricao.metodo_pagamento = transacao.metodo
+        inscricao.pagamento_validado = transacao.status == Transacao.Status.APROVADA
+        inscricao.save(
+            update_fields=["transacao", "metodo_pagamento", "pagamento_validado", "updated_at"]
+        )
 
     def _render_response(self, request: HttpRequest, **contexto: Any) -> HttpResponse:
         template = (
