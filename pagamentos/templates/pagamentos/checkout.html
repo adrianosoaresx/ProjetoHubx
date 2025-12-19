@@ -34,13 +34,13 @@
       <fieldset class="space-y-3">
         <legend class="text-sm font-medium text-slate-700 dark:text-slate-200">{% trans "Escolha a forma de pagamento" %}</legend>
         <div class="grid grid-cols-1 gap-3" data-metodo-wrapper>
-          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400 dark:bg-slate-800/40">
+          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
             <input
               type="radio"
               name="modo_exibicao"
               value="pix"
               checked
-              class="mt-1 text-blue-600 focus:ring-blue-500"
+              class="peer mt-1 text-blue-600 focus:ring-blue-500"
               data-metodo-input
             />
             <div>
@@ -48,12 +48,12 @@
               <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
             </div>
           </label>
-          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400 dark:bg-slate-800/40">
+          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
             <input
               type="radio"
               name="modo_exibicao"
               value="faturamento"
-              class="mt-1 text-blue-600 focus:ring-blue-500"
+              class="peer mt-1 text-blue-600 focus:ring-blue-500"
               data-metodo-input
             />
             <div>
@@ -112,30 +112,30 @@
             {% trans "Opção interna para registro no financeiro, sem integração com o Mercado Pago." %}
           </p>
           <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_avista"
-                class="text-blue-600 focus:ring-blue-500"
+                class="peer text-blue-600 focus:ring-blue-500"
               />
               <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar à vista" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_2x"
-                class="text-blue-600 focus:ring-blue-500"
+                class="peer text-blue-600 focus:ring-blue-500"
               />
               <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 2x" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 transition hover:border-blue-500 bg-white dark:bg-slate-800/40 dark:border-slate-700 dark:hover:border-blue-400 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:border-blue-300 dark:peer-checked:bg-slate-800/60">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_3x"
-                class="text-blue-600 focus:ring-blue-500"
+                class="peer text-blue-600 focus:ring-blue-500"
               />
               <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 3x" %}</span>
             </label>
