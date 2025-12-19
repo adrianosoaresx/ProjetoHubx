@@ -87,25 +87,6 @@
       </div>
 
       <div class="space-y-4">
-        <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="pix">
-          <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Pagamento via Pix" %}</legend>
-          <p class="text-xs text-[var(--text-muted)]">
-            {% trans "Personalize a descrição do comprovante ou use o padrão do pedido." %}
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_pix_descricao">{% trans "Descrição no comprovante" %}</label>
-              {{ form.pix_descricao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
-              <p class="text-xs text-[var(--text-muted)]">{% trans "Deixe em branco para usar o padrão do pedido." %}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_pix_expiracao">{% trans "Expira em" %}</label>
-              {{ form.pix_expiracao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
-              <p class="text-xs text-[var(--text-muted)]">{% trans "Se não definir, usamos a expiração padrão do sistema." %}</p>
-            </div>
-          </div>
-        </fieldset>
-
         <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="faturamento">
           <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Faturamento" %}</legend>
           <p class="text-xs text-[var(--text-muted)]">
