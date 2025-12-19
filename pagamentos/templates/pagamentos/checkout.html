@@ -144,11 +144,41 @@
       </div>
     </div>
 
-    <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-      <div class="mt-0.5 h-2 w-2 rounded-full bg-amber-400"></div>
-      <div class="space-y-1">
-        <p class="text-sm font-semibold">{% trans "Geração de pagamento indisponível" %}</p>
-        <p class="text-xs">{% trans "No momento, o pagamento é gerado por outro canal. Preencha os dados para manter o registro atualizado." %}</p>
+    <div class="space-y-3" data-metodo-cta="pix">
+      <button
+        type="submit"
+        class="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+      >
+        {% trans "Gerar pagamento via Pix" %}
+      </button>
+    </div>
+
+    <div class="space-y-3" data-metodo-cta="faturamento">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <button
+          type="submit"
+          name="faturamento"
+          value="faturar_avista"
+          class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-400"
+        >
+          {% trans "Faturar em 1x" %}
+        </button>
+        <button
+          type="submit"
+          name="faturamento"
+          value="faturar_2x"
+          class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-400"
+        >
+          {% trans "Faturar em 2x" %}
+        </button>
+        <button
+          type="submit"
+          name="faturamento"
+          value="faturar_3x"
+          class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-400"
+        >
+          {% trans "Faturar em 3x" %}
+        </button>
       </div>
     </div>
   </form>
@@ -170,6 +200,7 @@
     const metodoInputs = Array.from(document.querySelectorAll('[data-metodo-input]'));
     const sections = document.querySelectorAll('[data-metodo-section]');
     const pixFields = document.querySelectorAll('[data-metodo-section="pix"] input');
+    const ctaGroups = document.querySelectorAll('[data-metodo-cta]');
 
     if (!metodoInputs.find((input) => input.checked) && metodoInputs[0]) {
       metodoInputs[0].checked = true;
@@ -194,6 +225,11 @@
             }
           }
         });
+      });
+
+      ctaGroups.forEach((group) => {
+        const isActive = group.dataset.metodoCta === selected;
+        group.classList.toggle('hidden', !isActive);
       });
     }
 
