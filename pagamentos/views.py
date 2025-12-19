@@ -14,6 +14,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpR
 from django.shortcuts import redirect, render
 from django.db import OperationalError
 from django.db.models import Q
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -89,14 +90,12 @@ class CheckoutView(APIView):
             if not inscricao:
                 form.add_error(None, _("Não foi possível localizar a inscrição para faturamento."))
                 return self._render_response(request, form=form, status=400)
-            contexto = {
-                "form": form,
-                "inscricao": inscricao,
-                "faturamento_interno": True,
-                "mensagem": _("Faturamento interno registrado."),
-                "status": 201,
-            }
-            return self._render_response(request, **contexto)
+            resultado_url = reverse("eventos:inscricao_resultado", kwargs={"uuid": inscricao.uuid})
+            if request.headers.get("HX-Request"):
+                response = HttpResponse(status=204)
+                response["HX-Redirect"] = resultado_url
+                return response
+            return redirect(resultado_url)
 
         organizacao = self._obter_organizacao(
             request, str(form.cleaned_data.get("organizacao_id") or "")
@@ -338,11 +337,46 @@ class TransacaoStatusView(ConfirmarPagamentoMixin, APIView):
         if transacao.status == Transacao.Status.PENDENTE:
             self._sincronizar_pagamento_model(transacao)
 
+        if transacao.status == Transacao.Status.APROVADA:
+            try:
+                inscricao = transacao.inscricao_evento
+            except InscricaoEvento.DoesNotExist:
+                inscricao = None
+            if inscricao:
+                resultado_url = reverse(
+                    "eventos:inscricao_resultado", kwargs={"uuid": inscricao.uuid}
+                )
+                if request.headers.get("HX-Request"):
+                    response = HttpResponse(status=204)
+                    response["HX-Redirect"] = resultado_url
+                    return response
+                contexto = self._montar_contexto_inscricao_resultado(request, inscricao)
+                return render(request, "eventos/inscricoes/resultado.html", contexto)
+
         return render(
             request,
             "pagamentos/partials/checkout_resultado.html",
             {"transacao": transacao, "form": CheckoutForm()},
         )
+
+    @staticmethod
+    def _montar_contexto_inscricao_resultado(
+        request: HttpRequest, inscricao: InscricaoEvento
+    ) -> dict[str, Any]:
+        evento = inscricao.evento
+        share_url = request.build_absolute_uri(evento.get_absolute_url())
+        inscricao_url = reverse("eventos:inscricao_overview", args=[evento.pk])
+        convite = evento.convites.first()
+        return {
+            "evento": evento,
+            "inscricao": inscricao,
+            "status": "success",
+            "message": None,
+            "share_url": share_url,
+            "inscricao_url": inscricao_url,
+            "convite": convite,
+            "title": _("Status da inscrição"),
+        }
 
 
 class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
