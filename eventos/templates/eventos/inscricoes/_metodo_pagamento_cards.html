@@ -184,52 +184,6 @@
         </div>
       </label>
 
-      <label
-        class="block h-full {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer{% endif %}"
-        for="{{ base_id }}_boleto"
-        data-payment-card
-        data-payment-card-value="boleto"
-      >
-        <input
-          type="radio"
-          name="{{ field.html_name }}"
-          value="boleto"
-          class="sr-only peer"
-          id="{{ base_id }}_boleto"
-          {% if selected == "boleto" %}checked{% endif %}
-          {% if disabled %}disabled{% endif %}
-          {% if field.errors %}aria-invalid="true"{% endif %}
-          {% if field.field.required and not disabled %}required{% endif %}
-        />
-        <div
-          class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm peer-checked:border-primary-500 peer-checked:bg-primary-500/10 peer-checked:ring-2 peer-checked:ring-primary-500/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary-500{% if disabled %} cursor-not-allowed{% else %} hover:border-primary-400{% endif %}"
-          data-payment-card-body
-        >
-          <span
-            class="pointer-events-none absolute right-3 top-3 hidden items-center justify-center rounded-full bg-primary-500 p-1 text-white peer-checked:flex"
-            aria-hidden="true"
-          >
-            {% lucide 'check' class='h-3.5 w-3.5' aria_hidden='true' %}
-          </span>
-          <div class="flex items-center gap-2 text-[var(--text-primary)]">
-            {% lucide 'barcode' class='w-5 h-5 text-primary-500' aria_hidden='true' %}
-            <span class="text-base font-semibold">{% trans "Boleto" %}</span>
-          </div>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
-            {% trans "Receba um boleto para pagamento." %}
-          </p>
-          <div
-            class="mt-3 hidden border-t border-dashed border-[var(--border)] pt-3"
-            data-payment-card-accordion
-            data-payment-accordion-value="boleto"
-          >
-            <p class="text-sm text-[var(--text-secondary)]">
-              {% blocktrans trimmed %}Após confirmar a inscrição enviaremos o boleto e instruções para o e-mail informado.{% endblocktrans %}
-            </p>
-          </div>
-        </div>
-      </label>
-
       <div class="sm:col-span-3" data-faturar-wrapper>
         <div
           class="relative flex h-full flex-col rounded-xl border border-[var(--border)] bg-[var(--surface-primary)] p-4 text-left transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-500 shadow-sm{% if disabled %} cursor-not-allowed opacity-60{% else %} hover:border-primary-400{% endif %}"
