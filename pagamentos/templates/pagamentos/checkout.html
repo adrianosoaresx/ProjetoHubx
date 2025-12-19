@@ -3,10 +3,10 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-10 space-y-6">
-  <div class="bg-white shadow rounded-xl p-6 space-y-2">
-    <p class="text-xs uppercase font-semibold text-slate-500">{% trans "Pagamento" %}</p>
-    <h1 class="text-2xl font-bold text-slate-900">{% trans "Checkout Hubx" %}</h1>
-    <p class="text-slate-600">{% trans "Informe seus dados e finalize o pagamento com segurança." %}</p>
+  <div class="bg-white shadow rounded-xl p-6 space-y-2 border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
+    <p class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">{% trans "Pagamento" %}</p>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{% trans "Checkout Hubx" %}</h1>
+    <p class="text-slate-600 dark:text-slate-300">{% trans "Escolha a melhor forma de pagamento e acompanhe o status em tempo real." %}</p>
   </div>
 
   <form
@@ -15,134 +15,152 @@
     hx-target="#checkout-result-content"
     hx-swap="innerHTML"
     method="post"
-    class="bg-white shadow rounded-xl p-6 space-y-5"
+    class="bg-white shadow rounded-xl p-6 space-y-5 border border-slate-100 dark:bg-slate-900 dark:border-slate-800"
   >
     {% csrf_token %}
     {{ form.organizacao_id }}
+    {{ form.metodo.as_hidden }}
     {% if inscricao %}
       <input type="hidden" name="inscricao_uuid" value="{{ inscricao.uuid }}">
     {% endif %}
 
     <div class="space-y-6">
       <div class="space-y-2">
-        <label class="text-sm font-medium text-slate-700" for="id_valor">{% trans "Valor" %}</label>
-        {{ form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-        <p class="text-xs text-slate-500">{% trans "Mostramos o total logo no início para evitar surpresas." %}</p>
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_valor">{% trans "Valor" %}</label>
+        {{ form.valor|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+        <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Mostramos o total logo no início para evitar surpresas." %}</p>
       </div>
 
       <fieldset class="space-y-3">
-        <legend class="text-sm font-medium text-slate-700">{% trans "Método de pagamento" %}</legend>
+        <legend class="text-sm font-medium text-slate-700 dark:text-slate-200">{% trans "Escolha a forma de pagamento" %}</legend>
         <div class="grid grid-cols-1 gap-3" data-metodo-wrapper>
-          {% for value, label in form.fields.metodo.choices %}
-            {% if value == "pix" %}
-              <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500">
-                <input
-                  type="radio"
-                  name="{{ form.metodo.html_name }}"
-                  value="{{ value }}"
-                  {% if form.initial.metodo == value %}checked{% endif %}
-                  class="text-blue-600 focus:ring-blue-500"
-                  data-metodo-input
-                />
-                <span class="font-semibold text-slate-800">{{ label }}</span>
-              </label>
-            {% endif %}
-          {% endfor %}
+          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400 dark:bg-slate-800/40">
+            <input
+              type="radio"
+              name="modo_exibicao"
+              value="pix"
+              checked
+              class="mt-1 text-blue-600 focus:ring-blue-500"
+              data-metodo-input
+            />
+            <div>
+              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Pix" %}</span>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Pagamento instantâneo com QR Code e confirmação automática." %}</p>
+            </div>
+          </label>
+          <label class="flex items-start gap-3 border rounded-lg px-4 py-4 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400 dark:bg-slate-800/40">
+            <input
+              type="radio"
+              name="modo_exibicao"
+              value="faturamento"
+              class="mt-1 text-blue-600 focus:ring-blue-500"
+              data-metodo-input
+            />
+            <div>
+              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturamento interno" %}</span>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Registre a cobrança sem integração com o provedor." %}</p>
+            </div>
+          </label>
         </div>
-        <p class="text-xs text-slate-500">{% trans "Exibimos apenas métodos disponíveis para agilizar a escolha." %}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Escolha Pix para pagamento imediato ou faturamento para controle interno." %}</p>
       </fieldset>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700" for="id_nome">{% trans "Nome completo" %}</label>
-          {{ form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_nome">{% trans "Nome completo" %}</label>
+          {{ form.nome|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700" for="id_email">{% trans "E-mail" %}</label>
-          {{ form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_email">{% trans "E-mail" %}</label>
+          {{ form.email|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700" for="id_documento">{% trans "Documento" %}</label>
-          {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-          <p class="text-xs text-slate-500">{% trans "Usamos o documento para validar o pagador e o método escolhido." %}</p>
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_documento">{% trans "Documento" %}</label>
+          {{ form.documento|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+          <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Usamos o documento para validar o pagador e o método escolhido." %}</p>
         </div>
         <div class="space-y-2">
-          <label class="text-sm font-medium text-slate-700" for="id_descricao">{% trans "Descrição" %}</label>
-          {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
-          <p class="text-xs text-slate-500">{% trans "Texto curto para identificar a cobrança." %}</p>
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_descricao">{% trans "Descrição" %}</label>
+          {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+          <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Texto curto para identificar a cobrança." %}</p>
         </div>
       </div>
 
       <div class="space-y-4">
-        <fieldset class="space-y-3" data-metodo-section="pix">
-          <legend class="text-sm font-semibold text-slate-800">{% trans "Pagamento via Pix" %}</legend>
-          <p class="text-xs text-slate-500">{% trans "Defina um prazo para expiração do QR Code e, se quiser, personalize a descrição." %}</p>
+        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-section="pix">
+          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Pagamento via Pix" %}</legend>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            {% trans "Personalize a descrição do comprovante ou use o padrão do pedido." %}
+          </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-sm font-medium text-slate-700" for="id_pix_descricao">{% trans "Descrição no comprovante" %}</label>
-              {{ form.pix_descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_pix_descricao">{% trans "Descrição no comprovante" %}</label>
+              {{ form.pix_descricao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Deixe em branco para usar o padrão do pedido." %}</p>
             </div>
             <div>
-              <label class="text-sm font-medium text-slate-700" for="id_pix_expiracao">{% trans "Expira em" %}</label>
-              {{ form.pix_expiracao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm" }}
+              <label class="text-sm font-medium text-slate-700 dark:text-slate-200" for="id_pix_expiracao">{% trans "Expira em" %}</label>
+              {{ form.pix_expiracao|add_class:"mt-1 w-full rounded-lg border-slate-200 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" }}
+              <p class="text-xs text-slate-500 dark:text-slate-400">{% trans "Se não definir, usamos a expiração padrão do sistema." %}</p>
             </div>
           </div>
         </fieldset>
 
-        <fieldset class="space-y-3">
-          <legend class="text-sm font-semibold text-slate-800">{% trans "Faturamento" %}</legend>
-          <p class="text-xs text-slate-500">
+        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-section="faturamento">
+          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Faturamento" %}</legend>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
             {% trans "Opção interna para registro no financeiro, sem integração com o Mercado Pago." %}
           </p>
           <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_avista"
                 class="text-blue-600 focus:ring-blue-500"
               />
-              <span class="font-semibold text-slate-800">{% trans "Faturar à vista" %}</span>
+              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar à vista" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_2x"
                 class="text-blue-600 focus:ring-blue-500"
               />
-              <span class="font-semibold text-slate-800">{% trans "Faturar em 2x" %}</span>
+              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 2x" %}</span>
             </label>
-            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500">
+            <label class="flex items-center gap-3 border rounded-lg px-4 py-3 hover:border-blue-500 transition dark:border-slate-700 dark:hover:border-blue-400">
               <input
                 type="radio"
                 name="faturamento"
                 value="faturar_3x"
                 class="text-blue-600 focus:ring-blue-500"
               />
-              <span class="font-semibold text-slate-800">{% trans "Faturar em 3x" %}</span>
+              <span class="font-semibold text-slate-800 dark:text-white">{% trans "Faturar em 3x" %}</span>
             </label>
           </div>
         </fieldset>
       </div>
     </div>
 
-    <button
-      type="submit"
-      class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow"
-    >
-      {% blocktrans %}Pagar {{ form.valor.value|default:form.initial.valor|default:'R$ 0,00' }}{% endblocktrans %}
-    </button>
-  </form>
-
-  <div class="bg-white shadow rounded-xl p-6" id="checkout-result">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <p class="text-xs uppercase font-semibold text-slate-500">{% trans "Resumo" %}</p>
-        <h2 class="text-xl font-semibold text-slate-900">{% trans "Status do pagamento" %}</h2>
+    <div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+      <div class="mt-0.5 h-2 w-2 rounded-full bg-amber-400"></div>
+      <div class="space-y-1">
+        <p class="text-sm font-semibold">{% trans "Geração de pagamento indisponível" %}</p>
+        <p class="text-xs">{% trans "No momento, o pagamento é gerado por outro canal. Preencha os dados para manter o registro atualizado." %}</p>
       </div>
     </div>
-    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4" id="checkout-result-content">
+  </form>
+
+  <div class="bg-white shadow rounded-xl p-6 border border-slate-100 dark:bg-slate-900 dark:border-slate-800" id="checkout-result">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">{% trans "Resumo" %}</p>
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">{% trans "Status do pagamento" %}</h2>
+      </div>
+    </div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 dark:bg-slate-800/40 dark:border-slate-700" id="checkout-result-content">
       {% include "pagamentos/partials/checkout_resultado.html" %}
     </div>
   </div>
