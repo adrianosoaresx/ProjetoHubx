@@ -90,44 +90,49 @@
       </div>
 
       <div class="space-y-4">
-        <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="faturamento">
-          <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Faturamento" %}</legend>
-          <p class="text-xs text-[var(--text-muted)]">
-            {% trans "Opção interna para registro no financeiro, sem integração com o Mercado Pago." %}
-          </p>
-          <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
-              <input
-                type="radio"
-                name="faturamento"
-                value="faturar_avista"
-                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
-                data-required="true"
-              />
-              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar à vista" %}</span>
-            </label>
-            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
-              <input
-                type="radio"
-                name="faturamento"
-                value="faturar_2x"
-                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
-                data-required="true"
-              />
-              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 2x" %}</span>
-            </label>
-            <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
-              <input
-                type="radio"
-                name="faturamento"
-                value="faturar_3x"
-                class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
-                data-required="true"
-              />
-              <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 3x" %}</span>
-            </label>
-          </div>
-        </fieldset>
+        {% with faturamento_atual=form.data.faturamento|default:form.initial.faturamento %}
+          <fieldset class="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-[var(--bg-tertiary)]" data-metodo-section="faturamento">
+            <legend class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Faturamento" %}</legend>
+            <p class="text-xs text-[var(--text-muted)]">
+              {% trans "Opção interna para registro no financeiro, sem integração com o Mercado Pago." %}
+            </p>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
+                <input
+                  type="radio"
+                  name="faturamento"
+                  value="faturar_avista"
+                  {% if faturamento_atual == 'faturar_avista' %}checked{% endif %}
+                  class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
+                  data-required="true"
+                />
+                <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar à vista" %}</span>
+              </label>
+              <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
+                <input
+                  type="radio"
+                  name="faturamento"
+                  value="faturar_2x"
+                  {% if faturamento_atual == 'faturar_2x' %}checked{% endif %}
+                  class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
+                  data-required="true"
+                />
+                <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 2x" %}</span>
+              </label>
+              <label class="flex items-center gap-3 border border-[var(--border)] rounded-lg px-4 py-3 transition hover:border-[var(--border-focus)] bg-[var(--bg-primary)] peer-checked:border-[var(--border-focus)] peer-checked:bg-[var(--bg-accent)]">
+                <input
+                  type="radio"
+                  name="faturamento"
+                  value="faturar_3x"
+                  {% if faturamento_atual == 'faturar_3x' %}checked{% endif %}
+                  class="peer text-[var(--primary)] focus:ring-[var(--border-focus)]"
+                  data-required="true"
+                />
+                <span class="font-semibold text-[var(--text-primary)]">{% trans "Faturar em 3x" %}</span>
+              </label>
+            </div>
+          </fieldset>
+        {% endwith %}
         <p class="hidden text-xs text-red-600" data-faturamento-error>
           {% trans "Selecione uma forma de faturamento para continuar." %}
         </p>
@@ -184,7 +189,7 @@
       metodoInputs[0].checked = true;
     }
 
-    function setSectionVisibility(selected) {
+    function setSectionVisibility(selected, previousSelected) {
       sections.forEach((section) => {
         const isActive = section.dataset.metodoSection === selected;
         section.classList.toggle('hidden', !isActive);
@@ -198,10 +203,14 @@
           } else {
             input.removeAttribute('required');
             input.setAttribute('disabled', 'disabled');
-            if (input.tagName === 'INPUT') {
-              const inputType = (input.getAttribute('type') || '').toLowerCase();
-              if (inputType === 'radio' || inputType === 'checkbox') {
-                input.checked = false;
+            if (previousSelected && previousSelected !== selected && previousSelected === section.dataset.metodoSection) {
+              if (input.tagName === 'INPUT') {
+                const inputType = (input.getAttribute('type') || '').toLowerCase();
+                if (inputType === 'radio' || inputType === 'checkbox') {
+                  input.checked = false;
+                } else {
+                  input.value = '';
+                }
               } else {
                 input.value = '';
               }
@@ -240,9 +249,11 @@
       faturamentoError.classList.toggle('hidden', !showError);
     }
 
+    let ultimoModo = metodoInputs.find((input) => input.checked)?.value;
+
     function handleMetodoChange() {
       const selected = metodoInputs.find((input) => input.checked)?.value;
-      setSectionVisibility(selected);
+      setSectionVisibility(selected, ultimoModo);
       if (metodoHiddenInput) {
         metodoHiddenInput.value = metodoPorModo[selected] || 'pix';
       }
@@ -253,6 +264,7 @@
           toggleFaturamentoError(false);
         }
       }
+      ultimoModo = selected;
       window.requestAnimationFrame(() => updateActionButtons(selected));
     }
 
