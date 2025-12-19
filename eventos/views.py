@@ -2513,6 +2513,7 @@ class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, Templat
 
         if not initial_checkout.get("metodo"):
             initial_checkout["metodo"] = Transacao.Metodo.PIX
+        initial_checkout.setdefault("faturamento", None)
         return initial_checkout
 
     def _get_checkout_form(self) -> CheckoutForm:
