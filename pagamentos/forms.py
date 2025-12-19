@@ -124,7 +124,10 @@ class CheckoutForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        modo_exibicao = cleaned_data.get("modo_exibicao") or "pix"
+        modo_exibicao = cleaned_data.get("modo_exibicao")
+        if not modo_exibicao and cleaned_data.get("faturamento"):
+            modo_exibicao = "faturamento"
+        modo_exibicao = modo_exibicao or "pix"
         cleaned_data["modo_exibicao"] = modo_exibicao
         if modo_exibicao == "faturamento":
             cleaned_data.setdefault("metodo", Transacao.Metodo.PIX)
