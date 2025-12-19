@@ -157,8 +157,7 @@ class CheckoutView(APIView):
                 "erro_checkout_pagamento",
                 extra={"pedido_id": pedido.id, "metodo": metodo_pagamento},
             )
-            form.add_error(None, _("Não foi possível iniciar o pagamento."))
-            return self._render_response(request, form=form, status=500)
+            raise
 
         contexto = {
             "form": form,
