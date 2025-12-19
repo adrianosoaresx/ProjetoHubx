@@ -72,9 +72,32 @@ class CheckoutForm(forms.Form):
         for field_name, value in profile_data.items():
             if value and field_name in self.fields:
                 self.initial.setdefault(field_name, value)
+        modo_exibicao = None
+        if self.is_bound:
+            modo_exibicao = self.data.get(self.add_prefix("modo_exibicao"))
+        modo_exibicao = modo_exibicao or self.initial.get("modo_exibicao") or "pix"
+        self.initial.setdefault("modo_exibicao", modo_exibicao)
         if not self.initial.get("metodo") and self.fields["metodo"].choices:
-            self.initial["metodo"] = self.fields["metodo"].choices[0][0]
-        self.initial.setdefault("modo_exibicao", "pix")
+            self.initial["metodo"] = Transacao.Metodo.PIX
+        if modo_exibicao == "faturamento":
+            self.fields["metodo"].required = False
+            for field_name in (
+                "documento",
+                "token_cartao",
+                "payment_method_id",
+                "vencimento",
+                "pix_descricao",
+                "pix_expiracao",
+                "cep",
+                "logradouro",
+                "numero",
+                "bairro",
+                "cidade",
+                "estado",
+                "parcelas",
+            ):
+                if field_name in self.fields:
+                    self.fields[field_name].required = False
 
     def clean_valor(self):
         valor = self.cleaned_data["valor"]
@@ -104,6 +127,7 @@ class CheckoutForm(forms.Form):
         modo_exibicao = cleaned_data.get("modo_exibicao") or "pix"
         cleaned_data["modo_exibicao"] = modo_exibicao
         if modo_exibicao == "faturamento":
+            cleaned_data.setdefault("metodo", Transacao.Metodo.PIX)
             if not cleaned_data.get("faturamento"):
                 self.add_error("faturamento", _("Escolha uma condição de faturamento."))
             return cleaned_data
