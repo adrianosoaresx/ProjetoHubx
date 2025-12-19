@@ -128,6 +128,9 @@
             </label>
           </div>
         </fieldset>
+        <p class="hidden text-xs text-red-600" data-faturamento-error>
+          {% trans "Selecione uma forma de faturamento para continuar." %}
+        </p>
       </div>
     </div>
 
@@ -167,9 +170,11 @@
     const sections = document.querySelectorAll('[data-metodo-section]');
     const pixFields = document.querySelectorAll('[data-metodo-section="pix"] input');
     const faturamentoInputs = Array.from(document.querySelectorAll('input[name="faturamento"]'));
+    const faturamentoError = document.querySelector('[data-faturamento-error]');
     const pixButton = document.querySelector('[data-acao-botao="pix"]');
     const faturamentoButton = document.querySelector('[data-acao-botao="faturamento"]');
     const metodoHiddenInput = document.querySelector('input[name="metodo"]');
+    const checkoutForm = document.querySelector('#checkout-form');
     const metodoPorModo = {
       pix: 'pix',
       faturamento: 'pix',
@@ -211,6 +216,25 @@
       }
     }
 
+    function ensureFaturamentoSelecionado() {
+      if (faturamentoInputs.some((input) => input.checked)) {
+        return true;
+      }
+      const primeiraOpcao = faturamentoInputs.find((input) => !input.disabled);
+      if (primeiraOpcao) {
+        primeiraOpcao.checked = true;
+        return true;
+      }
+      return false;
+    }
+
+    function toggleFaturamentoError(showError) {
+      if (!faturamentoError) {
+        return;
+      }
+      faturamentoError.classList.toggle('hidden', !showError);
+    }
+
     function handleMetodoChange() {
       const selected = metodoInputs.find((input) => input.checked)?.value;
       setSectionVisibility(selected);
@@ -219,6 +243,10 @@
       }
       if (selected !== 'pix') {
         pixFields.forEach((field) => { field.value = ''; });
+        if (selected === 'faturamento') {
+          ensureFaturamentoSelecionado();
+          toggleFaturamentoError(false);
+        }
       }
       window.requestAnimationFrame(() => updateActionButtons(selected));
     }
@@ -230,6 +258,25 @@
     faturamentoInputs.forEach((input) => {
       input.addEventListener('change', handleMetodoChange);
     });
+
+    if (checkoutForm) {
+      checkoutForm.addEventListener('submit', (event) => {
+        const selected = metodoInputs.find((input) => input.checked)?.value;
+        if (selected !== 'faturamento') {
+          toggleFaturamentoError(false);
+          return;
+        }
+        setSectionVisibility(selected);
+        const faturamentoSelecionado = faturamentoInputs.some((input) => input.checked);
+        if (!faturamentoSelecionado) {
+          event.preventDefault();
+          toggleFaturamentoError(true);
+          updateActionButtons(selected);
+        } else {
+          toggleFaturamentoError(false);
+        }
+      });
+    }
 
     handleMetodoChange();
   })();
