@@ -10,7 +10,21 @@ from pagamentos.models import Transacao
 
 
 class CheckoutForm(forms.Form):
+    MODO_EXIBICAO_CHOICES = (
+        ("pix", _("Pix")),
+        ("faturamento", _("Faturamento interno")),
+    )
+    FATURAMENTO_CHOICES = (
+        ("faturar_avista", _("Faturar à vista")),
+        ("faturar_2x", _("Faturar em 2x")),
+        ("faturar_3x", _("Faturar em 3x")),
+    )
     organizacao_id = forms.UUIDField(required=False, widget=forms.HiddenInput())
+    modo_exibicao = forms.ChoiceField(
+        label=_("Modo de pagamento"),
+        choices=MODO_EXIBICAO_CHOICES,
+        required=False,
+    )
     valor = forms.DecimalField(
         label=_("Valor"),
         min_value=Decimal("0.50"),
@@ -42,6 +56,11 @@ class CheckoutForm(forms.Form):
         required=False,
         help_text=_("Um rótulo curto para identificar o pagamento."),
     )
+    faturamento = forms.ChoiceField(
+        label=_("Faturamento interno"),
+        choices=FATURAMENTO_CHOICES,
+        required=False,
+    )
 
     def __init__(self, *args, user=None, organizacao=None, **kwargs):
         self.user = user
@@ -55,6 +74,7 @@ class CheckoutForm(forms.Form):
                 self.initial.setdefault(field_name, value)
         if not self.initial.get("metodo") and self.fields["metodo"].choices:
             self.initial["metodo"] = self.fields["metodo"].choices[0][0]
+        self.initial.setdefault("modo_exibicao", "pix")
 
     def clean_valor(self):
         valor = self.cleaned_data["valor"]
@@ -81,6 +101,13 @@ class CheckoutForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        modo_exibicao = cleaned_data.get("modo_exibicao") or "pix"
+        cleaned_data["modo_exibicao"] = modo_exibicao
+        if modo_exibicao == "faturamento":
+            if not cleaned_data.get("faturamento"):
+                self.add_error("faturamento", _("Escolha uma condição de faturamento."))
+            return cleaned_data
+
         metodo = cleaned_data.get("metodo")
         if not metodo:
             return cleaned_data

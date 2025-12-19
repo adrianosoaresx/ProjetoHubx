@@ -79,6 +79,25 @@ class CheckoutView(APIView):
                 request, form=form, status=400, provider_public_key=provider.public_key
             )
 
+        modo_exibicao = form.cleaned_data.get("modo_exibicao") or "pix"
+        if modo_exibicao == "faturamento":
+            inscricao = self._registrar_faturamento_inscricao(
+                request,
+                faturamento=form.cleaned_data.get("faturamento"),
+                valor=form.cleaned_data["valor"],
+            )
+            if not inscricao:
+                form.add_error(None, _("Não foi possível localizar a inscrição para faturamento."))
+                return self._render_response(request, form=form, status=400)
+            contexto = {
+                "form": form,
+                "inscricao": inscricao,
+                "faturamento_interno": True,
+                "mensagem": _("Faturamento interno registrado."),
+                "status": 201,
+            }
+            return self._render_response(request, **contexto)
+
         organizacao = self._obter_organizacao(
             request, str(form.cleaned_data.get("organizacao_id") or "")
         )
@@ -152,6 +171,44 @@ class CheckoutView(APIView):
         if redirect_url:
             return redirect(redirect_url)
         return self._render_response(request, **contexto)
+
+    def _registrar_faturamento_inscricao(
+        self,
+        request: HttpRequest,
+        faturamento: str | None,
+        valor: Any,
+    ) -> InscricaoEvento | None:
+        if not faturamento:
+            return None
+        inscricao_uuid = (request.POST.get("inscricao_uuid") or "").strip()
+        if not inscricao_uuid or not request.user.is_authenticated:
+            return None
+        try:
+            inscricao = InscricaoEvento.objects.select_related("user").get(
+                uuid=inscricao_uuid
+            )
+        except InscricaoEvento.DoesNotExist:
+            logger.warning("checkout_inscricao_nao_encontrada", extra={"uuid": inscricao_uuid})
+            return None
+        if inscricao.user != request.user:
+            logger.warning(
+                "checkout_inscricao_usuario_invalido",
+                extra={"uuid": inscricao_uuid, "user_id": request.user.id},
+            )
+            return None
+
+        inscricao.metodo_pagamento = faturamento
+        inscricao.valor_pago = valor
+        inscricao.pagamento_validado = False
+        inscricao.save(
+            update_fields=[
+                "metodo_pagamento",
+                "valor_pago",
+                "pagamento_validado",
+                "updated_at",
+            ]
+        )
+        return inscricao
 
     def _obter_organizacao(
         self, request: HttpRequest, organizacao_id: str | None = None
