@@ -4173,11 +4173,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   background-color: var(--color-primary-500);
 }
 
-.bg-slate-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(248 250 252 / var(--tw-bg-opacity, 1));
-}
-
 .bg-transparent {
   background-color: transparent;
 }
