@@ -20,6 +20,7 @@ class CheckoutForm(forms.Form):
         ("faturar_3x", _("Faturar em 3x")),
     )
     organizacao_id = forms.UUIDField(required=False, widget=forms.HiddenInput())
+    inscricao_uuid = forms.UUIDField(required=False, widget=forms.HiddenInput())
     modo_exibicao = forms.ChoiceField(
         label=_("Modo de pagamento"),
         choices=MODO_EXIBICAO_CHOICES,
@@ -134,6 +135,8 @@ class CheckoutForm(forms.Form):
             cleaned_data.setdefault("metodo", Transacao.Metodo.PIX)
             if not cleaned_data.get("faturamento"):
                 self.add_error("faturamento", _("Escolha uma condição de faturamento."))
+            if not cleaned_data.get("inscricao_uuid"):
+                self.add_error("inscricao_uuid", _("Informe a inscrição para faturamento."))
             return cleaned_data
 
         metodo = cleaned_data.get("metodo")
