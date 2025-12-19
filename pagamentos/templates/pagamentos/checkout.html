@@ -87,10 +87,10 @@
       </div>
 
       <div class="space-y-4">
-        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-section="pix">
-          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Pagamento via Pix" %}</legend>
+        <fieldset class="space-y-3 border border-slate-200 rounded-lg p-4 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40" data-metodo-fields="pix">
+          <legend class="text-sm font-semibold text-slate-800 dark:text-white">{% trans "Detalhes do Pix (opcional)" %}</legend>
           <p class="text-xs text-slate-500 dark:text-slate-400">
-            {% trans "Personalize a descrição do comprovante ou use o padrão do pedido." %}
+            {% trans "Estas informações são usadas apenas quando o pagamento for via Pix." %}
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -199,7 +199,9 @@
   (() => {
     const metodoInputs = Array.from(document.querySelectorAll('[data-metodo-input]'));
     const sections = document.querySelectorAll('[data-metodo-section]');
-    const pixFields = document.querySelectorAll('[data-metodo-section="pix"] input');
+    const pixFields = Array.from(
+      document.querySelectorAll('[data-metodo-fields="pix"] input, [data-metodo-fields="pix"] select, [data-metodo-fields="pix"] textarea'),
+    );
     const ctaGroups = document.querySelectorAll('[data-metodo-cta]');
 
     if (!metodoInputs.find((input) => input.checked) && metodoInputs[0]) {
@@ -236,9 +238,22 @@
     function handleMetodoChange() {
       const selected = metodoInputs.find((input) => input.checked)?.value;
       setSectionVisibility(selected);
-      if (selected !== 'pix') {
-        pixFields.forEach((field) => { field.value = ''; });
-      }
+      const pixActive = selected === 'pix';
+      pixFields.forEach((field) => {
+        if (pixActive) {
+          field.removeAttribute('disabled');
+          if (field.dataset.required !== undefined) {
+            field.setAttribute('required', 'required');
+          }
+          return;
+        }
+
+        field.removeAttribute('required');
+        field.setAttribute('disabled', 'disabled');
+        if (field.tagName === 'INPUT') {
+          field.value = '';
+        }
+      });
     }
 
     metodoInputs.forEach((input) => {
