@@ -181,7 +181,7 @@ class CheckoutView(APIView):
     ) -> InscricaoEvento | None:
         if not faturamento:
             return None
-        inscricao_uuid = self._normalizar_uuid(inscricao_uuid)
+        inscricao_uuid = str(inscricao_uuid or "").strip()
         if not inscricao_uuid or not request.user.is_authenticated:
             return None
         try:
