@@ -48,10 +48,17 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         ("confirmada", "Confirmada"),
         ("cancelada", "Cancelada"),
     ]
+
+    class CondicaoFaturamento(models.TextChoices):
+        AVISTA = "avista", _("À vista")
+        PARCELADO_2X = "2x", _("2x")
+        PARCELADO_3X = "3x", _("3x")
+
     METODO_PAGAMENTO_CHOICES = [
         ("pix", "Pix"),
         ("boleto", "Boleto"),
         ("card", "Cartão de crédito"),
+        ("faturamento", "Faturamento interno"),
         ("faturar_avista", "Faturar à vista"),
         ("faturar_2x", "Faturar em 2x"),
         ("faturar_3x", "Faturar em 3x"),
@@ -95,6 +102,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     metodo_pagamento = models.CharField(
         max_length=20,
         choices=METODO_PAGAMENTO_CHOICES,
+        null=True,
+        blank=True,
+    )
+    condicao_faturamento = models.CharField(
+        max_length=10,
+        choices=CondicaoFaturamento.choices,
         null=True,
         blank=True,
     )

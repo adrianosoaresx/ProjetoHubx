@@ -5,9 +5,11 @@ from typing import List
 from django.urls import URLPattern, path
 
 from pagamentos.views import (
-    CheckoutView,
+    CheckoutResultadoView,
+    FaturamentoView,
     MercadoPagoRetornoView,
     PayPalWebhookView,
+    PixCheckoutView,
     TransacaoCSVExportView,
     TransacaoRevisaoView,
     TransacaoStatusView,
@@ -15,7 +17,13 @@ from pagamentos.views import (
 )
 
 urlpatterns: List[URLPattern] = [
-    path("checkout/", CheckoutView.as_view(), name="checkout"),
+    path("checkout/pix/", PixCheckoutView.as_view(), name="pix-checkout"),
+    path("checkout/faturamento/", FaturamentoView.as_view(), name="faturamento-checkout"),
+    path(
+        "checkout/resultado/<int:pk>/",
+        CheckoutResultadoView.as_view(),
+        name="checkout-resultado",
+    ),
     path("checkout/status/<int:pk>/", TransacaoStatusView.as_view(), name="status"),
     path(
         "mp/retorno/<str:status>/",

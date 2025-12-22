@@ -17,9 +17,20 @@
           {% endif %}
         </div>
 
-        <a href="{{ cta_url }}" class="btn btn-primary" role="button">
-          {{ cta_label }}
-        </a>
+        {% if evento_pago %}
+          <div class="flex flex-col gap-2 sm:flex-row">
+            <a href="{{ pix_checkout_url }}" class="btn btn-primary" role="button">
+              {% trans "Pagar via Pix" %}
+            </a>
+            <a href="{{ faturamento_checkout_url }}" class="btn btn-secondary" role="button">
+              {% trans "Faturar" %}
+            </a>
+          </div>
+        {% else %}
+          <a href="{{ cta_url }}" class="btn btn-primary" role="button">
+            {{ cta_label }}
+          </a>
+        {% endif %}
       </header>
 
       <div class="card-body grid gap-6 lg:grid-cols-2">
@@ -105,8 +116,9 @@
       </div>
 
       {% if evento_pago %}
-        <footer class="card-footer flex justify-end">
-          <a href="{{ cta_url }}" class="btn btn-primary" role="button">{% trans "Efetuar pagamento" %}</a>
+        <footer class="card-footer flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <a href="{{ pix_checkout_url }}" class="btn btn-primary" role="button">{% trans "Pagar via Pix" %}</a>
+          <a href="{{ faturamento_checkout_url }}" class="btn btn-secondary" role="button">{% trans "Faturar" %}</a>
         </footer>
       {% endif %}
     </article>
