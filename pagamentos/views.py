@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import time
+from uuid import UUID
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect, render
@@ -174,7 +175,7 @@ class CheckoutView(APIView):
     def _registrar_faturamento_inscricao(
         self,
         request: HttpRequest,
-        inscricao_uuid: str | None,
+        inscricao_uuid: str | UUID | None,
         faturamento: str | None,
         valor: Any,
     ) -> InscricaoEvento | None:
@@ -244,7 +245,7 @@ class CheckoutView(APIView):
     def _vincular_transacao_inscricao(
         self, request: HttpRequest, transacao: Transacao
     ) -> None:
-        inscricao_uuid = (request.POST.get("inscricao_uuid") or "").strip()
+        inscricao_uuid = self._normalizar_uuid(request.POST.get("inscricao_uuid"))
         if not inscricao_uuid or not request.user.is_authenticated:
             return
         try:
@@ -278,6 +279,21 @@ class CheckoutView(APIView):
         )
         status = contexto.pop("status", 200)
         return render(request, template, contexto, status=status)
+
+    @staticmethod
+    def _normalizar_uuid(valor: Any) -> UUID | None:
+        if isinstance(valor, UUID):
+            return valor
+        if valor is None:
+            return None
+        if isinstance(valor, str):
+            valor = valor.strip()
+            if not valor:
+                return None
+        try:
+            return UUID(str(valor))
+        except (TypeError, ValueError, AttributeError):
+            return None
 
 
 class ConfirmarPagamentoMixin:
