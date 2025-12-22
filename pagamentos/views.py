@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import time
 from uuid import UUID
+from urllib.parse import urlencode
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect, render
@@ -27,7 +28,7 @@ from rest_framework.views import APIView
 
 from eventos.models import InscricaoEvento
 from organizacoes.models import Organizacao
-from pagamentos.forms import CheckoutForm
+from pagamentos.forms import FaturamentoForm, PixCheckoutForm
 from pagamentos.exceptions import PagamentoProviderError
 from pagamentos.models import Pedido, Transacao
 from pagamentos.providers import MercadoPagoProvider, PayPalProvider
@@ -47,139 +48,14 @@ def _mapear_status_pagamento(status: str) -> str:
     return Transacao.Status.PENDENTE
 
 
-class CheckoutView(APIView):
-    template_name = "pagamentos/checkout.html"
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        methods=["GET"],
-        responses=OpenApiResponse(description="Página de checkout com formulário HTMX"),
-        tags=["Pagamentos"],
-    )
-    def get(self, request: HttpRequest) -> HttpResponse:
-        organizacao = self._obter_organizacao(request)
-        form = CheckoutForm(organizacao=organizacao)
-        provider = MercadoPagoProvider.from_organizacao(organizacao)
-        return self._render_response(
-            request, form=form, provider_public_key=provider.public_key
-        )
-
-    @extend_schema(
-        methods=["POST"],
-        request=CheckoutSerializer,
-        responses={201: CheckoutResponseSerializer},
-        tags=["Pagamentos"],
-        description=_("Inicia o pagamento no provedor selecionado e retorna a transação criada."),
-    )
-    def post(self, request: HttpRequest) -> HttpResponse:
-        organizacao = self._obter_organizacao(request)
-        form = CheckoutForm(request.POST, user=request.user, organizacao=organizacao)
-        if not form.is_valid():
-            logger.warning("checkout_form_invalido", extra={"errors": form.errors.as_json()})
-            provider = MercadoPagoProvider.from_organizacao(organizacao)
-            return self._render_response(
-                request, form=form, status=400, provider_public_key=provider.public_key
-            )
-
-        modo_exibicao = form.cleaned_data.get("modo_exibicao") or "pix"
-        if modo_exibicao == "faturamento":
-            inscricao = self._registrar_faturamento_inscricao(
-                request,
-                inscricao_uuid=form.cleaned_data.get("inscricao_uuid"),
-                faturamento=form.cleaned_data.get("faturamento"),
-                valor=form.cleaned_data["valor"],
-            )
-            if not inscricao:
-                form.add_error(None, _("Não foi possível localizar a inscrição para faturamento."))
-                return self._render_response(request, form=form, status=400)
-            resultado_url = reverse("eventos:inscricao_resultado", kwargs={"uuid": inscricao.uuid})
-            if request.headers.get("HX-Request"):
-                response = HttpResponse(status=204)
-                response["HX-Redirect"] = resultado_url
-                return response
-            return redirect(resultado_url)
-
-        organizacao = self._obter_organizacao(
-            request, str(form.cleaned_data.get("organizacao_id") or "")
-        )
-        pedido = Pedido.objects.create(
-            valor=form.cleaned_data["valor"],
-            email=form.cleaned_data.get("email"),
-            nome=form.cleaned_data.get("nome"),
-            organizacao=organizacao,
-        )
-
-        metodo_pagamento = form.cleaned_data.get("metodo")
-        dados_pagamento = {
-            "email": form.cleaned_data.get("email"),
-            "nome": form.cleaned_data.get("nome"),
-            "descricao": form.cleaned_data.get("descricao") or _("Pagamento Hubx"),
-            "document_number": form.cleaned_data.get("documento"),
-            "document_type": "CPF",
-            "cep": form.cleaned_data.get("cep"),
-            "logradouro": form.cleaned_data.get("logradouro"),
-            "numero": form.cleaned_data.get("numero"),
-            "bairro": form.cleaned_data.get("bairro"),
-            "cidade": form.cleaned_data.get("cidade"),
-            "estado": form.cleaned_data.get("estado"),
-        }
-
-        if metodo_pagamento == Transacao.Metodo.CARTAO:
-            dados_pagamento.update(
-                {
-                    "token": form.cleaned_data.get("token_cartao"),
-                    "payment_method_id": form.cleaned_data.get("payment_method_id"),
-                    "parcelas": form.cleaned_data.get("parcelas") or 1,
-                }
-            )
-        elif metodo_pagamento == Transacao.Metodo.BOLETO:
-            dados_pagamento.update({"vencimento": form.cleaned_data.get("vencimento")})
-        elif metodo_pagamento == Transacao.Metodo.PIX:
-            dados_pagamento.update(
-                {
-                    "descricao": form.cleaned_data.get("pix_descricao")
-                    or form.cleaned_data.get("descricao")
-                    or _("Pagamento Hubx"),
-                    "expiracao": form.cleaned_data.get("pix_expiracao"),
-                }
-            )
-
-        provider = MercadoPagoProvider.from_organizacao(organizacao)
-        service = PagamentoService(provider)
-        redirect_url: str | None = None
-        try:
-            transacao = service.iniciar_pagamento(pedido, metodo_pagamento, dados_pagamento)
-            redirect_url = (transacao.detalhes or {}).get("redirect_url")
-            self._vincular_transacao_inscricao(request, transacao)
-        except PagamentoProviderError as exc:
-            form.add_error(None, str(exc))
-            return self._render_response(request, form=form, status=400)
-        except Exception:
-            logger.exception(
-                "erro_checkout_pagamento",
-                extra={"pedido_id": pedido.id, "metodo": metodo_pagamento},
-            )
-            raise
-
-        contexto = {
-            "form": form,
-            "transacao": transacao,
-            "redirect_url": redirect_url,
-            "mensagem": _("Pagamento iniciado com sucesso."),
-            "status": 201,
-        }
-        if redirect_url:
-            return redirect(redirect_url)
-        return self._render_response(request, **contexto)
-
+class CheckoutBaseMixin:
     def _registrar_faturamento_inscricao(
         self,
         request: HttpRequest,
         inscricao_uuid: str | UUID | None,
-        faturamento: str | None,
-        valor: Any,
+        condicao_faturamento: str | None,
     ) -> InscricaoEvento | None:
-        if not faturamento:
+        if not condicao_faturamento:
             return None
         inscricao_uuid = str(inscricao_uuid or "").strip()
         if not inscricao_uuid or not request.user.is_authenticated:
@@ -198,13 +74,17 @@ class CheckoutView(APIView):
             )
             return None
 
-        inscricao.metodo_pagamento = faturamento
-        inscricao.valor_pago = valor
+        inscricao.metodo_pagamento = "faturamento"
+        inscricao.condicao_faturamento = condicao_faturamento
+        inscricao.valor_pago = None
         inscricao.pagamento_validado = False
+        inscricao.transacao = None
         inscricao.save(
             update_fields=[
                 "metodo_pagamento",
+                "condicao_faturamento",
                 "valor_pago",
+                "transacao",
                 "pagamento_validado",
                 "updated_at",
             ]
@@ -269,17 +149,6 @@ class CheckoutView(APIView):
             update_fields=["transacao", "metodo_pagamento", "pagamento_validado", "updated_at"]
         )
 
-    def _render_response(self, request: HttpRequest, **contexto: Any) -> HttpResponse:
-        if "form" not in contexto:
-            contexto["form"] = CheckoutForm()
-        template = (
-            "pagamentos/partials/checkout_resultado.html"
-            if request.headers.get("HX-Request")
-            else self.template_name
-        )
-        status = contexto.pop("status", 200)
-        return render(request, template, contexto, status=status)
-
     @staticmethod
     def _normalizar_uuid(valor: Any) -> UUID | None:
         if isinstance(valor, UUID):
@@ -294,6 +163,190 @@ class CheckoutView(APIView):
             return UUID(str(valor))
         except (TypeError, ValueError, AttributeError):
             return None
+
+
+class PixCheckoutView(CheckoutBaseMixin, APIView):
+    template_name = "pagamentos/pix_checkout.html"
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        methods=["GET"],
+        responses=OpenApiResponse(description="Página de checkout Pix"),
+        tags=["Pagamentos"],
+    )
+    def get(self, request: HttpRequest) -> HttpResponse:
+        organizacao = self._obter_organizacao(request)
+        form = PixCheckoutForm(
+            initial=self._get_initial_checkout(request),
+            user=request.user,
+            organizacao=organizacao,
+        )
+        provider = MercadoPagoProvider.from_organizacao(organizacao)
+        return render(
+            request,
+            self.template_name,
+            {"form": form, "provider_public_key": provider.public_key},
+        )
+
+    @extend_schema(
+        methods=["POST"],
+        request=CheckoutSerializer,
+        responses={201: CheckoutResponseSerializer},
+        tags=["Pagamentos"],
+        description=_("Inicia o pagamento Pix no Mercado Pago e retorna a transação criada."),
+    )
+    def post(self, request: HttpRequest) -> HttpResponse:
+        organizacao = self._obter_organizacao(request)
+        form = PixCheckoutForm(request.POST, user=request.user, organizacao=organizacao)
+        if not form.is_valid():
+            logger.warning("checkout_form_invalido", extra={"errors": form.errors.as_json()})
+            provider = MercadoPagoProvider.from_organizacao(organizacao)
+            return render(
+                request,
+                self.template_name,
+                {"form": form, "provider_public_key": provider.public_key},
+                status=400,
+            )
+
+        organizacao = self._obter_organizacao(
+            request, str(form.cleaned_data.get("organizacao_id") or "")
+        )
+        pedido = Pedido.objects.create(
+            valor=form.cleaned_data["valor"],
+            email=form.cleaned_data.get("email"),
+            nome=form.cleaned_data.get("nome"),
+            organizacao=organizacao,
+        )
+
+        metodo_pagamento = form.cleaned_data.get("metodo") or Transacao.Metodo.PIX
+        dados_pagamento = {
+            "email": form.cleaned_data.get("email"),
+            "nome": form.cleaned_data.get("nome"),
+            "document_number": form.cleaned_data.get("documento"),
+            "document_type": "CPF",
+        }
+
+        if metodo_pagamento == Transacao.Metodo.CARTAO:
+            dados_pagamento.update(
+                {
+                    "token": form.cleaned_data.get("token_cartao"),
+                    "payment_method_id": form.cleaned_data.get("payment_method_id"),
+                    "parcelas": form.cleaned_data.get("parcelas") or 1,
+                }
+            )
+        elif metodo_pagamento == Transacao.Metodo.BOLETO:
+            dados_pagamento.update({"vencimento": form.cleaned_data.get("vencimento")})
+        elif metodo_pagamento == Transacao.Metodo.PIX:
+            dados_pagamento.update(
+                {
+                    "descricao": _("Pagamento Hubx"),
+                    "expiracao": form.cleaned_data.get("pix_expiracao"),
+                }
+            )
+
+        provider = MercadoPagoProvider.from_organizacao(organizacao)
+        service = PagamentoService(provider)
+        try:
+            transacao = service.iniciar_pagamento(pedido, metodo_pagamento, dados_pagamento)
+            self._vincular_transacao_inscricao(request, transacao)
+        except PagamentoProviderError as exc:
+            form.add_error(None, str(exc))
+            return render(
+                request,
+                self.template_name,
+                {"form": form, "provider_public_key": provider.public_key},
+                status=400,
+            )
+        except Exception:
+            logger.exception(
+                "erro_checkout_pagamento",
+                extra={"pedido_id": pedido.id, "metodo": metodo_pagamento},
+            )
+            raise
+
+        return redirect(reverse("pagamentos:checkout-resultado", kwargs={"pk": transacao.pk}))
+
+    def _get_initial_checkout(self, request: HttpRequest) -> dict[str, Any]:
+        initial: dict[str, Any] = {}
+        inscricao_uuid = request.GET.get("inscricao_uuid")
+        if inscricao_uuid:
+            inscricao = InscricaoEvento.all_objects.filter(uuid=inscricao_uuid).first()
+            if inscricao and request.user.is_authenticated and inscricao.user == request.user:
+                valor_evento = inscricao.evento.get_valor_para_usuario(user=request.user)
+                if valor_evento is not None:
+                    initial["valor"] = valor_evento
+                initial["inscricao_uuid"] = inscricao.uuid
+                initial["organizacao_id"] = inscricao.evento.organizacao_id
+        return initial
+
+
+class FaturamentoView(CheckoutBaseMixin, APIView):
+    template_name = "pagamentos/faturamento_checkout.html"
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        methods=["GET"],
+        responses=OpenApiResponse(description="Página de faturamento interno"),
+        tags=["Pagamentos"],
+    )
+    def get(self, request: HttpRequest) -> HttpResponse:
+        organizacao = self._obter_organizacao(request)
+        form = FaturamentoForm(initial=self._get_initial_faturamento(request), organizacao=organizacao)
+        return render(request, self.template_name, {"form": form})
+
+    @extend_schema(
+        methods=["POST"],
+        request=CheckoutSerializer,
+        responses={201: CheckoutResponseSerializer},
+        tags=["Pagamentos"],
+        description=_("Registra o faturamento interno sem criar transação."),
+    )
+    def post(self, request: HttpRequest) -> HttpResponse:
+        organizacao = self._obter_organizacao(request)
+        form = FaturamentoForm(request.POST, organizacao=organizacao)
+        if not form.is_valid():
+            logger.warning("faturamento_form_invalido", extra={"errors": form.errors.as_json()})
+            return render(request, self.template_name, {"form": form}, status=400)
+
+        inscricao = self._registrar_faturamento_inscricao(
+            request,
+            inscricao_uuid=form.cleaned_data.get("inscricao_uuid"),
+            condicao_faturamento=form.cleaned_data.get("condicao_faturamento"),
+        )
+        if not inscricao:
+            form.add_error(None, _("Não foi possível localizar a inscrição para faturamento."))
+            return render(request, self.template_name, {"form": form}, status=400)
+
+        resultado_url = reverse("eventos:inscricao_resultado", kwargs={"uuid": inscricao.uuid})
+        mensagem = _("Faturamento registrado, aguardando validação da equipe financeira.")
+        querystring = urlencode({"status": "info", "message": mensagem})
+        return redirect(f"{resultado_url}?{querystring}")
+
+    def _get_initial_faturamento(self, request: HttpRequest) -> dict[str, Any]:
+        initial: dict[str, Any] = {}
+        inscricao_uuid = request.GET.get("inscricao_uuid")
+        if inscricao_uuid:
+            inscricao = InscricaoEvento.all_objects.filter(uuid=inscricao_uuid).first()
+            if inscricao and request.user.is_authenticated and inscricao.user == request.user:
+                valor_evento = inscricao.evento.get_valor_para_usuario(user=request.user)
+                if valor_evento is not None:
+                    initial["valor"] = valor_evento
+                initial["inscricao_uuid"] = inscricao.uuid
+                initial["organizacao_id"] = inscricao.evento.organizacao_id
+        return initial
+
+
+class CheckoutResultadoView(APIView):
+    permission_classes = [AllowAny]
+    template_name = "pagamentos/checkout_resultado.html"
+
+    def get(self, request: HttpRequest, pk: int) -> HttpResponse:
+        transacao = Transacao.objects.filter(pk=pk).first()
+        return render(
+            request,
+            self.template_name,
+            {"transacao": transacao, "form": PixCheckoutForm()},
+        )
 
 
 class ConfirmarPagamentoMixin:
@@ -375,7 +428,7 @@ class TransacaoStatusView(ConfirmarPagamentoMixin, APIView):
         return render(
             request,
             "pagamentos/partials/checkout_resultado.html",
-            {"transacao": transacao, "form": CheckoutForm()},
+            {"transacao": transacao, "form": PixCheckoutForm()},
         )
 
     @staticmethod
@@ -415,7 +468,7 @@ class MercadoPagoRetornoView(ConfirmarPagamentoMixin, APIView):
         contexto = {
             "mensagem": self._mensagem(retorno_status, transacao is not None),
             "transacao": transacao,
-            "form": CheckoutForm(organizacao=organizacao),
+            "form": PixCheckoutForm(organizacao=organizacao),
             "retorno_status": retorno_status,
         }
         return render(request, self.template_name, contexto)

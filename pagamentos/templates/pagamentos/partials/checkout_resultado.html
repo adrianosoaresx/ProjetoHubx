@@ -38,7 +38,12 @@
         <p class="text-sm text-[var(--text-secondary)] uppercase font-semibold">{% trans "Inscrição" %} #{{ inscricao.id }}</p>
         <p class="text-lg font-bold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</p>
         <p class="text-sm text-[var(--text-secondary)]">
-          {% trans "Condição" %}: {{ inscricao.get_metodo_pagamento_display }}
+          {% trans "Condição" %}:
+          {% if inscricao.condicao_faturamento %}
+            {{ inscricao.get_condicao_faturamento_display }}
+          {% else %}
+            {{ inscricao.get_metodo_pagamento_display }}
+          {% endif %}
         </p>
         {% if inscricao.valor_pago %}
           <p class="text-sm text-[var(--text-secondary)]">{% trans "Valor registrado" %}: {{ inscricao.valor_pago }}</p>

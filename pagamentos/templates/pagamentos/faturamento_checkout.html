@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load i18n widget_tweaks %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-10 space-y-6">
+  <div class="bg-[var(--bg-secondary)] shadow rounded-xl p-6 space-y-2 border border-[var(--border)]">
+    <p class="text-xs uppercase font-semibold text-[var(--text-muted)]">{% trans "Faturamento" %}</p>
+    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</h1>
+    <p class="text-[var(--text-secondary)]">{% trans "Registre o faturamento para validação da equipe financeira." %}</p>
+  </div>
+
+  <form
+    method="post"
+    action="{% url 'pagamentos:faturamento-checkout' %}"
+    class="bg-[var(--bg-secondary)] shadow rounded-xl p-6 space-y-5 border border-[var(--border)]"
+  >
+    {% csrf_token %}
+    {{ form.organizacao_id }}
+    {{ form.inscricao_uuid }}
+
+    {% if form.errors or form.non_field_errors %}
+      <div class="rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-500/40 dark:bg-red-500/10">
+        <p class="font-semibold text-red-700 mb-2 dark:text-red-200">{% trans "Corrija os erros abaixo:" %}</p>
+        {{ form.non_field_errors }}
+        <ul class="list-disc list-inside text-red-700 text-sm dark:text-red-200">
+          {% for field in form %}
+            {% if field.errors %}
+              <li><span class="font-semibold">{{ field.label }}:</span> {{ field.errors|join:"; " }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="space-y-6">
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_valor">{% trans "Valor" %}</label>
+        {{ form.valor|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_condicao_faturamento">{% trans "Condição de faturamento" %}</label>
+        {{ form.condicao_faturamento|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-[var(--text-secondary)]" for="id_descricao">{% trans "Descrição" %}</label>
+        {{ form.descricao|add_class:"mt-1 w-full rounded-lg border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] shadow-sm focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]" }}
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <button
+        type="submit"
+        class="w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--primary-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+      >
+        {% trans "Registrar faturamento" %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

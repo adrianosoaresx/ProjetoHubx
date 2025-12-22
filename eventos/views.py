@@ -3,6 +3,7 @@ import json
 from collections import Counter
 from types import SimpleNamespace
 from decimal import Decimal
+from urllib.parse import urlencode
 from datetime import date, timedelta
 from io import BytesIO
 from typing import Any
@@ -53,7 +54,7 @@ from core.permissions import (
 )
 from core.utils import resolve_back_href
 from notificacoes.services.email_client import send_email
-from pagamentos.forms import CheckoutForm
+from pagamentos.forms import PixCheckoutForm
 from pagamentos.models import Transacao
 from pagamentos.providers import MercadoPagoProvider
 from tokens.models import TokenAcesso
@@ -2213,6 +2214,23 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
             return f"{base_url}?{querystring}"
         return base_url
 
+    def _build_pagamento_url(
+        self, fluxo: str, inscricao: InscricaoEvento | None = None
+    ) -> str:
+        if fluxo == "pix":
+            base_url = reverse("pagamentos:pix-checkout")
+        else:
+            base_url = reverse("pagamentos:faturamento-checkout")
+
+        params = {}
+        if inscricao:
+            params["inscricao_uuid"] = inscricao.uuid
+
+        querystring = urlencode(params)
+        if querystring:
+            return f"{base_url}?{querystring}"
+        return base_url
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         valor_evento_usuario = context.get("valor_evento_usuario")
@@ -2243,6 +2261,16 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
                 "cta_label": _("Efetuar pagamento") if evento_pago else _("Confirmar inscrição"),
                 "cta_url": self._build_cta_url(evento_pago, inscricao_existente),
                 "inscricao_existente": inscricao_existente,
+                "pix_checkout_url": (
+                    self._build_pagamento_url("pix", inscricao_existente)
+                    if evento_pago
+                    else None
+                ),
+                "faturamento_checkout_url": (
+                    self._build_pagamento_url("faturamento", inscricao_existente)
+                    if evento_pago
+                    else None
+                ),
             }
         )
         return context
@@ -2289,7 +2317,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
         context.update(
             {
-                "checkout_form": CheckoutForm(
+                "checkout_form": PixCheckoutForm(
                     self.request.POST or None,
                     initial=initial_checkout,
                     user=usuario,
@@ -2437,7 +2465,7 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
 
 class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, TemplateView):
-    template_name = "pagamentos/checkout.html"
+    template_name = "pagamentos/pix_checkout.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -2514,11 +2542,10 @@ class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, Templat
 
         if not initial_checkout.get("metodo"):
             initial_checkout["metodo"] = Transacao.Metodo.PIX
-        initial_checkout.setdefault("faturamento", None)
         return initial_checkout
 
-    def _get_checkout_form(self) -> CheckoutForm:
-        form = CheckoutForm(
+    def _get_checkout_form(self) -> PixCheckoutForm:
+        form = PixCheckoutForm(
             self.request.POST or None,
             initial=self._get_initial_checkout(),
             user=getattr(self, "inscricao", None) and self.inscricao.user,
