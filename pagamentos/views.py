@@ -61,7 +61,7 @@ class CheckoutBaseMixin:
         if not inscricao_uuid or not request.user.is_authenticated:
             return None
         try:
-            inscricao = InscricaoEvento.objects.select_related("user").get(
+            inscricao = InscricaoEvento.all_objects.select_related("user").get(
                 uuid=inscricao_uuid
             )
         except InscricaoEvento.DoesNotExist:
@@ -79,16 +79,19 @@ class CheckoutBaseMixin:
         inscricao.valor_pago = None
         inscricao.pagamento_validado = False
         inscricao.transacao = None
-        inscricao.save(
-            update_fields=[
-                "metodo_pagamento",
-                "condicao_faturamento",
-                "valor_pago",
-                "transacao",
-                "pagamento_validado",
-                "updated_at",
-            ]
-        )
+        update_fields = [
+            "metodo_pagamento",
+            "condicao_faturamento",
+            "valor_pago",
+            "transacao",
+            "pagamento_validado",
+            "updated_at",
+        ]
+        if inscricao.deleted:
+            inscricao.deleted = False
+            inscricao.deleted_at = None
+            update_fields.extend(["deleted", "deleted_at"])
+        inscricao.save(update_fields=update_fields)
         return inscricao
 
     def _obter_organizacao(
