@@ -64,6 +64,7 @@ class Migration(migrations.Migration):
         ("accounts", "0023_accounttoken_status"),
         ("tokens", "0020_totpdevice_base32_secrets"),
         ("nucleos", "0013_nucleomidia"),
+        ("eventos", "0034_preregistroconvite"),  # garante que pre_registros_convite exista
     ]
 
     operations = [
