@@ -19,7 +19,7 @@ from pagamentos.services.pagamento import PagamentoService  # noqa: E402
 
 
 @pytest.mark.django_db
-def test_pix_checkout_success(monkeypatch) -> None:
+def test_pix_checkout_success(monkeypatch, settings) -> None:
     User = get_user_model()
     user = User.objects.create_user(username="cliente", password="senha123", email="c@example.com")
     organizacao = Organizacao.objects.create(nome="Org", cnpj="12345678000195")
@@ -42,7 +42,13 @@ def test_pix_checkout_success(monkeypatch) -> None:
     )
     inscricao = InscricaoEvento.objects.create(user=user, evento=evento)
 
+    fixed_now = timezone.now()
+    settings.PAGAMENTOS_PIX_EXPIRACAO_PADRAO_MINUTOS = 30
+    monkeypatch.setattr("pagamentos.forms.timezone.now", lambda: fixed_now)
+    expected_expiracao = fixed_now + timedelta(minutes=30)
+
     def fake_iniciar_pagamento(self, pedido, metodo, dados_pagamento):
+        assert dados_pagamento["expiracao"] == expected_expiracao
         return Transacao.objects.create(
             pedido=pedido,
             valor=pedido.valor,
@@ -63,7 +69,6 @@ def test_pix_checkout_success(monkeypatch) -> None:
             "email": "cliente@example.com",
             "nome": "Cliente Teste",
             "documento": "12345678909",
-            "pix_expiracao": (timezone.now() + timedelta(days=1)).isoformat(),
             "inscricao_uuid": str(inscricao.uuid),
         },
     )
