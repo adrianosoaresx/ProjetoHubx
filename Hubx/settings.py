@@ -83,6 +83,9 @@ MERCADO_PAGO_PENDING_URL = os.getenv(
     f"{MERCADO_PAGO_RETURN_BASE_URL.rstrip('/')}/pagamentos/mp/retorno/pendente/",
 )
 MERCADO_PAGO_AUTO_RETURN = os.getenv("MERCADO_PAGO_AUTO_RETURN", "approved")
+PAGAMENTOS_PIX_EXPIRACAO_PADRAO_MINUTOS = int(
+    os.getenv("PAGAMENTOS_PIX_EXPIRACAO_PADRAO_MINUTOS", "30")
+)
 
 PAYMENT_HOST = os.getenv("PAYMENT_HOST") or urlparse(FRONTEND_URL).netloc or "localhost"
 PAYMENT_MODEL = "pagamentos.Pagamento"

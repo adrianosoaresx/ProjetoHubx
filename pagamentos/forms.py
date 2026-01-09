@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from decimal import Decimal
 
 from django import forms
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -61,10 +63,21 @@ class PixCheckoutForm(forms.Form):
             errors["documento"] = _("Documento é obrigatório para Pix.")
 
         expiracao = cleaned_data.get("pix_expiracao")
-        if expiracao is None:
-            errors["pix_expiracao"] = _("Informe o vencimento do Pix.")
-        elif expiracao <= timezone.now():
-            errors["pix_expiracao"] = _("Defina um prazo futuro para expiração do Pix.")
+        if metodo == Transacao.Metodo.PIX:
+            if expiracao is None:
+                default_minutes = getattr(
+                    settings, "PAGAMENTOS_PIX_EXPIRACAO_PADRAO_MINUTOS", 30
+                )
+                try:
+                    default_minutes = int(default_minutes)
+                except (TypeError, ValueError):
+                    default_minutes = 30
+                if default_minutes <= 0:
+                    default_minutes = 30
+                expiracao = timezone.now() + timedelta(minutes=default_minutes)
+                cleaned_data["pix_expiracao"] = expiracao
+            elif expiracao <= timezone.now():
+                errors["pix_expiracao"] = _("Defina um prazo futuro para expiração do Pix.")
 
         if metodo == Transacao.Metodo.CARTAO:
             if not cleaned_data.get("token_cartao"):

@@ -27,6 +27,24 @@ def test_pix_checkout_form_expiracao_futura() -> None:
     assert form.is_valid() is True
 
 
+def test_pix_checkout_form_expiracao_padrao(monkeypatch, settings) -> None:
+    fixed_now = timezone.now()
+    settings.PAGAMENTOS_PIX_EXPIRACAO_PADRAO_MINUTOS = 45
+    monkeypatch.setattr("pagamentos.forms.timezone.now", lambda: fixed_now)
+    form = PixCheckoutForm(
+        data={
+            "valor": "100.00",
+            "metodo": Transacao.Metodo.PIX,
+            "email": "cliente@example.com",
+            "nome": "Cliente Teste",
+            "documento": "12345678909",
+        }
+    )
+
+    assert form.is_valid() is True
+    assert form.cleaned_data["pix_expiracao"] == fixed_now + timedelta(minutes=45)
+
+
 def test_pix_checkout_form_expiracao_invalida() -> None:
     form = PixCheckoutForm(
         data={
