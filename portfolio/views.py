@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections import Counter
 
 from django.conf import settings
@@ -160,10 +161,16 @@ def delete(request: HttpRequest, pk: int) -> HttpResponse:
     _deny_guest_portfolio_access(request)
 
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
+    is_htmx_request = request.headers.get("HX-Request")
 
     if request.method == "POST":
         media.delete(soft=False)
         messages.success(request, _("Item do portfólio removido."))
+        if is_htmx_request:
+            response = HttpResponse(status=204)
+            response["HX-Trigger"] = json.dumps({"modal:close": True})
+            response["HX-Redirect"] = reverse("portfolio:index")
+            return response
         return redirect("portfolio:index")
 
     hx_target = request.headers.get("HX-Target", "")
