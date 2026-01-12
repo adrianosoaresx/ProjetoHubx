@@ -195,6 +195,11 @@ class OrganizacaoUpdateView(OrgAdminRequiredMixin, LoginRequiredMixin, UpdateVie
         context["image_preview_urls"] = image_preview_urls
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_queryset(self):
         qs = super().get_queryset().filter(inativa=False)
         org_id = getattr(self.request.user, "organizacao_id", None)
