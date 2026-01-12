@@ -55,6 +55,9 @@ class OrganizacaoForm(forms.ModelForm):
                 field.widget.attrs.setdefault("accept", "image/*")
                 field.widget.attrs.setdefault("data-preview-target", f"preview-{field_name}")
                 field.widget.attrs.setdefault("data-preview-placeholder", f"preview-placeholder-{field_name}")
+        rua_field = self.fields.get("rua")
+        if rua_field:
+            rua_field.label = "Endereço"
         if user and user.user_type != UserType.ROOT:
             payment_fields = [
                 "mercado_pago_public_key",
