@@ -11,7 +11,7 @@ from .models import (
     OrganizacaoRecurso,
 )
 from .tasks import organizacao_alterada
-from .utils import validate_cnpj
+from .utils import validate_cnpj, validate_organizacao_image
 from feed.models import FeedPluginConfig
 
 
@@ -59,7 +59,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         except DjangoValidationError as exc:
             raise serializers.ValidationError({"cnpj": exc.messages}) from exc
         instance = Organizacao(created_by=user, **validated_data)
-        instance.full_clean()
+        try:
+            instance.full_clean()
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict) from exc
         instance.save()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
@@ -73,7 +76,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         if "cnpj" in validated_data:
-            validated_data["cnpj"] = validate_cnpj(validated_data["cnpj"])
+            try:
+                validated_data["cnpj"] = validate_cnpj(validated_data["cnpj"])
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({"cnpj": exc.messages}) from exc
         if "inativa" in validated_data:
             validated_data["inativada_em"] = timezone.now() if validated_data["inativa"] else None
         campos_relevantes = [
@@ -108,7 +114,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
                     )
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        instance.full_clean()
+        try:
+            instance.full_clean()
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict) from exc
         instance.save()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
@@ -117,6 +126,22 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="updated")
         return instance
+
+    def _validate_imagem(self, value):
+        try:
+            validate_organizacao_image(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.messages) from exc
+        return value
+
+    def validate_avatar(self, value):
+        return self._validate_imagem(value)
+
+    def validate_cover(self, value):
+        return self._validate_imagem(value)
+
+    def validate_icone_site(self, value):
+        return self._validate_imagem(value)
 
 
 class OrganizacaoChangeLogSerializer(serializers.ModelSerializer):

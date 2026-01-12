@@ -1,4 +1,3 @@
-import os
 import uuid
 
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
-from .utils import validate_cnpj
+from .utils import validate_cnpj, validate_organizacao_image
 
 
 class Organizacao(TimeStampedModel, SoftDeleteModel):
@@ -85,16 +84,13 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     def clean(self) -> None:  # type: ignore[override]
         super().clean()
         self.cnpj = validate_cnpj(self.cnpj)
-        allowed_exts = {f".{ext.lower()}" for ext in settings.ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS}
-        max_size = settings.ORGANIZACOES_MAX_IMAGE_SIZE
         for field in ["avatar", "cover", "icone_site"]:
             file = getattr(self, field)
             if file:
-                ext = os.path.splitext(file.name)[1].lower()
-                if ext not in allowed_exts:
-                    raise ValidationError({field: _("Formato de imagem não suportado.")})
-                if file.size > max_size:
-                    raise ValidationError({field: _("Imagem excede o tamanho máximo permitido.")})
+                try:
+                    validate_organizacao_image(file)
+                except ValidationError as exc:
+                    raise ValidationError({field: exc.messages}) from exc
 
 
 class OrganizacaoChangeLog(TimeStampedModel, SoftDeleteModel):
