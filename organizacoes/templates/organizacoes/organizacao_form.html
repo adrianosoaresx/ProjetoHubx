@@ -62,6 +62,12 @@
             {{ field }}
           {% endfor %}
 
+          {% if form.payment_fields_hidden %}
+            <div class="alert alert-info" role="status">
+              {% trans 'Somente root pode configurar credenciais de pagamento.' %}
+            </div>
+          {% endif %}
+
           {% for field in form.visible_fields %}
             {% if field.name in image_fields %}
               {% with preview_url=image_preview_urls|get_item:field.name %}
