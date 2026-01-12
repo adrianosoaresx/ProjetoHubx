@@ -67,6 +67,12 @@ class OrganizacaoForm(forms.ModelForm):
             for field_name in payment_fields:
                 self.fields.pop(field_name, None)
             self.payment_fields_hidden = True
+            paypal_currency_field = self.fields.get("paypal_currency")
+            if paypal_currency_field:
+                paypal_currency_field.disabled = True
+                paypal_currency_field.help_text = (
+                    "Apenas usuários root podem editar a moeda do PayPal."
+                )
             cnpj_field = self.fields.get("cnpj")
             if cnpj_field:
                 cnpj_field.disabled = True
@@ -79,6 +85,12 @@ class OrganizacaoForm(forms.ModelForm):
         if Organizacao.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError("Uma organização com este CNPJ já existe.")
         return cnpj
+
+    def clean_paypal_currency(self):
+        field = self.fields.get("paypal_currency")
+        if field and field.disabled:
+            return self.instance.paypal_currency
+        return self.cleaned_data.get("paypal_currency")
 
     def _clean_imagem(self, field_name: str):
         arquivo = self.cleaned_data.get(field_name)
