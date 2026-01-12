@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from rest_framework import serializers
 
+from accounts.models import UserType
 from .models import (
     Organizacao,
     OrganizacaoAtividadeLog,
@@ -75,6 +76,20 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
     def update(self, instance: Organizacao, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
         user = getattr(request, "user", None)
+        payment_fields = {
+            "mercado_pago_public_key",
+            "mercado_pago_access_token",
+            "mercado_pago_webhook_secret",
+            "paypal_client_id",
+            "paypal_client_secret",
+            "paypal_webhook_secret",
+        }
+        if user and user.user_type != UserType.ROOT:
+            forbidden_fields = payment_fields.intersection(validated_data.keys())
+            if forbidden_fields:
+                raise serializers.ValidationError(
+                    {field: "Somente root pode atualizar este campo." for field in sorted(forbidden_fields)}
+                )
         if "cnpj" in validated_data:
             try:
                 validated_data["cnpj"] = validate_cnpj(validated_data["cnpj"])

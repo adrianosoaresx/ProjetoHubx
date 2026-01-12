@@ -44,6 +44,7 @@ class OrganizacaoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs) -> None:
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.payment_fields_hidden = False
         base_cls = "mt-1 w-full rounded-md border-gray-300 p-2"
         for field in self.fields.values():
             existing = field.widget.attrs.get("class", "")
@@ -55,6 +56,17 @@ class OrganizacaoForm(forms.ModelForm):
                 field.widget.attrs.setdefault("data-preview-target", f"preview-{field_name}")
                 field.widget.attrs.setdefault("data-preview-placeholder", f"preview-placeholder-{field_name}")
         if user and user.user_type != UserType.ROOT:
+            payment_fields = [
+                "mercado_pago_public_key",
+                "mercado_pago_access_token",
+                "mercado_pago_webhook_secret",
+                "paypal_client_id",
+                "paypal_client_secret",
+                "paypal_webhook_secret",
+            ]
+            for field_name in payment_fields:
+                self.fields.pop(field_name, None)
+            self.payment_fields_hidden = True
             cnpj_field = self.fields.get("cnpj")
             if cnpj_field:
                 cnpj_field.disabled = True
