@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n string_filters %}
 
 {% block title %}
   {% if form.instance.pk %}
@@ -64,28 +64,30 @@
 
           {% for field in form.visible_fields %}
             {% if field.name in image_fields %}
-              <div class="space-y-3">
-                {% include '_forms/field.html' with field=field %}
-                <div class="flex flex-wrap items-center gap-4">
-                  <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
-                    <img
-                      id="preview-{{ field.name }}"
-                      src="{{ image_preview_urls[field.name]|default:'' }}"
-                      alt="{% blocktrans with field_label=field.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
-                      class="h-full w-full object-cover {% if not image_preview_urls[field.name] %}hidden{% endif %}"
-                    />
-                    <span
-                      id="preview-placeholder-{{ field.name }}"
-                      class="text-center text-xs text-[var(--text-secondary)] {% if image_preview_urls[field.name] %}hidden{% endif %}"
-                    >
-                      {% trans 'Sem imagem selecionada.' %}
-                    </span>
+              {% with preview_url=image_preview_urls|get_item:field.name %}
+                <div class="space-y-3">
+                  {% include '_forms/field.html' with field=field %}
+                  <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
+                      <img
+                        id="preview-{{ field.name }}"
+                        src="{{ preview_url|default:'' }}"
+                        alt="{% blocktrans with field_label=field.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
+                        class="h-full w-full object-cover {% if not preview_url %}hidden{% endif %}"
+                      />
+                      <span
+                        id="preview-placeholder-{{ field.name }}"
+                        class="text-center text-xs text-[var(--text-secondary)] {% if preview_url %}hidden{% endif %}"
+                      >
+                        {% trans 'Sem imagem selecionada.' %}
+                      </span>
+                    </div>
+                    <p class="text-xs text-[var(--text-secondary)]">
+                      {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
+                    </p>
                   </div>
-                  <p class="text-xs text-[var(--text-secondary)]">
-                    {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
-                  </p>
                 </div>
-              </div>
+              {% endwith %}
             {% else %}
               {% include '_forms/field.html' with field=field %}
             {% endif %}
