@@ -1,6 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
+from accounts.models import UserType
+
 from .models import Organizacao
 from .utils import validate_cnpj, validate_organizacao_image
 
@@ -40,6 +42,7 @@ class OrganizacaoForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs) -> None:
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         base_cls = "mt-1 w-full rounded-md border-gray-300 p-2"
         for field in self.fields.values():
@@ -51,8 +54,15 @@ class OrganizacaoForm(forms.ModelForm):
                 field.widget.attrs.setdefault("accept", "image/*")
                 field.widget.attrs.setdefault("data-preview-target", f"preview-{field_name}")
                 field.widget.attrs.setdefault("data-preview-placeholder", f"preview-placeholder-{field_name}")
+        if user and user.user_type != UserType.ROOT:
+            cnpj_field = self.fields.get("cnpj")
+            if cnpj_field:
+                cnpj_field.disabled = True
+                cnpj_field.help_text = "Apenas usuários root podem editar o CNPJ."
 
     def clean_cnpj(self):
+        if self.fields["cnpj"].disabled:
+            return self.instance.cnpj
         cnpj = validate_cnpj(self.cleaned_data.get("cnpj"))
         if Organizacao.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError("Uma organização com este CNPJ já existe.")
