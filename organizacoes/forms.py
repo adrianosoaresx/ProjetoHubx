@@ -67,12 +67,15 @@ class OrganizacaoForm(forms.ModelForm):
             for field_name in payment_fields:
                 self.fields.pop(field_name, None)
             self.payment_fields_hidden = True
-            paypal_currency_field = self.fields.get("paypal_currency")
-            if paypal_currency_field:
-                paypal_currency_field.disabled = True
-                paypal_currency_field.help_text = (
-                    "Apenas usuários root podem editar a moeda do PayPal."
-                )
+            if user.user_type == UserType.ADMIN:
+                self.fields.pop("paypal_currency", None)
+            else:
+                paypal_currency_field = self.fields.get("paypal_currency")
+                if paypal_currency_field:
+                    paypal_currency_field.disabled = True
+                    paypal_currency_field.help_text = (
+                        "Apenas usuários root podem editar a moeda do PayPal."
+                    )
             cnpj_field = self.fields.get("cnpj")
             if cnpj_field:
                 cnpj_field.disabled = True
