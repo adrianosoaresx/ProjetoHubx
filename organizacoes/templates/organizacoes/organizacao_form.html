@@ -62,36 +62,177 @@
             {{ field }}
           {% endfor %}
 
-          {% for field in form.visible_fields %}
-            {% if field.name in image_fields %}
-              {% with preview_url=image_preview_urls|get_item:field.name %}
-                <div class="space-y-3">
-                  {% include '_forms/field.html' with field=field %}
-                  <div class="flex flex-wrap items-center gap-4">
-                    <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
-                      <img
-                        id="preview-{{ field.name }}"
-                        src="{{ preview_url|default:'' }}"
-                        alt="{% blocktrans with field_label=field.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
-                        class="h-full w-full object-cover {% if not preview_url %}hidden{% endif %}"
-                      />
-                      <span
-                        id="preview-placeholder-{{ field.name }}"
-                        class="text-center text-xs text-[var(--text-secondary)] {% if preview_url %}hidden{% endif %}"
-                      >
-                        {% trans 'Sem imagem selecionada.' %}
-                      </span>
-                    </div>
-                    <p class="text-xs text-[var(--text-secondary)]">
-                      {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
-                    </p>
+          {% if form.nome %}
+            {% include '_forms/field.html' with field=form.nome %}
+          {% endif %}
+          {% if form.cnpj %}
+            {% include '_forms/field.html' with field=form.cnpj %}
+          {% endif %}
+          {% if form.descricao %}
+            {% include '_forms/field.html' with field=form.descricao %}
+          {% endif %}
+          {% if form.tipo %}
+            {% include '_forms/field.html' with field=form.tipo %}
+          {% endif %}
+
+          {% if form.rua or form.cidade or form.estado %}
+            <div class="grid gap-4 sm:grid-cols-3">
+              {% if form.rua %}
+                {% include '_forms/field.html' with field=form.rua %}
+              {% endif %}
+              {% if form.cidade %}
+                {% include '_forms/field.html' with field=form.cidade %}
+              {% endif %}
+              {% if form.estado %}
+                {% include '_forms/field.html' with field=form.estado %}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if form.contato_nome or form.contato_email or form.contato_telefone %}
+            <div class="grid gap-4 sm:grid-cols-3">
+              {% if form.contato_nome %}
+                {% include '_forms/field.html' with field=form.contato_nome %}
+              {% endif %}
+              {% if form.contato_email %}
+                {% include '_forms/field.html' with field=form.contato_email %}
+              {% endif %}
+              {% if form.contato_telefone %}
+                {% include '_forms/field.html' with field=form.contato_telefone %}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if form.codigo_banco or form.nome_banco or form.agencia or form.conta_corrente %}
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {% if form.codigo_banco %}
+                {% include '_forms/field.html' with field=form.codigo_banco %}
+              {% endif %}
+              {% if form.nome_banco %}
+                {% include '_forms/field.html' with field=form.nome_banco %}
+              {% endif %}
+              {% if form.agencia %}
+                {% include '_forms/field.html' with field=form.agencia %}
+              {% endif %}
+              {% if form.conta_corrente %}
+                {% include '_forms/field.html' with field=form.conta_corrente %}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if form.chave_pix %}
+            {% include '_forms/field.html' with field=form.chave_pix %}
+          {% endif %}
+          {% if form.mercado_pago_public_key %}
+            {% include '_forms/field.html' with field=form.mercado_pago_public_key %}
+          {% endif %}
+          {% if form.mercado_pago_access_token %}
+            {% include '_forms/field.html' with field=form.mercado_pago_access_token %}
+          {% endif %}
+          {% if form.mercado_pago_webhook_secret %}
+            {% include '_forms/field.html' with field=form.mercado_pago_webhook_secret %}
+          {% endif %}
+          {% if form.paypal_client_id %}
+            {% include '_forms/field.html' with field=form.paypal_client_id %}
+          {% endif %}
+          {% if form.paypal_client_secret %}
+            {% include '_forms/field.html' with field=form.paypal_client_secret %}
+          {% endif %}
+          {% if form.paypal_webhook_secret %}
+            {% include '_forms/field.html' with field=form.paypal_webhook_secret %}
+          {% endif %}
+          {% if form.paypal_currency %}
+            {% include '_forms/field.html' with field=form.paypal_currency %}
+          {% endif %}
+          {% if form.nome_site %}
+            {% include '_forms/field.html' with field=form.nome_site %}
+          {% endif %}
+          {% if form.site %}
+            {% include '_forms/field.html' with field=form.site %}
+          {% endif %}
+
+          {% if form.icone_site %}
+            {% with preview_url=image_preview_urls|get_item:'icone_site' %}
+              <div class="space-y-3">
+                {% include '_forms/field.html' with field=form.icone_site %}
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
+                    <img
+                      id="preview-icone_site"
+                      src="{{ preview_url|default:'' }}"
+                      alt="{% blocktrans with field_label=form.icone_site.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
+                      class="h-full w-full object-cover {% if not preview_url %}hidden{% endif %}"
+                    />
+                    <span
+                      id="preview-placeholder-icone_site"
+                      class="text-center text-xs text-[var(--text-secondary)] {% if preview_url %}hidden{% endif %}"
+                    >
+                      {% trans 'Sem imagem selecionada.' %}
+                    </span>
                   </div>
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
+                  </p>
                 </div>
-              {% endwith %}
-            {% else %}
-              {% include '_forms/field.html' with field=field %}
-            {% endif %}
-          {% endfor %}
+              </div>
+            {% endwith %}
+          {% endif %}
+
+          {% if form.feed_noticias %}
+            {% include '_forms/field.html' with field=form.feed_noticias %}
+          {% endif %}
+          {% if form.avatar %}
+            {% with preview_url=image_preview_urls|get_item:'avatar' %}
+              <div class="space-y-3">
+                {% include '_forms/field.html' with field=form.avatar %}
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
+                    <img
+                      id="preview-avatar"
+                      src="{{ preview_url|default:'' }}"
+                      alt="{% blocktrans with field_label=form.avatar.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
+                      class="h-full w-full object-cover {% if not preview_url %}hidden{% endif %}"
+                    />
+                    <span
+                      id="preview-placeholder-avatar"
+                      class="text-center text-xs text-[var(--text-secondary)] {% if preview_url %}hidden{% endif %}"
+                    >
+                      {% trans 'Sem imagem selecionada.' %}
+                    </span>
+                  </div>
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
+                  </p>
+                </div>
+              </div>
+            {% endwith %}
+          {% endif %}
+          {% if form.cover %}
+            {% with preview_url=image_preview_urls|get_item:'cover' %}
+              <div class="space-y-3">
+                {% include '_forms/field.html' with field=form.cover %}
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
+                    <img
+                      id="preview-cover"
+                      src="{{ preview_url|default:'' }}"
+                      alt="{% blocktrans with field_label=form.cover.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
+                      class="h-full w-full object-cover {% if not preview_url %}hidden{% endif %}"
+                    />
+                    <span
+                      id="preview-placeholder-cover"
+                      class="text-center text-xs text-[var(--text-secondary)] {% if preview_url %}hidden{% endif %}"
+                    >
+                      {% trans 'Sem imagem selecionada.' %}
+                    </span>
+                  </div>
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
+                  </p>
+                </div>
+              </div>
+            {% endwith %}
+          {% endif %}
 
           <p class="text-xs text-[var(--text-secondary)]">{% trans 'Campos marcados com * são obrigatórios.' %}</p>
 
