@@ -516,6 +516,36 @@ def _build_organizacao_site_menu_item(user) -> MenuItem | None:
     )
 
 
+def _build_organizacao_admin_menu_item(user) -> MenuItem | None:
+    if not getattr(user, "is_authenticated", False):
+        return None
+
+    org_id = getattr(user, "organizacao_id", None)
+    if not org_id:
+        return None
+
+    tipo_attr = getattr(user, "get_tipo_usuario", None)
+    if callable(tipo_attr):
+        tipo_attr = tipo_attr()
+    if isinstance(tipo_attr, UserType):
+        tipo_attr = tipo_attr.value
+
+    raw_attr = getattr(user, "user_type", None)
+    if isinstance(raw_attr, UserType):
+        raw_attr = raw_attr.value
+
+    if tipo_attr != UserType.ADMIN.value and raw_attr != UserType.ADMIN.value:
+        return None
+
+    return MenuItem(
+        id="organizacao-admin",
+        path=reverse("organizacoes:update", kwargs={"pk": org_id}),
+        label="Organização",
+        icon=ICON_ORGS,
+        permissions=["admin"],
+    )
+
+
 def _resolve_dashboard_path(user) -> str:
     """Retorna a URL correta do dashboard conforme o perfil do usuário."""
 
@@ -668,6 +698,13 @@ def build_menu(request) -> List[MenuItem]:
             len(filtered),
         )
         filtered.insert(logout_index, org_site_item)
+    org_admin_item = _build_organizacao_admin_menu_item(user)
+    if org_admin_item:
+        config_index = next(
+            (idx for idx, item in enumerate(filtered) if item.id == "configuracoes"),
+            len(filtered),
+        )
+        filtered.insert(config_index, org_admin_item)
     current_full_path = request.get_full_path()
     path_queries = defaultdict(set)
     _collect_path_queries(filtered, path_queries)
