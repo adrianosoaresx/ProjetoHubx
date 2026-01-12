@@ -63,7 +63,32 @@
           {% endfor %}
 
           {% for field in form.visible_fields %}
-            {% include '_forms/field.html' with field=field %}
+            {% if field.name in image_fields %}
+              <div class="space-y-3">
+                {% include '_forms/field.html' with field=field %}
+                <div class="flex flex-wrap items-center gap-4">
+                  <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]">
+                    <img
+                      id="preview-{{ field.name }}"
+                      src="{{ image_preview_urls[field.name]|default:'' }}"
+                      alt="{% blocktrans with field_label=field.label %}Pré-visualização de {{ field_label }}{% endblocktrans %}"
+                      class="h-full w-full object-cover {% if not image_preview_urls[field.name] %}hidden{% endif %}"
+                    />
+                    <span
+                      id="preview-placeholder-{{ field.name }}"
+                      class="text-center text-xs text-[var(--text-secondary)] {% if image_preview_urls[field.name] %}hidden{% endif %}"
+                    >
+                      {% trans 'Sem imagem selecionada.' %}
+                    </span>
+                  </div>
+                  <p class="text-xs text-[var(--text-secondary)]">
+                    {% trans 'Selecione um arquivo para visualizar a imagem antes de salvar.' %}
+                  </p>
+                </div>
+              </div>
+            {% else %}
+              {% include '_forms/field.html' with field=field %}
+            {% endif %}
           {% endfor %}
 
           <p class="text-xs text-[var(--text-secondary)]">{% trans 'Campos marcados com * são obrigatórios.' %}</p>
@@ -77,5 +102,37 @@
         </form>
       </div>
     </article>
+
+    <script>
+      document.querySelectorAll('input[type="file"][data-preview-target]').forEach((input) => {
+        const previewId = input.getAttribute('data-preview-target');
+        const placeholderId = input.getAttribute('data-preview-placeholder');
+        const preview = previewId ? document.getElementById(previewId) : null;
+        const placeholder = placeholderId ? document.getElementById(placeholderId) : null;
+
+        const updatePreview = (file) => {
+          if (!preview || !placeholder) {
+            return;
+          }
+          if (!file) {
+            preview.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+            preview.src = '';
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            preview.src = event.target.result;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+          };
+          reader.readAsDataURL(file);
+        };
+
+        input.addEventListener('change', (event) => {
+          updatePreview(event.target.files[0]);
+        });
+      });
+    </script>
   
 {% endblock %}

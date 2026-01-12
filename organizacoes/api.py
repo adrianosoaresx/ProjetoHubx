@@ -9,6 +9,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from sentry_sdk import capture_exception
 
@@ -17,7 +18,7 @@ from accounts.serializers import UserSerializer
 from eventos.models import Evento
 from eventos.serializers import EventoSerializer
 from core.cache import get_cache_version
-from core.permissions import IsOrgAdminOrSuperuser, IsRoot
+from core.permissions import IsOrgAdmin, IsOrgAdminOrSuperuser, IsRoot
 from feed.api import PostSerializer
 from feed.models import FeedPluginConfig, Post
 from nucleos.models import Nucleo
@@ -45,6 +46,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizacaoSerializer
     permission_classes = [IsAuthenticated]
     cache_timeout = 60
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("created_by").prefetch_related("users")
@@ -147,7 +149,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             "reativar",
             "history",
         }:
-            self.permission_classes = [IsAuthenticated, IsRoot]
+            if self.action in {"partial_update", "update"}:
+                self.permission_classes = [IsAuthenticated, IsOrgAdmin]
+            else:
+                self.permission_classes = [IsAuthenticated, IsRoot]
         elif self.action in {"list", "retrieve"}:
             self.permission_classes = [IsAuthenticated, IsOrgAdminOrSuperuser]
         return super().get_permissions()

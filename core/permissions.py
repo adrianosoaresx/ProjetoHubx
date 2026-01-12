@@ -28,6 +28,23 @@ class AdminRequiredMixin(UserPassesTestMixin):
         return self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}
 
 
+class OrgAdminRequiredMixin(UserPassesTestMixin):
+    """Permite acesso apenas a administradores."""
+
+    raise_exception = True
+
+    def test_func(self) -> bool:
+        user = self.request.user
+        tipo = getattr(user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        if tipo is None:
+            tipo = getattr(user, "user_type", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        return tipo == UserType.ADMIN.value
+
+
 class AdminOrOperatorRequiredMixin(AdminRequiredMixin):
     """Permite acesso a administradores e operadores (além do root)."""
 
@@ -218,4 +235,25 @@ class IsOrgAdminOrSuperuser(BasePermission):
             user_tipo_value = user_tipo
         is_admin_tipo = user.get_tipo_usuario == UserType.ADMIN.value
         is_admin_flag = user_tipo_value == UserType.ADMIN.value
+        return (is_admin_tipo or is_admin_flag) and getattr(user, "organizacao_id", None) == org_id
+
+
+class IsOrgAdmin(BasePermission):
+    """Permite acesso apenas ao admin da organização."""
+
+    def has_permission(self, request, view) -> bool:
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj) -> bool:
+        user = request.user
+        user_tipo = getattr(user, "user_type", None)
+        if isinstance(user_tipo, UserType):
+            user_tipo_value = user_tipo.value
+        else:
+            user_tipo_value = user_tipo
+        is_admin_tipo = user.get_tipo_usuario == UserType.ADMIN.value
+        is_admin_flag = user_tipo_value == UserType.ADMIN.value
+        org_id = getattr(obj, "pk", None)
+        if org_id is None:
+            org_id = getattr(obj, "organizacao_id", None)
         return (is_admin_tipo or is_admin_flag) and getattr(user, "organizacao_id", None) == org_id

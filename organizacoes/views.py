@@ -27,7 +27,7 @@ from typing import Any
 from accounts.models import UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
-from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
+from core.permissions import AdminRequiredMixin, OrgAdminRequiredMixin, SuperadminRequiredMixin
 from core.utils import resolve_back_href
 from feed.models import Post
 from nucleos.models import Nucleo
@@ -118,6 +118,15 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
         context = super().get_context_data(**kwargs)
         fallback_url = reverse("organizacoes:list")
         back_href = resolve_back_href(self.request, fallback=fallback_url)
+        form = context.get("form")
+        instance = getattr(form, "instance", None)
+        image_preview_urls = {
+            "avatar": getattr(instance.avatar, "url", "") if instance and getattr(instance, "avatar", None) else "",
+            "cover": getattr(instance.cover, "url", "") if instance and getattr(instance, "cover", None) else "",
+            "icone_site": getattr(instance.icone_site, "url", "")
+            if instance and getattr(instance, "icone_site", None)
+            else "",
+        }
         context["back_href"] = back_href
         context["back_component_config"] = {
             "href": back_href,
@@ -127,6 +136,8 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
             "href": back_href,
             "fallback_href": fallback_url,
         }
+        context["image_fields"] = ["avatar", "cover", "icone_site"]
+        context["image_preview_urls"] = image_preview_urls
         return context
 
     def form_valid(self, form):
@@ -147,7 +158,7 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
         return super().form_invalid(form)
 
 
-class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
+class OrganizacaoUpdateView(OrgAdminRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Organizacao
     form_class = OrganizacaoForm
     template_name = "organizacoes/organizacao_form.html"
@@ -157,6 +168,15 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         context = super().get_context_data(**kwargs)
         fallback_url = reverse("organizacoes:list")
         back_href = resolve_back_href(self.request, fallback=fallback_url)
+        form = context.get("form")
+        instance = getattr(form, "instance", None)
+        image_preview_urls = {
+            "avatar": getattr(instance.avatar, "url", "") if instance and getattr(instance, "avatar", None) else "",
+            "cover": getattr(instance.cover, "url", "") if instance and getattr(instance, "cover", None) else "",
+            "icone_site": getattr(instance.icone_site, "url", "")
+            if instance and getattr(instance, "icone_site", None)
+            else "",
+        }
         context["back_href"] = back_href
         context["back_component_config"] = {
             "href": back_href,
@@ -171,10 +191,16 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
             context["organizacao_usuarios_total"] = self.object.users.count()
             context["organizacao_nucleos_total"] = self.object.nucleos.count()
             context["organizacao_eventos_total"] = self.object.evento_set.count()
+        context["image_fields"] = ["avatar", "cover", "icone_site"]
+        context["image_preview_urls"] = image_preview_urls
         return context
 
     def get_queryset(self):
-        return super().get_queryset().filter(inativa=False)
+        qs = super().get_queryset().filter(inativa=False)
+        org_id = getattr(self.request.user, "organizacao_id", None)
+        if org_id:
+            qs = qs.filter(pk=org_id)
+        return qs
 
     def form_valid(self, form):
         try:

@@ -1,7 +1,8 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import Organizacao
-from .utils import validate_cnpj
+from .utils import validate_cnpj, validate_organizacao_image
 
 
 class OrganizacaoForm(forms.ModelForm):
@@ -44,9 +45,32 @@ class OrganizacaoForm(forms.ModelForm):
         for field in self.fields.values():
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
+        for field_name in ["avatar", "cover", "icone_site"]:
+            field = self.fields.get(field_name)
+            if field:
+                field.widget.attrs.setdefault("accept", "image/*")
+                field.widget.attrs.setdefault("data-preview-target", f"preview-{field_name}")
+                field.widget.attrs.setdefault("data-preview-placeholder", f"preview-placeholder-{field_name}")
 
     def clean_cnpj(self):
         cnpj = validate_cnpj(self.cleaned_data.get("cnpj"))
         if Organizacao.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError("Uma organização com este CNPJ já existe.")
         return cnpj
+
+    def _clean_imagem(self, field_name: str):
+        arquivo = self.cleaned_data.get(field_name)
+        try:
+            validate_organizacao_image(arquivo)
+        except ValidationError as exc:
+            raise forms.ValidationError(exc.messages) from exc
+        return arquivo
+
+    def clean_avatar(self):
+        return self._clean_imagem("avatar")
+
+    def clean_cover(self):
+        return self._clean_imagem("cover")
+
+    def clean_icone_site(self):
+        return self._clean_imagem("icone_site")
