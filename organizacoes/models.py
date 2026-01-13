@@ -30,9 +30,11 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     rua = models.CharField(_("Rua"), max_length=255, blank=True)
     cidade = models.CharField(_("Cidade"), max_length=100, blank=True)
     estado = models.CharField(_("Estado"), max_length=50, blank=True)
+    cep = models.CharField(_("CEP"), max_length=10, blank=True)
     contato_nome = models.CharField(_("Contato principal"), max_length=255, blank=True)
     contato_email = models.EmailField(_("Email do contato"), blank=True)
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
+    contato_whatsapp = models.CharField(_("WhatsApp"), max_length=20, blank=True)
     codigo_banco = models.CharField(_("Código do banco"), max_length=10, blank=True)
     nome_banco = models.CharField(_("Nome do banco"), max_length=255, blank=True)
     agencia = models.CharField(_("Agência"), max_length=10, blank=True)
@@ -62,7 +64,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     icone_site = models.ImageField(_("Ícone do site"), upload_to="organizacoes/icones/", blank=True, null=True)
     feed_noticias = models.URLField(_("Feed de notícias"), blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
-    cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -84,7 +85,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     def clean(self) -> None:  # type: ignore[override]
         super().clean()
         self.cnpj = validate_cnpj(self.cnpj)
-        for field in ["avatar", "cover", "icone_site"]:
+        for field in ["avatar", "icone_site"]:
             file = getattr(self, field)
             if file:
                 try:

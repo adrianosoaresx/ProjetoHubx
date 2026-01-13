@@ -122,7 +122,6 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
         instance = getattr(form, "instance", None)
         image_preview_urls = {
             "avatar": getattr(instance.avatar, "url", "") if instance and getattr(instance, "avatar", None) else "",
-            "cover": getattr(instance.cover, "url", "") if instance and getattr(instance, "cover", None) else "",
             "icone_site": getattr(instance.icone_site, "url", "")
             if instance and getattr(instance, "icone_site", None)
             else "",
@@ -136,7 +135,7 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
             "href": back_href,
             "fallback_href": fallback_url,
         }
-        context["image_fields"] = ["avatar", "cover", "icone_site"]
+        context["image_fields"] = ["avatar", "icone_site"]
         context["image_preview_urls"] = image_preview_urls
         return context
 
@@ -172,7 +171,6 @@ class OrganizacaoUpdateView(OrgAdminRequiredMixin, LoginRequiredMixin, UpdateVie
         instance = getattr(form, "instance", None)
         image_preview_urls = {
             "avatar": getattr(instance.avatar, "url", "") if instance and getattr(instance, "avatar", None) else "",
-            "cover": getattr(instance.cover, "url", "") if instance and getattr(instance, "cover", None) else "",
             "icone_site": getattr(instance.icone_site, "url", "")
             if instance and getattr(instance, "icone_site", None)
             else "",
@@ -191,7 +189,7 @@ class OrganizacaoUpdateView(OrgAdminRequiredMixin, LoginRequiredMixin, UpdateVie
             context["organizacao_usuarios_total"] = self.object.users.count()
             context["organizacao_nucleos_total"] = self.object.nucleos.count()
             context["organizacao_eventos_total"] = self.object.evento_set.count()
-        context["image_fields"] = ["avatar", "cover", "icone_site"]
+        context["image_fields"] = ["avatar", "icone_site"]
         context["image_preview_urls"] = image_preview_urls
         return context
 
