@@ -205,6 +205,49 @@ npm run build
 
 ---
 
+## 🧭 Front-end Next.js (pasta `app/`)
+
+Este repositório inclui um front-end Next.js (pastas `app/`, `components/`, `hooks/`, `lib/`)
+além do backend Django. **Confirme com o time se essa camada está em uso nos ambientes
+de desenvolvimento/produção** antes de removê-la ou migrá-la para outro repositório.
+
+### Como executar o front-end
+
+1. Instale as dependências:
+
+```bash
+npm install
+```
+
+2. Defina a base da API do Django (ex.: `http://localhost:8000`):
+
+```bash
+export NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+3. Rode o servidor de desenvolvimento:
+
+```bash
+npm run dev
+```
+
+### Build e execução em produção
+
+```bash
+npm run build
+npm run start
+```
+
+### Integração com o backend Django
+
+- O front-end consome endpoints REST do Django, como o de confirmação de e-mail em
+  `/api/accounts/accounts/confirm-email/`, usando a base definida em
+  `NEXT_PUBLIC_API_BASE_URL`.
+- Garanta que o backend esteja acessível no host configurado e que CORS esteja habilitado
+  para o domínio do front-end quando rodar em ambientes separados.
+
+---
+
 ## 🆕 Novos Fluxos Implementados
 
 ### Convites e Tokens
@@ -415,4 +458,3 @@ make openapi
 ```
 
 O arquivo `openapi-schema.yml` será criado na raiz do projeto.
-
