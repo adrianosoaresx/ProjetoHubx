@@ -64,6 +64,10 @@ db.sqlite3
 /staticfiles/
 /static_root/
 
+# Celery Beat (arquivos de agenda gerados automaticamente; não versionar)
+celerybeat-schedule.dat
+celerybeat-schedule.dir
+
 # Arquivos enviados pelo usuário (mídia local somente em dev)
 media/
 uploads/
