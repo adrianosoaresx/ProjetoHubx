@@ -89,6 +89,7 @@ htmlcov/
 ##############################
 # Node / Next.js / Tailwind  #
 ##############################
+# Dependências Node devem ser reinstaladas durante builds
 node_modules/
 .cache/                   # Vite/Tailwind JIT ou PostCSS
 .parcel-cache/
