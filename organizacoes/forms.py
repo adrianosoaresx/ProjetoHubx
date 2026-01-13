@@ -18,9 +18,11 @@ class OrganizacaoForm(forms.ModelForm):
             "rua",
             "cidade",
             "estado",
+            "cep",
             "contato_nome",
             "contato_email",
             "contato_telefone",
+            "contato_whatsapp",
             "codigo_banco",
             "nome_banco",
             "agencia",
@@ -38,7 +40,6 @@ class OrganizacaoForm(forms.ModelForm):
             "icone_site",
             "feed_noticias",
             "avatar",
-            "cover",
         ]
 
     def __init__(self, *args, **kwargs) -> None:
@@ -49,7 +50,7 @@ class OrganizacaoForm(forms.ModelForm):
         for field in self.fields.values():
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
-        for field_name in ["avatar", "cover", "icone_site"]:
+        for field_name in ["avatar", "icone_site"]:
             field = self.fields.get(field_name)
             if field:
                 field.widget.attrs.setdefault("accept", "image/*")
@@ -58,6 +59,9 @@ class OrganizacaoForm(forms.ModelForm):
         rua_field = self.fields.get("rua")
         if rua_field:
             rua_field.label = "Endereço"
+        avatar_field = self.fields.get("avatar")
+        if avatar_field:
+            avatar_field.label = "Logotipo"
         if user and user.user_type != UserType.ROOT:
             payment_fields = [
                 "mercado_pago_public_key",
@@ -108,9 +112,6 @@ class OrganizacaoForm(forms.ModelForm):
 
     def clean_avatar(self):
         return self._clean_imagem("avatar")
-
-    def clean_cover(self):
-        return self._clean_imagem("cover")
 
     def clean_icone_site(self):
         return self._clean_imagem("icone_site")

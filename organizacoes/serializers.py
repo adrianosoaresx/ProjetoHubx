@@ -30,9 +30,11 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "rua",
             "cidade",
             "estado",
+            "cep",
             "contato_nome",
             "contato_email",
             "contato_telefone",
+            "contato_whatsapp",
             "codigo_banco",
             "nome_banco",
             "agencia",
@@ -43,7 +45,6 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "icone_site",
             "feed_noticias",
             "avatar",
-            "cover",
             "inativa",
             "inativada_em",
             "created_by",
@@ -104,6 +105,8 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_nome",
             "contato_email",
             "contato_telefone",
+            "contato_whatsapp",
+            "cep",
             "codigo_banco",
             "nome_banco",
             "agencia",
@@ -150,9 +153,6 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         return value
 
     def validate_avatar(self, value):
-        return self._validate_imagem(value)
-
-    def validate_cover(self, value):
         return self._validate_imagem(value)
 
     def validate_icone_site(self, value):

@@ -16,16 +16,6 @@
   
     <article class="card">
       <div class="card-body space-y-6">
-        <figure class="h-48 w-full overflow-hidden rounded-xl bg-[var(--bg-secondary)]">
-          {% if object.cover %}
-            <img src="{{ object.cover.url }}" alt="{{ object.nome }}" class="h-full w-full object-cover" loading="lazy">
-          {% else %}
-            <div class="flex h-full items-center justify-center text-sm text-[var(--text-muted)]">
-              {% trans 'Esta organização ainda não possui imagem de capa.' %}
-            </div>
-          {% endif %}
-        </figure>
-
         <div class="flex flex-col items-center gap-4 text-center">
           {% if object.avatar %}
             <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="h-24 w-24 rounded-full border-4 border-[var(--bg-primary)] object-cover shadow" loading="lazy">
@@ -56,6 +46,10 @@
             <dd class="font-medium text-[var(--text-primary)]">
               {{ object.rua }}<br>
               {{ object.cidade }}{% if object.estado %}/{{ object.estado }}{% endif %}
+              {% if object.cep %}
+                <br>
+                {{ object.cep }}
+              {% endif %}
             </dd>
           </div>
           <div class="flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
@@ -64,6 +58,9 @@
               <p>{{ object.contato_nome }}</p>
               <p>{{ object.contato_email }}</p>
               <p>{{ object.contato_telefone }}</p>
+              {% if object.contato_whatsapp %}
+                <p>{{ object.contato_whatsapp }}</p>
+              {% endif %}
               {% if object.chave_pix %}
                 <p>{% trans 'Chave Pix:' %} {{ object.chave_pix }}</p>
               {% endif %}
