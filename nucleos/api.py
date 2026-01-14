@@ -642,7 +642,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 "user_id": p.user_id,
                 "papel": p.papel,
                 "data_ingresso": (p.data_decisao or p.data_solicitacao),
-                "mensalidade": nucleo.mensalidade,
+                "mensalidade": nucleo.mensalidade_efetiva,
             }
             for p in page
         ]

@@ -57,6 +57,12 @@ class ParticipacaoNucleoSerializer(serializers.ModelSerializer):
 class NucleoSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
     suplentes = CoordenadorSuplenteSerializer(many=True, read_only=True, source="coordenadores_suplentes")
+    mensalidade = serializers.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Nucleo
@@ -78,9 +84,15 @@ class NucleoSerializer(serializers.ModelSerializer):
         read_only_fields = ["deleted", "deleted_at", "created_at", "organizacao"]
 
     def validate_mensalidade(self, valor):
-        if valor < 0:
+        if valor is not None and valor < 0:
             raise serializers.ValidationError("Valor inválido")
         return valor
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if data.get("mensalidade") in (None, ""):
+            data["mensalidade"] = str(instance.mensalidade_efetiva)
+        return data
 
 
 class ConviteNucleoSerializer(serializers.ModelSerializer):

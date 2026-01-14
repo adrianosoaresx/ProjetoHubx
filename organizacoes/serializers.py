@@ -40,6 +40,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "agencia",
             "conta_corrente",
             "chave_pix",
+            "valor_associacao",
+            "valor_nucleacao",
+            "dia_vencimento",
+            "periodicidade",
             "nome_site",
             "site",
             "icone_site",
@@ -117,6 +121,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "site",
             "icone_site",
             "feed_noticias",
+            "valor_associacao",
+            "valor_nucleacao",
+            "dia_vencimento",
+            "periodicidade",
         ]
         for campo in campos_relevantes:
             if campo in validated_data:
