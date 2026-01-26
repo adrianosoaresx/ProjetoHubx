@@ -4,7 +4,7 @@ from accounts.models import UserType
 
 
 class IsAdminOrCoordenadorOrReadOnly(permissions.IsAuthenticated):
-    """Allow write actions only to admins or coordinators."""
+    """Allow write actions only to admins, operators, or coordinators."""
 
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
         if not super().has_permission(request, view):
@@ -27,9 +27,6 @@ class IsAdminOrCoordenadorOrReadOnly(permissions.IsAuthenticated):
             return True
 
         admin_or_operador = {UserType.ADMIN.value, UserType.OPERADOR.value}
-        if request.method in {"PUT", "PATCH"}:
-            allowed = admin_or_operador | {UserType.COORDENADOR.value}
-        else:
-            allowed = admin_or_operador
+        allowed = admin_or_operador | {UserType.COORDENADOR.value}
 
         return tipo_usuario_valor in allowed
