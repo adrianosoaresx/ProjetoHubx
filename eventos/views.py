@@ -902,7 +902,7 @@ def painel_eventos(request):
 class EventoCreateView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOrOperatorRequiredMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
     CreateView,
 ):
     model = Evento
