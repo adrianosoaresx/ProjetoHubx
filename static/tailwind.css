@@ -6085,6 +6085,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
     max-height: 320px;
   }
 
+  .sm\:min-h-\[240px\] {
+    min-height: 240px;
+  }
+
   .sm\:min-h-\[440px\] {
     min-height: 440px;
   }
@@ -6239,6 +6243,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
     padding-right: 2rem;
   }
 
+  .sm\:py-10 {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
   .sm\:py-3 {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
@@ -6327,6 +6336,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .md\:max-h-\[360px\] {
     max-height: 360px;
+  }
+
+  .md\:min-h-\[260px\] {
+    min-height: 260px;
   }
 
   .md\:w-16 {
