@@ -10,14 +10,13 @@
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
   {% endif %}
   <div class="hero-content relative z-10 w-full">
-    <div class="max-w-7xl mx-auto w-full px-4 py-10 space-y-8">
-      <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+    <div class="relative max-w-7xl mx-auto w-full px-4 py-10 pb-24 md:pb-10 min-h-[220px]">
+      <div class="absolute left-4 bottom-4 flex flex-wrap items-center gap-3 sm:gap-4">
           <div class="shrink-0">
             {% if evento.avatar %}
-              <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
+              <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
             {% else %}
-              <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
+              <div class="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-white/20 text-2xl sm:text-3xl font-semibold uppercase ring-4 ring-white/30"
                    role="img" aria-label="{{ evento.titulo }}">
                 {{ evento.titulo|slice:':1'|upper }}
               </div>
@@ -29,7 +28,7 @@
             </div>
           </div>
         </div>
-        <div class="flex flex-col gap-3 md:items-end md:self-start">
+        <div class="flex flex-col gap-3 md:items-end md:self-start md:absolute md:right-6 md:top-6">
           {% if user.is_authenticated %}
             <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
               {% if user.get_tipo_usuario != 'admin' and not user.is_associado %}
@@ -127,7 +126,6 @@
             </div>
           {% endif %}
         </div>
-      </div>
 
     </div>
   </div>
