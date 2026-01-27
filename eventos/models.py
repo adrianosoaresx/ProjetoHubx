@@ -442,6 +442,12 @@ class Evento(TimeStampedModel, SoftDeleteModel):
             return valor_nucleado
         if tipo_usuario == UserType.ASSOCIADO.value and valor_associado is not None:
             return valor_associado
+        if (
+            tipo_usuario == UserType.COORDENADOR.value
+            and self.publico_alvo in (0, 1)
+            and valor_nucleado is not None
+        ):
+            return valor_nucleado
         if getattr(user, "is_associado", False) and valor_associado is not None:
             return valor_associado
         if valor_associado is not None:
