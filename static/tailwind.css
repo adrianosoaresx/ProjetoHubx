@@ -3064,6 +3064,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   top: -0.25rem;
 }
 
+.bottom-4 {
+  bottom: 1rem;
+}
+
 .left-0 {
   left: 0px;
 }
@@ -3404,6 +3408,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   min-height: 12rem;
 }
 
+.min-h-\[220px\] {
+  min-height: 220px;
+}
+
 .min-h-\[240px\] {
   min-height: 240px;
 }
@@ -3454,6 +3462,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .w-24 {
   width: 6rem;
+}
+
+.w-28 {
+  width: 7rem;
 }
 
 .w-3 {
@@ -4113,6 +4125,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   background-color: var(--surface-100);
 }
 
+.bg-\[var\(--surface-2\)\] {
+  background-color: var(--surface-2);
+}
+
 .bg-\[var\(--surface-200\)\] {
   background-color: var(--surface-200);
 }
@@ -4554,6 +4570,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pb-10 {
   padding-bottom: 2.5rem;
+}
+
+.pb-24 {
+  padding-bottom: 6rem;
 }
 
 .pb-3 {
@@ -6232,6 +6252,11 @@ body.sidebar-mobile-open .sidebar-backdrop {
     text-align: left;
   }
 
+  .sm\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
   .sm\:text-base {
     font-size: 1rem;
     line-height: 1.5rem;
@@ -6244,8 +6269,20 @@ body.sidebar-mobile-open .sidebar-backdrop {
 }
 
 @media (min-width: 768px) {
+  .md\:absolute {
+    position: absolute;
+  }
+
   .md\:sticky {
     position: sticky;
+  }
+
+  .md\:right-6 {
+    right: 1.5rem;
+  }
+
+  .md\:top-6 {
+    top: 1.5rem;
   }
 
   .md\:col-span-1 {
@@ -6365,6 +6402,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   .md\:py-16 {
     padding-top: 4rem;
     padding-bottom: 4rem;
+  }
+
+  .md\:pb-10 {
+    padding-bottom: 2.5rem;
   }
 
   .md\:pt-0 {
