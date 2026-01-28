@@ -473,9 +473,10 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         is_guest_user = _is_guest_user(user)
         ctx["title"] = _("Eventos")
         ctx["subtitle"] = None
-        ctx["is_admin_org"] = user.get_tipo_usuario in {
+        ctx["can_create_event"] = _get_tipo_usuario(user) in {
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
         }
         ctx["show_event_sections"] = not is_guest_user
         current_filter = self.request.GET.get("status") or ""

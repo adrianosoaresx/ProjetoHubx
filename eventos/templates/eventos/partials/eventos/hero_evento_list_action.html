@@ -1,6 +1,6 @@
 {% load i18n lucide_icons %}
 <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
-  {% if is_admin_org %}
+  {% if can_create_event %}
     <a
       href="{% url 'eventos:evento_novo' %}"
       class="btn btn-primary flex items-center gap-2 text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]"
