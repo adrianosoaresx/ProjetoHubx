@@ -39,6 +39,23 @@
         </div>
       {% endif %}
 
+      {% if is_guest %}
+        <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-tertiary)]/60 px-4 py-4 text-sm text-[var(--text-secondary)]">
+          <label class="flex items-start gap-3">
+            <input
+              type="checkbox"
+              name="promover_associado"
+              value="1"
+              class="mt-1 h-4 w-4 rounded border-[var(--border)] text-primary focus:ring-primary"
+            >
+            <span>
+              <span class="block font-medium text-[var(--text-primary)]">{% trans 'Promover a associado' %}</span>
+              <span class="block text-xs text-[var(--text-secondary)]">{% trans 'Disponível apenas para convidados. Essa ação libera o acesso como associado sem selecionar núcleos.' %}</span>
+            </span>
+          </label>
+        </div>
+      {% endif %}
+
       <div class="space-y-4">
         {% include '_forms/field.html' with id='membro-nome' name='membro_nome' type='text' label=_('Membro') value=membro.display_name|default:membro.username extra_classes='bg-[var(--bg-secondary)]' attrs='readonly' %}
         {% usuario_badges membro as usuario_badges_list %}

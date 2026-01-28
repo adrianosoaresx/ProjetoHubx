@@ -89,6 +89,10 @@
     {% include '_partials/cards/badge_list.html' with badges=user_badges container_classes='flex flex-wrap justify-center gap-2 pt-2' %}
   </div>
   <footer class="card-footer">
-    <a href="{% url 'membros:membro_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover' %}</a>
+    {% if user.get_tipo_usuario == 'convidado' %}
+      <a href="{% url 'membros:membro_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover a associado' %}</a>
+    {% else %}
+      <a href="{% url 'membros:membro_promover_form' user.pk %}" class="btn btn-secondary w-full text-center">{% trans 'Promover' %}</a>
+    {% endif %}
   </footer>
 </article>
