@@ -465,6 +465,7 @@ class MembroPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
                         UserType.CONSULTOR.value,
                         UserType.ASSOCIADO.value,
                         UserType.NUCLEADO.value,
+                        UserType.CONVIDADO.value,
                     ]
                 )
                 | Q(is_associado=True)
@@ -703,17 +704,24 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
         all_action_ids = all_selected_ids | removal_ids
 
         form_errors: list[str] = []
+        promote_associado_raw = (request.POST.get("promover_associado") or "").strip().lower()
+        promote_associado = promote_associado_raw in {"1", "true", "on", "yes"}
+        is_guest = self.membro.user_type == UserType.CONVIDADO.value
 
-        if not all_action_ids:
+        if not all_action_ids and not (is_guest and promote_associado):
             form_errors.append(
                 _("Selecione ao menos um núcleo e papel para promoção ou remoção.")
             )
 
-        valid_action_ids = set(
-            Nucleo.objects.filter(organizacao=self.organizacao, id__in=all_action_ids).values_list("id", flat=True)
-        )
-        if len(valid_action_ids) != len(all_action_ids):
-            form_errors.append(_("Selecione núcleos válidos da organização."))
+        valid_action_ids: set[int] = set()
+        if all_action_ids:
+            valid_action_ids = set(
+                Nucleo.objects.filter(
+                    organizacao=self.organizacao, id__in=all_action_ids
+                ).values_list("id", flat=True)
+            )
+            if len(valid_action_ids) != len(all_action_ids):
+                form_errors.append(_("Selecione núcleos válidos da organização."))
 
         valid_ids = set(nid for nid in all_selected_ids if nid in valid_action_ids)
 
@@ -864,7 +872,7 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
             )
             return self.render_to_response(context, status=400)
 
-        if not valid_action_ids:
+        if not valid_action_ids and not (is_guest and promote_associado):
             context = self.get_context_data(
                 selected_nucleado=[],
                 selected_consultor=[],
@@ -873,7 +881,9 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
                 selected_remover_nucleado=[],
                 selected_remover_consultor=[],
                 selected_remover_coordenador=[],
-                form_errors=[_("Nenhum núcleo válido foi selecionado.")],
+                form_errors=(
+                    [] if is_guest and promote_associado else [_("Nenhum núcleo válido foi selecionado.")]
+                ),
             )
             return self.render_to_response(context, status=400)
 
@@ -1002,6 +1012,14 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
         ).exists()
 
         updates: list[str] = []
+        if is_guest and promote_associado:
+            if self.membro.user_type != UserType.ASSOCIADO.value:
+                self.membro.user_type = UserType.ASSOCIADO.value
+                updates.append("user_type")
+            if not self.membro.is_associado:
+                self.membro.is_associado = True
+                updates.append("is_associado")
+
         if self.membro.is_coordenador != has_coordenador:
             self.membro.is_coordenador = has_coordenador
             updates.append("is_coordenador")
@@ -1159,6 +1177,7 @@ class MembroPromoverFormView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
 
         return {
             "membro": self.membro,
+            "is_guest": self.membro.user_type == UserType.CONVIDADO.value,
             "nucleos": nucleos,
             "coordenador_role_choices": ParticipacaoNucleo.PapelCoordenador.choices,
             "coordenador_role_labels": role_labels,
