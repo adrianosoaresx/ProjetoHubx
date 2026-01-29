@@ -2,6 +2,12 @@ from django.urls import path
 
 from . import views
 from .views import (
+    BriefingEventoFillView,
+    BriefingTemplateCreateView,
+    BriefingTemplateDeleteView,
+    BriefingTemplateListView,
+    BriefingTemplateSelectView,
+    BriefingTemplateUpdateView,
     EventoCancelSubscriptionView,
     EventoCancelarInscricaoModalView,
     EventoCreateView,
@@ -31,6 +37,32 @@ app_name = "eventos"
 
 urlpatterns = [
     path("c/<str:short_code>/", views.convite_public_view, name="convite_public"),
+    path("briefings/modelos/", BriefingTemplateListView.as_view(), name="briefing_template_list"),
+    path(
+        "briefings/modelos/novo/",
+        BriefingTemplateCreateView.as_view(),
+        name="briefing_template_create",
+    ),
+    path(
+        "briefings/modelos/<int:pk>/editar/",
+        BriefingTemplateUpdateView.as_view(),
+        name="briefing_template_update",
+    ),
+    path(
+        "briefings/modelos/<int:pk>/desativar/",
+        BriefingTemplateDeleteView.as_view(),
+        name="briefing_template_delete",
+    ),
+    path(
+        "eventos/<uuid:evento_id>/briefing/selecionar/",
+        BriefingTemplateSelectView.as_view(),
+        name="briefing_selecionar",
+    ),
+    path(
+        "eventos/<uuid:evento_id>/briefing/preencher/",
+        BriefingEventoFillView.as_view(),
+        name="briefing_preencher",
+    ),
     path("lista/", views.EventoListView.as_view(), name="lista"),
     path(
         "lista/carousel/",
