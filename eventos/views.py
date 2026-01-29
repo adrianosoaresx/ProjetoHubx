@@ -17,6 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.paginator import Paginator
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.db.models import Q, Count, Model
 from django.db.models.fields.files import FieldFile
 from django.http import (
@@ -36,6 +37,7 @@ from django.utils.functional import Promise
 from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
@@ -61,6 +63,8 @@ from tokens.models import TokenAcesso
 from tokens.services import create_invite_token
 
 from .forms import (
+    BriefingEventoForm,
+    BriefingTemplateForm,
     ConviteEventoForm,
     EventoForm,
     EventoMediaForm,
@@ -70,6 +74,8 @@ from .forms import (
     PublicInviteEmailForm,
 )
 from .models import (
+    BriefingEvento,
+    BriefingTemplate,
     Convite,
     Evento,
     EventoLog,
@@ -239,6 +245,14 @@ def _usuario_pode_gerenciar_portfolio(user, evento: Evento) -> bool:
 
 def _usuario_pode_ver_inscritos(user, evento: Evento) -> bool:
     return _usuario_tem_acesso_restrito_evento(user, evento)
+
+
+class BriefingTemplateSelectForm(forms.Form):
+    template = forms.ModelChoiceField(
+        queryset=BriefingTemplate.objects.filter(ativo=True).order_by("nome"),
+        label=_("Template"),
+        empty_label=_("Selecione um template"),
+    )
 
 
 def _get_nucleos_coordenacao_consultoria_ids(user) -> set[int]:
@@ -893,6 +907,250 @@ def lista_eventos(request, dia_iso: str):
 @no_superadmin_required
 def painel_eventos(request):
     return calendario_cards_ultimos_30(request)
+
+
+# ---------------------------------------------------------------------------
+# Briefings
+# ---------------------------------------------------------------------------
+
+
+class BriefingTemplateListView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    ListView,
+):
+    model = BriefingTemplate
+    template_name = "eventos/briefings/template_list.html"
+
+    def get_queryset(self):
+        return BriefingTemplate.objects.annotate(briefing_total=Count("briefings")).order_by("nome")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        fallback_url = reverse("eventos:calendario")
+        context.update(
+            {
+                "title": _("Modelos de Briefing"),
+                "subtitle": _("Gerencie os templates utilizados para coletar informações dos eventos."),
+                "back_href": resolve_back_href(self.request, fallback=fallback_url),
+            }
+        )
+        return context
+
+
+@method_decorator(transaction.atomic, name="dispatch")
+class BriefingTemplateCreateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    CreateView,
+):
+    model = BriefingTemplate
+    form_class = BriefingTemplateForm
+    template_name = "eventos/briefings/template_form.html"
+    success_url = reverse_lazy("eventos:briefing_template_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": _("Adicionar modelo de briefing"),
+                "subtitle": _("Defina as perguntas padrão para novos eventos."),
+                "back_href": resolve_back_href(self.request, fallback=str(self.success_url)),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Modelo de briefing criado com sucesso."))
+        return super().form_valid(form)
+
+
+@method_decorator(transaction.atomic, name="dispatch")
+class BriefingTemplateUpdateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    UpdateView,
+):
+    model = BriefingTemplate
+    form_class = BriefingTemplateForm
+    template_name = "eventos/briefings/template_form.html"
+    success_url = reverse_lazy("eventos:briefing_template_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": _("Editar modelo de briefing"),
+                "subtitle": getattr(self.object, "descricao", None),
+                "back_href": resolve_back_href(self.request, fallback=str(self.success_url)),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Modelo de briefing atualizado com sucesso."))
+        return super().form_valid(form)
+
+
+@method_decorator(transaction.atomic, name="dispatch")
+class BriefingTemplateDeleteView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    DeleteView,
+):
+    model = BriefingTemplate
+    template_name = "eventos/briefings/template_confirm_delete.html"
+    success_url = reverse_lazy("eventos:briefing_template_list")
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.ativo = False
+        self.object.save(update_fields=["ativo", "updated_at"])
+        messages.success(self.request, _("Modelo de briefing desativado."))
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": _("Desativar modelo de briefing"),
+                "subtitle": getattr(self.object, "descricao", None),
+                "back_href": resolve_back_href(self.request, fallback=str(self.success_url)),
+            }
+        )
+        return context
+
+
+@method_decorator(transaction.atomic, name="dispatch")
+class BriefingTemplateSelectView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    TemplateView,
+):
+    template_name = "eventos/briefings/briefing_select.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.evento = get_object_or_404(
+            filter_eventos_por_usuario(
+                Evento.objects.select_related(
+                    "organizacao",
+                    "nucleo",
+                    "briefing__template",
+                ).prefetch_related("inscricoes"),
+                request.user,
+            ),
+            pk=kwargs.get("evento_id"),
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self):
+        form = BriefingTemplateSelectForm(self.request.POST or None)
+        briefing = getattr(self.evento, "briefing", None)
+        if briefing and briefing.template_id and not form.is_bound:
+            form.initial["template"] = briefing.template_id
+        return form
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if not form.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+
+        template = form.cleaned_data["template"]
+        briefing = getattr(self.evento, "briefing", None)
+        if briefing is None:
+            BriefingEvento.objects.create(evento=self.evento, template=template)
+        else:
+            if briefing.template_id != template.id:
+                briefing.respostas = {}
+            briefing.template = template
+            briefing.save(update_fields=["template", "respostas", "updated_at"])
+
+        messages.success(self.request, _("Template selecionado com sucesso."))
+        return redirect(
+            "eventos:briefing_preencher",
+            evento_id=self.evento.pk,
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "evento": self.evento,
+                "form": kwargs.get("form") or self.get_form(),
+                "title": _("Selecionar template de briefing"),
+                "subtitle": self.evento.titulo,
+                "back_href": resolve_back_href(
+                    self.request,
+                    fallback=reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk}),
+                ),
+            }
+        )
+        return context
+
+
+@method_decorator(transaction.atomic, name="dispatch")
+class BriefingEventoFillView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminOperatorOrCoordinatorRequiredMixin,
+    UpdateView,
+):
+    model = BriefingEvento
+    form_class = BriefingEventoForm
+    template_name = "eventos/briefings/briefing_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.evento = get_object_or_404(
+            filter_eventos_por_usuario(
+                Evento.objects.select_related(
+                    "organizacao",
+                    "nucleo",
+                    "briefing__template",
+                ),
+                request.user,
+            ),
+            pk=kwargs.get("evento_id"),
+        )
+        self.briefing = getattr(self.evento, "briefing", None)
+        if self.briefing is None:
+            messages.warning(self.request, _("Selecione um template antes de preencher o briefing."))
+            return redirect("eventos:briefing_selecionar", evento_id=self.evento.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.briefing
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["template"] = self.briefing.template
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "evento": self.evento,
+                "title": _("Preencher briefing"),
+                "subtitle": self.evento.titulo,
+                "back_href": resolve_back_href(
+                    self.request,
+                    fallback=reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk}),
+                ),
+            }
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Briefing atualizado com sucesso."))
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
 
 
 # ---------------------------------------------------------------------------
