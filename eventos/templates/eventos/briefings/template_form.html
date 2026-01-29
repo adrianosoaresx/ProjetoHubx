@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -7,7 +7,7 @@
 
 {% block content %}
   {% url 'eventos:briefing_template_list' as default_back %}
-  <article class="card">
+  <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
     <div class="card-header">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
       {% if subtitle %}
@@ -18,11 +18,26 @@
       <form method="post" class="space-y-6">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        <div class="space-y-4">
+        <div class="card-grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
           {% for field in form %}
-            <div>
-              {{ field.label_tag }}
-              {{ field }}
+            <div class="{% if field|widget_type == 'textarea' %}lg:col-span-2{% endif %} rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4 space-y-2">
+              {% if field|widget_type != 'checkboxinput' %}
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                  {{ field.label }}{% if field.field.required %} *{% endif %}
+                </label>
+              {% endif %}
+              {% if field|widget_type == 'select' %}
+                {% render_field field class+="form-select w-full" %}
+              {% elif field|widget_type == 'checkboxinput' %}
+                <div class="flex items-center gap-2">
+                  {% render_field field class+="form-checkbox" %}
+                  <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-secondary)]">
+                    {{ field.label }}{% if field.field.required %} *{% endif %}
+                  </label>
+                </div>
+              {% else %}
+                {% render_field field class+="form-input w-full" %}
+              {% endif %}
               {% if field.help_text %}
                 <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
               {% endif %}

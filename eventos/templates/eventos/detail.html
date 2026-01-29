@@ -127,11 +127,36 @@
                     <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
                   </div>
                 {% endif %}
-                {% if object.parcerias and pode_ver_campos_restritos %}
-                  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-                    <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>
-                    <dd class="font-medium text-[var(--text-primary)]">
-                      {% include 'eventos/partials/shared/_file_link.html' with file=object.parcerias %}
+                {% if pode_editar_evento %}
+                  <div class="flex flex-col gap-2 rounded-lg border border-[var(--border)] px-3 py-2">
+                    <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
+                    <dd class="flex flex-col gap-2 text-sm text-[var(--text-secondary)]">
+                      {% if object.briefing %}
+                        <span>
+                          {% trans "Template selecionado" %}:
+                          <strong class="font-medium text-[var(--text-primary)]">{{ object.briefing.template.nome }}</strong>
+                        </span>
+                        <div class="flex flex-wrap gap-2">
+                          <a href="{% url 'eventos:briefing_preencher' object.pk %}" class="btn btn-secondary btn-sm">
+                            {% trans "Editar briefing" %}
+                          </a>
+                          <a href="{% url 'eventos:briefing_preencher' object.pk %}" class="btn btn-ghost btn-sm">
+                            {% trans "Visualizar" %}
+                          </a>
+                        </div>
+                      {% else %}
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm w-fit"
+                          hx-get="{% url 'eventos:briefing_selecionar' object.pk %}"
+                          hx-target="#modal"
+                          hx-trigger="click"
+                          hx-swap="innerHTML"
+                          hx-on="htmx:beforeRequest: window.HubxModalTrigger = this;"
+                        >
+                          {% trans "Criar Briefing" %}
+                        </button>
+                      {% endif %}
                     </dd>
                   </div>
                 {% endif %}

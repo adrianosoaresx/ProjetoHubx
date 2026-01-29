@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block hero %}{% include '_components/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
 
 {% block content %}
-  <article class="card">
+  <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
     <div class="card-header">
       <h2 class="text-xl font-semibold">{{ title }}</h2>
       {% if subtitle %}
@@ -17,13 +17,35 @@
       <form method="post" class="space-y-6">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        <div class="space-y-4">
+        <div class="space-y-5">
           {% for field in form %}
-            <div>
-              {{ field.label_tag }}
-              {{ field }}
+            <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4">
+              {% if field|widget_type == 'checkboxinput' %}
+                <div class="flex items-center gap-3">
+                  {% render_field field class+="form-checkbox" %}
+                  <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-primary)]">
+                    {{ field.label }}{% if field.field.required %} *{% endif %}
+                  </label>
+                </div>
+              {% else %}
+                <div class="relative">
+                  {% if field|widget_type == 'select' %}
+                    {% render_field field class+="form-select w-full peer pt-6" %}
+                  {% elif field|widget_type == 'textarea' %}
+                    {% render_field field class+="form-input w-full peer pt-6 min-h-[140px] placeholder-transparent" placeholder=" " %}
+                  {% else %}
+                    {% render_field field class+="form-input w-full peer pt-6 placeholder-transparent" placeholder=" " %}
+                  {% endif %}
+                  <label
+                    for="{{ field.id_for_label }}"
+                    class="pointer-events-none absolute left-3 top-3 z-10 origin-left bg-[var(--bg-primary)] px-1 text-sm text-[var(--text-secondary)] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
+                  >
+                    {{ field.label }}{% if field.field.required %} *{% endif %}
+                  </label>
+                </div>
+              {% endif %}
               {% if field.help_text %}
-                <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                <p class="mt-2 text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
               {% endif %}
               {{ field.errors }}
             </div>

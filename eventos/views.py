@@ -1055,10 +1055,27 @@ class BriefingTemplateSelectView(
             form.initial["template"] = briefing.template_id
         return form
 
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        if request.headers.get("HX-Target") == "modal":
+            return TemplateResponse(
+                request,
+                "eventos/briefings/partials/briefing_select_modal.html",
+                context,
+            )
+        return self.render_to_response(context)
+
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if not form.is_valid():
-            return self.render_to_response(self.get_context_data(form=form))
+            context = self.get_context_data(form=form)
+            if request.headers.get("HX-Target") == "modal":
+                return TemplateResponse(
+                    request,
+                    "eventos/briefings/partials/briefing_select_modal.html",
+                    context,
+                )
+            return self.render_to_response(context)
 
         template = form.cleaned_data["template"]
         briefing = getattr(self.evento, "briefing", None)
