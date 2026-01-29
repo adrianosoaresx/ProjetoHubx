@@ -5,7 +5,7 @@
    aria-label="{{ btn.aria_label }}"
    {% if btn.fallback_href %}data-fallback-href="{{ btn.fallback_href }}"{% endif %}
    {% if btn.prevent_history %}data-prevent-history="{{ btn.prevent_history }}"{% endif %}
-   {% for name, value in btn.htmx_attrs %}{{ name }}="{{ value }}"
+   {% for attr in btn.htmx_attrs %}{{ attr.0 }}="{{ attr.1 }}"
    {% endfor %}
    onclick="return (function(el) {
      if (el.dataset.preventHistory === 'true') {
