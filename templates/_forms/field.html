@@ -59,7 +59,9 @@
     <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
     {% endif %}
   {% else %}
-    {% with input_id=id|default:name input_name=name|default:id input_type=type|default:'text' %}
+    {% firstof id name as input_id %}
+    {% firstof name id as input_name %}
+    {% firstof type 'text' as input_type %}
     <label for="{{ input_id }}" class="{% if hide_label %}sr-only{% else %}block text-sm font-medium text-[var(--text-primary)]{% endif %}">
       {{ label }}{% if required %} *{% endif %}
     </label>
@@ -97,7 +99,6 @@
         {% if attrs %}{{ attrs|safe }}{% endif %}
       />
     {% endif %}
-    {% endwith %}
     {% if errors %}
     <ul class="errorlist">
       {% for error in errors %}
