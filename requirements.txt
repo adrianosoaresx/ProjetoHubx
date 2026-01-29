@@ -91,6 +91,7 @@ isort==5.10.1
 jmespath==1.0.1
 jsonschema==4.24.0
 jsonschema-specifications==2025.4.1
+django-json-widget==2.0.3
 kiwisolver==1.4.8
 kombu==5.5.4
 lucide==1.1.3
