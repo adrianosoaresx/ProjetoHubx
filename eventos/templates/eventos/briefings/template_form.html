@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n widget_tweaks %}
+{% load i18n static widget_tweaks %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -20,30 +20,97 @@
         {{ form.non_field_errors }}
         <div class="card-grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
           {% for field in form %}
-            <div class="{% if field|widget_type == 'textarea' %}lg:col-span-2{% endif %} rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4 space-y-2">
-              {% if field|widget_type != 'checkboxinput' %}
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
-                  {{ field.label }}{% if field.field.required %} *{% endif %}
-                </label>
-              {% endif %}
-              {% if field|widget_type == 'select' %}
-                {% render_field field class+="form-select w-full" %}
-              {% elif field|widget_type == 'checkboxinput' %}
-                <div class="flex items-center gap-2">
-                  {% render_field field class+="form-checkbox" %}
-                  <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-secondary)]">
+            {% if field.name != 'estrutura' %}
+              <div class="{% if field|widget_type == 'textarea' %}lg:col-span-2{% endif %} rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4 space-y-2">
+                {% if field|widget_type != 'checkboxinput' %}
+                  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
                     {{ field.label }}{% if field.field.required %} *{% endif %}
                   </label>
-                </div>
-              {% else %}
-                {% render_field field class+="form-input w-full" %}
-              {% endif %}
-              {% if field.help_text %}
-                <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
-              {% endif %}
-              {{ field.errors }}
-            </div>
+                {% endif %}
+                {% if field|widget_type == 'select' %}
+                  {% render_field field class+="form-select w-full" %}
+                {% elif field|widget_type == 'checkboxinput' %}
+                  <div class="flex items-center gap-2">
+                    {% render_field field class+="form-checkbox" %}
+                    <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-secondary)]">
+                      {{ field.label }}{% if field.field.required %} *{% endif %}
+                    </label>
+                  </div>
+                {% else %}
+                  {% render_field field class+="form-input w-full" %}
+                {% endif %}
+                {% if field.help_text %}
+                  <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+                {% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
           {% endfor %}
+          <section class="lg:col-span-2 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4 space-y-4" data-briefing-form>
+            <div>
+              <h3 class="text-base font-semibold text-[var(--text-primary)]">Adicionar pergunta</h3>
+              <p class="text-sm text-[var(--text-secondary)]">
+                Monte a estrutura do briefing adicionando perguntas. Arraste para reordenar.
+              </p>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              <div class="space-y-2">
+                <label for="pergunta-label" class="block text-sm font-medium text-[var(--text-primary)]">Rótulo *</label>
+                <input id="pergunta-label" type="text" class="form-input w-full" placeholder="Ex: Qual é o objetivo do evento?" data-pergunta-label>
+              </div>
+              <div class="space-y-2">
+                <label for="pergunta-type" class="block text-sm font-medium text-[var(--text-primary)]">Tipo *</label>
+                <select id="pergunta-type" class="form-select w-full" data-pergunta-type>
+                  <option value="text">Texto curto</option>
+                  <option value="textarea">Texto longo</option>
+                  <option value="number">Número</option>
+                  <option value="email">Email</option>
+                  <option value="date">Data</option>
+                  <option value="select">Seleção</option>
+                  <option value="boolean">Sim/Não</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label for="pergunta-required" class="block text-sm font-medium text-[var(--text-primary)]">Obrigatório</label>
+                <div class="flex items-center gap-2">
+                  <input id="pergunta-required" type="checkbox" class="form-checkbox" data-pergunta-required>
+                  <span class="text-sm text-[var(--text-secondary)]">Marque se a pergunta deve ser obrigatória.</span>
+                </div>
+              </div>
+              <div class="space-y-2" data-pergunta-options-wrapper>
+                <label for="pergunta-options" class="block text-sm font-medium text-[var(--text-primary)]">Opções (tipo seleção)</label>
+                <textarea id="pergunta-options" class="form-input w-full" rows="3" placeholder="Uma opção por linha" data-pergunta-options></textarea>
+                <p class="text-xs text-[var(--text-secondary)]">Informe ao menos uma opção quando o tipo for seleção.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button" class="btn btn-secondary" data-pergunta-add>Adicionar pergunta</button>
+              <p class="text-sm text-[var(--text-secondary)]" data-pergunta-error hidden></p>
+            </div>
+            <div class="space-y-3">
+              <h4 class="text-sm font-semibold text-[var(--text-primary)]">Perguntas cadastradas</h4>
+              <ol class="space-y-3" data-perguntas-list></ol>
+              <p class="text-sm text-[var(--text-secondary)]" data-perguntas-empty>
+                Nenhuma pergunta adicionada ainda.
+              </p>
+            </div>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <input type="checkbox" class="form-checkbox" data-json-toggle>
+                Ver JSON avançado
+              </label>
+              <div class="hidden" data-json-wrapper>
+                <label for="{{ form.estrutura.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
+                  {{ form.estrutura.label }}{% if form.estrutura.field.required %} *{% endif %}
+                </label>
+                {% render_field form.estrutura class+="form-input w-full font-mono text-xs" readonly="readonly" data-estrutura-json="true" %}
+                {% if form.estrutura.help_text %}
+                  <p class="text-xs text-[var(--text-secondary)]">{{ form.estrutura.help_text }}</p>
+                {% endif %}
+                {{ form.estrutura.errors }}
+              </div>
+            </div>
+          </section>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
           <a href="{{ back_href|default:default_back }}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
@@ -52,4 +119,8 @@
       </form>
     </div>
   </article>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'eventos/js/briefing-template-form.js' %}" defer></script>
 {% endblock %}
