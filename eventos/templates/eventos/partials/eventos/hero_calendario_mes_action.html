@@ -1,0 +1,10 @@
+{% load i18n lucide_icons %}
+<div class="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center md:justify-end">
+  <a
+    href="{{ calendario_url }}"
+    class="btn btn-secondary flex items-center gap-2"
+  >
+    {% lucide 'calendar' class='w-4 h-4' aria_hidden='true' %}
+    <span>{% trans 'Calendário' %}</span>
+  </a>
+</div>

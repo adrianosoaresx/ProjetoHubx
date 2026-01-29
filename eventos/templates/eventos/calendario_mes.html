@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:data_atual|date:'YEAR_MONTH_FORMAT' }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with title=title|default:_('Calendário mensal') subtitle=subtitle %}{% endblock %}
+{% block hero %}{% include '_components/hero_evento.html' with title=title|default:_('Calendário mensal') subtitle=subtitle action_template='eventos/partials/eventos/hero_calendario_mes_action.html' %}{% endblock %}
 
 {% block content %}
   

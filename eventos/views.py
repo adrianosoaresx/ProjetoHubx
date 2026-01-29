@@ -855,6 +855,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         "dias_com_eventos": dias_com_eventos,
         "title": _("Calendário mensal"),
         "subtitle": None,
+        "calendario_url": reverse("eventos:calendario"),
     }
     return TemplateResponse(request, "eventos/calendario_mes.html", context)
 
