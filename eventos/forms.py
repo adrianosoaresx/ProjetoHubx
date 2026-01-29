@@ -12,7 +12,15 @@ from accounts.models import MediaTag
 from accounts.forms import ProfileImageFileInput
 
 from .validators import validate_uploaded_file
-from .models import Convite, Evento, EventoMidia, FeedbackNota, InscricaoEvento
+from .models import (
+    BriefingEvento,
+    BriefingTemplate,
+    Convite,
+    Evento,
+    EventoMidia,
+    FeedbackNota,
+    InscricaoEvento,
+)
 
 
 class PublicInviteEmailForm(forms.Form):
@@ -167,7 +175,6 @@ class EventoForm(forms.ModelForm):
             "valor_nucleado",
             "cronograma",
             "informacoes_adicionais",
-            "parcerias",
             "avatar",
             "cover",
         ]
@@ -183,7 +190,6 @@ class EventoForm(forms.ModelForm):
                 button_label=_("Enviar imagem"),
                 empty_label=_("Nenhuma imagem selecionada"),
             ),
-            "parcerias": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -235,10 +241,6 @@ class EventoForm(forms.ModelForm):
         if participantes_field:
             participantes_field.label = _("Participantes (lotação)")
 
-        parcerias_field = self.fields.get("parcerias")
-        if parcerias_field:
-            parcerias_field.help_text = _("Envie os documentos de parcerias em PDF (até 20 MB).")
-
     def clean(self):
         cleaned_data = super().clean()
         publico_alvo = cleaned_data.get("publico_alvo")
@@ -258,15 +260,189 @@ class EventoForm(forms.ModelForm):
 
         return cleaned_data
 
-    def _clean_pdf_file(self, field_name):
-        arquivo = self.cleaned_data.get(field_name)
-        if not arquivo:
-            return arquivo
-        validate_uploaded_file(arquivo)
-        return arquivo
 
-    def clean_parcerias(self):
-        return self._clean_pdf_file("parcerias")
+def _apply_design_system_classes(field: forms.Field) -> None:
+    widget = field.widget
+    attrs = widget.attrs.copy()
+    existing_classes = attrs.get("class", "").split()
+    for class_name in ("form-field", "card"):
+        if class_name not in existing_classes:
+            existing_classes.append(class_name)
+    attrs["class"] = " ".join(filter(None, existing_classes))
+    widget.attrs = attrs
+
+
+class BriefingTemplateForm(forms.ModelForm):
+    class Meta:
+        model = BriefingTemplate
+        fields = ["nome", "descricao", "estrutura", "ativo"]
+        widgets = {
+            "descricao": forms.Textarea(attrs={"rows": 4}),
+            "estrutura": forms.Textarea(attrs={"rows": 6}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            _apply_design_system_classes(field)
+
+    def clean_estrutura(self):
+        estrutura = self.cleaned_data.get("estrutura")
+        if not isinstance(estrutura, list):
+            raise forms.ValidationError(
+                _("A estrutura deve ser uma lista de perguntas.")
+            )
+
+        tipos_permitidos = {"text", "textarea", "number", "email", "date", "select", "boolean"}
+        for index, pergunta in enumerate(estrutura, start=1):
+            if not isinstance(pergunta, dict):
+                raise forms.ValidationError(
+                    _("A pergunta %(numero)s deve ser um objeto JSON válido.")
+                    % {"numero": index}
+                )
+            for campo in ("label", "type", "required"):
+                if campo not in pergunta:
+                    raise forms.ValidationError(
+                        _("Cada pergunta deve conter 'label', 'type' e 'required'.")
+                    )
+            label = pergunta.get("label")
+            tipo = pergunta.get("type")
+            required = pergunta.get("required")
+            if not isinstance(label, str) or not label.strip():
+                raise forms.ValidationError(
+                    _("A pergunta %(numero)s precisa de um rótulo válido.")
+                    % {"numero": index}
+                )
+            if not isinstance(tipo, str) or tipo not in tipos_permitidos:
+                raise forms.ValidationError(
+                    _("Tipo de pergunta inválido em %(numero)s.")
+                    % {"numero": index}
+                )
+            if not isinstance(required, bool):
+                raise forms.ValidationError(
+                    _("O campo 'required' da pergunta %(numero)s deve ser booleano.")
+                    % {"numero": index}
+                )
+            if tipo == "select":
+                opcoes = pergunta.get("options") or pergunta.get("choices")
+                if not isinstance(opcoes, list) or not opcoes:
+                    raise forms.ValidationError(
+                        _("A pergunta %(numero)s do tipo select precisa de opções.")
+                        % {"numero": index}
+                    )
+        return estrutura
+
+
+class BriefingEventoForm(forms.ModelForm):
+    class Meta:
+        model = BriefingEvento
+        fields = []
+
+    def __init__(self, *args, template: BriefingTemplate | None = None, **kwargs):
+        self.template = template
+        super().__init__(*args, **kwargs)
+        if self.template is None:
+            self.template = getattr(self.instance, "template", None)
+
+        self._perguntas: list[dict[str, str]] = []
+        respostas_iniciais = getattr(self.instance, "respostas", {}) or {}
+        estrutura = getattr(self.template, "estrutura", []) if self.template else []
+
+        if isinstance(estrutura, list):
+            for index, pergunta in enumerate(estrutura, start=1):
+                if not isinstance(pergunta, dict):
+                    continue
+                label = pergunta.get("label") or _("Pergunta %(numero)s") % {"numero": index}
+                tipo = pergunta.get("type") or "text"
+                required = bool(pergunta.get("required"))
+                field_name = f"pergunta_{index}"
+                field = self._build_pergunta_field(pergunta, label, tipo, required)
+                self.fields[field_name] = field
+                self._perguntas.append({"field": field_name, "label": label})
+                if label in respostas_iniciais:
+                    self.initial[field_name] = respostas_iniciais.get(label)
+
+        for field in self.fields.values():
+            _apply_design_system_classes(field)
+
+    def _build_pergunta_field(
+        self, pergunta: dict, label: str, tipo: str, required: bool
+    ) -> forms.Field:
+        error_messages = {"required": _("Campo obrigatório.")}
+        if tipo == "textarea":
+            return forms.CharField(
+                label=label,
+                required=required,
+                widget=forms.Textarea(attrs={"rows": 4}),
+                error_messages=error_messages,
+            )
+        if tipo == "number":
+            return forms.DecimalField(
+                label=label,
+                required=required,
+                error_messages=error_messages,
+            )
+        if tipo == "email":
+            return forms.EmailField(
+                label=label,
+                required=required,
+                error_messages=error_messages,
+            )
+        if tipo == "date":
+            return forms.DateField(
+                label=label,
+                required=required,
+                widget=forms.DateInput(attrs={"type": "date"}),
+                error_messages=error_messages,
+            )
+        if tipo == "select":
+            opcoes = pergunta.get("options") or pergunta.get("choices") or []
+            choices: list[tuple[str, str]] = []
+            for opcao in opcoes:
+                if isinstance(opcao, dict):
+                    valor = str(opcao.get("value") or opcao.get("id") or opcao.get("label") or "")
+                    rotulo = str(opcao.get("label") or opcao.get("value") or opcao.get("id") or "")
+                else:
+                    valor = str(opcao)
+                    rotulo = str(opcao)
+                if valor:
+                    choices.append((valor, rotulo))
+            return forms.ChoiceField(
+                label=label,
+                required=required,
+                choices=choices,
+                error_messages={**error_messages, "invalid_choice": _("Selecione uma opção válida.")},
+            )
+        if tipo == "boolean":
+            return forms.BooleanField(
+                label=label,
+                required=required,
+                error_messages=error_messages,
+            )
+        return forms.CharField(
+            label=label,
+            required=required,
+            error_messages=error_messages,
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        respostas: dict[str, object] = {}
+        for pergunta in self._perguntas:
+            field_name = pergunta["field"]
+            label = pergunta["label"]
+            respostas[label] = cleaned_data.get(field_name)
+        cleaned_data["respostas"] = respostas
+        return cleaned_data
+
+    def save(self, commit: bool = True) -> BriefingEvento:
+        instance = super().save(commit=False)
+        instance.respostas = self.cleaned_data.get("respostas", {})
+        if self.template is not None:
+            instance.template = self.template
+        if commit:
+            instance.save()
+        return instance
 
 
 class EventoWidget(s2forms.ModelSelect2Widget):
