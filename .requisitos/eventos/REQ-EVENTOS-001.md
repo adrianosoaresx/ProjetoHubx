@@ -138,9 +138,11 @@ Principais destaques:
 3. Após o evento, o responsável pode registrar uma avaliação única de 1 a 5 com comentário【410067135043595†L390-L409】.
 
 ### UC‑05 – Fluxo de Briefing
-1. Coordenador cria um briefing para o evento preenchendo objetivos, público‑alvo, requisitos técnicos e cronograma resumido.  
-2. Administrador avalia o briefing: pode marcar como orçamentado (informando prazo de resposta), aprovado ou recusado.  
-3. Em cada transição, o sistema registra avaliador, data/hora, motivo de recusa (se houver) e aciona tarefa assíncrona para notificar os envolvidos【410067135043595†L687-L725】.
+1. Administrador ou coordenador cria um **template de briefing** definindo uma estrutura JSON com perguntas (tipo, rótulo e obrigatoriedade); o template fica disponível para seleção em eventos.  
+2. No evento, o usuário seleciona um template e o sistema cria (ou atualiza) o briefing associado, limpando respostas anteriores quando o template é trocado.  
+3. O briefing é preenchido com **campos dinâmicos** conforme o template, persistindo as respostas por rótulo de pergunta.  
+4. Administrador avalia o briefing: pode marcar como orçamentado (informando prazo de resposta), aprovado ou recusado.  
+5. Em cada transição, o sistema registra avaliador, data/hora, motivo de recusa (se houver) e aciona tarefa assíncrona para notificar os envolvidos.
 
 ### UC‑06 – Avaliar Evento
 1. Após a data de término do evento, participantes confirmados acessam o formulário de avaliação e registram nota de 1 a 5 e comentário opcional【410067135043595†L310-L351】.  
@@ -159,6 +161,7 @@ Principais destaques:
 - Materiais e parcerias devem estar vinculados a um evento existente.  
 - Briefing segue obrigatoriamente o fluxo rascunho → orçamentado → aprovado/recusado.  
 - Só administradores e coordenadores podem gerenciar orçamentos, parcerias, briefings e aprovar materiais; participantes comuns podem apenas inscrever‑se, avaliar e visualizar.
+- Templates e formulários de briefing devem usar o **design system** do Hubx (classes base de formulário) e respeitar as **variáveis de cor** definidas no sistema de tokens/estilos.
 
 ## 7. Modelo de Dados
 
