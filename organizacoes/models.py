@@ -1,8 +1,10 @@
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
@@ -13,6 +15,12 @@ from .utils import validate_cnpj, validate_organizacao_image
 
 
 class Organizacao(TimeStampedModel, SoftDeleteModel):
+    class Periodicidade(models.TextChoices):
+        MENSAL = "mensal", _("Mensal")
+        TRIMESTRAL = "trimestral", _("Trimestral")
+        SEMESTRAL = "semestral", _("Semestral")
+        ANUAL = "anual", _("Anual")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
@@ -58,6 +66,29 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     )
     paypal_currency = models.CharField(
         _("Moeda padrão do PayPal"), max_length=10, blank=True, default="BRL"
+    )
+    valor_associacao = models.DecimalField(
+        _("Valor de associação"),
+        max_digits=8,
+        decimal_places=2,
+        default=getattr(settings, "MENSALIDADE_ASSOCIACAO", Decimal("50.00")),
+    )
+    valor_nucleacao = models.DecimalField(
+        _("Valor de nucleação"),
+        max_digits=8,
+        decimal_places=2,
+        default=getattr(settings, "MENSALIDADE_NUCLEO", Decimal("30.00")),
+    )
+    dia_vencimento = models.PositiveSmallIntegerField(
+        _("Dia de vencimento"),
+        default=getattr(settings, "MENSALIDADE_VENCIMENTO_DIA", 10),
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+    )
+    periodicidade = models.CharField(
+        _("Periodicidade"),
+        max_length=20,
+        choices=Periodicidade.choices,
+        default=Periodicidade.MENSAL,
     )
     nome_site = models.CharField(_("Nome do site"), max_length=12, blank=True)
     site = models.URLField(_("Site"), blank=True)
