@@ -6,7 +6,7 @@
 {% block hero %}{% include '_components/hero_evento.html' with title=title subtitle=subtitle %}{% endblock %}
 
 {% block content %}
-  <article class="card">
+  <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
     <div class="card-header flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <h2 class="text-xl font-semibold">{{ title }}</h2>
@@ -27,53 +27,54 @@
         {% endif %}
       </div>
     </div>
-    <div class="card-body space-y-4">
+    <div class="card-body space-y-6">
       {% if object_list %}
-        <div class="overflow-hidden rounded-lg border border-[var(--border)]">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-[var(--bg-secondary)] text-xs uppercase text-[var(--text-secondary)]">
-              <tr>
-                <th class="px-4 py-3">{% trans "Nome" %}</th>
-                <th class="px-4 py-3">{% trans "Descrição" %}</th>
-                <th class="px-4 py-3">{% trans "Briefings" %}</th>
-                <th class="px-4 py-3">{% trans "Status" %}</th>
-                <th class="px-4 py-3 text-right">{% trans "Ações" %}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--border)]">
-              {% for template in object_list %}
-                <tr>
-                  <td class="px-4 py-3 font-medium text-[var(--text-primary)]">{{ template.nome }}</td>
-                  <td class="px-4 py-3 text-[var(--text-secondary)]">{{ template.descricao|default:"-" }}</td>
-                  <td class="px-4 py-3 text-[var(--text-secondary)]">{{ template.briefing_total }}</td>
-                  <td class="px-4 py-3">
-                    {% if template.ativo %}
-                      <span class="rounded bg-[var(--success-bg)] px-2 py-1 text-xs text-[var(--success-text)]">{% trans "Ativo" %}</span>
-                    {% else %}
-                      <span class="rounded bg-[var(--bg-tertiary)] px-2 py-1 text-xs text-[var(--text-secondary)]">{% trans "Inativo" %}</span>
-                    {% endif %}
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex flex-wrap justify-end gap-2">
-                      <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
-                        {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
-                        {% trans "Editar" %}
-                      </a>
-                      {% if template.ativo %}
-                        <a href="{% url 'eventos:briefing_template_delete' template.pk %}" class="btn btn-danger inline-flex items-center gap-2">
-                          {% lucide 'ban' class='h-4 w-4' aria_hidden='true' %}
-                          {% trans "Desativar" %}
-                        </a>
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="card-grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          {% for template in object_list %}
+            <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <div class="card-body space-y-4">
+                <div class="space-y-1">
+                  <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ template.nome }}</h3>
+                  <p class="text-sm text-[var(--text-secondary)]">
+                    {{ template.descricao|default:"-" }}
+                  </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+                  <span class="rounded-full border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-1">
+                    {% trans "Briefings" %}: {{ template.briefing_total }}
+                  </span>
+                  {% if template.ativo %}
+                    <span class="rounded-full bg-[var(--success-bg)] px-3 py-1 text-[var(--success-text)]">
+                      {% trans "Ativo" %}
+                    </span>
+                  {% else %}
+                    <span class="rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-[var(--text-secondary)]">
+                      {% trans "Inativo" %}
+                    </span>
+                  {% endif %}
+                </div>
+                <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+                  <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
+                    {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
+                    {% trans "Editar" %}
+                  </a>
+                  {% if template.ativo %}
+                    <a href="{% url 'eventos:briefing_template_delete' template.pk %}" class="btn btn-danger inline-flex items-center gap-2">
+                      {% lucide 'ban' class='h-4 w-4' aria_hidden='true' %}
+                      {% trans "Desativar" %}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+          {% endfor %}
         </div>
       {% else %}
-        <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum modelo de briefing cadastrado." %}</p>
+        <div class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
+          <div class="card-body">
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum modelo de briefing cadastrado." %}</p>
+          </div>
+        </div>
       {% endif %}
     </div>
   </article>
