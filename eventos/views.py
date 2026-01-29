@@ -492,6 +492,11 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             UserType.OPERADOR.value,
             UserType.COORDENADOR.value,
         }
+        ctx["can_manage_briefing_templates"] = _get_tipo_usuario(user) in {
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+            UserType.COORDENADOR.value,
+        }
         ctx["show_event_sections"] = not is_guest_user
         current_filter = self.request.GET.get("status") or ""
         if current_filter not in {"ativos", "realizados", "planejamento", "cancelados"}:
