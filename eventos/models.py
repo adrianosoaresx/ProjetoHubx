@@ -308,11 +308,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
     cronograma = models.TextField(blank=True)
     informacoes_adicionais = models.TextField(blank=True)
-    briefing = models.FileField(
-        upload_to="eventos/briefings/",
-        blank=True,
-        validators=[validate_uploaded_file],
-    )
     parcerias = models.FileField(
         upload_to="eventos/parcerias/",
         blank=True,
@@ -455,6 +450,140 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         if valor_nucleado is not None:
             return valor_nucleado
         return None
+
+
+class BriefingTemplate(TimeStampedModel):
+    nome = models.CharField(max_length=150)
+    descricao = models.TextField(blank=True)
+    estrutura = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "Template de Briefing"
+        verbose_name_plural = "Templates de Briefing"
+
+    def __str__(self) -> str:
+        return self.nome
+
+
+class BriefingEvento(TimeStampedModel):
+    class Status(models.TextChoices):
+        RASCUNHO = "rascunho", _("Rascunho")
+        ORCAMENTADO = "orcamentado", _("Orçamentado")
+        APROVADO = "aprovado", _("Aprovado")
+        RECUSADO = "recusado", _("Recusado")
+
+    evento = models.OneToOneField(
+        Evento,
+        on_delete=models.CASCADE,
+        related_name="briefing",
+    )
+    template = models.ForeignKey(
+        BriefingTemplate,
+        on_delete=models.PROTECT,
+        related_name="briefings",
+    )
+    respostas = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.RASCUNHO,
+    )
+    versao_pdf = models.FileField(
+        upload_to="eventos/briefings/",
+        null=True,
+        blank=True,
+        validators=[validate_uploaded_file],
+    )
+    orcamento_enviado_em = models.DateTimeField(null=True, blank=True)
+    orcamento_enviado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="briefings_orcamento_enviados",
+    )
+    aprovado_em = models.DateTimeField(null=True, blank=True)
+    aprovado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="briefings_aprovados",
+    )
+    recusado_em = models.DateTimeField(null=True, blank=True)
+    recusado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="briefings_recusados",
+    )
+
+    class Meta:
+        verbose_name = "Briefing de Evento"
+        verbose_name_plural = "Briefings de Eventos"
+
+    def _validar_transicao(self, status_esperado: str, acao: str) -> None:
+        if self.status != status_esperado:
+            raise ValidationError(
+                {
+                    "status": _(
+                        "Não é possível %(acao)s um briefing em status %(status)s."
+                    )
+                    % {"acao": acao, "status": self.status}
+                }
+            )
+
+    def _validar_usuario(self, usuario: User | None) -> None:
+        if usuario is None:
+            raise ValidationError({"usuario": _("Informe o usuário responsável pela ação.")})
+
+    def enviar_orcamento(self, usuario: User | None) -> None:
+        self._validar_usuario(usuario)
+        self._validar_transicao(self.Status.RASCUNHO, "enviar orçamento")
+        self.status = self.Status.ORCAMENTADO
+        self.orcamento_enviado_em = timezone.now()
+        self.orcamento_enviado_por = usuario
+        self.save(
+            update_fields=[
+                "status",
+                "orcamento_enviado_em",
+                "orcamento_enviado_por",
+                "updated_at",
+            ]
+        )
+
+    def aprovar(self, usuario: User | None) -> None:
+        self._validar_usuario(usuario)
+        self._validar_transicao(self.Status.ORCAMENTADO, "aprovar")
+        self.status = self.Status.APROVADO
+        self.aprovado_em = timezone.now()
+        self.aprovado_por = usuario
+        self.save(
+            update_fields=[
+                "status",
+                "aprovado_em",
+                "aprovado_por",
+                "updated_at",
+            ]
+        )
+
+    def recusar(self, usuario: User | None) -> None:
+        self._validar_usuario(usuario)
+        self._validar_transicao(self.Status.ORCAMENTADO, "recusar")
+        self.status = self.Status.RECUSADO
+        self.recusado_em = timezone.now()
+        self.recusado_por = usuario
+        self.save(
+            update_fields=[
+                "status",
+                "recusado_em",
+                "recusado_por",
+                "updated_at",
+            ]
+        )
 
 
 class FeedbackNota(TimeStampedModel, SoftDeleteModel):

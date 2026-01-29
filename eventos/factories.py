@@ -33,11 +33,6 @@ class EventoFactory(DjangoModelFactory):
     valor_nucleado = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
-    briefing = FileField(
-        filename="briefing.pdf",
-        data=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n",
-        content_type="application/pdf",
-    )
     parcerias = FileField(
         filename="parcerias.pdf",
         data=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n",

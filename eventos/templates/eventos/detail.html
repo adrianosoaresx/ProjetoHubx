@@ -127,14 +127,6 @@
                     <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
                   </div>
                 {% endif %}
-                {% if object.briefing and pode_ver_campos_restritos %}
-                  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-                    <dt class="text-[var(--text-secondary)]">{% trans "Briefing" %}</dt>
-                    <dd class="font-medium text-[var(--text-primary)]">
-                      {% include 'eventos/partials/shared/_file_link.html' with file=object.briefing %}
-                    </dd>
-                  </div>
-                {% endif %}
                 {% if object.parcerias and pode_ver_campos_restritos %}
                   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
                     <dt class="text-[var(--text-secondary)]">{% trans "Parcerias" %}</dt>

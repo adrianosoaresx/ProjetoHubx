@@ -167,7 +167,6 @@ class EventoForm(forms.ModelForm):
             "valor_nucleado",
             "cronograma",
             "informacoes_adicionais",
-            "briefing",
             "parcerias",
             "avatar",
             "cover",
@@ -184,7 +183,6 @@ class EventoForm(forms.ModelForm):
                 button_label=_("Enviar imagem"),
                 empty_label=_("Nenhuma imagem selecionada"),
             ),
-            "briefing": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
             "parcerias": PDFClearableFileInput(attrs={"accept": "application/pdf"}),
         }
 
@@ -237,12 +235,9 @@ class EventoForm(forms.ModelForm):
         if participantes_field:
             participantes_field.label = _("Participantes (lotação)")
 
-        for field_name, help_text in (
-            ("briefing", _("Envie o briefing em formato PDF (até 20 MB).")),
-            ("parcerias", _("Envie os documentos de parcerias em PDF (até 20 MB).")),
-        ):
-            if field_name in self.fields:
-                self.fields[field_name].help_text = help_text
+        parcerias_field = self.fields.get("parcerias")
+        if parcerias_field:
+            parcerias_field.help_text = _("Envie os documentos de parcerias em PDF (até 20 MB).")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -269,9 +264,6 @@ class EventoForm(forms.ModelForm):
             return arquivo
         validate_uploaded_file(arquivo)
         return arquivo
-
-    def clean_briefing(self):
-        return self._clean_pdf_file("briefing")
 
     def clean_parcerias(self):
         return self._clean_pdf_file("parcerias")
@@ -482,4 +474,3 @@ class EventoMediaForm(forms.ModelForm):
             self._save_m2m = lambda: instance.tags.set(tags)
 
         return instance
-
