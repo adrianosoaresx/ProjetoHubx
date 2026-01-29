@@ -846,6 +846,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     context = {
         "dias_mes": dias_mes,
         "data_atual": primeiro_dia,
+        "hoje": hoje,
         "prev_ano": prev_ano,
         "prev_mes": prev_mes,
         "next_ano": next_ano,
@@ -881,7 +882,13 @@ def calendario_cards_ultimos_30(request):
     dias_com_eventos = [
         {"data": d, "eventos": evs} for d, evs in sorted(agrupado.items(), key=lambda x: x[0])
     ]
-    context = {"dias_com_eventos": dias_com_eventos, "data_atual": hoje, "title": _("Eventos"), "subtitle": None}
+    context = {
+        "dias_com_eventos": dias_com_eventos,
+        "data_atual": hoje,
+        "hoje": hoje,
+        "title": _("Eventos"),
+        "subtitle": None,
+    }
     return TemplateResponse(request, "eventos/calendario.html", context)
 
 
