@@ -18,6 +18,8 @@
   const jsonWrapper = formSection.querySelector('[data-json-wrapper]');
   const exampleButton = formSection.querySelector('[data-perguntas-example]');
   const examplePayload = formSection.querySelector('[data-estrutura-exemplo]');
+  const structureError = formSection.querySelector('[data-estrutura-error]');
+  const form = formSection.closest('form');
 
   let perguntas = [];
   let dragIndex = null;
@@ -32,6 +34,45 @@
     } else {
       errorMessage.textContent = '';
       errorMessage.setAttribute('hidden', 'hidden');
+    }
+  };
+
+  const showStructureError = (message) => {
+    if (!structureError) {
+      return;
+    }
+    if (message) {
+      structureError.textContent = message;
+      structureError.removeAttribute('hidden');
+    } else {
+      structureError.textContent = '';
+      structureError.setAttribute('hidden', 'hidden');
+    }
+  };
+
+  const clearHighlightedError = () => {
+    if (!listEl) {
+      return;
+    }
+    const highlighted = listEl.querySelector('[data-error-highlight="true"]');
+    if (highlighted) {
+      highlighted.classList.remove('ring-2', 'ring-red-500');
+      highlighted.removeAttribute('data-error-highlight');
+      highlighted.removeAttribute('tabindex');
+    }
+  };
+
+  const highlightErrorItem = (index) => {
+    if (!listEl) {
+      return;
+    }
+    clearHighlightedError();
+    const item = listEl.querySelector(`[data-index="${index}"]`);
+    if (item) {
+      item.classList.add('ring-2', 'ring-red-500');
+      item.setAttribute('data-error-highlight', 'true');
+      item.setAttribute('tabindex', '-1');
+      item.focus({ preventScroll: false });
     }
   };
 
@@ -130,6 +171,79 @@
     updateTextarea();
   };
 
+  const validateEstrutura = (estrutura) => {
+    if (!Array.isArray(estrutura)) {
+      return { message: 'A estrutura deve ser uma lista de perguntas.' };
+    }
+    const allowedTypes = new Set(['text', 'textarea', 'number', 'email', 'date', 'select', 'boolean']);
+    for (let index = 0; index < estrutura.length; index += 1) {
+      const pergunta = estrutura[index];
+      const displayIndex = index + 1;
+      if (!pergunta || typeof pergunta !== 'object' || Array.isArray(pergunta)) {
+        return {
+          message: `A pergunta ${displayIndex} deve ser um objeto JSON válido.`,
+          index,
+          field: 'estrutura',
+        };
+      }
+      for (const field of ['label', 'type', 'required']) {
+        if (!(field in pergunta)) {
+          return {
+            message: `A pergunta ${displayIndex} precisa conter '${field}'.`,
+            index,
+            field,
+          };
+        }
+      }
+      const label = pergunta.label;
+      if (typeof label !== 'string' || !label.trim()) {
+        return {
+          message: `Pergunta ${displayIndex}: rótulo inválido.`,
+          index,
+          field: 'label',
+        };
+      }
+      const type = pergunta.type;
+      if (typeof type !== 'string' || !allowedTypes.has(type)) {
+        return {
+          message: `Pergunta ${displayIndex}: tipo inválido.`,
+          index,
+          field: 'type',
+        };
+      }
+      if (typeof pergunta.required !== 'boolean') {
+        return {
+          message: `Pergunta ${displayIndex}: o campo 'required' deve ser booleano.`,
+          index,
+          field: 'required',
+        };
+      }
+      if (type === 'select') {
+        const options = pergunta.options ?? pergunta.choices;
+        if (!Array.isArray(options) || options.length === 0) {
+          return {
+            message: `Pergunta ${displayIndex}: informe opções para perguntas do tipo seleção.`,
+            index,
+            field: 'options',
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  const validateFromTextarea = () => {
+    if (!textarea || !textarea.value) {
+      return validateEstrutura(perguntas);
+    }
+    try {
+      const parsed = JSON.parse(textarea.value);
+      return validateEstrutura(parsed);
+    } catch (error) {
+      return { message: 'O JSON atual é inválido. Corrija no modo avançado.' };
+    }
+  };
+
   const updateOptionsVisibility = () => {
     if (!optionsWrapper || !typeInput) {
       return;
@@ -181,6 +295,8 @@
 
     perguntas.push(pergunta);
     showError('');
+    showStructureError('');
+    clearHighlightedError();
     resetFormInputs();
     renderList();
   };
@@ -219,6 +335,8 @@
     }
     perguntas = example.map((item) => ({ ...item }));
     showError('');
+    showStructureError('');
+    clearHighlightedError();
     renderList();
   };
 
@@ -242,6 +360,31 @@
 
   if (exampleButton) {
     exampleButton.addEventListener('click', insertExamplePerguntas);
+  }
+
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      const validationError = validateFromTextarea();
+      if (validationError) {
+        event.preventDefault();
+        showStructureError(validationError.message);
+        if (typeof validationError.index === 'number') {
+          highlightErrorItem(validationError.index);
+        } else {
+          clearHighlightedError();
+          if (jsonToggle && jsonWrapper) {
+            jsonToggle.checked = true;
+            jsonWrapper.classList.remove('hidden');
+          }
+          if (textarea) {
+            textarea.focus({ preventScroll: false });
+          }
+        }
+      } else {
+        showStructureError('');
+        clearHighlightedError();
+      }
+    });
   }
 
   loadInitialData();
