@@ -171,16 +171,16 @@
     </div>
   </div>
 
-  {% with briefing_errors=form.briefing.errors parcerias_errors=form.parcerias.errors %}
+  {% with parcerias_errors=form.parcerias.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
     <button
       type="button"
       class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
       data-accordion-toggle
-      aria-expanded="{% if briefing_errors or parcerias_errors %}true{% else %}false{% endif %}"
-      aria-controls="evento-briefing-parcerias-panel"
+      aria-expanded="{% if parcerias_errors %}true{% else %}false{% endif %}"
+      aria-controls="evento-parcerias-panel"
     >
-      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Briefing e parcerias" %}</span>
+      <span class="text-sm font-medium text-[var(--text-primary)]">{% trans "Parcerias" %}</span>
       <svg
         class="h-5 w-5 text-[var(--text-secondary)] transition-transform duration-200"
         data-accordion-icon
@@ -197,17 +197,12 @@
       </svg>
     </button>
     <div
-      id="evento-briefing-parcerias-panel"
-      class="border-t border-[var(--border)] px-4 py-4 {% if not briefing_errors and not parcerias_errors %}hidden{% endif %}"
+      id="evento-parcerias-panel"
+      class="border-t border-[var(--border)] px-4 py-4 {% if not parcerias_errors %}hidden{% endif %}"
       data-accordion-panel
     >
-      <div class="grid gap-6 md:grid-cols-2">
-        <div>
-          {% include '_forms/field.html' with field=form.briefing %}
-        </div>
-        <div>
-          {% include '_forms/field.html' with field=form.parcerias %}
-        </div>
+      <div>
+        {% include '_forms/field.html' with field=form.parcerias %}
       </div>
     </div>
   </div>

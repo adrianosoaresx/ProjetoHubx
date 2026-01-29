@@ -159,7 +159,6 @@ def main() -> None:
                         "participantes_maximo": None,
                         "cronograma": "",
                         "informacoes_adicionais": "",
-                        "briefing": "",
                         "parcerias": "",
                     },
                 )
