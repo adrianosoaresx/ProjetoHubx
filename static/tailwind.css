@@ -3076,10 +3076,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   left: 50%;
 }
 
-.left-3 {
-  left: 0.75rem;
-}
-
 .left-4 {
   left: 1rem;
 }
@@ -3412,10 +3408,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   min-height: 12rem;
 }
 
-.min-h-\[140px\] {
-  min-height: 140px;
-}
-
 .min-h-\[220px\] {
   min-height: 220px;
 }
@@ -3577,10 +3569,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   max-width: 10rem;
 }
 
-.max-w-\[calc\(100\%-1\.5rem\)\] {
-  max-width: calc(100% - 1.5rem);
-}
-
 .max-w-\[calc\(100vw-0\.6rem\)\] {
   max-width: calc(100vw - 0.6rem);
 }
@@ -3635,10 +3623,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .border-collapse {
   border-collapse: collapse;
-}
-
-.origin-left {
-  transform-origin: left;
 }
 
 .-translate-x-1\/2 {
@@ -3928,10 +3912,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.whitespace-normal {
-  white-space: normal;
 }
 
 .whitespace-nowrap {
@@ -4507,11 +4487,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding: 2rem;
 }
 
-.px-1 {
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-}
-
 .px-1\.5 {
   padding-left: 0.375rem;
   padding-right: 0.375rem;
@@ -4643,10 +4618,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   padding-right: 4rem;
 }
 
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .pt-1 {
   padding-top: 0.25rem;
 }
@@ -4661,10 +4632,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .pt-4 {
   padding-top: 1rem;
-}
-
-.pt-6 {
-  padding-top: 1.5rem;
 }
 
 .text-left {
@@ -4812,6 +4779,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
   color: var(--accent);
 }
 
+.text-\[var\(--color-accent-500\)\] {
+  color: var(--color-accent-500);
+}
+
 .text-\[var\(--color-danger-500\)\] {
   color: var(--color-danger-500);
 }
@@ -4838,6 +4809,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .text-\[var\(--color-primary-600\)\] {
   color: var(--color-primary-600);
+}
+
+.text-\[var\(--color-secondary-500\)\] {
+  color: var(--color-secondary-500);
 }
 
 .text-\[var\(--color-success-500\)\] {
@@ -4992,14 +4967,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .underline {
   text-decoration-line: underline;
-}
-
-.placeholder-transparent::-moz-placeholder {
-  color: transparent;
-}
-
-.placeholder-transparent::placeholder {
-  color: transparent;
 }
 
 .opacity-0 {
@@ -5919,33 +5886,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
 
-.peer:-moz-placeholder ~ .peer-placeholder-shown\:top-3 {
-  top: 0.75rem;
-}
-
-.peer:placeholder-shown ~ .peer-placeholder-shown\:top-3 {
-  top: 0.75rem;
-}
-
-.peer:-moz-placeholder ~ .peer-placeholder-shown\:text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.peer:placeholder-shown ~ .peer-placeholder-shown\:text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.peer:focus ~ .peer-focus\:-top-2 {
-  top: -0.5rem;
-}
-
-.peer:focus ~ .peer-focus\:text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
 .peer:focus-visible ~ .peer-focus-visible\:outline {
   outline-style: solid;
 }
@@ -5960,24 +5900,6 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
 .peer:focus-visible ~ .peer-focus-visible\:outline-primary-500 {
   outline-color: var(--color-primary-500);
-}
-
-.peer:not(:-moz-placeholder) ~ .peer-\[\&\:not\(\:-moz-placeholder\)\]\:-top-2 {
-  top: -0.5rem;
-}
-
-.peer:not(:placeholder-shown) ~ .peer-\[\&\:not\(\:placeholder-shown\)\]\:-top-2 {
-  top: -0.5rem;
-}
-
-.peer:not(:-moz-placeholder) ~ .peer-\[\&\:not\(\:-moz-placeholder\)\]\:text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.peer:not(:placeholder-shown) ~ .peer-\[\&\:not\(\:placeholder-shown\)\]\:text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
 }
 
 .aria-pressed\:border-\[var\(--primary\)\][aria-pressed="true"] {
@@ -6610,6 +6532,10 @@ body.sidebar-mobile-open .sidebar-backdrop {
 
   .lg\:flex-row {
     flex-direction: row;
+  }
+
+  .lg\:flex-nowrap {
+    flex-wrap: nowrap;
   }
 
   .lg\:pb-14 {
