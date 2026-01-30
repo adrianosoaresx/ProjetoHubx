@@ -496,7 +496,6 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["can_manage_briefing_templates"] = _get_tipo_usuario(user) in {
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
-            UserType.COORDENADOR.value,
         }
         ctx["show_event_sections"] = not is_guest_user
         current_filter = self.request.GET.get("status") or ""
@@ -931,7 +930,7 @@ def painel_eventos(request):
 class BriefingTemplateListView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOperatorOrCoordinatorRequiredMixin,
+    AdminOrOperatorRequiredMixin,
     ListView,
 ):
     model = BriefingTemplate
@@ -957,7 +956,7 @@ class BriefingTemplateListView(
 class BriefingTemplateCreateView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOperatorOrCoordinatorRequiredMixin,
+    AdminOrOperatorRequiredMixin,
     CreateView,
 ):
     model = BriefingTemplate
@@ -985,7 +984,7 @@ class BriefingTemplateCreateView(
 class BriefingTemplateUpdateView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOperatorOrCoordinatorRequiredMixin,
+    AdminOrOperatorRequiredMixin,
     UpdateView,
 ):
     model = BriefingTemplate
@@ -1013,7 +1012,7 @@ class BriefingTemplateUpdateView(
 class BriefingTemplateDeleteView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    AdminOperatorOrCoordinatorRequiredMixin,
+    AdminOrOperatorRequiredMixin,
     DeleteView,
 ):
     model = BriefingTemplate

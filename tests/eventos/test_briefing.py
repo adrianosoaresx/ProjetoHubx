@@ -129,7 +129,8 @@ def test_briefing_evento_status_transitions_validate() -> None:
     assert briefing.status == BriefingEvento.Status.APROVADO
     assert briefing.aprovado_por == usuario
 
-    briefing = BriefingEvento.objects.create(evento=evento, template=template)
+    novo_evento = _create_evento(organizacao)
+    briefing = BriefingEvento.objects.create(evento=novo_evento, template=template)
     with pytest.raises(ValidationError):
         briefing.aprovar(usuario)
     with pytest.raises(ValidationError):
@@ -175,3 +176,32 @@ def test_briefing_select_view_permissions_and_creation() -> None:
     assert reverse("eventos:briefing_preencher", kwargs={"evento_id": evento.pk}) in response[
         "Location"
     ]
+
+
+@pytest.mark.django_db
+def test_briefing_template_views_reject_coordenador() -> None:
+    organizacao = _create_organizacao()
+    template = BriefingTemplate.objects.create(nome="Template", descricao="", estrutura=[])
+    User = get_user_model()
+    coordenador = User.objects.create_user(
+        username="coordenador",
+        email="coord@example.com",
+        password="senha123",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+    )
+
+    client = Client()
+    client.force_login(coordenador)
+
+    response = client.get(reverse("eventos:briefing_template_list"))
+    assert response.status_code == 403
+
+    response = client.get(reverse("eventos:briefing_template_create"))
+    assert response.status_code == 403
+
+    response = client.get(reverse("eventos:briefing_template_update", kwargs={"pk": template.pk}))
+    assert response.status_code == 403
+
+    response = client.get(reverse("eventos:briefing_template_delete", kwargs={"pk": template.pk}))
+    assert response.status_code == 403

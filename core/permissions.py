@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import AccessMixin, UserPassesTestMixin
 from rest_framework.permissions import BasePermission
 
 from accounts.models import UserType
@@ -48,11 +48,21 @@ class OrgAdminRequiredMixin(UserPassesTestMixin):
 class AdminOrOperatorRequiredMixin(AdminRequiredMixin):
     """Permite acesso a administradores e operadores (além do root)."""
 
+    raise_exception = True
+
     def test_func(self):  # pragma: no cover - comportamento validado em views
-        return self.request.user.user_type in {
-            UserType.ROOT,
-            UserType.ADMIN,
-            UserType.OPERADOR,
+        user = self.request.user
+        tipo = getattr(user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        if tipo is None:
+            tipo = getattr(user, "user_type", None)
+            if isinstance(tipo, UserType):
+                tipo = tipo.value
+        return tipo in {
+            UserType.ROOT.value,
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
         }
 
 
@@ -106,12 +116,18 @@ class ClienteRequiredMixin(UserPassesTestMixin):
         return user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}
 
 
-class NoSuperadminMixin(UserPassesTestMixin):
+class NoSuperadminMixin(AccessMixin):
     """Bloqueia acesso ao usuário root (SUPERADMIN)."""
 
-    def test_func(self):
-        user = self.request.user
-        return hasattr(user, "user_type") and user.user_type != UserType.ROOT
+    raise_exception = True
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if not getattr(user, "is_authenticated", False):
+            return self.handle_no_permission()
+        if hasattr(user, "user_type") and user.user_type == UserType.ROOT:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
 
 
 def no_superadmin_required(view_func=None):
