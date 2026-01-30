@@ -121,11 +121,24 @@ class NoSuperadminMixin(AccessMixin):
 
     raise_exception = True
 
-    def dispatch(self, request, *args, **kwargs):
-        user = request.user
+    def _is_superadmin(self, user) -> bool:
+        tipo = getattr(user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        if tipo is None:
+            tipo = getattr(user, "user_type", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        return tipo == UserType.ROOT.value or tipo == UserType.ROOT
+
+    def test_func(self) -> bool:
+        user = self.request.user
         if not getattr(user, "is_authenticated", False):
-            return self.handle_no_permission()
-        if hasattr(user, "user_type") and user.user_type == UserType.ROOT:
+            return False
+        return not self._is_superadmin(user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.test_func():
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
