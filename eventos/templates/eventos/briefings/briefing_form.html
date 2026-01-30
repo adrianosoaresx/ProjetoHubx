@@ -15,7 +15,9 @@
     </div>
     <div class="card-body space-y-6">
       <form method="post" class="space-y-6">
-        {% csrf_token %}
+        {% if not readonly %}
+          {% csrf_token %}
+        {% endif %}
         {{ form.non_field_errors }}
         <div class="space-y-5">
           {% for field in form %}
@@ -25,8 +27,12 @@
           {% endfor %}
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-          <a href="{{ back_href }}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
-          <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
+          {% if readonly %}
+            <a href="{{ back_href }}" class="btn btn-secondary">{% trans "Voltar" %}</a>
+          {% else %}
+            <a href="{{ back_href }}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+            <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
+          {% endif %}
         </div>
       </form>
     </div>

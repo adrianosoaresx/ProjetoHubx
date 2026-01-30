@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from .views import (
     BriefingEventoFillView,
+    BriefingEventoDetailView,
     BriefingTemplateCreateView,
     BriefingTemplateDeleteView,
     BriefingTemplateListView,
@@ -62,6 +63,11 @@ urlpatterns = [
         "eventos/<uuid:evento_id>/briefing/preencher/",
         BriefingEventoFillView.as_view(),
         name="briefing_preencher",
+    ),
+    path(
+        "eventos/<uuid:evento_id>/briefing/visualizar/",
+        BriefingEventoDetailView.as_view(),
+        name="briefing_visualizar",
     ),
     path("lista/", views.EventoListView.as_view(), name="lista"),
     path(

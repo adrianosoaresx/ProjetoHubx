@@ -25,6 +25,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponseNotAllowed,
     HttpResponseServerError,
     JsonResponse,
 )
@@ -1181,6 +1182,28 @@ class BriefingEventoFillView(
 
     def get_success_url(self):
         return reverse("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
+
+
+class BriefingEventoDetailView(BriefingEventoFillView):
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field in form.fields.values():
+            field.disabled = True
+            field.widget.attrs.setdefault("readonly", "readonly")
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": _("Visualizar briefing"),
+                "readonly": True,
+            }
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        return HttpResponseNotAllowed(["GET"])
 
 
 # ---------------------------------------------------------------------------
