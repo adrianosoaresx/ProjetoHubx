@@ -1,0 +1,104 @@
+{% load i18n lucide_icons %}
+{% if templates %}
+  {% for template in templates %}
+    <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
+      <div role="listitem" class="h-full">
+        <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
+          <div class="card-body space-y-4">
+            <div class="space-y-1">
+              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ template.nome }}</h3>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {{ template.descricao|default:"-" }}
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+              <span class="rounded-full border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-1">
+                {% trans "Briefings" %}: {{ template.briefing_total }}
+              </span>
+              {% if template.ativo %}
+                <span class="rounded-full bg-[var(--success-bg)] px-3 py-1 text-[var(--success-text)]">
+                  {% trans "Ativo" %}
+                </span>
+              {% else %}
+                <span class="rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-[var(--text-secondary)]">
+                  {% trans "Inativo" %}
+                </span>
+              {% endif %}
+            </div>
+            <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+              <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
+                {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
+                {% trans "Editar" %}
+              </a>
+              {% if template.ativo %}
+                <a href="{% url 'eventos:briefing_template_delete' template.pk %}" class="btn btn-danger inline-flex items-center gap-2">
+                  {% lucide 'ban' class='h-4 w-4' aria_hidden='true' %}
+                  {% trans "Desativar" %}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% for template in templates %}
+    {% if forloop.counter0|divisibleby:3 %}
+      <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
+    {% endif %}
+        <div role="listitem" class="h-full">
+          <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
+            <div class="card-body space-y-4">
+              <div class="space-y-1">
+                <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ template.nome }}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">
+                  {{ template.descricao|default:"-" }}
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+                <span class="rounded-full border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-1">
+                  {% trans "Briefings" %}: {{ template.briefing_total }}
+                </span>
+                {% if template.ativo %}
+                  <span class="rounded-full bg-[var(--success-bg)] px-3 py-1 text-[var(--success-text)]">
+                    {% trans "Ativo" %}
+                  </span>
+                {% else %}
+                  <span class="rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-[var(--text-secondary)]">
+                    {% trans "Inativo" %}
+                  </span>
+                {% endif %}
+              </div>
+              <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+                <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
+                  {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
+                  {% trans "Editar" %}
+                </a>
+                {% if template.ativo %}
+                  <a href="{% url 'eventos:briefing_template_delete' template.pk %}" class="btn btn-danger inline-flex items-center gap-2">
+                    {% lucide 'ban' class='h-4 w-4' aria_hidden='true' %}
+                    {% trans "Desativar" %}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        </div>
+        {% if forloop.last and not forloop.counter|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+        {% if forloop.last and forloop.counter|add:"-1"|divisibleby:3 %}
+          <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
+        {% endif %}
+    {% if forloop.counter|divisibleby:3 or forloop.last %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6" data-carousel-page="{{ page_number }}" data-carousel-empty>
+    <div class="flex min-h-[12rem] items-center justify-center rounded-xl border border-dashed border-[var(--border-muted)] bg-[var(--bg-tertiary)] p-6 text-center">
+      <p class="text-sm text-[var(--text-secondary)] italic">{{ empty_message|default:_('Nenhum modelo de briefing cadastrado.') }}</p>
+    </div>
+  </div>
+{% endif %}
