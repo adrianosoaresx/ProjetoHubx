@@ -947,7 +947,7 @@ class BriefingTemplateListView(
             {
                 "title": _("Modelos de Briefing"),
                 "subtitle": _("Gerencie os templates utilizados para coletar informações dos eventos."),
-                "back_href": resolve_back_href(self.request, fallback=fallback_url),
+                "back_href": fallback_url,
             }
         )
         return context
