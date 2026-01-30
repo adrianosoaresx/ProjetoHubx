@@ -6,9 +6,9 @@
         <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
           <div class="card-body space-y-4">
             {% cycle 'text-[var(--color-primary-500)]' 'text-[var(--color-secondary-500)]' 'text-[var(--color-accent-500)]' as icon_color silent %}
-            <div class="flex">
-              <div class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-primary)] {{ icon_color }}">
-                {% lucide 'layout-template' class='h-5 w-5' aria_hidden='true' %}
+            <div class="flex justify-center">
+              <div class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-primary)] {{ icon_color }}">
+                {% lucide 'layout-template' class='h-6 w-6' aria_hidden='true' %}
               </div>
             </div>
             <div class="space-y-1">
@@ -31,7 +31,7 @@
                 </span>
               {% endif %}
             </div>
-            <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+            <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4 lg:flex-nowrap">
               <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
                 {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
                 {% trans "Editar" %}
@@ -57,9 +57,9 @@
           <article class="card border border-[var(--border)] bg-[var(--bg-secondary)]">
             <div class="card-body space-y-4">
               {% cycle 'text-[var(--color-primary-500)]' 'text-[var(--color-secondary-500)]' 'text-[var(--color-accent-500)]' as icon_color silent %}
-              <div class="flex">
-                <div class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-primary)] {{ icon_color }}">
-                  {% lucide 'layout-template' class='h-5 w-5' aria_hidden='true' %}
+              <div class="flex justify-center">
+                <div class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-primary)] {{ icon_color }}">
+                  {% lucide 'layout-template' class='h-6 w-6' aria_hidden='true' %}
                 </div>
               </div>
               <div class="space-y-1">
@@ -82,7 +82,7 @@
                   </span>
                 {% endif %}
               </div>
-              <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+              <div class="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4 lg:flex-nowrap">
                 <a href="{% url 'eventos:briefing_template_update' template.pk %}" class="btn btn-secondary inline-flex items-center gap-2">
                   {% lucide 'pencil' class='h-4 w-4' aria_hidden='true' %}
                   {% trans "Editar" %}
