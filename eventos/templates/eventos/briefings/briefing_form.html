@@ -38,7 +38,7 @@
                   {% endif %}
                   <label
                     for="{{ field.id_for_label }}"
-                    class="pointer-events-none absolute left-3 top-3 z-10 origin-left bg-[var(--bg-primary)] px-1 text-sm text-[var(--text-secondary)] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
+                    class="pointer-events-none absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] origin-left whitespace-normal break-words bg-[var(--bg-primary)] px-1 pr-2 text-sm leading-snug text-[var(--text-secondary)] transition-all duration-200 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
                   >
                     {{ field.label }}{% if field.field.required %} *{% endif %}
                   </label>
