@@ -16,8 +16,6 @@
   const errorMessage = formSection.querySelector('[data-pergunta-error]');
   const jsonToggle = formSection.querySelector('[data-json-toggle]');
   const jsonWrapper = formSection.querySelector('[data-json-wrapper]');
-  const exampleButton = formSection.querySelector('[data-perguntas-example]');
-  const examplePayload = formSection.querySelector('[data-estrutura-exemplo]');
   const structureError = formSection.querySelector('[data-estrutura-error]');
   const form = formSection.closest('form');
 
@@ -315,31 +313,6 @@
     }
   };
 
-  const parseExamplePerguntas = () => {
-    if (!examplePayload) {
-      return null;
-    }
-    try {
-      const parsed = JSON.parse(examplePayload.textContent);
-      return Array.isArray(parsed) ? parsed : null;
-    } catch (error) {
-      showError('Não foi possível carregar o exemplo. Atualize a página e tente novamente.');
-      return null;
-    }
-  };
-
-  const insertExamplePerguntas = () => {
-    const example = parseExamplePerguntas();
-    if (!example) {
-      return;
-    }
-    perguntas = example.map((item) => ({ ...item }));
-    showError('');
-    showStructureError('');
-    clearHighlightedError();
-    renderList();
-  };
-
   if (jsonToggle && jsonWrapper) {
     jsonToggle.addEventListener('change', () => {
       if (jsonToggle.checked) {
@@ -356,10 +329,6 @@
 
   if (addButton) {
     addButton.addEventListener('click', addPergunta);
-  }
-
-  if (exampleButton) {
-    exampleButton.addEventListener('click', insertExamplePerguntas);
   }
 
   if (form) {
