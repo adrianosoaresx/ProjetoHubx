@@ -74,7 +74,7 @@
       <a href="{{ profile_url }}" class="rounded focus:outline-none focus-visible:ring focus-visible:ring-primary/40 hover:underline">{{ user.display_name|default:user.username }}</a>
     </h3>
     <p class="text-sm text-[var(--text-muted)]">@{{ user.username }}</p>
-    {% if user.cnpj %}
+    {% if can_view_sensitive and user.cnpj %}
       <p class="text-xs text-[var(--text-secondary)]">
         <span class="font-medium text-[var(--text-muted)]">{% trans 'CNPJ' %}:</span>
         <span class="font-normal text-[var(--text-primary)]">{{ user.cnpj }}</span>
