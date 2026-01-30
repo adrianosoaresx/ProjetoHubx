@@ -3,7 +3,7 @@
   {% for user in usuarios %}
     <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
       <div role="listitem" class="h-full">
-        {% include 'membros/_promover_card.html' with user=user %}
+        {% include 'membros/_promover_card.html' with user=user can_view_sensitive=can_view_sensitive %}
       </div>
     </div>
   {% endfor %}
@@ -13,7 +13,7 @@
       <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number }}">
     {% endif %}
         <div role="listitem" class="h-full">
-          {% include 'membros/_promover_card.html' with user=user %}
+          {% include 'membros/_promover_card.html' with user=user can_view_sensitive=can_view_sensitive %}
         </div>
         {% if forloop.last and not forloop.counter|divisibleby:3 %}
           <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>

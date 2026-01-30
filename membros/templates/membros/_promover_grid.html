@@ -5,7 +5,7 @@
     <div role="list" class="card-grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {% for user in membros %}
         <div role="listitem">
-          {% include 'membros/_promover_card.html' with user=user %}
+          {% include 'membros/_promover_card.html' with user=user can_view_sensitive=can_view_sensitive %}
         </div>
       {% endfor %}
     </div>

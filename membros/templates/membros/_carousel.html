@@ -13,7 +13,7 @@
   <div class="relative">
     <div class="card overflow-hidden rounded-xl" data-carousel-viewport>
       <div class="flex transition-transform duration-500 ease-out" data-carousel-track>
-        {% include 'membros/_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message section=section %}
+        {% include 'membros/_carousel_slide.html' with usuarios=page.object_list page_number=page.number empty_message=empty_message section=section can_view_sensitive=can_view_sensitive %}
       </div>
     </div>
     {% if page.paginator.count > 0 %}
