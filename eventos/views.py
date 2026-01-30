@@ -942,7 +942,7 @@ class BriefingTemplateListView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        fallback_url = reverse("eventos:calendario")
+        fallback_url = reverse("eventos:lista")
         context.update(
             {
                 "title": _("Modelos de Briefing"),
