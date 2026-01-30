@@ -14,7 +14,7 @@
       {% endif %}
     </div>
     <div class="card-body space-y-6">
-      <form method="post" class="space-y-6">
+      <form method="post" class="space-y-6"{% if readonly %} onsubmit="return false;"{% endif %}>
         {% if not readonly %}
           {% csrf_token %}
         {% endif %}
@@ -22,7 +22,7 @@
         <div class="space-y-5">
           {% for field in form %}
             <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] p-4">
-              {% include "_forms/field.html" with field=field %}
+              {% include "_forms/field.html" with field=field readonly=readonly %}
             </div>
           {% endfor %}
         </div>
