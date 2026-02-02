@@ -85,10 +85,6 @@ PERFIL_SECTION_URLS = {
     "info": "accounts:perfil_info_partial",
 }
 
-PERFIL_PUBLIC_SECTION_URLS = {
-    "info": "accounts:perfil_info_partial_publico",
-}
-
 PERFIL_OWNER_SECTION_URLS = {
     **PERFIL_SECTION_URLS,
     "conexoes": "conexoes:perfil_conexoes_partial",
@@ -116,15 +112,8 @@ def _get_rating_page(rating_qs, *, page_number=1):
     return paginator.get_page(page_number)
 
 
-def _perfil_default_section_url(
-    request,
-    *,
-    allow_owner_sections: bool = False,
-    allowed_sections: dict[str, str] | None = None,
-    url_kwargs: dict[str, object] | None = None,
-):
-    if allowed_sections is None:
-        allowed_sections = PERFIL_OWNER_SECTION_URLS if allow_owner_sections else PERFIL_SECTION_URLS
+def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
+    allowed_sections = PERFIL_OWNER_SECTION_URLS if allow_owner_sections else PERFIL_SECTION_URLS
 
     section = (request.GET.get("section") or "").strip().lower()
     if section not in allowed_sections:
@@ -146,7 +135,7 @@ def _perfil_default_section_url(
             if view_mode == "buscar":
                 url_name = "conexoes:perfil_conexoes_buscar"
 
-    url = reverse(url_name, args=url_args, kwargs=url_kwargs)
+    url = reverse(url_name, args=url_args)
     query_string = params.urlencode()
     if query_string:
         url = f"{url}?{query_string}"
@@ -595,11 +584,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_show_ratings_card": show_profile_cards,
     }
 
-    default_section, default_url = _perfil_default_section_url(
-        request,
-        allowed_sections=PERFIL_PUBLIC_SECTION_URLS,
-        url_kwargs={"public_id": perfil.public_id},
-    )
+    default_section, default_url = _perfil_default_section_url(request)
     context.update(
         {
             "perfil_default_section": default_section,
