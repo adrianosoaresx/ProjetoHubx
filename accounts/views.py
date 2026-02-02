@@ -155,7 +155,9 @@ def _resolve_profile_for_partial(request):
 
     resolver_kwargs = getattr(getattr(request, "resolver_match", None), "kwargs", {}) or {}
     username = request.GET.get("username") or resolver_kwargs.get("username")
-    public_id = request.GET.get("public_id") or resolver_kwargs.get("public_id")
+    public_id = request.GET.get("public_id")
+    if not public_id:
+        public_id = resolver_kwargs.get("public_id")
     pk = request.GET.get("pk") or resolver_kwargs.get("pk")
     viewer = request.user if request.user.is_authenticated else None
 
