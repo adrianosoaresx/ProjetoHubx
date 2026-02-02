@@ -1,3 +1,4 @@
 {% load i18n membros_extras %}
 {% url 'accounts:perfil_publico_uuid' part.user.public_id as profile_url %}
-{% include '_partials/cards/base_card.html' with url=profile_url cover=part.user.cover avatar=part.user.avatar title=part.user.contato|default:part.user.username details='nucleos/partials/membro_card_details.html' sr_label=_('Ver perfil do membro') header_social_links=part.user.redes_sociais header_whatsapp_number=part.user.whatsapp|digits_only part=part can_view_sensitive=can_view_sensitive %}
+{% include '_partials/cards/base_card.html' with url=profile_url cover=part.user.cover avatar=part.user.avatar title=part.user.contato|default:part.user.username details='nucleos/partials/membro_card_details.html' sr_label=_('Ver perfil do membro') header_social_links=part.user.redes_sociais header_whatsapp_number=part.user.whatsapp|digits_only part=part %}
+
