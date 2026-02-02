@@ -61,20 +61,6 @@ def _deny_root_connections_access(request):
     return None
 
 
-def _resolve_user_type(value):
-    if isinstance(value, UserType):
-        return value.value
-    return value
-
-
-def _can_view_sensitive(user) -> bool:
-    if user is None or not getattr(user, "is_authenticated", False):
-        return False
-
-    user_type = _resolve_user_type(getattr(user, "get_tipo_usuario", None))
-    return user_type in {UserType.ADMIN.value, UserType.OPERADOR.value}
-
-
 def _get_user_connections(user, query: str):
     connections = (
         user.connections.select_related("organizacao", "nucleo")
@@ -219,7 +205,6 @@ def _build_connections_page_context(
         "connection_requests": connection_requests,
         "sent_requests": sent_requests,
         "form": form,
-        "can_view_sensitive": _can_view_sensitive(request.user),
         "connections_refresh_url": _build_connections_refresh_url(request),
         "search_form_action": request.get_full_path(),
         "search_form_hx_get": None,
@@ -396,7 +381,6 @@ def _build_search_page_context(
             "dashboard_url": dashboard_url,
             "back_to_dashboard_url": dashboard_url,
             "solicitacoes_url": f"{dashboard_url}?filter=pendentes",
-            "can_view_sensitive": _can_view_sensitive(request.user),
             "search_form_action": reverse("conexoes:perfil_conexoes_buscar"),
             "search_container_id": "connections-search-card",
             "search_form_hx_get": None,
@@ -581,7 +565,6 @@ class ConexaoListCarouselView(LoginRequiredMixin, View):
                 "section": section,
                 "empty_message": empty_message,
                 "empty_cta": empty_cta,
-                "can_view_sensitive": base_context.get("can_view_sensitive"),
             },
             request=request,
         )
