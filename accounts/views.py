@@ -153,10 +153,9 @@ def _profile_hero_names(profile):
 def _resolve_profile_for_partial(request):
     """Return the profile for partial requests enforcing visibility rules."""
 
-    resolver_kwargs = getattr(getattr(request, "resolver_match", None), "kwargs", {}) or {}
-    username = request.GET.get("username") or resolver_kwargs.get("username")
-    public_id = request.GET.get("public_id") or resolver_kwargs.get("public_id")
-    pk = request.GET.get("pk") or resolver_kwargs.get("pk")
+    username = request.GET.get("username")
+    public_id = request.GET.get("public_id")
+    pk = request.GET.get("pk")
     viewer = request.user if request.user.is_authenticated else None
 
     if username or public_id or pk:
