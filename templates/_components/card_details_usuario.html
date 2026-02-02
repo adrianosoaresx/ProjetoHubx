@@ -10,6 +10,19 @@
       <p class="text-[var(--text-muted)]">Razão social: {{ razao_social }}</p>
     {% endif %}
   {% endwith %}
+  {% if can_view_sensitive %}
+    {% with cnpj=user.cnpj|default_if_none:'' %}
+      {% if cnpj %}
+        <p class="text-[var(--text-muted)]">Cnpj: {{ cnpj }}</p>
+      {% else %}
+        {% with cpf=user.cpf|default_if_none:'' %}
+          {% if cpf %}
+            <p class="text-[var(--text-muted)]">Cpf: {{ cpf }}</p>
+          {% endif %}
+        {% endwith %}
+      {% endif %}
+    {% endwith %}
+  {% endif %}
   {% with details_badges=details_badges|default:None %}
     {% if details_badges %}
       <div class="flex flex-wrap gap-2 pt-1">
