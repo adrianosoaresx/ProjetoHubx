@@ -23,7 +23,7 @@
           aria-live="polite"
           aria-busy="true"
           hx-trigger="load"
-          hx-get="{% url 'accounts:perfil_info_partial_publico' public_id=perfil.public_id %}"
+          hx-get="{{ perfil_default_url }}"
           hx-target="#perfil-content"
           {% if default_section %}
             hx-push-url="?section={{ default_section }}"
