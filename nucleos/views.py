@@ -1369,6 +1369,9 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
         ctx["membros_carousel_fetch_url"] = reverse("nucleos:membros_carousel_api", args=[nucleo.pk])
+        ctx["can_view_sensitive"] = (
+            getattr(self.request.user, "get_tipo_usuario", None) in {"admin", "operador"}
+        )
 
         return ctx
 
@@ -1413,6 +1416,9 @@ class NucleoMembrosCarouselView(NucleoMembrosPartialView):
         page_obj = paginator.get_page(page_number)
 
         card = self.get_card_param()
+        can_view_sensitive = (
+            getattr(request.user, "get_tipo_usuario", None) in {"admin", "operador"}
+        )
 
         html = render_to_string(
             "nucleos/partials/membros_carousel_slide.html",
@@ -1420,6 +1426,7 @@ class NucleoMembrosCarouselView(NucleoMembrosPartialView):
                 "participacoes": page_obj.object_list,
                 "page_number": page_obj.number,
                 "empty_message": self.get_empty_message(card),
+                "can_view_sensitive": can_view_sensitive,
             },
             request=request,
         )
