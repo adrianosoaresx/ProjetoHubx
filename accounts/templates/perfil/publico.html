@@ -332,6 +332,14 @@
 
       initAccordion('perfil-posts-accordion', { hashPrefixes: ['#post-'] });
       initAccordion('perfil-ratings-accordion');
+      initAccordion('perfil-info-accordion');
+
+      document.body.addEventListener('htmx:afterOnLoad', (event) => {
+        const target = event.detail && event.detail.target;
+        if (target && target.id === 'perfil-content') {
+          initAccordion('perfil-info-accordion');
+        }
+      });
     })();
   </script>
 {% endblock %}
