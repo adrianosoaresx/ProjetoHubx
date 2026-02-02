@@ -7,27 +7,29 @@
 </div>
 <p class="text-[var(--text-muted)]">{{ part.user.display_name|default:_('Contato não informado') }}</p>
 
-    <div class="flex flex-wrap items-center text-left gap-1">
-      <dt class="text-[var(--text-muted)]">
-        {% if part.user.cnpj %}
-          {% trans 'Cnpj' as documento_label %}
-        {% elif part.user.cpf %}
-          {% trans 'Cpf' as documento_label %}
-        {% else %}
-          {% trans 'Documento' as documento_label %}
-        {% endif %}
-        {{ documento_label }}:
-      </dt>
-      <dd class="text-[var(--text-muted)]">
-        {% if part.user.cnpj %}
-          {{ part.user.cnpj }}
-        {% elif part.user.cpf %}
-          {{ part.user.cpf }}
-        {% else %}
-          {% trans 'Não informado' %}
-        {% endif %}
-      </dd>
-    </div>
+    {% if can_view_sensitive %}
+      <div class="flex flex-wrap items-center text-left gap-1">
+        <dt class="text-[var(--text-muted)]">
+          {% if part.user.cnpj %}
+            {% trans 'Cnpj' as documento_label %}
+          {% elif part.user.cpf %}
+            {% trans 'Cpf' as documento_label %}
+          {% else %}
+            {% trans 'Documento' as documento_label %}
+          {% endif %}
+          {{ documento_label }}:
+        </dt>
+        <dd class="text-[var(--text-muted)]">
+          {% if part.user.cnpj %}
+            {{ part.user.cnpj }}
+          {% elif part.user.cpf %}
+            {{ part.user.cpf }}
+          {% else %}
+            {% trans 'Não informado' %}
+          {% endif %}
+        </dd>
+      </div>
+    {% endif %}
   </dl>
 
 <dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-[var(--text-tertiary)]">
