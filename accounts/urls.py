@@ -41,12 +41,6 @@ urlpatterns = [
         views.perfil_avaliacoes_carousel,
         name="perfil_avaliacoes_carousel",
     ),
-    path(
-        "perfil/<uuid:public_id>/partials/info/",
-        views.perfil_section,
-        {"section": "info"},
-        name="perfil_info_partial_publico",
-    ),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
 
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
