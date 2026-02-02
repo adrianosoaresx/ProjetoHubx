@@ -34,7 +34,7 @@
     </form>
 
     <div id="membros-grid">
-      {% include 'membros/partials/promover_carousel.html' with page=page_obj paginator=page_obj.paginator usuarios=membros empty_message=promover_empty_message current_filter=current_filter search_term=search_term fetch_url=promover_carousel_fetch_url has_search=has_search can_view_sensitive=can_view_sensitive %}
+      {% include 'membros/partials/promover_carousel.html' with page=page_obj paginator=page_obj.paginator usuarios=membros empty_message=promover_empty_message current_filter=current_filter search_term=search_term fetch_url=promover_carousel_fetch_url has_search=has_search %}
     </div>
 
     <div class="pt-4 border-t border-[var(--border)]">

@@ -21,7 +21,6 @@ from django.views.generic import FormView, ListView, TemplateView, View
 from django.template.loader import render_to_string
 
 from accounts.models import UserType
-from accounts.utils import resolve_user_type
 from core.permissions import MembrosRequiredMixin, NoSuperadminMixin
 from core.utils import resolve_back_href
 from nucleos.models import Nucleo, ParticipacaoNucleo
@@ -358,10 +357,6 @@ class MembroListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         base_queryset = self.get_filtered_queryset()
-        can_view_sensitive = resolve_user_type(
-            getattr(self.request.user, "get_tipo_usuario", None)
-        ) in {UserType.ADMIN.value, UserType.OPERADOR.value}
-
         section_pages: dict[str, dict[str, object]] = {}
         for section in self.sections:
             page_obj, paginator = self.get_section_page(base_queryset, section)
@@ -392,7 +387,6 @@ class MembroListView(
                     for section in self.sections
                 },
                 "open_section": self.get_open_section(),
-                "can_view_sensitive": can_view_sensitive,
             }
         )
 
@@ -413,9 +407,6 @@ class MembroSectionListView(
         if section not in self.sections:
             return JsonResponse({"error": _("Seção inválida.")}, status=400)
 
-        can_view_sensitive = resolve_user_type(
-            getattr(request.user, "get_tipo_usuario", None)
-        ) in {UserType.ADMIN.value, UserType.OPERADOR.value}
         show_promote_button = (
             (request.GET.get("show_promote_button") or "").lower() in {"1", "true", "on", "yes"}
         )
@@ -437,7 +428,6 @@ class MembroSectionListView(
                 "empty_message": self.get_empty_message(section),
                 "section": section,
                 "show_promote_button": show_promote_button,
-                "can_view_sensitive": can_view_sensitive,
             },
             request=request,
         )
@@ -525,10 +515,6 @@ class MembroPromoverListView(MembrosPromocaoPermissionMixin, LoginRequiredMixin,
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["search_term"] = getattr(self, "search_term", "")
-        context["can_view_sensitive"] = resolve_user_type(
-            getattr(self.request.user, "get_tipo_usuario", None)
-        ) in {UserType.ADMIN.value, UserType.OPERADOR.value}
-
         current_filter = self.get_current_filter()
 
         params = self.request.GET.copy()
@@ -629,10 +615,6 @@ class MembroPromoverCarouselView(MembrosPromocaoPermissionMixin, View):
                 "usuarios": page_obj.object_list,
                 "page_number": page_obj.number,
                 "empty_message": empty_message,
-                "can_view_sensitive": resolve_user_type(
-                    getattr(request.user, "get_tipo_usuario", None)
-                )
-                in {UserType.ADMIN.value, UserType.OPERADOR.value},
             },
             request=request,
         )
