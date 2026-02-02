@@ -6,8 +6,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from accounts.models import UserType
-
 
 def is_htmx_or_ajax(request: HttpRequest) -> bool:
     """Return whether the request was triggered via HTMX or XMLHttpRequest."""
@@ -63,17 +61,4 @@ def redirect_to_profile_section(
     return redirect(url)
 
 
-def resolve_user_type(value):
-    if callable(value):
-        value = value()
-    if isinstance(value, UserType):
-        return value.value
-    return value
-
-
-__all__ = [
-    "build_profile_section_url",
-    "is_htmx_or_ajax",
-    "redirect_to_profile_section",
-    "resolve_user_type",
-]
+__all__ = ["build_profile_section_url", "is_htmx_or_ajax", "redirect_to_profile_section"]

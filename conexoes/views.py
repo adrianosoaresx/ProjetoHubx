@@ -18,7 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 
 from accounts.models import UserType
-from accounts.utils import is_htmx_or_ajax, resolve_user_type
+from accounts.utils import is_htmx_or_ajax
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .forms import ConnectionsSearchForm
@@ -43,9 +43,9 @@ def _get_display_name(user):
 
 
 def _deny_root_connections_access(request):
-    user_type = resolve_user_type(
-        getattr(request.user, "get_tipo_usuario", None) or getattr(request.user, "user_type", None)
-    )
+    user_type = getattr(request.user, "get_tipo_usuario", None) or getattr(request.user, "user_type", None)
+    if isinstance(user_type, UserType):
+        user_type = user_type.value
 
     if user_type == UserType.ROOT.value:
         message = ROOT_CONNECTIONS_FORBIDDEN_MESSAGE
@@ -61,11 +61,17 @@ def _deny_root_connections_access(request):
     return None
 
 
+def _resolve_user_type(value):
+    if isinstance(value, UserType):
+        return value.value
+    return value
+
+
 def _can_view_sensitive(user) -> bool:
     if user is None or not getattr(user, "is_authenticated", False):
         return False
 
-    user_type = resolve_user_type(getattr(user, "get_tipo_usuario", None))
+    user_type = _resolve_user_type(getattr(user, "get_tipo_usuario", None))
     return user_type in {UserType.ADMIN.value, UserType.OPERADOR.value}
 
 

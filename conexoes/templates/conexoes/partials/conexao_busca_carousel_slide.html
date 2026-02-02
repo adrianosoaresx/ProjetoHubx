@@ -6,7 +6,7 @@
         <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number }}">
           <div role="listitem" class="flex h-full flex-col gap-4" id="{{ card_id }}">
             <div class="flex-1">
-              {% include '_components/card_usuario.html' with user=membro card_id=card_id can_view_sensitive=can_view_sensitive %}
+              {% include '_components/card_usuario.html' with user=membro card_id=card_id %}
             </div>
             {% include 'conexoes/partials/conexao_busca_actions.html' with membro=membro card_id=card_id %}
           </div>
@@ -23,7 +23,7 @@
           {% with card_id='connection-'|add:membro_id|add:'-desktop' %}
             <div role="listitem" class="flex h-full flex-col gap-4" id="{{ card_id }}">
               <div class="flex-1">
-                {% include '_components/card_usuario.html' with user=membro card_id=card_id can_view_sensitive=can_view_sensitive %}
+                {% include '_components/card_usuario.html' with user=membro card_id=card_id %}
               </div>
               {% include 'conexoes/partials/conexao_busca_actions.html' with membro=membro card_id=card_id %}
             </div>
