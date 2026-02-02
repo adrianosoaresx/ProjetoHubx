@@ -216,14 +216,6 @@ def _can_promote_profile(viewer, profile) -> bool:
     return viewer_org is not None and profile_org is not None and viewer_org == profile_org
 
 
-def _can_view_sensitive(viewer: User | None) -> bool:
-    if viewer is None or not getattr(viewer, "is_authenticated", False):
-        return False
-
-    viewer_type = _resolve_user_type(getattr(viewer, "get_tipo_usuario", None))
-    return viewer_type in {UserType.ADMIN.value, UserType.OPERADOR.value}
-
-
 def _can_toggle_user_active(viewer, profile) -> bool:
     if not _can_manage_profile(viewer, profile):
         return False
@@ -272,7 +264,6 @@ def _build_profile_info_context(request, profile, *, is_owner: bool, viewer: Use
     context: dict[str, object] = {
         "profile": profile,
         "is_owner": is_owner,
-        "can_view_sensitive": _can_view_sensitive(viewer),
     }
 
     can_manage = _can_manage_profile(viewer, profile) if viewer else False
@@ -559,7 +550,6 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
-        "can_view_sensitive": _can_view_sensitive(viewer),
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "can_promote_profile": can_promote_profile,
