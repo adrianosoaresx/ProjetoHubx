@@ -7,11 +7,11 @@
         class="h-full"
         data-membro-card
         data-membro-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
-        data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }}"
+        data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }}{% if can_view_sensitive %} {{ user.cnpj|default:'' }} {{ user.cpf|default:'' }}{% endif %}"
       >
         <div class="flex h-full flex-col gap-4">
           <div class="flex-1">
-            {% include '_components/card_usuario.html' with user=user %}
+            {% include '_components/card_usuario.html' with user=user can_view_sensitive=can_view_sensitive %}
           </div>
         </div>
       </div>
@@ -27,11 +27,11 @@
           class="h-full"
           data-membro-card
           data-membro-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
-          data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }}"
+          data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }}{% if can_view_sensitive %} {{ user.cnpj|default:'' }} {{ user.cpf|default:'' }}{% endif %}"
         >
           <div class="flex h-full flex-col gap-4">
             <div class="flex-1">
-              {% include '_components/card_usuario.html' with user=user %}
+              {% include '_components/card_usuario.html' with user=user can_view_sensitive=can_view_sensitive %}
             </div>
           </div>
         </div>
