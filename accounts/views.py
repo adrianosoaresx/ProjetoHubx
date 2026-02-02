@@ -69,12 +69,7 @@ from .forms import (
     TotpLoginForm,
     UserRatingForm,
 )
-from .utils import (
-    build_profile_section_url,
-    is_htmx_or_ajax,
-    redirect_to_profile_section,
-    resolve_user_type,
-)
+from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
 from .models import AccountToken, LoginAttempt, SecurityEvent, UserRating, UserType
 from .validators import cpf_validator
 
@@ -110,6 +105,12 @@ def _get_rating_stats(rating_qs):
 def _get_rating_page(rating_qs, *, page_number=1):
     paginator = Paginator(rating_qs.order_by("-created_at"), RATINGS_PER_PAGE)
     return paginator.get_page(page_number)
+
+
+def _resolve_user_type(value):
+    if isinstance(value, UserType):
+        return value.value
+    return value
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
@@ -219,7 +220,7 @@ def _can_view_sensitive(viewer: User | None) -> bool:
     if viewer is None or not getattr(viewer, "is_authenticated", False):
         return False
 
-    viewer_type = resolve_user_type(getattr(viewer, "get_tipo_usuario", None))
+    viewer_type = _resolve_user_type(getattr(viewer, "get_tipo_usuario", None))
     return viewer_type in {UserType.ADMIN.value, UserType.OPERADOR.value}
 
 
@@ -327,7 +328,7 @@ def perfil(request):
 
     allow_owner_sections = _can_manage_profile(viewer, target_user)
 
-    perfil_tipo_usuario = resolve_user_type(
+    perfil_tipo_usuario = _resolve_user_type(
         getattr(target_user, "get_tipo_usuario", None)
     )
     show_profile_cards = perfil_tipo_usuario != UserType.CONVIDADO.value
@@ -482,7 +483,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     hero_title, hero_subtitle = _profile_hero_names(perfil)
 
     viewer = request.user if request.user.is_authenticated else None
-    perfil_tipo_usuario = resolve_user_type(getattr(perfil, "get_tipo_usuario", None))
+    perfil_tipo_usuario = _resolve_user_type(getattr(perfil, "get_tipo_usuario", None))
     show_profile_cards = perfil_tipo_usuario != UserType.CONVIDADO.value
     portfolio_medias = list(
         perfil.medias.visible_to(viewer, perfil).select_related("user").order_by("-created_at")
