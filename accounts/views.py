@@ -121,7 +121,6 @@ def _perfil_default_section_url(
     *,
     allow_owner_sections: bool = False,
     allowed_sections: dict[str, str] | None = None,
-    url_args: list[object] | None = None,
     url_kwargs: dict[str, object] | None = None,
 ):
     if allowed_sections is None:
@@ -136,8 +135,7 @@ def _perfil_default_section_url(
     params.pop("section", None)
 
     url_name = allowed_sections[section]
-    if url_args is None:
-        url_args = []
+    url_args: list[str] = []
 
     if allow_owner_sections:
         if section == "info" and params.get("info_view") == "edit":
@@ -600,7 +598,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     default_section, default_url = _perfil_default_section_url(
         request,
         allowed_sections=PERFIL_PUBLIC_SECTION_URLS,
-        url_args=[perfil.public_id],
+        url_kwargs={"public_id": perfil.public_id},
     )
     context.update(
         {
