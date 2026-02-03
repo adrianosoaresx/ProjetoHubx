@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initConnectionReturn()
     // Marca a aba ativa quando usando HTMX
     initPerfilActiveHighlight()
+    initPerfilInfoAccordion()
 })
 
 // REMOVIDO: initNavigation() para navegação controlada pelo Django
@@ -158,6 +159,42 @@ function initPerfilActiveHighlight() {
         setActiveBySection(getUrlSection())
     })
 }
+
+function initPerfilInfoAccordion(root = document) {
+    const accordion = root.querySelector('#perfil-info-accordion')
+    if (!accordion || accordion.dataset.accordionBound === 'true') return
+
+    const toggle = accordion.querySelector('[data-accordion-toggle]')
+    const panel = accordion.querySelector('[data-accordion-panel]')
+    const icon = accordion.querySelector('[data-accordion-icon]')
+
+    if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) {
+        return
+    }
+
+    const setExpanded = (expanded) => {
+        toggle.setAttribute('aria-expanded', String(expanded))
+        panel.classList.toggle('hidden', !expanded)
+        if (icon instanceof HTMLElement) {
+            icon.classList.toggle('rotate-180', expanded)
+        }
+    }
+
+    setExpanded(false)
+    accordion.dataset.accordionBound = 'true'
+
+    toggle.addEventListener('click', () => {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true'
+        setExpanded(!isExpanded)
+    })
+}
+
+document.addEventListener('htmx:afterSwap', (ev) => {
+    const target = ev.detail && ev.detail.target
+    if (target && target.id === 'perfil-content') {
+        initPerfilInfoAccordion(target)
+    }
+})
 
 function initConnectionReturn() {
     const STORAGE_KEY = "perfilConnectionReturn"
