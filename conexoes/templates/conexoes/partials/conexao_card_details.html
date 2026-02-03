@@ -12,25 +12,8 @@
 </div>
 
     <div class="flex flex-wrap items-center text-left gap-1">
-      <dt class="text-[var(--text-muted)]">
-        {% if usuario.cnpj %}
-          {% trans 'CNPJ' as documento_label %}
-        {% elif usuario.cpf %}
-          {% trans 'CPF' as documento_label %}
-        {% else %}
-          {% trans 'Documento' as documento_label %}
-        {% endif %}
-        {{ documento_label }}:
-      </dt>
-      <dd class="text-[var(--text-muted)]">
-        {% if usuario.cnpj %}
-          {{ usuario.cnpj }}
-        {% elif usuario.cpf %}
-          {{ usuario.cpf }}
-        {% else %}
-          {% trans 'Não informado' %}
-        {% endif %}
-      </dd>
+      <dt class="text-[var(--text-muted)]">{% trans 'Documento' %}:</dt>
+      <dd class="text-[var(--text-muted)]">{% trans 'Não informado' %}</dd>
     </div>
   </dl>
 </div>

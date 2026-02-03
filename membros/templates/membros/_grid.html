@@ -6,7 +6,7 @@
       class="h-full"
       data-membro-card
       data-membro-label="{{ user.contact_name|default:user.display_name|default:user.username }}"
-      data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }} {{ user.cnpj|default:'' }}"
+      data-membro-search="{{ user.contact_name|default:'' }} {{ user.display_name|default:'' }} {{ user.username|default:'' }} {{ user.contato|default:'' }} {{ user.nome_fantasia|default:'' }} {{ user.razao_social|default:'' }}"
     >
       {% include '_components/card_usuario.html' with user=user %}
     </div>
