@@ -268,6 +268,15 @@ def _build_profile_info_context(request, profile, *, is_owner: bool, viewer: Use
 
     can_manage = _can_manage_profile(viewer, profile) if viewer else False
     context["can_manage"] = can_manage
+    show_sensitive_identifiers = False
+    if viewer and getattr(viewer, "is_authenticated", False):
+        viewer_type = getattr(viewer, "get_tipo_usuario", None)
+        show_sensitive_identifiers = viewer_type in {
+            UserType.ROOT.value,
+            UserType.ADMIN.value,
+            UserType.OPERADOR.value,
+        }
+    context["show_sensitive_identifiers"] = show_sensitive_identifiers
 
     if can_manage:
         bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
