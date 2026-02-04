@@ -8,11 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const isLocked =
+      nucleoInput.type === 'hidden' ||
+      nucleoFieldWrapper.dataset.nucleoLocked === 'true';
+
     if (publicoAlvoSelect.value === '1') {
-      nucleoFieldWrapper.classList.remove('hidden');
+      if (!isLocked) {
+        nucleoFieldWrapper.classList.remove('hidden');
+      }
     } else {
       nucleoFieldWrapper.classList.add('hidden');
-      nucleoInput.value = '';
+      if (!isLocked) {
+        nucleoInput.value = '';
+      }
     }
   };
 
