@@ -232,6 +232,7 @@ class EventoForm(forms.ModelForm):
                     queryset = Nucleo.objects.filter(pk=usuario_nucleo_id)
                     if not self.is_bound and not getattr(self.instance, "nucleo_id", None):
                         self.initial["nucleo"] = usuario_nucleo_id
+                    nucleo_field.widget = forms.HiddenInput()
                 else:
                     queryset = Nucleo.objects.none()
                 nucleo_field.empty_label = None
