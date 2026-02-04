@@ -93,7 +93,7 @@ PERFIL_INSCRICOES_ALLOWED_TYPES = {
     UserType.CONVIDADO.value,
     UserType.CONSULTOR.value,
 }
-AUTH_RENDER_CONTEXT = {"hide_nav": True}
+AUTH_RENDER_CONTEXT = {"hide_nav": True, "hide_search": True}
 
 
 def _get_rating_stats(rating_qs):
