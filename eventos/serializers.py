@@ -7,9 +7,19 @@ from rest_framework.exceptions import PermissionDenied
 from typing import Any, Dict
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
+from accounts.models import UserType
 from .validators import validate_uploaded_file
 
 from .models import Evento, EventoLog, InscricaoEvento
+
+
+def _get_tipo_usuario(user) -> str | None:
+    tipo = getattr(user, "get_tipo_usuario", None)
+    if isinstance(tipo, UserType):
+        return tipo.value
+    if hasattr(tipo, "value"):
+        return tipo.value
+    return tipo
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -44,6 +54,13 @@ class EventoSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context["request"]
+        tipo_usuario = _get_tipo_usuario(request.user)
+        if tipo_usuario == UserType.COORDENADOR.value:
+            usuario_nucleo_id = getattr(request.user, "nucleo_id", None)
+            nucleo = validated_data.get("nucleo")
+            nucleo_id = nucleo.pk if nucleo else None
+            if nucleo_id != usuario_nucleo_id:
+                raise PermissionDenied("Coordenadores só podem criar eventos do próprio núcleo.")
         validated_data["organizacao"] = request.user.organizacao
         instance = super().create(validated_data)
         EventoLog.objects.create(evento=instance, usuario=request.user, acao="evento_criado")

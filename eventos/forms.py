@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from nucleos.models import Nucleo
 
-from accounts.models import MediaTag
+from accounts.models import MediaTag, UserType
 from accounts.forms import ProfileImageFileInput
 
 from .validators import validate_uploaded_file
@@ -226,6 +226,13 @@ class EventoForm(forms.ModelForm):
             if organizacao:
                 queryset = Nucleo.objects.filter(organizacao=organizacao).order_by("nome")
 
+            if self._is_coordenador(self.request):
+                usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
+                if usuario_nucleo_id:
+                    queryset = Nucleo.objects.filter(pk=usuario_nucleo_id)
+                else:
+                    queryset = Nucleo.objects.none()
+
             if self.instance and self.instance.nucleo:
                 queryset = queryset | Nucleo.objects.filter(pk=self.instance.nucleo.pk)
 
@@ -252,6 +259,16 @@ class EventoForm(forms.ModelForm):
         else:
             cleaned_data["nucleo"] = None
 
+        if self._is_coordenador(self.request):
+            nucleo = cleaned_data.get("nucleo")
+            usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
+            nucleo_id = nucleo.pk if nucleo else None
+            if nucleo_id != usuario_nucleo_id:
+                self.add_error(
+                    "nucleo",
+                    _("Coordenadores só podem criar eventos do próprio núcleo."),
+                )
+
         participantes_maximo = cleaned_data.get("participantes_maximo")
 
         if cleaned_data.get("gratuito"):
@@ -259,6 +276,17 @@ class EventoForm(forms.ModelForm):
             cleaned_data["valor_nucleado"] = Decimal("0.00")
 
         return cleaned_data
+
+    @staticmethod
+    def _is_coordenador(request) -> bool:
+        if not request or not getattr(request, "user", None):
+            return False
+        tipo = getattr(request.user, "get_tipo_usuario", None)
+        if isinstance(tipo, UserType):
+            tipo = tipo.value
+        elif hasattr(tipo, "value"):
+            tipo = tipo.value
+        return tipo == UserType.COORDENADOR.value
 
 
 def _apply_design_system_classes(field: forms.Field) -> None:
