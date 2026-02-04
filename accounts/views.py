@@ -93,6 +93,7 @@ PERFIL_INSCRICOES_ALLOWED_TYPES = {
     UserType.CONVIDADO.value,
     UserType.CONSULTOR.value,
 }
+AUTH_RENDER_CONTEXT = {"hide_nav": True}
 
 
 def _get_rating_stats(rating_qs):
@@ -995,7 +996,7 @@ def login_view(request):
         else:
             messages.error(request, _("Credenciais inválidas."))
 
-    return render(request, "login/login.html", {"form": form})
+    return render(request, "login/login.html", {"form": form, **AUTH_RENDER_CONTEXT})
 
 
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
@@ -1013,7 +1014,11 @@ def login_totp(request):
         _register_login_success(user, request)
         return redirect("accounts:perfil")
 
-    return render(request, "login/totp.html", {"form": form, "email": user.email})
+    return render(
+        request,
+        "login/totp.html",
+        {"form": form, "email": user.email, **AUTH_RENDER_CONTEXT},
+    )
 
 
 def logout_view(request):
@@ -1412,7 +1417,7 @@ def nome(request):
         if nome_val:
             request.session["nome"] = nome_val
             return redirect("accounts:cpf")
-    return render(request, "register/nome.html")
+    return render(request, "register/nome.html", AUTH_RENDER_CONTEXT)
 
 
 def cpf(request):
@@ -1472,7 +1477,7 @@ def cpf(request):
                 request.session.pop("cnpj", None)
 
         return redirect("accounts:email")
-    return render(request, "register/cpf.html")
+    return render(request, "register/cpf.html", AUTH_RENDER_CONTEXT)
 
 
 def email(request):
@@ -1495,6 +1500,7 @@ def email(request):
         "prefilled_email": prefilled_email,
         "email_locked": email_locked,
         "email_attrs": 'readonly="readonly"' if email_locked else "",
+        **AUTH_RENDER_CONTEXT,
     }
     return render(request, "register/email.html", context)
 
@@ -1547,7 +1553,7 @@ def usuario(request):
             else:
                 request.session["usuario"] = usr
                 return redirect("accounts:nome")
-    return render(request, "register/usuario.html")
+    return render(request, "register/usuario.html", AUTH_RENDER_CONTEXT)
 
 
 def senha(request):
@@ -1563,7 +1569,7 @@ def senha(request):
             else:
                 request.session["senha_hash"] = make_password(s1)
                 return redirect("accounts:foto")
-    return render(request, "register/senha.html")
+    return render(request, "register/senha.html", AUTH_RENDER_CONTEXT)
 
 
 def foto(request):
@@ -1583,7 +1589,7 @@ def foto(request):
             path = default_storage.save(temp_name, ContentFile(arquivo.read()))
             request.session["foto"] = path
         return redirect("accounts:termos")
-    return render(request, "register/foto.html")
+    return render(request, "register/foto.html", AUTH_RENDER_CONTEXT)
 
 
 def termos(request):
@@ -1740,7 +1746,7 @@ def termos(request):
         )
         return redirect("accounts:usuario")
 
-    return render(request, "register/termos.html")
+    return render(request, "register/termos.html", AUTH_RENDER_CONTEXT)
 
 
 def registro_sucesso(request):
@@ -1748,7 +1754,7 @@ def registro_sucesso(request):
     return render(
         request,
         "register/registro_sucesso.html",
-        {"invite_registration_url": invite_registration_url},
+        {"invite_registration_url": invite_registration_url, **AUTH_RENDER_CONTEXT},
     )
 
 
