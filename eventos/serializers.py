@@ -10,6 +10,7 @@ from django.db import IntegrityError, transaction
 from accounts.models import UserType
 from .validators import validate_uploaded_file
 
+from .forms import get_coordenador_nucleo_ids
 from .models import Evento, EventoLog, InscricaoEvento
 
 
@@ -56,11 +57,11 @@ class EventoSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         tipo_usuario = _get_tipo_usuario(request.user)
         if tipo_usuario == UserType.COORDENADOR.value:
-            usuario_nucleo_id = getattr(request.user, "nucleo_id", None)
             nucleo = validated_data.get("nucleo")
             nucleo_id = nucleo.pk if nucleo else None
-            if nucleo_id != usuario_nucleo_id:
-                raise PermissionDenied("Coordenadores só podem criar eventos do próprio núcleo.")
+            allowed_ids = get_coordenador_nucleo_ids(request.user)
+            if nucleo_id not in allowed_ids:
+                raise PermissionDenied("Coordenadores só podem criar eventos dos núcleos que coordenam.")
         validated_data["organizacao"] = request.user.organizacao
         instance = super().create(validated_data)
         EventoLog.objects.create(evento=instance, usuario=request.user, acao="evento_criado")

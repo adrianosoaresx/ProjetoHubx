@@ -23,6 +23,25 @@ from .models import (
 )
 
 
+def get_coordenador_nucleo_ids(user) -> set[int]:
+    allowed_ids: set[int] = set()
+    if not user:
+        return allowed_ids
+    participacoes = getattr(user, "participacoes", None)
+    if participacoes is not None:
+        allowed_ids.update(
+            participacoes.filter(
+                papel="coordenador",
+                status="ativo",
+                status_suspensao=False,
+            ).values_list("nucleo_id", flat=True)
+        )
+    usuario_nucleo_id = getattr(user, "nucleo_id", None)
+    if usuario_nucleo_id:
+        allowed_ids.add(usuario_nucleo_id)
+    return allowed_ids
+
+
 class PublicInviteEmailForm(forms.Form):
     email = forms.EmailField(label=_("Email"))
 
@@ -228,19 +247,8 @@ class EventoForm(forms.ModelForm):
                 queryset = Nucleo.objects.filter(organizacao=organizacao).order_by("nome")
 
             if is_coordenador and self.request:
-                usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
-                participacoes = getattr(self.request.user, "participacoes", None)
-                coordenados_qs = Nucleo.objects.none()
-                if participacoes is not None:
-                    coordenados_qs = Nucleo.objects.filter(
-                        participacoes__user=self.request.user,
-                        participacoes__papel="coordenador",
-                        participacoes__status="ativo",
-                        participacoes__status_suspensao=False,
-                    )
-                if usuario_nucleo_id:
-                    coordenados_qs = coordenados_qs | Nucleo.objects.filter(pk=usuario_nucleo_id)
-                queryset = coordenados_qs
+                allowed_ids = get_coordenador_nucleo_ids(self.request.user)
+                queryset = Nucleo.objects.filter(pk__in=allowed_ids)
 
             if self.instance and self.instance.nucleo:
                 queryset = queryset | Nucleo.objects.filter(pk=self.instance.nucleo.pk)
@@ -282,18 +290,7 @@ class EventoForm(forms.ModelForm):
             nucleo = cleaned_data.get("nucleo")
             allowed_ids: set[int] = set()
             if self.request and getattr(self.request, "user", None):
-                participacoes = getattr(self.request.user, "participacoes", None)
-                if participacoes is not None:
-                    allowed_ids.update(
-                        participacoes.filter(
-                            papel="coordenador",
-                            status="ativo",
-                            status_suspensao=False,
-                        ).values_list("nucleo_id", flat=True)
-                    )
-                usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
-                if usuario_nucleo_id:
-                    allowed_ids.add(usuario_nucleo_id)
+                allowed_ids = get_coordenador_nucleo_ids(self.request.user)
             nucleo_id = nucleo.pk if nucleo else None
             if nucleo_id not in allowed_ids:
                 self.add_error(

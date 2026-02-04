@@ -73,6 +73,7 @@ from .forms import (
     FeedbackForm,
     InscricaoEventoForm,
     PublicInviteEmailForm,
+    get_coordenador_nucleo_ids,
 )
 from .models import (
     BriefingEvento,
@@ -1247,11 +1248,9 @@ class EventoCreateView(
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         if _get_tipo_usuario(self.request.user) == UserType.COORDENADOR.value:
-            usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
-            if not usuario_nucleo_id:
-                raise PermissionDenied("Coordenadores só podem criar eventos do próprio núcleo.")
-            if form.instance.nucleo_id != usuario_nucleo_id:
-                form.instance.nucleo_id = usuario_nucleo_id
+            allowed_ids = get_coordenador_nucleo_ids(self.request.user)
+            if form.instance.nucleo_id not in allowed_ids:
+                raise PermissionDenied("Coordenadores só podem criar eventos dos núcleos que coordenam.")
         messages.success(self.request, _("Evento criado com sucesso."))
         response = super().form_valid(form)
         EventoLog.objects.create(evento=self.object, usuario=self.request.user, acao="evento_criado")
