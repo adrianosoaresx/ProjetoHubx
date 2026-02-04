@@ -8,7 +8,7 @@ from feed.models import Post
 def home(request):
     if request.user.is_authenticated:
         return redirect("accounts:perfil")
-    return render(request, "core/home.html")
+    return render(request, "core/home.html", {"hide_nav": True, "hide_search": True})
 
 
 @login_required
