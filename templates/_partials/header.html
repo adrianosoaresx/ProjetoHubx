@@ -28,10 +28,12 @@
       {% trans 'Hubx.Space' %}
     {% endif %}
   </a>
-  <form action="#" method="get" role="search" class="hidden sm:block flex-1 max-w-md">
-    <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
-    <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
-  </form>
+  {% if not hide_search %}
+    <form action="#" method="get" role="search" class="hidden sm:block flex-1 max-w-md">
+      <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
+      <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
+    </form>
+  {% endif %}
   <div class="flex items-center gap-3 sm:gap-4 flex-nowrap">
     {% if request.user.is_authenticated %}
       {% with pending_notifications=push_notification_pending_count|default:0 count_placeholder="__count__" %}
