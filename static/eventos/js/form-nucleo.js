@@ -12,15 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
       nucleoInput.type === 'hidden' ||
       nucleoFieldWrapper.dataset.nucleoLocked === 'true';
 
+    if (isLocked) {
+      nucleoFieldWrapper.classList.add('hidden');
+      return;
+    }
+
     if (publicoAlvoSelect.value === '1') {
-      if (!isLocked) {
-        nucleoFieldWrapper.classList.remove('hidden');
-      }
+      nucleoFieldWrapper.classList.remove('hidden');
     } else {
       nucleoFieldWrapper.classList.add('hidden');
-      if (!isLocked) {
-        nucleoInput.value = '';
-      }
+      nucleoInput.value = '';
     }
   };
 
