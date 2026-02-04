@@ -44,6 +44,7 @@ from .utils import get_client_ip
 User = get_user_model()
 
 ROOT_TOKENS_FORBIDDEN_MESSAGE = _("Usuários root não gerenciam tokens de acesso.")
+AUTH_RENDER_CONTEXT = {"hide_nav": True}
 
 
 def _redirect_root_from_tokens(request):
@@ -129,7 +130,11 @@ def token(request):
             response = _handle_token_success(token_obj, tkn)
             if response:
                 return response
-    return render(request, "register/token.html", {"form": form})
+    return render(
+        request,
+        "register/token.html",
+        {"form": form, **AUTH_RENDER_CONTEXT},
+    )
 
 
 @login_required
