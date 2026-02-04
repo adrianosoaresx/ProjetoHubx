@@ -230,8 +230,11 @@ class EventoForm(forms.ModelForm):
                 usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
                 if usuario_nucleo_id:
                     queryset = Nucleo.objects.filter(pk=usuario_nucleo_id)
+                    if not self.is_bound and not getattr(self.instance, "nucleo_id", None):
+                        self.initial["nucleo"] = usuario_nucleo_id
                 else:
                     queryset = Nucleo.objects.none()
+                nucleo_field.empty_label = None
 
             if self.instance and self.instance.nucleo:
                 queryset = queryset | Nucleo.objects.filter(pk=self.instance.nucleo.pk)
