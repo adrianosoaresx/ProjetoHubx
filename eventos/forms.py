@@ -213,6 +213,7 @@ class EventoForm(forms.ModelForm):
 
             queryset = Nucleo.objects.none()
             organizacao = None
+            is_coordenador = self._is_coordenador(self.request)
 
             if self.request:
                 try:
@@ -226,21 +227,35 @@ class EventoForm(forms.ModelForm):
             if organizacao:
                 queryset = Nucleo.objects.filter(organizacao=organizacao).order_by("nome")
 
-            if self._is_coordenador(self.request):
+            if is_coordenador and self.request:
                 usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
+                participacoes = getattr(self.request.user, "participacoes", None)
+                coordenados_qs = Nucleo.objects.none()
+                if participacoes is not None:
+                    coordenados_qs = Nucleo.objects.filter(
+                        participacoes__user=self.request.user,
+                        participacoes__papel="coordenador",
+                        participacoes__status="ativo",
+                        participacoes__status_suspensao=False,
+                    )
                 if usuario_nucleo_id:
-                    queryset = Nucleo.objects.filter(pk=usuario_nucleo_id)
-                    if not self.is_bound and not getattr(self.instance, "nucleo_id", None):
-                        self.initial["nucleo"] = usuario_nucleo_id
-                    nucleo_field.widget = forms.HiddenInput()
-                else:
-                    queryset = Nucleo.objects.none()
-                nucleo_field.empty_label = None
+                    coordenados_qs = coordenados_qs | Nucleo.objects.filter(pk=usuario_nucleo_id)
+                queryset = coordenados_qs
 
             if self.instance and self.instance.nucleo:
                 queryset = queryset | Nucleo.objects.filter(pk=self.instance.nucleo.pk)
 
-            nucleo_field.queryset = queryset.distinct()
+            nucleo_field.queryset = queryset.distinct().order_by("nome")
+            if is_coordenador:
+                total_nucleos = nucleo_field.queryset.count()
+                if total_nucleos <= 1:
+                    nucleo_field.empty_label = None
+                if (
+                    total_nucleos == 1
+                    and not self.is_bound
+                    and not getattr(self.instance, "nucleo_id", None)
+                ):
+                    self.initial["nucleo"] = nucleo_field.queryset.first()
 
         if "avatar" in self.fields:
             self.fields["avatar"].label = _("Foto do perfil")
@@ -265,12 +280,25 @@ class EventoForm(forms.ModelForm):
 
         if self._is_coordenador(self.request):
             nucleo = cleaned_data.get("nucleo")
-            usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
+            allowed_ids: set[int] = set()
+            if self.request and getattr(self.request, "user", None):
+                participacoes = getattr(self.request.user, "participacoes", None)
+                if participacoes is not None:
+                    allowed_ids.update(
+                        participacoes.filter(
+                            papel="coordenador",
+                            status="ativo",
+                            status_suspensao=False,
+                        ).values_list("nucleo_id", flat=True)
+                    )
+                usuario_nucleo_id = getattr(self.request.user, "nucleo_id", None)
+                if usuario_nucleo_id:
+                    allowed_ids.add(usuario_nucleo_id)
             nucleo_id = nucleo.pk if nucleo else None
-            if nucleo_id != usuario_nucleo_id:
+            if nucleo_id not in allowed_ids:
                 self.add_error(
                     "nucleo",
-                    _("Coordenadores só podem criar eventos do próprio núcleo."),
+                    _("Coordenadores só podem criar eventos dos núcleos que coordenam."),
                 )
 
         participantes_maximo = cleaned_data.get("participantes_maximo")
