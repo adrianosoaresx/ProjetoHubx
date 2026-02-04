@@ -25,15 +25,45 @@
         <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
       {% endif %}
 
-      <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
+      <form method="post" action="{% url 'accounts:login' %}" class="space-y-5" id="login-form">
         {% csrf_token %}
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
+        <div class="flex items-center gap-2 text-left">
+          <input type="checkbox" id="toggle-login-password" class="form-checkbox text-[var(--primary)] focus:ring-[var(--primary)]">
+          <label for="toggle-login-password" class="text-sm text-[var(--text-primary)]">
+            {% trans "Exibir senha" %}
+          </label>
+        </div>
         <button type="submit" class="btn btn-primary w-full">
           {% trans "Entrar" %}
         </button>
       </form>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const loginForm = document.querySelector("#login-form");
+          const toggle = document.querySelector("#toggle-login-password");
+          if (!loginForm || !toggle) {
+            return;
+          }
+          const passwordInputs = Array.from(
+            loginForm.querySelectorAll('input[type="password"]')
+          );
+          if (!passwordInputs.length) {
+            return;
+          }
+          const updatePasswordVisibility = () => {
+            const nextType = toggle.checked ? "text" : "password";
+            passwordInputs.forEach((input) => {
+              if (input.type !== nextType) {
+                input.type = nextType;
+              }
+            });
+          };
+          toggle.addEventListener("change", updatePasswordVisibility);
+        });
+      </script>
 
       <div class="text-center space-y-2">
         <a href="{% url 'accounts:password_reset' %}" class="text-sm text-[var(--primary)] hover:underline">
