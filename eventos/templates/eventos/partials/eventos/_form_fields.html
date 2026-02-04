@@ -84,7 +84,11 @@
   </div>
   {% endwith %}
 
-  <div id="nucleo-field-container">
+  <div
+    id="nucleo-field-container"
+    {% if form.nucleo.is_hidden %}data-nucleo-locked="true"{% endif %}
+    class="{% if form.nucleo.is_hidden %}hidden{% endif %}"
+  >
     {% include '_forms/field.html' with field=form.nucleo %}
   </div>
 
