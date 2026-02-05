@@ -13,6 +13,15 @@
     {% include '_forms/field.html' with field=form.descricao %}
   </div>
 
+  <div
+    id="nucleo-field-container"
+    {% if form.nucleo.is_hidden %}data-nucleo-locked="true"{% endif %}
+    data-user-type="{{ request.user.get_tipo_usuario|default:'' }}"
+    class="{% if form.nucleo.is_hidden %}hidden{% endif %}"
+  >
+    {% include '_forms/field.html' with field=form.nucleo %}
+  </div>
+
   {% with data_inicio_errors=form.data_inicio.errors data_fim_errors=form.data_fim.errors publico_errors=form.publico_alvo.errors participantes_errors=form.participantes_maximo.errors valor_associado_errors=form.valor_associado.errors valor_nucleado_errors=form.valor_nucleado.errors gratuito_errors=form.gratuito.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
     <button
@@ -83,15 +92,6 @@
     </div>
   </div>
   {% endwith %}
-
-  <div
-    id="nucleo-field-container"
-    {% if form.nucleo.is_hidden %}data-nucleo-locked="true"{% endif %}
-    data-user-type="{{ request.user.get_tipo_usuario|default:'' }}"
-    class="{% if form.nucleo.is_hidden %}hidden{% endif %}"
-  >
-    {% include '_forms/field.html' with field=form.nucleo %}
-  </div>
 
   {% with cronograma_has_errors=form.cronograma.errors %}
   <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]" data-accordion>
