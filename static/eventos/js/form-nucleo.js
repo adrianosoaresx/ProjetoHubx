@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const userType = (nucleoFieldWrapper.dataset.userType || '').toLowerCase();
+    const isCoordenador = userType === 'coordenador';
     const isLocked =
       nucleoInput.type === 'hidden' ||
       nucleoFieldWrapper.dataset.nucleoLocked === 'true';
@@ -17,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (publicoAlvoSelect.value === '1') {
+    if (isCoordenador || publicoAlvoSelect.value === '1') {
       nucleoFieldWrapper.classList.remove('hidden');
     } else {
       nucleoFieldWrapper.classList.add('hidden');
