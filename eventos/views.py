@@ -1249,7 +1249,7 @@ class EventoCreateView(
         form.instance.organizacao = self.request.user.organizacao
         if _get_tipo_usuario(self.request.user) == UserType.COORDENADOR.value:
             allowed_ids = get_coordenador_nucleo_ids(self.request.user)
-            if form.instance.nucleo_id not in allowed_ids:
+            if form.instance.nucleo_id and form.instance.nucleo_id not in allowed_ids:
                 raise PermissionDenied("Coordenadores só podem criar eventos dos núcleos que coordenam.")
         messages.success(self.request, _("Evento criado com sucesso."))
         response = super().form_valid(form)

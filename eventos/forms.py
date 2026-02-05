@@ -289,7 +289,9 @@ class EventoForm(forms.ModelForm):
             if self.request and getattr(self.request, "user", None):
                 allowed_ids = get_coordenador_nucleo_ids(self.request.user)
             nucleo_id = nucleo.pk if nucleo else None
-            if nucleo_id not in allowed_ids:
+            if not nucleo_id:
+                self.add_error("nucleo", _("Selecione um núcleo para vincular o evento."))
+            elif nucleo_id not in allowed_ids:
                 self.add_error(
                     "nucleo",
                     _("Coordenadores só podem criar eventos dos núcleos que coordenam."),
