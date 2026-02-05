@@ -11,24 +11,35 @@
               </div>
               <span class="text-xs font-semibold text-[var(--text-secondary)]">{% trans "Convite" %}</span>
             </div>
-            <div>
+            <div class="flex min-w-0 flex-col gap-2">
+              <p class="text-base font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
               <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
-              <p class="text-lg font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
-              <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+              <dl class="space-y-2 text-sm text-[var(--text-secondary)]">
+                <div class="flex items-start gap-2">
+                  <dt class="sr-only">{% trans "Data" %}</dt>
+                  {% lucide 'calendar-days' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                  <dd>
+                    {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
+                      De {{ inicio }} até {{ fim }}
+                    {% endblocktrans %}
+                  </dd>
+                </div>
+                <div class="flex min-w-0 items-start gap-2">
+                  <dt class="sr-only">{% trans "Local" %}</dt>
+                  {% lucide 'map-pin' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                  <dd class="truncate">{{ convite.cidade }} - {{ convite.estado }}</dd>
+                </div>
+                {% if convite.numero_participantes %}
+                  <div class="flex items-start gap-2">
+                    <dt class="sr-only">{% trans "Capacidade" %}</dt>
+                    {% lucide 'users' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                    <dd>
+                      {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+                    </dd>
+                  </div>
+                {% endif %}
+              </dl>
             </div>
-          </div>
-
-          <div class="space-y-2 text-sm text-[var(--text-secondary)]">
-            <p>
-              {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
-                De {{ inicio }} até {{ fim }}
-              {% endblocktrans %}
-            </p>
-            {% if convite.numero_participantes %}
-              <p>
-                {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
-              </p>
-            {% endif %}
           </div>
 
           <div class="flex items-center gap-2">
@@ -58,24 +69,35 @@
                 </div>
                 <span class="text-xs font-semibold text-[var(--text-secondary)]">{% trans "Convite" %}</span>
               </div>
-              <div>
+              <div class="flex min-w-0 flex-col gap-2">
+                <p class="text-base font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
                 <p class="text-sm text-[var(--text-secondary)]">{{ convite.publico_alvo }}</p>
-                <p class="text-lg font-semibold text-[var(--text-primary)]">{{ convite.local }}</p>
-                <p class="text-sm text-[var(--text-secondary)]">{{ convite.cidade }} - {{ convite.estado }}</p>
+                <dl class="space-y-2 text-sm text-[var(--text-secondary)]">
+                  <div class="flex items-start gap-2">
+                    <dt class="sr-only">{% trans "Data" %}</dt>
+                    {% lucide 'calendar-days' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                    <dd>
+                      {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
+                        De {{ inicio }} até {{ fim }}
+                      {% endblocktrans %}
+                    </dd>
+                  </div>
+                  <div class="flex min-w-0 items-start gap-2">
+                    <dt class="sr-only">{% trans "Local" %}</dt>
+                    {% lucide 'map-pin' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                    <dd class="truncate">{{ convite.cidade }} - {{ convite.estado }}</dd>
+                  </div>
+                  {% if convite.numero_participantes %}
+                    <div class="flex items-start gap-2">
+                      <dt class="sr-only">{% trans "Capacidade" %}</dt>
+                      {% lucide 'users' class='mt-0.5 h-4 w-4' aria_hidden='true' %}
+                      <dd>
+                        {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
+                      </dd>
+                    </div>
+                  {% endif %}
+                </dl>
               </div>
-            </div>
-
-            <div class="space-y-2 text-sm text-[var(--text-secondary)]">
-              <p>
-                {% blocktrans with inicio=convite.data_inicio|date:'d/m/Y' fim=convite.data_fim|date:'d/m/Y' %}
-                  De {{ inicio }} até {{ fim }}
-                {% endblocktrans %}
-              </p>
-              {% if convite.numero_participantes %}
-                <p>
-                  {% blocktrans with total=convite.numero_participantes %}Até {{ total }} participantes{% endblocktrans %}
-                </p>
-              {% endif %}
             </div>
 
             <div class="flex items-center gap-2">
