@@ -3,14 +3,6 @@
 <div class="mt-3 space-y-3 text-left text-sm text-[var(--text-secondary)]">
   <div class="space-y-2">
     <div class="space-y-1">
-      <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-        {% lucide 'building-2' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
-        <span>{% trans 'Razão social' %}</span>
-      </div>
-      <div class="text-sm font-medium text-[var(--text-muted)]">
-        {{ usuario.razao_social|default:_('Não informado') }}
-      </div>
-    </div>
     {% with nome_fantasia=usuario.nome_fantasia|default_if_none:'' %}
       {% if nome_fantasia %}
         <div class="space-y-1">
@@ -24,6 +16,15 @@
         </div>
       {% endif %}
     {% endwith %}
+      <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+        {% lucide 'building-2' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+        <span>{% trans 'Razão social' %}</span>
+      </div>
+      <div class="text-sm font-medium text-[var(--text-muted)]">
+        {{ usuario.razao_social|default:_('Não informado') }}
+      </div>
+    </div>
+
   </div>
 </div>
 <div class="mt-3">
