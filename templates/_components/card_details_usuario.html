@@ -2,12 +2,28 @@
 <div class="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
   {% with nome_fantasia=user.nome_fantasia|default_if_none:'' %}
     {% if nome_fantasia %}
-      <p class="text-[var(--text-muted)]">{{ nome_fantasia }}</p>
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+          {% lucide 'store' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+          <span>Nome fantasia</span>
+        </div>
+        <div class="text-sm font-medium text-[var(--text-muted)]">
+          {{ nome_fantasia }}
+        </div>
+      </div>
     {% endif %}
   {% endwith %}
   {% with razao_social=user.razao_social|default_if_none:'' %}
     {% if razao_social %}
-      <p class="text-[var(--text-muted)]">Razão social: {{ razao_social }}</p>
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+          {% lucide 'building-2' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+          <span>Razão social</span>
+        </div>
+        <div class="text-sm font-medium text-[var(--text-muted)]">
+          {{ razao_social }}
+        </div>
+      </div>
     {% endif %}
   {% endwith %}
   {% with details_badges=details_badges|default:None %}
