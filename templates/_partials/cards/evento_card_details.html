@@ -9,12 +9,12 @@
     <span class="inline-flex items-center gap-2">
       {% lucide 'calendar' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
       <span class="text-[var(--text-secondary)]">{% trans 'Início' %}:</span>
-      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_inicio|date:'SHORT_DATE_FORMAT'|default:'—' }}</span>
+      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_inicio|date:'SHORT_DATETIME_FORMAT'|default:'—' }}</span>
     </span>
     <span class="inline-flex items-center gap-2">
       {% lucide 'calendar-check' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
       <span class="text-[var(--text-secondary)]">{% trans 'Fim' %}:</span>
-      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_fim|date:'SHORT_DATE_FORMAT'|default:'—' }}</span>
+      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_fim|date:'SHORT_DATETIME_FORMAT'|default:'—' }}</span>
     </span>
   </li>
   <li class="flex items-center gap-2">
