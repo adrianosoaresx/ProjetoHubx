@@ -280,11 +280,8 @@ class EventoForm(forms.ModelForm):
         publico_alvo = cleaned_data.get("publico_alvo")
         nucleo = cleaned_data.get("nucleo")
 
-        if publico_alvo == 1:
-            if not nucleo:
-                self.add_error("nucleo", _("Selecione um núcleo para eventos destinados apenas ao núcleo."))
-        else:
-            cleaned_data["nucleo"] = None
+        if publico_alvo == 1 and not nucleo:
+            self.add_error("nucleo", _("Selecione um núcleo para eventos destinados apenas ao núcleo."))
 
         if self._is_coordenador(self.request):
             nucleo = cleaned_data.get("nucleo")
