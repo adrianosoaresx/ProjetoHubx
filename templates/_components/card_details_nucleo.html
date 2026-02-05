@@ -14,6 +14,7 @@
         {% lucide 'hash' class='h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0' %}
         <div>
           <p class="text-[var(--text-secondary)]">{% trans 'Total' %}</p>
+          {# Total de membros do núcleo: reutiliza num_membros ou a contagem de membros. #}
           <p class="font-medium">{{ membros_total }}</p>
         </div>
       </div>
