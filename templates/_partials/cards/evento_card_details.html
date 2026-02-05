@@ -1,10 +1,28 @@
-{% load i18n %}
-<dl class="mt-3 grid grid-cols-1 gap-2 text-xs text-[var(--text-secondary)]">
-  <div>
-    <dt class="text-[var(--text-secondary)]">{% trans 'Inscritos' %}</dt>
-    <dd class="font-medium">{{ evento.num_inscritos|default:0 }}</dd>
-  </div>
-</dl>
+{% load i18n lucide_icons %}
+<ul class="mt-3 space-y-2 text-xs text-[var(--text-secondary)]">
+  <li class="flex items-center gap-2">
+    {% lucide 'users' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+    <span class="text-[var(--text-secondary)]">{% trans 'Inscritos' %}:</span>
+    <span class="font-medium text-[var(--text-primary)]">{{ evento.num_inscritos|default:0 }}</span>
+  </li>
+  <li class="flex flex-wrap items-center gap-3">
+    <span class="inline-flex items-center gap-2">
+      {% lucide 'calendar' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+      <span class="text-[var(--text-secondary)]">{% trans 'Início' %}:</span>
+      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_inicio|date:'SHORT_DATE_FORMAT'|default:'—' }}</span>
+    </span>
+    <span class="inline-flex items-center gap-2">
+      {% lucide 'calendar-check' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+      <span class="text-[var(--text-secondary)]">{% trans 'Fim' %}:</span>
+      <span class="font-medium text-[var(--text-primary)]">{{ evento.data_fim|date:'SHORT_DATE_FORMAT'|default:'—' }}</span>
+    </span>
+  </li>
+  <li class="flex items-center gap-2">
+    {% lucide 'target' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+    <span class="text-[var(--text-secondary)]">{% trans 'Público-alvo' %}:</span>
+    <span class="font-medium text-[var(--text-primary)]">{{ evento.get_publico_alvo_display }}</span>
+  </li>
+</ul>
 {% if target_badge %}
   <div class="mt-4">
     <span class="inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-nowrap"{% if target_badge.style %} style="{{ target_badge.style }}"{% endif %}>
