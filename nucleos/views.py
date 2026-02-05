@@ -999,7 +999,13 @@ class NucleoUpdateView(
         if user.user_type in {UserType.ADMIN, UserType.OPERADOR}:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user)
+            qs = qs.filter(
+                organizacao=user.organizacao,
+                participacoes__user=user,
+                participacoes__papel="coordenador",
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
         return qs
 
     def get_success_url(self):
