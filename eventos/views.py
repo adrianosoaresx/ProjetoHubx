@@ -1272,7 +1272,13 @@ class EventoUpdateView(
         return kwargs
 
     def get_queryset(self):  # pragma: no cover
-        return _queryset_por_organizacao(self.request)
+        queryset = _queryset_por_organizacao(self.request)
+        if _get_tipo_usuario(self.request.user) == UserType.COORDENADOR.value:
+            allowed_ids = get_coordenador_nucleo_ids(self.request.user)
+            if not allowed_ids:
+                return queryset.none()
+            return queryset.filter(nucleo_id__in=allowed_ids)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1338,7 +1344,13 @@ class EventoDeleteView(
     success_url = reverse_lazy("eventos:lista")
 
     def get_queryset(self):  # pragma: no cover
-        return _queryset_por_organizacao(self.request)
+        queryset = _queryset_por_organizacao(self.request)
+        if _get_tipo_usuario(self.request.user) == UserType.COORDENADOR.value:
+            allowed_ids = get_coordenador_nucleo_ids(self.request.user)
+            if not allowed_ids:
+                return queryset.none()
+            return queryset.filter(nucleo_id__in=allowed_ids)
+        return queryset
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
