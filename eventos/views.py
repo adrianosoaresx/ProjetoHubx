@@ -1527,6 +1527,10 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
         tipo_usuario = _get_tipo_usuario(user)
         pode_editar_evento = user.has_perm("eventos.change_evento")
         pode_excluir_evento = user.has_perm("eventos.delete_evento")
+        if tipo_usuario == UserType.COORDENADOR.value:
+            coordenador_do_evento = _usuario_eh_coordenador_do_evento(user, evento)
+            pode_editar_evento = pode_editar_evento and coordenador_do_evento
+            pode_excluir_evento = pode_excluir_evento and coordenador_do_evento
         pode_gerenciar_inscricoes = tipo_usuario in {
             UserType.ADMIN.value,
             UserType.OPERADOR.value,
