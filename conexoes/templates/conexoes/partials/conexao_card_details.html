@@ -1,21 +1,30 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 <div class="mt-3 space-y-3 text-left text-sm text-[var(--text-secondary)]">
-  <p class="text-[var(--text-muted)]">{{ usuario.display_name|default:_('Contato não informado') }}</p>
-  <p class="text-xs tracking-wide text-[var(--text-secondary)]">@{{ usuario.username }}</p>
-
-  <dl class="space-y-3 text-xs text-[var(--text-secondary)]">
-    <div class="items-center gap-1 text-[var(--text-muted)] text-left">
-  {% trans 'Razão social' as razao_social_label %}
-  <span>{{ razao_social_label }}:</span>
-  <span>{{ usuario.razao_social|default:_('Não informado') }}</span>
-</div>
-
-    <div class="flex flex-wrap items-center text-left gap-1">
-      <dt class="text-[var(--text-muted)]">{% trans 'Documento' %}:</dt>
-      <dd class="text-[var(--text-muted)]">{% trans 'Não informado' %}</dd>
+  <div class="space-y-2">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+        {% lucide 'building-2' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+        <span>{% trans 'Razão social' %}</span>
+      </div>
+      <div class="text-sm font-medium text-[var(--text-muted)]">
+        {{ usuario.razao_social|default:_('Não informado') }}
+      </div>
     </div>
-  </dl>
+    {% with nome_fantasia=usuario.nome_fantasia|default_if_none:'' %}
+      {% if nome_fantasia %}
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+            {% lucide 'store' class='h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+            <span>{% trans 'Nome fantasia' %}</span>
+          </div>
+          <div class="text-sm font-medium text-[var(--text-muted)]">
+            {{ nome_fantasia }}
+          </div>
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
 </div>
 <div class="mt-3">
   {% if section == 'pendentes' %}
