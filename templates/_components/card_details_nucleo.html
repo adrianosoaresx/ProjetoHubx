@@ -6,17 +6,12 @@
       <div class="flex items-start gap-2">
         {% lucide 'users' class='h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0' %}
         <div>
-          <p class="text-[var(--text-secondary)]">{% trans 'Membros' %}</p>
-          <p class="font-medium">{{ membros_total }}</p>
+          <span class="text-[var(--text-secondary)]">{% trans 'Membros' %}</span>
+          
         </div>
+        <span class="font-medium">{{ membros_total }}</span>
       </div>
-      <div class="flex items-start gap-2">
-        {% lucide 'hash' class='h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0' %}
-        <div>
-          <p class="text-[var(--text-secondary)]">{% trans 'Total' %}</p>
-          <p class="font-medium">{{ membros_total }}</p>
-        </div>
-      </div>
+      
     </div>
   {% endwith %}
   <div class="flex items-start gap-2">
