@@ -195,6 +195,9 @@ def _has_nucleo_specific_badge(user, tipo: str) -> bool:
 def usuario_badges(user):
     """Retorna metadados de etiquetas para o usuário."""
 
+    if getattr(user, "user_type", "") == UserType.ADMIN.value:
+        return []
+
     badges: list[dict[str, str]] = []
     types_present: set[str] = set()
     seen_promotion_labels: set[str] = set()
@@ -287,9 +290,6 @@ def usuario_badges(user):
     if associado_flag and not badges and not has_associado_badge:
         badges.append(_make_badge(_("Associado"), "associado"))
         types_present.add("associado")
-
-    if getattr(user, "user_type", "") == UserType.ADMIN.value:
-        badges = [badge for badge in badges if badge.get("type") != "nucleado"]
 
     return [
         {
