@@ -33,7 +33,7 @@
     const searchParam = root.dataset.searchParam || 'search';
     const papel = root.dataset.papel || '';
     const card = root.dataset.card || '';
-    const nucleoId = root.dataset.nucleoId || '';
+    const nucleoPublicId = root.dataset.nucleoPublicId || '';
     const eventoId = root.dataset.eventoId || '';
     const classificacao = root.dataset.classificacao || '';
     const scope = root.dataset.scope || '';
@@ -57,8 +57,8 @@
     if (card) {
       url.searchParams.set('card', card);
     }
-    if (nucleoId) {
-      url.searchParams.set('nucleo_id', nucleoId);
+    if (nucleoPublicId) {
+      url.searchParams.set('nucleo_public_id', nucleoPublicId);
     }
     if (eventoId) {
       url.searchParams.set('evento_id', eventoId);

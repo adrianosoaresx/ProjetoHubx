@@ -33,7 +33,8 @@ urlpatterns = [
     path("<uuid:public_id>/", views.NucleoDetailView.as_view(), name="detail"),
     path("<int:pk>/", views.NucleoLegacyRedirectView.as_view(target_name="nucleos:detail"), name="detail_legacy"),
     path("<uuid:public_id>/editar/", views.NucleoUpdateView.as_view(), name="update"),
-    path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
+    path("<uuid:public_id>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
+    path("<int:pk>/remover/", views.NucleoLegacyRedirectView.as_view(target_name="nucleos:delete"), name="delete_legacy"),
     path("<uuid:public_id>/participar/", views.ParticipacaoCreateView.as_view(), name="participacao_solicitar"),
     path("<int:pk>/participar/", views.NucleoLegacyRedirectView.as_view(target_name="nucleos:participacao_solicitar"), name="participacao_solicitar_legacy"),
     path(
