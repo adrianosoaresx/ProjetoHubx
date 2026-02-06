@@ -122,7 +122,7 @@
             hx-include="#membros-filter-form"
             hx-indicator="#membros-loading"
             hx-push-url="true"
-            hx-vals='{"papel":"todos","card":"membros"}'
+            hx-vals='{"papel":"membro","card":"membros"}'
           >
             <summary
               class="card-header flex cursor-pointer items-center justify-between gap-4 select-none [&::-webkit-details-marker]:hidden"
@@ -148,7 +148,7 @@
             </summary>
             <div class="card-body space-y-6">
               <div id="membros-filter-container">
-                {% include 'nucleos/partials/membros_filter_form.html' with form_id='membros-filter-form' search_input_id='membros-search' hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='true' default_papel='todos' card_name='membros' search_label=_('Pesquisar membros') search_placeholder=_('Buscar por nome ou email') %}
+                {% include 'nucleos/partials/membros_filter_form.html' with form_id='membros-filter-form' search_input_id='membros-search' hx_target='#membros-list' hx_indicator='#membros-loading' hx_push_url='true' default_papel='membro' card_name='membros' search_label=_('Pesquisar membros') search_placeholder=_('Buscar por nome ou email') %}
               </div>
               <section id="nucleo-membros" class="space-y-6">
                 <div id="membros-list">

@@ -1120,7 +1120,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         qs = self.get_participacoes_queryset()
         card = self.get_card_param()
 
-        default_papel = "coordenador" if card == "coordenadores" else "todos"
+        default_papel = "coordenador" if card == "coordenadores" else "membro"
         papel_filter = self.request.GET.get("papel", default_papel)
         if papel_filter not in {"todos", "membro", "coordenador"}:
             papel_filter = default_papel
@@ -1168,7 +1168,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         nucleo = self.object
         # Lista de membros ativos (nucleados) com paginação
         base_participacoes_qs = self.get_participacoes_queryset()
-        ctx["total_membros"] = base_participacoes_qs.count()
+        ctx["total_membros"] = base_participacoes_qs.exclude(papel="coordenador").count()
         ctx["total_coordenadores"] = base_participacoes_qs.filter(papel="coordenador").count()
 
         membros_qs = self.get_membros_queryset()
