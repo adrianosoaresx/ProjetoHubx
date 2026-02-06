@@ -4,19 +4,19 @@
 {% block title %}{% trans "Sobre" %} - HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Sobre o HubX') %}
+  {% include '_components/hero.html' with title=_('Sobre o HubX') subtitle=_('Conheça a missão da plataforma e como conectamos comunidades.') %}
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-12 card-grid">
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-xl font-semibold">{% trans "Sobre o HubX" %}</h2>
-    </div>
-    <div class="card-body prose prose-indigo">
-      <p>{% trans "HubX é uma plataforma colaborativa que integra comunidades de organizações e voluntários." %}</p>
-      <p>{% trans "Nosso objetivo é facilitar a comunicação, gestão de eventos e colaboração entre membros." %}</p>
-    </div>
-  </div>
-</div>
+  <section class="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+    <article class="card">
+      <header class="card-header">
+        <h2 class="text-2xl font-semibold text-[var(--text-primary)]">{% trans "Sobre o HubX" %}</h2>
+      </header>
+      <div class="card-body space-y-4 text-[var(--text-secondary)] leading-relaxed">
+        <p>{% trans "HubX é uma plataforma colaborativa que integra comunidades de organizações e voluntários." %}</p>
+        <p>{% trans "Nosso objetivo é facilitar a comunicação, a gestão de eventos e a colaboração entre membros." %}</p>
+      </div>
+    </article>
+  </section>
 {% endblock %}
