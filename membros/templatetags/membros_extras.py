@@ -23,6 +23,15 @@ BADGE_STYLES = {
     "nucleus": "--primary:#06b6d4; --primary-soft:rgba(6, 182, 212, 0.15); --primary-soft-border:rgba(6, 182, 212, 0.3);",
 }
 
+NUCLEO_BADGE_PALETTE = (
+    "--primary:#f97316; --primary-soft:rgba(249, 115, 22, 0.15); --primary-soft-border:rgba(249, 115, 22, 0.3);",
+    "--primary:#06b6d4; --primary-soft:rgba(6, 182, 212, 0.15); --primary-soft-border:rgba(6, 182, 212, 0.3);",
+    "--primary:#8b5cf6; --primary-soft:rgba(139, 92, 246, 0.15); --primary-soft-border:rgba(139, 92, 246, 0.3);",
+    "--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);",
+    "--primary:#eab308; --primary-soft:rgba(234, 179, 8, 0.15); --primary-soft-border:rgba(234, 179, 8, 0.3);",
+    "--primary:#ec4899; --primary-soft:rgba(236, 72, 153, 0.15); --primary-soft-border:rgba(236, 72, 153, 0.3);",
+)
+
 
 BADGE_ICONS = {
     "associado": "id-card",
@@ -43,6 +52,18 @@ def _make_badge(label: str, badge_type: str) -> dict[str, str]:
     style = BADGE_STYLES.get(badge_type, "")
     icon = BADGE_ICONS.get(badge_type, DEFAULT_BADGE_ICON)
     return {"label": label, "style": style, "icon": icon, "type": badge_type}
+
+
+def _nucleo_style(nucleo_id) -> str:
+    if nucleo_id in (None, ""):
+        return BADGE_STYLES["coordenador"]
+
+    try:
+        hash_base = int(nucleo_id)
+    except (TypeError, ValueError):
+        hash_base = sum(ord(char) for char in str(nucleo_id))
+
+    return NUCLEO_BADGE_PALETTE[hash_base % len(NUCLEO_BADGE_PALETTE)]
 
 
 def _active_participacoes_data(user) -> list[dict[str, object]]:
@@ -190,6 +211,8 @@ def usuario_badges(user):
         if is_coordenador:
             label = promotion_label or _("Coordenador")
             badge = _make_badge(label, "coordenador")
+            nucleo_style = _nucleo_style(nucleo_id)
+            badge["style"] = nucleo_style
             types_present.add("coordenador")
             should_add_promotion_badge = True
         else:
@@ -210,6 +233,8 @@ def usuario_badges(user):
                 continue
             seen_nucleus.add(nucleus_key)
             nucleus_badge = _make_badge(nucleo_nome, "nucleus")
+            if is_coordenador:
+                nucleus_badge["style"] = _nucleo_style(nucleo_id)
             nucleus_badge["group"] = "nucleus"
             badges.append(nucleus_badge)
             types_present.add("nucleus")
