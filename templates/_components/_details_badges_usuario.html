@@ -1,0 +1,27 @@
+{% load lucide_icons %}
+{% with details_badges=details_badges|default:None %}
+  {% if details_badges %}
+    <div class="space-y-1.5 pt-1">
+      <div class="flex flex-wrap gap-2">
+        {% for badge in details_badges %}
+          {% if badge.group != 'nucleus' %}
+            <span class="inline-flex max-w-full items-start gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-normal break-words leading-tight"{% if badge.style %} style="{{ badge.style }}"{% endif %}>
+              {% lucide badge.icon|default:'badge-check' class='mt-0.5 h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+              <span class="min-w-0 whitespace-normal break-words leading-tight">{{ badge.label }}</span>
+            </span>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {% for badge in details_badges %}
+          {% if badge.group == 'nucleus' %}
+            <span class="inline-flex max-w-full items-start gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-normal break-words leading-tight"{% if badge.style %} style="{{ badge.style }}"{% endif %}>
+              {% lucide badge.icon|default:'badge-check' class='mt-0.5 h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+              <span class="min-w-0 whitespace-normal break-words leading-tight">{{ badge.label }}</span>
+            </span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
