@@ -27,7 +27,7 @@ from configuracoes.services import atualizar_preferencias_usuario
 
 atualizar_preferencias_usuario(
     request.user,
-    {"tema": "escuro", "idioma": "en-US"},
+    {"tema": "escuro", "idioma": "en"},
 )
 ```
 
@@ -50,7 +50,7 @@ Resposta:
   "frequencia_notificacoes_email": "imediata",
   "receber_notificacoes_whatsapp": false,
   "frequencia_notificacoes_whatsapp": "diaria",
-  "idioma": "pt-BR",
+  "idioma": "pt-br",
   "tema": "claro",
   "hora_notificacao_diaria": "08:00:00",
   "hora_notificacao_semanal": "08:00:00",
