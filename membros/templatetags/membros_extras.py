@@ -195,7 +195,8 @@ def _has_nucleo_specific_badge(user, tipo: str) -> bool:
 def usuario_badges(user):
     """Retorna metadados de etiquetas para o usuário."""
 
-    if getattr(user, "user_type", "") == UserType.ADMIN.value:
+    user_type = getattr(user, "user_type", "")
+    if user_type in {UserType.ADMIN.value, UserType.OPERADOR.value}:
         return []
 
     badges: list[dict[str, str]] = []
