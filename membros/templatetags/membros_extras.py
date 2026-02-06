@@ -176,6 +176,7 @@ def usuario_badges(user):
 
     badges: list[dict[str, str]] = []
     types_present: set[str] = set()
+    seen_promotion_labels: set[str] = set()
 
     active_participacoes = _active_participacoes_data(user)
     seen_nucleus: set[int | str] = set()
@@ -190,12 +191,18 @@ def usuario_badges(user):
             label = promotion_label or _("Coordenador")
             badge = _make_badge(label, "coordenador")
             types_present.add("coordenador")
+            should_add_promotion_badge = True
         else:
-            badge = _make_badge(promotion_label or _("Nucleado"), "nucleado")
+            label = promotion_label or _("Nucleado")
+            badge = _make_badge(label, "nucleado")
             types_present.add("nucleado")
+            should_add_promotion_badge = label not in seen_promotion_labels
 
-        badge["group"] = "promotion"
-        badges.append(badge)
+        seen_promotion_labels.add(label)
+
+        if should_add_promotion_badge:
+            badge["group"] = "promotion"
+            badges.append(badge)
 
         if nucleo_nome:
             nucleus_key = nucleo_id if nucleo_id is not None else nucleo_nome
