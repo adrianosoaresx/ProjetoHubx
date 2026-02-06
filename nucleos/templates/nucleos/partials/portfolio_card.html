@@ -100,14 +100,14 @@
                     </svg>
                   </button>
                   {% if pode_gerenciar_portfolio %}
-                    <a href="{% url 'nucleos:portfolio_edit' media.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
+                    <a href="{% url 'nucleos:portfolio_edit' media.nucleo.public_id media.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
                       {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
                     </a>
                     <a
-                      href="{% url 'nucleos:portfolio_delete' media.pk %}"
+                      href="{% url 'nucleos:portfolio_delete' media.nucleo.public_id media.pk %}"
                       class="btn btn-danger btn-sm"
                       aria-label="{% trans 'Excluir' %}"
-                      hx-get="{% url 'nucleos:portfolio_delete' media.pk %}"
+                      hx-get="{% url 'nucleos:portfolio_delete' media.nucleo.public_id media.pk %}"
                       hx-target="#modal"
                       hx-trigger="click"
                       hx-swap="innerHTML"

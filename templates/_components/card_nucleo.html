@@ -1,8 +1,8 @@
 {% load i18n %}
 {% with resolved_nucleo=item|default:nucleo %}
   {% if resolved_nucleo %}
-    {% url 'nucleos:detail_uuid' resolved_nucleo.public_id as detail_url %}
-    {% url 'nucleos:nucleacao_invite' resolved_nucleo.pk as nucleacao_url %}
+    {% url 'nucleos:detail' resolved_nucleo.public_id as detail_url %}
+    {% url 'nucleos:nucleacao_invite' resolved_nucleo.public_id as nucleacao_url %}
     {% trans 'Ver detalhes do núcleo' as sr_label %}
     {% with classificacao=resolved_nucleo.classificacao %}
       {% if classificacao == 'planejamento' %}

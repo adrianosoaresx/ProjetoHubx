@@ -112,7 +112,7 @@
 
       {% with section=current_section|default:"membros" %}
         {% if section == 'membros' %}
-          {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+          {% url 'nucleos:membros_list' object.public_id as membros_list_url %}
           <details
             id="nucleo-membros-card"
             class="card group"
