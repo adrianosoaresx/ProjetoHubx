@@ -12,7 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Prefetch
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -1109,6 +1109,10 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
                 user__deleted=False,
             )
             .select_related("user")
+            .prefetch_related(
+                Prefetch("user__participacoes", queryset=ParticipacaoNucleo.objects.select_related("nucleo")),
+                "user__nucleos_consultoria",
+            )
             .order_by("-created_at")
         )
 
