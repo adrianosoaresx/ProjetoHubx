@@ -4,6 +4,7 @@ import uuid
 from decimal import Decimal
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import SET_NULL, Q
@@ -118,7 +119,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
     ativo = models.BooleanField(default=True)
-    mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
+    mensalidade = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     consultor = models.ForeignKey(
         User,
         on_delete=SET_NULL,
@@ -135,6 +136,14 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return self.nome
+
+    @property
+    def mensalidade_efetiva(self) -> Decimal:
+        if self.mensalidade is not None:
+            return self.mensalidade
+        if self.organizacao_id and self.organizacao.valor_nucleacao is not None:
+            return self.organizacao.valor_nucleacao
+        return getattr(settings, "MENSALIDADE_NUCLEO", Decimal("30.00"))
 
     @property
     def membros(self):
