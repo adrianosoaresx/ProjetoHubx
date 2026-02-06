@@ -264,10 +264,12 @@ npm run start
 - **Discussões**: Categorias e tópicos com respostas e interações.
 
 ### Núcleos: Convites, Suspensão e Feed
-- **Convites de Núcleo**: admins geram convites com `POST /api/nucleos/<id>/convites/` e revogam com `DELETE /api/nucleos/<id>/convites/<convite_id>/`, respeitando a quota diária.
-- **Suspensão de Membros**: coordenadores podem suspender ou reativar participantes (`POST /api/nucleos/<id>/membros/<user_id>/suspender` / `.../reativar`).
-- **Membro Status**: consulta de papel e suspensão em `GET /api/nucleos/<id>/membro-status/`.
-- **Feed do Núcleo**: membros ativos podem publicar via `POST /api/nucleos/<id>/posts/`.
+- **Lookup público por UUID**: os endpoints detalhados de núcleo passam a usar `public_id` (`/api/nucleos/<public_id>/...`) como identificador público.
+- **Convites de Núcleo**: admins geram convites com `POST /api/nucleos/<public_id>/convites/` e revogam com `DELETE /api/nucleos/<public_id>/convites/<convite_id>/`, respeitando a quota diária.
+- **Suspensão de Membros**: coordenadores podem suspender ou reativar participantes (`POST /api/nucleos/<public_id>/membros/<user_id>/suspender` / `.../reativar`).
+- **Membro Status**: consulta de papel e suspensão em `GET /api/nucleos/<public_id>/membro-status/`.
+- **Feed do Núcleo**: membros ativos podem publicar via `POST /api/nucleos/<public_id>/posts/`.
+- **Janela de transição (`<id>` legado)**: durante a migração, URLs antigas com `<id>` continuam aceitas somente por compatibilidade. As respostas desses acessos retornam `Deprecation: true` e header `Warning: 299 - "Deprecated API usage: use /api/nucleos/<public_id>/ instead of /api/nucleos/<id>/"`. Planeje atualização dos clientes e remoção do formato legado na próxima versão de API.
 
 
 ### Monitoramento de Desempenho
