@@ -1078,13 +1078,13 @@ class NucleoPortfolioLegacyRedirectView(NoSuperadminMixin, LoginRequiredMixin, V
         return redirect(self.get_redirect_url(**kwargs), permanent=True)
 
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def get(self, request, public_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
 
         is_htmx = bool(request.headers.get("HX-Request"))
-        form_action = reverse("nucleos:delete", args=[nucleo.pk])
+        form_action = reverse("nucleos:delete", kwargs={"public_id": nucleo.public_id})
 
         if is_htmx:
             contexto_modal = {
@@ -1120,8 +1120,8 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
             },
         )
 
-    def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def post(self, request, public_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
         nucleo.soft_delete()

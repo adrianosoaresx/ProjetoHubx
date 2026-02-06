@@ -95,8 +95,8 @@
             {% endif %}
             {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'operador' %}
               <a
-                href="{% url 'nucleos:delete' object.pk %}"
-                hx-get="{% url 'nucleos:delete' object.pk %}"
+                href="{% url 'nucleos:delete' public_id=object.public_id %}"
+                hx-get="{% url 'nucleos:delete' public_id=object.public_id %}"
                 hx-target="#modal"
                 hx-trigger="click"
                 hx-swap="innerHTML"
