@@ -20,6 +20,7 @@ BADGE_STYLES = {
     "operador": "--primary:#0ea5e9; --primary-soft:rgba(14, 165, 233, 0.15); --primary-soft-border:rgba(14, 165, 233, 0.3);",
     "convidado": "--primary:#9ca3af; --primary-soft:rgba(156, 163, 175, 0.15); --primary-soft-border:rgba(156, 163, 175, 0.3);",
     "root": "--primary:#facc15; --primary-soft:rgba(250, 204, 21, 0.15); --primary-soft-border:rgba(250, 204, 21, 0.3);",
+    "nucleus": "--primary:#06b6d4; --primary-soft:rgba(6, 182, 212, 0.15); --primary-soft-border:rgba(6, 182, 212, 0.3);",
 }
 
 
@@ -32,6 +33,7 @@ BADGE_ICONS = {
     "operador": "settings-2",
     "convidado": "user",
     "root": "crown",
+    "nucleus": "building-2",
 }
 
 DEFAULT_BADGE_ICON = "badge-check"
@@ -41,6 +43,38 @@ def _make_badge(label: str, badge_type: str) -> dict[str, str]:
     style = BADGE_STYLES.get(badge_type, "")
     icon = BADGE_ICONS.get(badge_type, DEFAULT_BADGE_ICON)
     return {"label": label, "style": style, "icon": icon, "type": badge_type}
+
+
+def _active_participacoes_data(user) -> list[dict[str, object]]:
+    participacoes_manager = getattr(user, "participacoes", None)
+    participacoes = []
+    if participacoes_manager is not None:
+        prefetched = _get_prefetched(participacoes_manager, "participacoes")
+        if prefetched is not None:
+            participacoes = list(prefetched)
+        else:
+            participacoes = list(participacoes_manager.select_related("nucleo").all())
+
+    participacoes_data: list[dict[str, object]] = []
+    for participacao in participacoes:
+        if participacao.status != "ativo" or getattr(participacao, "status_suspensao", False):
+            continue
+
+        nucleo = getattr(participacao, "nucleo", None)
+        papel_coordenador = participacao.get_papel_coordenador_display() if participacao.papel_coordenador else ""
+        promotion_label = papel_coordenador if participacao.papel == "coordenador" else _("Nucleado")
+
+        participacoes_data.append(
+            {
+                "promotion_label": promotion_label,
+                "nucleo_nome": getattr(nucleo, "nome", ""),
+                "nucleo_id": getattr(nucleo, "id", None),
+                "is_coordenador": participacao.papel == "coordenador",
+                "papel_coordenador": papel_coordenador,
+            }
+        )
+
+    return participacoes_data
 
 
 def _get_prefetched(manager, cache_key):
@@ -143,46 +177,35 @@ def usuario_badges(user):
     badges: list[dict[str, str]] = []
     types_present: set[str] = set()
 
-    participacoes_manager = getattr(user, "participacoes", None)
-    participacoes = []
-    if participacoes_manager is not None:
-        prefetched = _get_prefetched(participacoes_manager, "participacoes")
-        if prefetched is not None:
-            participacoes = list(prefetched)
-        else:
-            participacoes = list(
-                participacoes_manager.select_related("nucleo").all()
-            )
+    active_participacoes = _active_participacoes_data(user)
+    seen_nucleus: set[int | str] = set()
 
-    for participacao in participacoes:
-        if participacao.status != "ativo" or getattr(participacao, "status_suspensao", False):
-            continue
-        nucleo = getattr(participacao, "nucleo", None)
-        nucleo_nome = getattr(nucleo, "nome", "")
+    for participacao in active_participacoes:
+        promotion_label = str(participacao.get("promotion_label") or "")
+        is_coordenador = bool(participacao.get("is_coordenador"))
+        nucleo_nome = str(participacao.get("nucleo_nome") or "")
+        nucleo_id = participacao.get("nucleo_id")
 
-        if participacao.papel == "coordenador":
-            papel = participacao.get_papel_coordenador_display() if participacao.papel_coordenador else ""
-            if papel:
-                if nucleo_nome:
-                    label = _("%(papel)s · %(nucleo)s") % {
-                        "papel": papel,
-                        "nucleo": nucleo_nome,
-                    }
-                else:
-                    label = papel
-            elif nucleo_nome:
-                label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
-            else:
-                label = _("Coordenador")
-            badges.append(_make_badge(label, "coordenador"))
+        if is_coordenador:
+            label = promotion_label or _("Coordenador")
+            badge = _make_badge(label, "coordenador")
             types_present.add("coordenador")
         else:
-            if nucleo_nome:
-                label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
-            else:
-                label = _("Nucleado")
-            badges.append(_make_badge(label, "nucleado"))
+            badge = _make_badge(promotion_label or _("Nucleado"), "nucleado")
             types_present.add("nucleado")
+
+        badge["group"] = "promotion"
+        badges.append(badge)
+
+        if nucleo_nome:
+            nucleus_key = nucleo_id if nucleo_id is not None else nucleo_nome
+            if nucleus_key in seen_nucleus:
+                continue
+            seen_nucleus.add(nucleus_key)
+            nucleus_badge = _make_badge(nucleo_nome, "nucleus")
+            nucleus_badge["group"] = "nucleus"
+            badges.append(nucleus_badge)
+            types_present.add("nucleus")
 
     nucleos_consultoria_manager = getattr(user, "nucleos_consultoria", None)
     consultoria = []
@@ -205,19 +228,21 @@ def usuario_badges(user):
     if getattr(user, "nucleo", None) and not {"coordenador", "nucleado"} & types_present:
         nucleo_nome = getattr(user.nucleo, "nome", "")
         if getattr(user, "is_coordenador", False):
-            if nucleo_nome:
-                label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
-            else:
-                label = _("Coordenador")
-            badges.append(_make_badge(label, "coordenador"))
+            promotion_badge = _make_badge(_("Coordenador"), "coordenador")
+            promotion_badge["group"] = "promotion"
+            badges.append(promotion_badge)
             types_present.add("coordenador")
         else:
-            if nucleo_nome:
-                label = _("Nucleado · %(nucleo)s") % {"nucleo": nucleo_nome}
-            else:
-                label = _("Nucleado")
-            badges.append(_make_badge(label, "nucleado"))
+            promotion_badge = _make_badge(_("Nucleado"), "nucleado")
+            promotion_badge["group"] = "promotion"
+            badges.append(promotion_badge)
             types_present.add("nucleado")
+
+        if nucleo_nome:
+            nucleus_badge = _make_badge(nucleo_nome, "nucleus")
+            nucleus_badge["group"] = "nucleus"
+            badges.append(nucleus_badge)
+            types_present.add("nucleus")
 
     if getattr(user, "user_type", "") == UserType.CONSULTOR.value and "consultor" not in types_present:
         badges.append(_make_badge(_("Consultor"), "consultor"))
@@ -240,6 +265,7 @@ def usuario_badges(user):
             "style": badge.get("style", ""),
             "icon": badge.get("icon", DEFAULT_BADGE_ICON),
             "type": badge.get("type", ""),
+            "group": badge.get("group", ""),
         }
         for badge in badges
     ]
