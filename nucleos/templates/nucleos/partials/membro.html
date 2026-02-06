@@ -22,14 +22,14 @@
     {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
     <div class="flex flex-wrap gap-3 pt-4 border-t border-[var(--border)]">
       <button class="btn btn-secondary btn-sm"
-              hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
+              hx-post="{% url 'nucleos:membro_promover' object.public_id part.pk %}"
               hx-target="#membro-{{ part.id }}"
               hx-swap="outerHTML"
               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         {% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}
       </button>
       <button class="btn btn-danger btn-sm"
-              hx-post="{% url 'nucleos:membro_remover' object.pk part.pk %}"
+              hx-post="{% url 'nucleos:membro_remover' object.public_id part.pk %}"
               hx-target="#membro-{{ part.id }}"
               hx-swap="outerHTML"
               hx-confirm="{% trans 'Confirmar remoção?' %}"

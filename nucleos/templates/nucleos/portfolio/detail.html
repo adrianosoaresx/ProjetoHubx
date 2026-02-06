@@ -62,7 +62,7 @@
           {% trans "Voltar" %}
         </a>
         {% if pode_gerenciar_portfolio %}
-          <a href="{% url 'nucleos:portfolio_edit' media.pk %}" class="btn btn-primary inline-flex items-center gap-2">
+          <a href="{% url 'nucleos:portfolio_edit' media.nucleo.public_id media.pk %}" class="btn btn-primary inline-flex items-center gap-2">
             {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
             {% trans "Editar" %}
           </a>

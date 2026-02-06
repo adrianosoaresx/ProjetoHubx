@@ -977,7 +977,7 @@ class NucleoUpdateView(
         nucleo = context.get("object") or getattr(self, "object", None)
         if nucleo:
             fallback_url = reverse(
-                "nucleos:detail_uuid",
+                "nucleos:detail",
                 kwargs={"public_id": nucleo.public_id},
             )
         else:
@@ -1005,7 +1005,7 @@ class NucleoUpdateView(
     def get_success_url(self):
         if self.object:
             return reverse(
-                "nucleos:detail_uuid",
+                "nucleos:detail",
                 kwargs={"public_id": self.object.public_id},
             )
         return super().get_success_url()
@@ -1018,6 +1018,64 @@ class NucleoUpdateView(
             resp["HX-Redirect"] = str(self.get_success_url())
             return resp
         return response
+
+
+
+class NucleoUuidRedirectView(NoSuperadminMixin, LoginRequiredMixin, View):
+    def get(self, request, public_id):
+        return redirect(
+            reverse("nucleos:detail", kwargs={"public_id": public_id}),
+            permanent=True,
+        )
+
+
+class NucleoLegacyRedirectView(NoSuperadminMixin, LoginRequiredMixin, View):
+    target_name: str | None = None
+
+    def get_target_name(self) -> str:
+        if not self.target_name:
+            raise ValueError("target_name must be configured")
+        return self.target_name
+
+    def get_nucleo(self):
+        return get_object_or_404(Nucleo, pk=self.kwargs["pk"], deleted=False)
+
+    def get_redirect_url(self, **kwargs):
+        nucleo = self.get_nucleo()
+        target_kwargs = {k: v for k, v in self.kwargs.items() if k != "pk"}
+        target_kwargs["public_id"] = nucleo.public_id
+        return reverse(self.get_target_name(), kwargs=target_kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return redirect(self.get_redirect_url(**kwargs), permanent=True)
+
+    def post(self, request, *args, **kwargs):
+        return redirect(self.get_redirect_url(**kwargs), permanent=True)
+
+
+class NucleoPortfolioLegacyRedirectView(NoSuperadminMixin, LoginRequiredMixin, View):
+    target_name: str | None = None
+
+    def get_target_name(self) -> str:
+        if not self.target_name:
+            raise ValueError("target_name must be configured")
+        return self.target_name
+
+    def get_media(self):
+        return get_object_or_404(NucleoMidia.objects.select_related("nucleo"), pk=self.kwargs["pk"], deleted=False)
+
+    def get_redirect_url(self, **kwargs):
+        media = self.get_media()
+        return reverse(
+            self.get_target_name(),
+            kwargs={"public_id": media.nucleo.public_id, "pk": media.pk},
+        )
+
+    def get(self, request, *args, **kwargs):
+        return redirect(self.get_redirect_url(**kwargs), permanent=True)
+
+    def post(self, request, *args, **kwargs):
+        return redirect(self.get_redirect_url(**kwargs), permanent=True)
 
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
@@ -1042,7 +1100,7 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
             return render(request, "nucleos/partials/nucleo_delete_modal.html", contexto_modal)
 
         back_href = self._resolve_back_href(request, nucleo)
-        fallback_url = reverse("nucleos:detail", args=[nucleo.pk])
+        fallback_url = reverse("nucleos:detail", kwargs={"public_id": nucleo.public_id})
         return render(
             request,
             "nucleos/delete.html",
@@ -1075,7 +1133,7 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return redirect("nucleos:list")
 
     def _resolve_back_href(self, request, nucleo: Nucleo) -> str:
-        fallback = reverse("nucleos:detail", args=[nucleo.pk])
+        fallback = reverse("nucleos:detail", kwargs={"public_id": nucleo.public_id})
         return resolve_back_href(request, fallback=fallback)
 
 
@@ -1159,9 +1217,9 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
     def get_object(self, queryset=None):
         queryset = queryset or self.get_queryset()
         public_id = self.kwargs.get("public_id")
-        if public_id:
-            return get_object_or_404(queryset, public_id=public_id)
-        return super().get_object(queryset)
+        if not public_id:
+            raise PermissionDenied(_("A URL pública do núcleo deve usar UUID."))
+        return get_object_or_404(queryset, public_id=public_id)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -1372,7 +1430,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
-        ctx["membros_carousel_fetch_url"] = reverse("nucleos:membros_carousel_api", args=[nucleo.pk])
+        ctx["membros_carousel_fetch_url"] = reverse("nucleos:membros_carousel_api", kwargs={"public_id": nucleo.public_id})
 
         return ctx
 
@@ -1390,7 +1448,7 @@ class NucleoDetailView(NucleoPainelRenderMixin, NoSuperadminMixin, LoginRequired
         if form.is_valid():
             form.save(nucleo=self.object)
             messages.success(request, _("Arquivo enviado com sucesso."))
-            return redirect("nucleos:detail", pk=self.object.pk)
+            return redirect("nucleos:detail", public_id=self.object.public_id)
 
         self._portfolio_form = form
         self._portfolio_show_form = True
@@ -1464,12 +1522,15 @@ class NucleoMidiaBaseMixin(LoginRequiredMixin, NoSuperadminMixin, NucleoVisibili
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
+        url_public_id = self.kwargs.get("public_id")
+        if url_public_id and str(obj.nucleo.public_id) != str(url_public_id):
+            raise PermissionDenied
         if not _usuario_pode_gerenciar_portfolio_nucleo(self.request.user, obj.nucleo):
             raise PermissionDenied
         return obj
 
     def get_success_url(self):
-        return reverse("nucleos:detail", args=[self.object.nucleo.pk])
+        return reverse("nucleos:detail", kwargs={"public_id": self.object.nucleo.public_id})
 
 
 class NucleoPortfolioUpdateView(NucleoMidiaBaseMixin, UpdateView):
@@ -1491,7 +1552,7 @@ class NucleoPortfolioUpdateView(NucleoMidiaBaseMixin, UpdateView):
         context["nucleo"] = self.object.nucleo
         context["title"] = _("Editar portfólio do núcleo")
         context["subtitle"] = self.object.descricao or ""
-        context["back_href"] = reverse("nucleos:detail", args=[self.object.nucleo.pk])
+        context["back_href"] = reverse("nucleos:detail", kwargs={"public_id": self.object.nucleo.public_id})
         return context
 
 
@@ -1506,14 +1567,14 @@ class NucleoPortfolioDeleteView(NucleoMidiaBaseMixin, DeleteView):
                 "titulo": _("Remover item do portfólio"),
                 "mensagem": _("Tem certeza que deseja remover este item do portfólio do núcleo?"),
                 "submit_label": _("Remover"),
-                "form_action": reverse("nucleos:portfolio_delete", args=[self.object.pk]),
+                "form_action": reverse("nucleos:portfolio_delete", kwargs={"public_id": self.object.nucleo.public_id, "pk": self.object.pk}),
             }
             return TemplateResponse(request, "nucleos/portfolio/delete_modal.html", context)
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["back_href"] = reverse("nucleos:detail", args=[self.object.nucleo.pk])
+        context["back_href"] = reverse("nucleos:detail", kwargs={"public_id": self.object.nucleo.public_id})
         context["nucleo"] = self.object.nucleo
         return context
 
@@ -1532,6 +1593,8 @@ class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/partials/nucleacao_invite.html"
     context_object_name = "nucleo"
+    slug_field = "public_id"
+    slug_url_kwarg = "public_id"
 
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False)
@@ -1545,7 +1608,7 @@ class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["participar_url"] = reverse("nucleos:participacao_solicitar", args=[self.object.pk])
+        context["participar_url"] = reverse("nucleos:participacao_solicitar", kwargs={"public_id": self.object.public_id})
         return context
 
 
@@ -1648,11 +1711,11 @@ class NucleacaoCancelarSolicitacaoView(
 
 
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
-    def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def post(self, request, public_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         if request.user.user_type == UserType.ADMIN:
             messages.error(request, _("Administradores não podem solicitar nucleação."))
-            return redirect("nucleos:detail", pk=nucleo.pk)
+            return redirect("nucleos:detail", public_id=nucleo.public_id)
         participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
 
         save_fields: list[str] = []
@@ -1683,17 +1746,17 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
         if bool(request.headers.get("HX-Request")):
             context = {"nucleo": nucleo}
             return TemplateResponse(request, "nucleos/partials/nucleacao_success.html", context)
-        return redirect("nucleos:detail", pk=pk)
+        return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
 class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, FormView):
     form_class = ParticipacaoDecisaoForm
 
     def form_valid(self, form):
-        nucleo = get_object_or_404(Nucleo, pk=self.kwargs["pk"])
+        nucleo = get_object_or_404(Nucleo, public_id=self.kwargs["public_id"])
         participacao = get_object_or_404(ParticipacaoNucleo, pk=self.kwargs["participacao_id"], nucleo=nucleo)
         if participacao.status != "pendente":
-            return redirect("nucleos:detail", pk=nucleo.pk)
+            return redirect("nucleos:detail", public_id=nucleo.public_id)
         participacao.decidido_por = self.request.user
         participacao.data_decisao = timezone.now()
         if form.cleaned_data["acao"] == "approve":
@@ -1706,23 +1769,23 @@ class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequ
             participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
             notify_participacao_recusada.delay(participacao.id)
             messages.success(self.request, _("Solicitação recusada."))
-        return redirect("nucleos:detail", pk=nucleo.pk)
+        return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
 class MembroRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
-    def post(self, request, pk, participacao_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def post(self, request, public_id, participacao_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         participacao.delete()
         if request.headers.get("HX-Request"):
             return HttpResponse("")
         messages.success(request, _("Membro removido do núcleo."))
-        return redirect("nucleos:detail", pk=pk)
+        return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
 class MembroPromoverView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
-    def post(self, request, pk, participacao_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def post(self, request, public_id, participacao_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         novo_papel = "membro" if participacao.papel == "coordenador" else "coordenador"
         participacao.papel = novo_papel
@@ -1737,21 +1800,21 @@ class MembroPromoverView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredM
             messages.success(request, _("Membro promovido a coordenador."))
         else:
             messages.success(request, _("Cargo alterado para membro."))
-        return redirect("nucleos:detail", pk=pk)
+        return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
 class SuplenteDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
-    def post(self, request, pk, suplente_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+    def post(self, request, public_id, suplente_id):
+        nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         suplente = get_object_or_404(CoordenadorSuplente, pk=suplente_id, nucleo=nucleo)
         suplente.delete()
         messages.success(request, _("Suplente removido."))
-        return redirect("nucleos:detail", pk=pk)
+        return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
 class NucleoToggleActiveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
-    def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo.all_objects, pk=pk)
+    def post(self, request, public_id):
+        nucleo = get_object_or_404(Nucleo.all_objects, public_id=public_id)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
         if nucleo.deleted:

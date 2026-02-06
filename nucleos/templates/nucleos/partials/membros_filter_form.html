@@ -1,5 +1,5 @@
 {% load i18n lucide_icons %}
-{% url 'nucleos:membros_list' object.pk as membros_list_url %}
+{% url 'nucleos:membros_list' object.public_id as membros_list_url %}
 
 {% with form_id=form_id|default:'membros-filter-form' search_input_id=search_input_id|default:'membros-search' hx_target=hx_target|default:'#membros-list' hx_indicator=hx_indicator|default:'#membros-loading' hx_push_url=hx_push_url|default:'true' default_papel=default_papel|default:current_papel_filter|default:'todos' card_name=card_name|default:'membros' search_label=search_label|default:_('Pesquisar membros') search_placeholder=search_placeholder|default:_('Buscar por nome ou email') search_value=search_value|default:membros_search_query %}
 
