@@ -15,9 +15,9 @@ NOTIFICACAO_FREQ_CHOICES = [
 ]
 
 IDIOMA_CHOICES = [
-    ("pt-BR", _("Português")),
-    ("en-US", _("English")),
-    ("es-ES", _("Español")),
+    ("pt-br", _("Português (Brasil)")),
+    ("en", _("English")),
+    ("es", _("Español")),
 ]
 
 TEMA_CHOICES = [
@@ -61,7 +61,7 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
         choices=NOTIFICACAO_FREQ_CHOICES,
         default="imediata",
     )
-    idioma = models.CharField(max_length=5, choices=IDIOMA_CHOICES, default="pt-BR")
+    idioma = models.CharField(max_length=5, choices=IDIOMA_CHOICES, default="pt-br")
     tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
     hora_notificacao_diaria = models.TimeField(
         default=time(8, 0),

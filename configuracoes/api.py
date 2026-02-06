@@ -39,7 +39,7 @@ class ConfiguracaoContaViewSet(ViewSet):
                     "frequencia_notificacoes_whatsapp": "diaria",
                     "receber_notificacoes_push": True,
                     "frequencia_notificacoes_push": "imediata",
-                    "idioma": "pt-BR",
+                    "idioma": "pt-br",
                     "tema": "claro",
                     "hora_notificacao_diaria": "08:00:00",
                     "hora_notificacao_semanal": "08:00:00",
@@ -62,7 +62,7 @@ class ConfiguracaoContaViewSet(ViewSet):
             OpenApiExample(
                 "Atualização completa",
                 request_only=True,
-                value={"tema": "escuro", "idioma": "en-US"},
+                value={"tema": "escuro", "idioma": "en"},
             )
         ],
     )

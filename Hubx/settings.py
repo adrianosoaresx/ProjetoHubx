@@ -331,6 +331,11 @@ BCRYPT_ROUNDS = 12
 
 # Internationalization
 LANGUAGE_CODE = "pt-br"
+LANGUAGES = [
+    ("pt-br", "Português (Brasil)"),
+    ("en", "English"),
+    ("es", "Español"),
+]
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True

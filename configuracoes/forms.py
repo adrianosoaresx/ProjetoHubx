@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext_lazy as _
@@ -75,6 +76,15 @@ class ConfiguracaoContaForm(forms.ModelForm):
                 self.add_error("dia_semana_notificacao", _("Obrigatório para frequência semanal."))
         return data
 
+
+    def clean_idioma(self) -> str:
+        idioma = (self.cleaned_data.get("idioma") or "").replace("_", "-").lower()
+        aliases = {"pt-br": "pt-br", "en-us": "en", "es-es": "es"}
+        idioma = aliases.get(idioma, idioma)
+        valid_codes = {code.replace("_", "-").lower() for code, _ in settings.LANGUAGES}
+        if idioma not in valid_codes:
+            raise forms.ValidationError(_("Selecione um idioma válido."))
+        return idioma
 
 class OperadorCreateForm(UserCreationForm):
     """Formulário simplificado para criação de operadores."""

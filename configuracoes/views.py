@@ -5,6 +5,7 @@ from typing import Any, Dict
 import json
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -57,6 +58,14 @@ def _is_htmx(request: HttpRequest) -> bool:
         request.headers.get("HX-Request")
         or getattr(request, "htmx", False)
     )
+
+
+def _canonical_language_code(language_code: str | None) -> str:
+    aliases = {"pt-br": "pt-br", "en-us": "en", "es-es": "es"}
+    normalized = (language_code or settings.LANGUAGE_CODE).replace("_", "-").lower()
+    canonical = aliases.get(normalized, normalized)
+    valid_codes = {code.replace("_", "-").lower() for code, _ in settings.LANGUAGES}
+    return canonical if canonical in valid_codes else settings.LANGUAGE_CODE
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
@@ -373,7 +382,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
                 if idioma:
                     response.set_cookie(
                         "django_language",
-                        idioma,
+                        _canonical_language_code(idioma),
                         httponly=False,
                         secure=request.is_secure(),
                         samesite="Lax",

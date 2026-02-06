@@ -65,7 +65,9 @@ class UserLocaleMiddleware(LocaleMiddleware):
         def _normalize_language_code(language_code: str | None) -> str | None:
             if not language_code:
                 return None
-            return language_code.replace("_", "-").lower()
+            aliases = {"en-us": "en", "es-es": "es", "pt-br": "pt-br"}
+            normalized = language_code.replace("_", "-").lower()
+            return aliases.get(normalized, normalized)
 
         source = "default"
         lang = _normalize_language_code(request.COOKIES.get("django_language"))
