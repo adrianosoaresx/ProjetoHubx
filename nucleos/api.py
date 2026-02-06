@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import uuid
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -152,6 +153,12 @@ class NucleoViewSet(viewsets.ModelViewSet):
     serializer_class = NucleoSerializer
     permission_classes = [IsAdminOrCoordenador]
     pagination_class = NucleoPagination
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
+
+    _LEGACY_LOOKUP_WARNING = (
+        '299 - "Deprecated API usage: use /api/nucleos/<public_id>/ instead of /api/nucleos/<id>/"'
+    )
 
     def get_permissions(self):
         if self.action == "create":
@@ -161,6 +168,32 @@ class NucleoViewSet(viewsets.ModelViewSet):
         else:
             perms = self.permission_classes
         return [p() for p in perms]
+
+    def get_object(self):
+        """Resolve núcleo by public_id with temporary fallback to legacy numeric id."""
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs.get(lookup_kwarg)
+
+        if lookup_value is None:
+            return super().get_object()
+
+        try:
+            uuid.UUID(str(lookup_value))
+            obj = get_object_or_404(queryset, **{self.lookup_field: lookup_value})
+        except ValueError:
+            obj = get_object_or_404(queryset, pk=lookup_value)
+            self.request._uses_legacy_nucleo_id_lookup = True  # type: ignore[attr-defined]
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        if getattr(request, "_uses_legacy_nucleo_id_lookup", False):
+            response["Deprecation"] = "true"
+            response["Warning"] = self._LEGACY_LOOKUP_WARNING
+        return response
 
     def perform_create(self, serializer):
         serializer.save(organizacao=self.request.user.organizacao)
@@ -231,7 +264,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="convites",
         permission_classes=[IsAdmin],
     )
-    def convites(self, request, pk: str | None = None):
+    def convites(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         data = request.data.copy()
         data["nucleo"] = nucleo.pk
@@ -255,7 +288,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="convites/(?P<convite_id>[^/.]+)",
         permission_classes=[IsAdmin],
     )
-    def revogar_convite(self, request, pk: str | None = None, convite_id: str | None = None):
+    def revogar_convite(self, request, public_id: str | None = None, convite_id: str | None = None):
         nucleo = self.get_object()
         convite = get_object_or_404(ConviteNucleo, pk=convite_id, nucleo=nucleo)
         agora = timezone.now()
@@ -273,7 +306,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], url_path="posts", permission_classes=[IsAuthenticated])
-    def posts(self, request, pk: str | None = None):
+    def posts(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         eh_membro = ParticipacaoNucleo.objects.filter(
             user=request.user,
@@ -295,7 +328,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="solicitar", permission_classes=[IsAuthenticated])
-    def solicitar(self, request, pk: str | None = None):
+    def solicitar(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         if request.user.organizacao_id != nucleo.organizacao_id:
             return Response(
@@ -343,7 +376,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membros/(?P<user_id>[^/.]+)/aprovar",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def aprovar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+    def aprovar_membro(self, request, public_id: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
         participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if participacao.status != "pendente":
@@ -366,7 +399,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membros/(?P<user_id>[^/.]+)/recusar",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def recusar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+    def recusar_membro(self, request, public_id: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
         participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if participacao.status != "pendente":
@@ -391,7 +424,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membros/(?P<user_id>[^/.]+)/suspender",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def suspender_membro(self, request, pk: str | None = None, user_id: str | None = None):
+    def suspender_membro(self, request, public_id: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
         participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo")
         if participacao.status_suspensao:
@@ -417,7 +450,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membros/(?P<user_id>[^/.]+)/reativar",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def reativar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+    def reativar_membro(self, request, public_id: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
         participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if not participacao.status_suspensao:
@@ -444,7 +477,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     def coordenador(
         self,
         request,
-        pk: str | None = None,
+        public_id: str | None = None,
         user_id: str | None = None,
     ):
         nucleo = self.get_object()
@@ -482,10 +515,10 @@ class NucleoViewSet(viewsets.ModelViewSet):
     def promover_membro(
         self,
         request,
-        pk: str | None = None,
+        public_id: str | None = None,
         user_id: str | None = None,
     ):
-        return self.coordenador(request, pk=pk, user_id=user_id)
+        return self.coordenador(request, public_id=public_id, user_id=user_id)
 
     @action(
         detail=True,
@@ -496,7 +529,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     def remover_membro(
         self,
         request,
-        pk: str | None = None,
+        public_id: str | None = None,
         user_id: str | None = None,
     ):
         nucleo = self.get_object()
@@ -518,7 +551,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membro-status",
         permission_classes=[IsAuthenticated],
     )
-    def membro_status(self, request, pk: str | None = None):
+    def membro_status(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         participa, info, suspenso = user_belongs_to_nucleo(request.user, nucleo.id)
         papel = ""
@@ -534,7 +567,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="participacoes/(?P<participacao_id>[^/.]+)",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def decidir_participacao(self, request, pk: str | None = None, participacao_id: str | None = None):
+    def decidir_participacao(self, request, public_id: str | None = None, participacao_id: str | None = None):
         nucleo = self.get_object()
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         acao = request.data.get("acao")
@@ -563,7 +596,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="suplentes",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def suplentes(self, request, pk: str | None = None):
+    def suplentes(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         if request.method == "GET":
             qs = nucleo.coordenadores_suplentes.all()
@@ -601,14 +634,14 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="suplentes/(?P<suplente_id>[^/.]+)",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def remover_suplente(self, request, pk: str | None = None, suplente_id: str | None = None):
+    def remover_suplente(self, request, public_id: str | None = None, suplente_id: str | None = None):
         nucleo = self.get_object()
         suplente = get_object_or_404(CoordenadorSuplente, pk=suplente_id, nucleo=nucleo)
         suplente.delete()
         return Response(status=204)
 
     @action(detail=True, methods=["get"], url_path="membros", permission_classes=[IsAdminOrCoordenador])
-    def membros(self, request, pk: str | None = None):
+    def membros(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         page_number = request.query_params.get("page", "1")
         page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
@@ -633,7 +666,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="membros-ativos",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def membros_ativos(self, request, pk: str | None = None):
+    def membros_ativos(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         qs = nucleo.participacoes.select_related("user").filter(status="ativo", status_suspensao=False)
         page = self.paginate_queryset(qs)
@@ -649,7 +682,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(data)
 
     @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
-    def metrics(self, request, pk: str | None = None):
+    def metrics(self, request, public_id: str | None = None):
         nucleo = self.get_object()
         cache_key = f"nucleo_{nucleo.id}_metrics"
         data = cache.get(cache_key) or _METRICS_CACHE.get(cache_key)

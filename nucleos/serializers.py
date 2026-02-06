@@ -56,12 +56,14 @@ class ParticipacaoNucleoSerializer(serializers.ModelSerializer):
 
 class NucleoSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
+    public_id = serializers.UUIDField(read_only=True)
     suplentes = CoordenadorSuplenteSerializer(many=True, read_only=True, source="coordenadores_suplentes")
 
     class Meta:
         model = Nucleo
         fields = [
             "id",
+            "public_id",
             "organizacao",
             "nome",
             "descricao",
