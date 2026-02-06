@@ -63,7 +63,9 @@ def _deny_root_connections_access(request):
 
 def _get_user_connections(user, query: str):
     connections = (
-        user.connections.select_related("organizacao", "nucleo")
+        user.connections.select_related("organizacao", "nucleo").prefetch_related(
+            "participacoes__nucleo", "nucleos_consultoria"
+        )
         if hasattr(user, "connections")
         else User.objects.none()
     )
@@ -77,7 +79,9 @@ def _get_user_connections(user, query: str):
 
 def _get_user_connection_requests(user, query: str):
     connection_requests = (
-        user.followers.select_related("organizacao", "nucleo")
+        user.followers.select_related("organizacao", "nucleo").prefetch_related(
+            "participacoes__nucleo", "nucleos_consultoria"
+        )
         if hasattr(user, "followers")
         else User.objects.none()
     )
@@ -91,7 +95,9 @@ def _get_user_connection_requests(user, query: str):
 
 def _get_user_sent_connection_requests(user, query: str):
     sent_requests = (
-        user.following.select_related("organizacao", "nucleo")
+        user.following.select_related("organizacao", "nucleo").prefetch_related(
+            "participacoes__nucleo", "nucleos_consultoria"
+        )
         if hasattr(user, "following")
         else User.objects.none()
     )
@@ -698,6 +704,7 @@ def _build_conexoes_busca_context(
             User.objects.filter(organizacao=organizacao, is_associado=True)
             .exclude(pk=user.pk)
             .select_related("organizacao", "nucleo")
+            .prefetch_related("participacoes__nucleo", "nucleos_consultoria")
             .annotate(
                 cnpj_digits=Replace(
                     Replace(
