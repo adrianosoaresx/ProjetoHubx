@@ -78,11 +78,25 @@
         <h3 class="text-base text-center font-semibold [var(--text-primary)] group-hover:underline">{{ title }}</h3>
         {% include details %}
 
-        {% with can_request_nucleacao=True %}
+        {% with can_request_nucleacao=True nucleacao_status=None %}
         {% if resolved_nucleo %}
           {% can_request_nucleacao resolved_nucleo as can_request_nucleacao %}
+          {% get_nucleacao_status resolved_nucleo as nucleacao_status %}
         {% endif %}
-        {% if cta_url and can_request_nucleacao %}
+
+        {% if resolved_nucleo and nucleacao_status == 'ativo' %}
+          <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
+            <span class="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-emerald-500/60 dark:bg-emerald-500/10 dark:text-emerald-200">
+              {% trans 'Nucleado' %}
+            </span>
+          </div>
+        {% elif resolved_nucleo and nucleacao_status == 'pendente' %}
+          <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
+            <span class="{{ cta_classes|default:'btn btn-primary btn-sm relative z-20' }} pointer-events-none opacity-60" aria-disabled="true">
+              {% trans 'Solicitação enviada' %}
+            </span>
+          </div>
+        {% elif cta_url and can_request_nucleacao %}
           <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
             <a
               href="{{ cta_url }}"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django import template
+from django.db.models import Q
 
 from accounts.models import UserType
 
@@ -35,8 +36,30 @@ def can_request_nucleacao(context, nucleo) -> bool:
     if participacoes_manager is None:
         return False
 
-    active_participacoes = participacoes_manager.filter(
-        user=user, status="ativo", status_suspensao=False
+    active_participacoes = participacoes_manager.filter(user=user).filter(
+        Q(status="pendente") | Q(status="ativo", status_suspensao=False)
     )
 
     return not active_participacoes.exists()
+
+
+@register.simple_tag(takes_context=True)
+def get_nucleacao_status(context, nucleo) -> str | None:
+    """Return current participation status for the logged user in the núcleo."""
+
+    request = context.get("request")
+    user = getattr(request, "user", None)
+
+    if not user or not getattr(user, "is_authenticated", False):
+        return None
+
+    participacoes_manager = getattr(nucleo, "participacoes", None)
+    if participacoes_manager is None:
+        return None
+
+    status = (
+        participacoes_manager.filter(user=user, deleted=False)
+        .values_list("status", flat=True)
+        .first()
+    )
+    return status or None
