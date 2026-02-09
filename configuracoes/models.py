@@ -107,8 +107,10 @@ class ConfiguracaoContaLog(TimeStampedModel):
     campo = models.CharField(max_length=50)
     valor_antigo = models.TextField(null=True, blank=True)
     valor_novo = models.TextField(null=True, blank=True)
-    ip = EncryptedCharField(max_length=45, null=True, blank=True)
-    user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+    # Valores são armazenados criptografados; o texto cifrado ocupa mais espaço
+    # que o valor original. Por isso, os limites no banco precisam ser maiores.
+    ip = EncryptedCharField(max_length=255, null=True, blank=True)
+    user_agent = EncryptedCharField(max_length=2048, null=True, blank=True)
     fonte = models.CharField(
         max_length=10,
         choices=[("UI", "UI"), ("API", "API"), ("import", "import")],
