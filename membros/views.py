@@ -111,6 +111,8 @@ class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView)
             error_message = str(exc)
             if "accounts_user.cnpj" in error_message:
                 form.add_error("cnpj", _("Este CNPJ já está em uso."))
+            elif "accounts_user_unique_cpf_without_cnpj" in error_message:
+                form.add_error(None, _("Cnpj ou Cpf já cadastrado."))
             else:
                 form.add_error(None, _("Não foi possível salvar o usuário. Tente novamente."))
             return self.form_invalid(form)
