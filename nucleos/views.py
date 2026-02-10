@@ -1787,21 +1787,29 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
         if isinstance(user_type, UserType):
             user_type = user_type.value
 
-        if user_type == UserType.ADMIN.value:
-            messages.error(request, _("Administradores não podem solicitar nucleação."))
+        def blocked_response(message: str, *, status_code: int = 403):
+            messages.error(request, message)
+            if bool(request.headers.get("HX-Request")):
+                html = render_to_string(
+                    "nucleos/partials/nucleacao_submit_feedback.html",
+                    {"submit_error_message": message},
+                    request=request,
+                )
+                return HttpResponse(html, status=status_code)
             return redirect("nucleos:detail", public_id=nucleo.public_id)
+
+        if user_type == UserType.ADMIN.value:
+            return blocked_response(_("Administradores não podem solicitar nucleação."))
 
         if user_type not in {
             UserType.ASSOCIADO.value,
             UserType.NUCLEADO.value,
             UserType.COORDENADOR.value,
         }:
-            messages.error(request, _("Seu perfil não pode solicitar nucleação."))
-            return redirect("nucleos:detail", public_id=nucleo.public_id)
+            return blocked_response(_("Seu perfil não pode solicitar nucleação."))
 
         if getattr(user, "organizacao_id", None) != getattr(nucleo, "organizacao_id", None):
-            messages.error(request, _("Você só pode solicitar nucleação em núcleos da sua organização."))
-            return redirect("nucleos:detail", public_id=nucleo.public_id)
+            return blocked_response(_("Você só pode solicitar nucleação em núcleos da sua organização."))
 
         participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=user, nucleo=nucleo)
 

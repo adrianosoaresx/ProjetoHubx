@@ -52,6 +52,8 @@
         </p>
       </div>
 
+      <div id="nucleacao-submit-feedback" aria-live="polite"></div>
+
       <div class="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="text-sm text-[var(--text-secondary)]">
           {% trans "Sua solicitação será enviada aos responsáveis pelo núcleo." %}
@@ -65,7 +67,7 @@
               hx-post="{{ participar_url }}"
               hx-target="#modal"
               hx-swap="innerHTML"
-              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}'; htmx:afterRequest: (function(event){ if (!event.detail.successful) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const focusTarget = document.getElementById('nucleo-cta-focus-{{ nucleo.public_id }}') || (window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : null); if (focusTarget && typeof focusTarget.focus === 'function') { focusTarget.focus(); } window.HubxModalTrigger = null; window.HubxModalTriggerContainer = null; })(); htmx:afterOnLoad: (function(event){ const triggerHeader = event.detail.xhr ? event.detail.xhr.getResponseHeader('HX-Trigger') : null; if (!triggerHeader || triggerHeader.indexOf('nucleacao:close-modal') === -1) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } })();"
+              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}'; (function(){ const feedback = document.getElementById('nucleacao-submit-feedback'); if (feedback) { feedback.innerHTML = ''; } })(); htmx:responseError: (function(event){ const feedback = document.getElementById('nucleacao-submit-feedback'); if (!feedback) { return; } const xhr = event.detail && event.detail.xhr ? event.detail.xhr : null; const responseHtml = xhr ? xhr.responseText : ''; feedback.innerHTML = responseHtml || '<div class=&quot;rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800&quot; role=&quot;alert&quot;>{% trans 'Não foi possível enviar sua solicitação. Tente novamente.' %}</div>'; }); htmx:afterRequest: (function(event){ if (!event.detail.successful) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const focusTarget = document.getElementById('nucleo-cta-focus-{{ nucleo.public_id }}') || (window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : null); if (focusTarget && typeof focusTarget.focus === 'function') { focusTarget.focus(); } window.HubxModalTrigger = null; window.HubxModalTriggerContainer = null; })(); htmx:afterOnLoad: (function(event){ const triggerHeader = event.detail.xhr ? event.detail.xhr.getResponseHeader('HX-Trigger') : null; if (!triggerHeader || triggerHeader.indexOf('nucleacao:close-modal') === -1) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } })();"
             >
               {% csrf_token %}
               <button type="submit" class="btn btn-primary">
