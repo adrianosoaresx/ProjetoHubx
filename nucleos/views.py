@@ -1599,10 +1599,15 @@ class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False)
         user = self.request.user
-        if user.user_type == UserType.ADMIN:
+
+        user_type = getattr(user, "get_tipo_usuario", None) or getattr(user, "user_type", None)
+        if isinstance(user_type, UserType):
+            user_type = user_type.value
+
+        if user_type == UserType.ADMIN.value:
             qs = qs.filter(organizacao=user.organizacao)
-        elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user)
+        elif user_type == UserType.COORDENADOR.value:
+            qs = qs.filter(organizacao=user.organizacao)
         allowed_keys = _get_allowed_classificacao_keys(user)
         return qs.filter(classificacao__in=allowed_keys)
 
@@ -1713,10 +1718,28 @@ class NucleacaoCancelarSolicitacaoView(
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, public_id):
         nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
-        if request.user.user_type == UserType.ADMIN:
+        user = request.user
+        user_type = getattr(user, "get_tipo_usuario", None) or getattr(user, "user_type", None)
+        if isinstance(user_type, UserType):
+            user_type = user_type.value
+
+        if user_type == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem solicitar nucleação."))
             return redirect("nucleos:detail", public_id=nucleo.public_id)
-        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
+
+        if user_type not in {
+            UserType.ASSOCIADO.value,
+            UserType.NUCLEADO.value,
+            UserType.COORDENADOR.value,
+        }:
+            messages.error(request, _("Seu perfil não pode solicitar nucleação."))
+            return redirect("nucleos:detail", public_id=nucleo.public_id)
+
+        if getattr(user, "organizacao_id", None) != getattr(nucleo, "organizacao_id", None):
+            messages.error(request, _("Você só pode solicitar nucleação em núcleos da sua organização."))
+            return redirect("nucleos:detail", public_id=nucleo.public_id)
+
+        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=user, nucleo=nucleo)
 
         save_fields: list[str] = []
         if participacao.deleted:
