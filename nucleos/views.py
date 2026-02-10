@@ -1757,6 +1757,29 @@ class NucleacaoCancelarSolicitacaoView(
 
 
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
+    @staticmethod
+    def _build_cta_context(*, nucleo: Nucleo, status: str) -> dict[str, str]:
+        context = {
+            "nucleo": nucleo,
+            "resolved_nucleo": nucleo,
+            "nucleo_public_id": str(nucleo.public_id),
+            "nucleacao_status": status,
+            "cta_url": reverse("nucleos:nucleacao_invite", kwargs={"public_id": nucleo.public_id}),
+            "cta_label": _("Quero me nuclear"),
+            "cta_hx_target": "#modal",
+            "cta_hx_swap": "innerHTML",
+            "cta_hx_on": (
+                "htmx:beforeRequest: "
+                "window.HubxModalTrigger = this; "
+                f"window.HubxModalTriggerContainer = 'nucleo-cta-{nucleo.public_id}';"
+            ),
+            "cta_container_id": f"nucleo-cta-{nucleo.public_id}",
+            "cta_focus_id": f"nucleo-cta-focus-{nucleo.public_id}",
+            "cta_classes": "btn btn-primary btn-sm relative z-20",
+        }
+        context["cta_hx_get"] = context["cta_url"]
+        return context
+
     def post(self, request, public_id):
         nucleo = get_object_or_404(Nucleo, public_id=public_id, deleted=False)
         user = request.user
@@ -1808,27 +1831,11 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
         if save_fields:
             participacao.save(update_fields=save_fields)
         if bool(request.headers.get("HX-Request")):
-            context = {
-                "nucleo": nucleo,
-                "resolved_nucleo": nucleo,
-                "nucleo_public_id": str(nucleo.public_id),
-                "nucleacao_status": participacao.status,
-                "cta_url": reverse("nucleos:nucleacao_invite", kwargs={"public_id": nucleo.public_id}),
-                "cta_label": _("Quero me nuclear"),
-                "cta_hx_target": "#modal",
-                "cta_hx_swap": "innerHTML",
-                "cta_hx_on": (
-                    "htmx:beforeRequest: "
-                    "window.HubxModalTrigger = this; "
-                    f"window.HubxModalTriggerContainer = 'nucleo-cta-{nucleo.public_id}';"
-                ),
-                "cta_container_id": f"nucleo-cta-{nucleo.public_id}",
-                "cta_focus_id": f"nucleo-cta-focus-{nucleo.public_id}",
-                "cta_classes": "btn btn-primary btn-sm relative z-20",
-                "oob_swap": True,
-            }
-            context["cta_hx_get"] = context["cta_url"]
-            return TemplateResponse(request, "nucleos/partials/nucleo_card_cta.html", context)
+            persisted_participacao = ParticipacaoNucleo.all_objects.only("status").get(pk=participacao.pk)
+            context = self._build_cta_context(nucleo=nucleo, status=persisted_participacao.status)
+            response = TemplateResponse(request, "nucleos/partials/nucleo_card_cta.html", context)
+            response["HX-Trigger"] = "nucleacao:close-modal"
+            return response
         return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 

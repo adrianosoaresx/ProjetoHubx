@@ -65,7 +65,7 @@
               hx-post="{{ participar_url }}"
               hx-target="#nucleo-cta-{{ nucleo.public_id }}"
               hx-swap="outerHTML"
-              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}'; htmx:afterRequest: (function(){ const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const focusTarget = document.getElementById('nucleo-cta-focus-{{ nucleo.public_id }}') || (window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : null); if (focusTarget && typeof focusTarget.focus === 'function') { focusTarget.focus(); } window.HubxModalTrigger = null; window.HubxModalTriggerContainer = null; })();"
+              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}'; htmx:afterRequest: (function(event){ if (!event.detail.successful) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const focusTarget = document.getElementById('nucleo-cta-focus-{{ nucleo.public_id }}') || (window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : null); if (focusTarget && typeof focusTarget.focus === 'function') { focusTarget.focus(); } window.HubxModalTrigger = null; window.HubxModalTriggerContainer = null; })(); htmx:afterOnLoad: (function(event){ const triggerHeader = event.detail.xhr ? event.detail.xhr.getResponseHeader('HX-Trigger') : null; if (!triggerHeader || triggerHeader.indexOf('nucleacao:close-modal') === -1) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } })();"
             >
               {% csrf_token %}
               <button type="submit" class="btn btn-primary">
@@ -150,6 +150,25 @@
     } else if (focusableElements.length) {
       focusableElements[0].focus();
     }
+  })();
+</script>
+
+<script>
+  (function () {
+    const modalContainer = document.getElementById('modal');
+
+    if (!modalContainer || modalContainer.dataset.nucleacaoCloseBound === 'true') {
+      return;
+    }
+
+    modalContainer.dataset.nucleacaoCloseBound = 'true';
+
+    document.body.addEventListener('nucleacao:close-modal', function () {
+      const modal = document.getElementById('modal');
+      if (modal) {
+        modal.innerHTML = '';
+      }
+    });
   })();
 </script>
 {% endwith %}
