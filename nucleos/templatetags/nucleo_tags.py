@@ -23,6 +23,8 @@ def can_request_nucleacao(context, nucleo) -> bool:
         return False
 
     tipo_usuario = getattr(user, "get_tipo_usuario", None) or getattr(user, "user_type", None)
+    if isinstance(tipo_usuario, UserType):
+        tipo_usuario = tipo_usuario.value
     allowed_tipos = {
         UserType.ASSOCIADO.value,
         UserType.COORDENADOR.value,
@@ -30,6 +32,9 @@ def can_request_nucleacao(context, nucleo) -> bool:
     }
 
     if tipo_usuario not in allowed_tipos:
+        return False
+
+    if getattr(user, "organizacao_id", None) != getattr(nucleo, "organizacao_id", None):
         return False
 
     participacoes_manager = getattr(nucleo, "participacoes", None)
