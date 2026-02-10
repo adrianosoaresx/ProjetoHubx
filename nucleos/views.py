@@ -1831,10 +1831,9 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
         if save_fields:
             participacao.save(update_fields=save_fields)
         if bool(request.headers.get("HX-Request")):
-            persisted_participacao = ParticipacaoNucleo.all_objects.only("status").get(pk=participacao.pk)
-            context = self._build_cta_context(nucleo=nucleo, status=persisted_participacao.status)
-            response = TemplateResponse(request, "nucleos/partials/nucleo_card_cta.html", context)
+            response = HttpResponse(status=204)
             response["HX-Trigger"] = "nucleacao:close-modal"
+            response["HX-Refresh"] = "true"
             return response
         return redirect("nucleos:detail", public_id=nucleo.public_id)
 
