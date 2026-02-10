@@ -1704,7 +1704,21 @@ class NucleacaoPromoverSolicitacaoView(
                 "justificativa",
             ]
         )
-        notify_participacao_aprovada.delay(participacao.id)
+        try:
+            notify_participacao_aprovada.delay(participacao.id)
+        except Exception:
+            logger.exception(
+                "Falha ao enfileirar notificação de participação aprovada.",
+                extra={
+                    "participacao_id": participacao.id,
+                    "nucleo_id": participacao.nucleo_id,
+                    "user_id": request.user.id,
+                },
+            )
+            messages.warning(
+                request,
+                _("Promoção concluída, mas notificação não enviada."),
+            )
         messages.success(
             request,
             _("Solicitação aprovada e usuário promovido a nucleado."),
@@ -1859,12 +1873,36 @@ class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequ
         if form.cleaned_data["acao"] == "approve":
             participacao.status = "ativo"
             participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
-            notify_participacao_aprovada.delay(participacao.id)
+            try:
+                notify_participacao_aprovada.delay(participacao.id)
+            except Exception:
+                logger.exception(
+                    "Falha ao enfileirar notificação de participação aprovada.",
+                    extra={
+                        "participacao_id": participacao.id,
+                        "nucleo_id": participacao.nucleo_id,
+                        "user_id": self.request.user.id,
+                    },
+                )
+                messages.warning(
+                    self.request,
+                    _("Promoção concluída, mas notificação não enviada."),
+                )
             messages.success(self.request, _("Solicitação aprovada."))
         else:
             participacao.status = "inativo"
             participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
-            notify_participacao_recusada.delay(participacao.id)
+            try:
+                notify_participacao_recusada.delay(participacao.id)
+            except Exception:
+                logger.exception(
+                    "Falha ao enfileirar notificação de participação recusada.",
+                    extra={
+                        "participacao_id": participacao.id,
+                        "nucleo_id": participacao.nucleo_id,
+                        "user_id": self.request.user.id,
+                    },
+                )
             messages.success(self.request, _("Solicitação recusada."))
         return redirect("nucleos:detail", public_id=nucleo.public_id)
 

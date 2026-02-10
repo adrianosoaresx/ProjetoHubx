@@ -389,7 +389,17 @@ class NucleoViewSet(viewsets.ModelViewSet):
         logger.info(
             "Participação aprovada", extra={"participacao_id": participacao.id, "decidido_por": request.user.id}
         )
-        notify_participacao_aprovada.delay(participacao.id)
+        try:
+            notify_participacao_aprovada.delay(participacao.id)
+        except Exception:
+            logger.exception(
+                "Falha ao enfileirar notificação de participação aprovada.",
+                extra={
+                    "participacao_id": participacao.id,
+                    "nucleo_id": participacao.nucleo_id,
+                    "user_id": request.user.id,
+                },
+            )
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
 
@@ -414,7 +424,17 @@ class NucleoViewSet(viewsets.ModelViewSet):
             "Participação recusada",
             extra={"participacao_id": participacao.id, "decidido_por": request.user.id},
         )
-        notify_participacao_recusada.delay(participacao.id)
+        try:
+            notify_participacao_recusada.delay(participacao.id)
+        except Exception:
+            logger.exception(
+                "Falha ao enfileirar notificação de participação recusada.",
+                extra={
+                    "participacao_id": participacao.id,
+                    "nucleo_id": participacao.nucleo_id,
+                    "user_id": request.user.id,
+                },
+            )
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
 
@@ -584,9 +604,29 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao.decidido_por = request.user
         participacao.save(update_fields=["status", "data_decisao", "decidido_por"])
         if novo_status == "ativo":
-            notify_participacao_aprovada.delay(participacao.id)
+            try:
+                notify_participacao_aprovada.delay(participacao.id)
+            except Exception:
+                logger.exception(
+                    "Falha ao enfileirar notificação de participação aprovada.",
+                    extra={
+                        "participacao_id": participacao.id,
+                        "nucleo_id": participacao.nucleo_id,
+                        "user_id": request.user.id,
+                    },
+                )
         else:
-            notify_participacao_recusada.delay(participacao.id)
+            try:
+                notify_participacao_recusada.delay(participacao.id)
+            except Exception:
+                logger.exception(
+                    "Falha ao enfileirar notificação de participação recusada.",
+                    extra={
+                        "participacao_id": participacao.id,
+                        "nucleo_id": participacao.nucleo_id,
+                        "user_id": request.user.id,
+                    },
+                )
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
 
