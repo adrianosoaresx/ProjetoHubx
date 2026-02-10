@@ -1,0 +1,40 @@
+{% load i18n lucide_icons nucleo_tags %}
+{% with can_request_nucleacao=True resolved_status=nucleacao_status|default:None %}
+  {% if resolved_nucleo and resolved_status is None %}
+    {% can_request_nucleacao resolved_nucleo as can_request_nucleacao %}
+    {% get_nucleacao_status resolved_nucleo as resolved_status %}
+  {% endif %}
+
+  <div{% if cta_container_id %} id="{{ cta_container_id }}"{% else %} class="contents"{% endif %}{% if oob_swap %} hx-swap-oob="outerHTML"{% endif %}>
+    {% if resolved_nucleo and resolved_status == 'ativo' %}
+      {% badge_style 'nucleado' as nucleado_badge_style %}
+      <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
+        <span {% if cta_focus_id %}id="{{ cta_focus_id }}"{% endif %} tabindex="-1" class="inline-flex max-w-full items-start gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-normal break-words leading-tight"{% if nucleado_badge_style %} style="{{ nucleado_badge_style }}"{% endif %}>
+          {% lucide 'users' class='mt-0.5 h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+          <span class="min-w-0 whitespace-normal break-words leading-tight">{% trans 'Nucleado' %}</span>
+        </span>
+      </div>
+    {% elif resolved_nucleo and resolved_status == 'pendente' %}
+      <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
+        <span {% if cta_focus_id %}id="{{ cta_focus_id }}"{% endif %} tabindex="-1" class="{{ cta_classes|default:'btn btn-primary btn-sm relative z-20' }} pointer-events-none opacity-60" aria-disabled="true">
+          {% trans 'Solicitação enviada' %}
+        </span>
+      </div>
+    {% elif cta_url and can_request_nucleacao %}
+      <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
+        <a
+          {% if cta_focus_id %}id="{{ cta_focus_id }}"{% endif %}
+          href="{{ cta_url }}"
+          class="{{ cta_classes|default:'btn btn-primary btn-sm relative z-20' }}"
+          {% if cta_hx_get %}hx-get="{{ cta_hx_get }}"{% endif %}
+          {% if cta_hx_target %}hx-target="{{ cta_hx_target }}"{% endif %}
+          {% if cta_hx_swap %}hx-swap="{{ cta_hx_swap }}"{% endif %}
+          {% if cta_hx_trigger %}hx-trigger="{{ cta_hx_trigger }}"{% endif %}
+          {% if cta_hx_on %}hx-on="{{ cta_hx_on }}"{% endif %}
+        >
+          {{ cta_label|default:_('Quero ser nucleado') }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+{% endwith %}
