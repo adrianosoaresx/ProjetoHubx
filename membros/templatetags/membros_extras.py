@@ -334,6 +334,14 @@ def usuario_tipo_badge(user):
     return badge
 
 
+
+
+@register.simple_tag
+def badge_style(badge_type: str) -> str:
+    """Retorna o token visual de uma badge pelo tipo."""
+
+    return BADGE_STYLES.get(str(badge_type or '').lower(), '')
+
 @register.simple_tag
 def usuario_tipo_label(user) -> str:
     """Retorna o rótulo legível da tipificação do usuário."""
