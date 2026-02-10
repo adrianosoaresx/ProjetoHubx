@@ -35,6 +35,7 @@
         hx-post="{{ form_action }}"
         hx-target="#modal"
         hx-swap="none"
+        hx-on="htmx:beforeRequest: (function(){ const feedback = document.getElementById('nucleacao-promover-feedback'); if (feedback) { feedback.innerHTML = ''; } })(); htmx:responseError: (function(event){ const feedback = document.getElementById('nucleacao-promover-feedback'); if (!feedback) { return; } const xhr = event.detail && event.detail.xhr ? event.detail.xhr : null; const responseHtml = xhr ? xhr.responseText : ''; feedback.innerHTML = responseHtml || '<div class=&quot;rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800&quot; role=&quot;alert&quot;>{% trans 'Não foi possível promover este participante agora. Tente novamente.' %}</div>'; }); htmx:afterRequest: (function(event){ if (!event.detail.successful) { return; } const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const xhr = event.detail && event.detail.xhr ? event.detail.xhr : null; const hasHxRefresh = xhr && xhr.getResponseHeader('HX-Refresh'); if (!hasHxRefresh) { window.location.reload(); } })();"
       >
         {% csrf_token %}
         <div class="flex flex-col gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end sm:gap-4">
@@ -45,6 +46,7 @@
             {% trans "Promover" %}
           </button>
         </div>
+        <div id="nucleacao-promover-feedback" aria-live="polite"></div>
       </form>
     </div>
   </div>
