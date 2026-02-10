@@ -63,9 +63,9 @@
               action="{{ participar_url }}"
               class="flex justify-end"
               hx-post="{{ participar_url }}"
-              hx-target="#modal"
-              hx-swap="innerHTML"
-              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}';"
+              hx-target="#nucleo-cta-{{ nucleo.public_id }}"
+              hx-swap="outerHTML"
+              hx-on="htmx:beforeRequest: window.HubxModalTriggerContainer = 'nucleo-cta-{{ nucleo.public_id }}'; htmx:afterRequest: (function(){ const modalContainer = document.getElementById('modal'); if (modalContainer) { modalContainer.innerHTML = ''; } const focusTarget = document.getElementById('nucleo-cta-focus-{{ nucleo.public_id }}') || (window.HubxModalTrigger instanceof HTMLElement ? window.HubxModalTrigger : null); if (focusTarget && typeof focusTarget.focus === 'function') { focusTarget.focus(); } window.HubxModalTrigger = null; window.HubxModalTriggerContainer = null; })();"
             >
               {% csrf_token %}
               <button type="submit" class="btn btn-primary">
