@@ -8,6 +8,11 @@ from accounts.models import UserType
 register = template.Library()
 
 
+BADGE_STYLES = {
+    "nucleado": "--primary:#22c55e; --primary-soft:rgba(34, 197, 94, 0.15); --primary-soft-border:rgba(34, 197, 94, 0.3);",
+}
+
+
 @register.simple_tag(takes_context=True)
 def can_request_nucleacao(context, nucleo) -> bool:
     """Return True when the user can request nucleação for the given núcleo.
@@ -68,3 +73,10 @@ def get_nucleacao_status(context, nucleo) -> str | None:
         .first()
     )
     return status or None
+
+
+@register.simple_tag
+def badge_style(badge_type: str) -> str:
+    """Return visual style tokens for núcleo-related badges."""
+
+    return BADGE_STYLES.get(str(badge_type or "").lower(), "")
