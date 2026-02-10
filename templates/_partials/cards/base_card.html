@@ -1,4 +1,4 @@
-{% load i18n lucide_icons nucleo_tags %}
+{% load i18n lucide_icons nucleo_tags membros_extras %}
 <article
   {% if card_id %}id="{{ card_id }}"{% endif %}
   class="card group relative flex h-full flex-col overflow-hidden{% if cover %} card-with-cover{% endif %}{% if card_classes %} {{ card_classes }}{% endif %}"
@@ -85,9 +85,11 @@
         {% endif %}
 
         {% if resolved_nucleo and nucleacao_status == 'ativo' %}
+          {% badge_style 'nucleado' as nucleado_badge_style %}
           <div class="mt-5 flex flex-1 items-end justify-center{% if cta_container_classes %} {{ cta_container_classes }}{% endif %}">
-            <span class="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-emerald-500/60 dark:bg-emerald-500/10 dark:text-emerald-200">
-              {% trans 'Nucleado' %}
+            <span class="inline-flex max-w-full items-start gap-2 rounded-full bg-[var(--primary-soft,rgba(59,130,246,0.15))] px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-[var(--primary,#2563eb)] shadow-sm ring-1 ring-[var(--primary-soft-border,rgba(59,130,246,0.3))] whitespace-normal break-words leading-tight"{% if nucleado_badge_style %} style="{{ nucleado_badge_style }}"{% endif %}>
+              {% lucide 'users' class='mt-0.5 h-3.5 w-3.5 shrink-0' aria_hidden='true' %}
+              <span class="min-w-0 whitespace-normal break-words leading-tight">{% trans 'Nucleado' %}</span>
             </span>
           </div>
         {% elif resolved_nucleo and nucleacao_status == 'pendente' %}
