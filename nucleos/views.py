@@ -1825,9 +1825,10 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
                 "cta_container_id": f"nucleo-cta-{nucleo.public_id}",
                 "cta_focus_id": f"nucleo-cta-focus-{nucleo.public_id}",
                 "cta_classes": "btn btn-primary btn-sm relative z-20",
+                "oob_swap": True,
             }
             context["cta_hx_get"] = context["cta_url"]
-            return TemplateResponse(request, "nucleos/partials/nucleacao_success.html", context)
+            return TemplateResponse(request, "nucleos/partials/nucleo_card_cta.html", context)
         return redirect("nucleos:detail", public_id=nucleo.public_id)
 
 
