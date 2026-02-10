@@ -13,6 +13,7 @@ urlpatterns = [
     path("<uuid:public_id>/membros/", views.NucleoMembrosPartialView.as_view(), name="membros_list"),
     path("<int:pk>/membros/", views.NucleoLegacyRedirectView.as_view(target_name="nucleos:membros_list"), name="membros_list_legacy"),
     path("<uuid:public_id>/nucleacao/", views.NucleacaoInviteView.as_view(), name="nucleacao_invite"),
+    path("<uuid:public_id>/card-cta/", views.NucleoCardCtaPartialView.as_view(), name="nucleo_card_cta"),
     path("<int:pk>/nucleacao/", views.NucleoLegacyRedirectView.as_view(target_name="nucleos:nucleacao_invite"), name="nucleacao_invite_legacy"),
     path(
         "solicitacoes/<int:participacao_id>/promover/",

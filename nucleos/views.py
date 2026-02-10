@@ -1617,6 +1617,47 @@ class NucleacaoInviteView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         return context
 
 
+class NucleoCardCtaPartialView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
+    model = Nucleo
+    template_name = "nucleos/partials/nucleo_card_cta.html"
+    context_object_name = "nucleo"
+    slug_field = "public_id"
+    slug_url_kwarg = "public_id"
+
+    def get_queryset(self):
+        qs = Nucleo.objects.filter(deleted=False)
+        user = self.request.user
+
+        user_type = getattr(user, "get_tipo_usuario", None) or getattr(user, "user_type", None)
+        if isinstance(user_type, UserType):
+            user_type = user_type.value
+
+        if user_type in {UserType.ADMIN.value, UserType.COORDENADOR.value}:
+            qs = qs.filter(organizacao=user.organizacao)
+
+        allowed_keys = _get_allowed_classificacao_keys(user)
+        return qs.filter(classificacao__in=allowed_keys)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["resolved_nucleo"] = self.object
+        context["cta_url"] = reverse("nucleos:nucleacao_invite", kwargs={"public_id": self.object.public_id})
+        context["cta_label"] = _("Quero me nuclear")
+        context["cta_hx_get"] = context["cta_url"]
+        context["cta_hx_target"] = "#modal"
+        context["cta_hx_swap"] = "innerHTML"
+        context["cta_hx_on"] = (
+            "htmx:beforeRequest: "
+            "window.HubxModalTrigger = this; "
+            f"window.HubxModalTriggerContainer = 'nucleo-cta-{self.object.public_id}';"
+        )
+        context["cta_container_id"] = f"nucleo-cta-{self.object.public_id}"
+        context["cta_focus_id"] = f"nucleo-cta-focus-{self.object.public_id}"
+        context["cta_container_classes"] = ""
+        context["cta_classes"] = "btn btn-primary btn-sm relative z-20"
+        return context
+
+
 class NucleacaoPromoverSolicitacaoView(
     NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixin, View
 ):
@@ -1767,7 +1808,25 @@ class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
         if save_fields:
             participacao.save(update_fields=save_fields)
         if bool(request.headers.get("HX-Request")):
-            context = {"nucleo": nucleo}
+            context = {
+                "nucleo": nucleo,
+                "resolved_nucleo": nucleo,
+                "nucleo_public_id": str(nucleo.public_id),
+                "nucleacao_status": participacao.status,
+                "cta_url": reverse("nucleos:nucleacao_invite", kwargs={"public_id": nucleo.public_id}),
+                "cta_label": _("Quero me nuclear"),
+                "cta_hx_target": "#modal",
+                "cta_hx_swap": "innerHTML",
+                "cta_hx_on": (
+                    "htmx:beforeRequest: "
+                    "window.HubxModalTrigger = this; "
+                    f"window.HubxModalTriggerContainer = 'nucleo-cta-{nucleo.public_id}';"
+                ),
+                "cta_container_id": f"nucleo-cta-{nucleo.public_id}",
+                "cta_focus_id": f"nucleo-cta-focus-{nucleo.public_id}",
+                "cta_classes": "btn btn-primary btn-sm relative z-20",
+            }
+            context["cta_hx_get"] = context["cta_url"]
             return TemplateResponse(request, "nucleos/partials/nucleacao_success.html", context)
         return redirect("nucleos:detail", public_id=nucleo.public_id)
 
