@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ProjetoHubx\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-03 19:27-0300\n"
+"POT-Creation-Date: 2026-02-11 17:31-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: conexoes/forms.py:6
-#: conexoes/templates/conexoes/partials/connections_list.html:13
-#: conexoes/templates/conexoes/partials/search_card.html:30
+#: conexoes/forms.py:6 conexoes/templates/conexoes/partials/search_card.html:30
 msgid "Buscar"
 msgstr ""
 
 #: conexoes/templates/conexoes/busca.html:4
 #: conexoes/templates/conexoes/partials/search_card.html:4
-#: conexoes/views.py:245 conexoes/views.py:267
+#: conexoes/views.py:610 conexoes/views.py:658 conexoes/views.py:686
 msgid "Adicionar conexão"
 msgstr "Adicionar conexão"
 
@@ -51,113 +49,254 @@ msgstr ""
 msgid "Gerencie suas conexões dentro da organização"
 msgstr ""
 
-#: conexoes/templates/conexoes/connections_list.html:14
-#: conexoes/templates/conexoes/partials/connections_list_content.html:5
-msgid "Minhas conexões"
-msgstr ""
-
-#: conexoes/templates/conexoes/connections_list.html:23
-#: conexoes/templates/conexoes/partials/connections_list_content.html:14
-#: conexoes/templates/conexoes/solicitacoes.html:4
-#: conexoes/templates/conexoes/solicitacoes.html:14
-msgid "Solicitações de conexão"
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/connections_list.html:45
-#: conexoes/templates/conexoes/partials/search_card.html:71
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:10
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:59
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:71
+#: conexoes/templates/conexoes/partials/connections_list.html:16
+#: conexoes/templates/conexoes/partials/connections_list.html:17
 msgid "Ver perfil"
 msgstr ""
 
-#: conexoes/templates/conexoes/partials/connections_list.html:53
-msgid "Tem certeza que deseja remover esta conexão?"
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/connections_list.html:61
-#: conexoes/templates/conexoes/partials/search_card.html:90
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:24
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:37
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:81
+#: conexoes/templates/conexoes/partials/connections_list.html:26
+#: conexoes/templates/conexoes/partials/connections_list.html:27
 msgid "Desconectar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partials/connections_list.html:70
-msgid "Você ainda não tem conexões."
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/connections_list.html:79
-msgid "Buscar Pessoas"
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/request_list.html:29
-msgid "Aceitar"
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/request_list.html:40
-msgid "Recusar"
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/request_list.html:48
-msgid "Você não tem solicitações de conexão pendentes."
-msgstr ""
-
-#: conexoes/templates/conexoes/partials/search_card.html:95
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:43
 msgid "Solicitação enviada"
 msgstr ""
 
-#: conexoes/templates/conexoes/partials/search_card.html:105
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:53
 msgid "Responder solicitação"
 msgstr ""
 
-#: conexoes/templates/conexoes/partials/search_card.html:123
+#: conexoes/templates/conexoes/partials/conexao_busca_actions.html:71
 msgid "Conectar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partials/search_card.html:133
+#: conexoes/templates/conexoes/partials/conexao_busca_carousel_slide.html:45
+#: conexoes/views.py:761
 msgid "Nenhum membro encontrado para os critérios informados."
 msgstr "Nenhum membro encontrado para os critérios informados."
 
-#: conexoes/templates/conexoes/partials/search_card.html:136
-msgid "Você não está vinculado a uma organização no momento."
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:11
+msgid "Nome fantasia"
 msgstr ""
 
-#: conexoes/templates/conexoes/solicitacoes.html:7
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:21
+msgid "Razão social"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:24
+msgid "Não informado"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:43
+msgid "Aceitar"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:54
+msgid "Recusar"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_card_details.html:61
+msgid "Aguardando resposta"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_carousel.html:32
+msgid "Anterior"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_carousel.html:42
+msgid "Próximo"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/conexao_carousel_slide.html:31
+msgid "Nenhuma conexão encontrada."
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/connections_list.html:56
+#: conexoes/views.py:289
+msgid "Você ainda não tem conexões."
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/connections_list.html:65
+#: conexoes/views.py:256
+msgid "Buscar Pessoas"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/connections_list_content.html:20
+#: conexoes/templates/conexoes/partials/connections_list_content.html:98
 msgid "Solicitações pendentes"
 msgstr ""
 
-#: conexoes/templates/conexoes/solicitacoes.html:7
-msgid "Gerencie as solicitações de conexão que aguardam sua resposta"
+#: conexoes/templates/conexoes/partials/connections_list_content.html:22
+#: conexoes/templates/conexoes/partials/connections_list_content.html:100
+#, python-format
+msgid ""
+"\n"
+"                %(count)s solicitação pendente no total\n"
+"              "
+msgid_plural ""
+"\n"
+"                %(count)s solicitações pendentes no total\n"
+"              "
+msgstr[0] ""
+msgstr[1] ""
+
+#: conexoes/templates/conexoes/partials/connections_list_content.html:46
+#: conexoes/templates/conexoes/partials/connections_list_content.html:124
+msgid "Solicitações enviadas"
 msgstr ""
 
-#: conexoes/views.py:177 conexoes/views.py:223
+#: conexoes/templates/conexoes/partials/connections_list_content.html:48
+#: conexoes/templates/conexoes/partials/connections_list_content.html:126
+#, python-format
+msgid ""
+"\n"
+"                %(count)s solicitação enviada no total\n"
+"              "
+msgid_plural ""
+"\n"
+"                %(count)s solicitações enviadas no total\n"
+"              "
+msgstr[0] ""
+msgstr[1] ""
+
+#: conexoes/templates/conexoes/partials/connections_list_content.html:72
+msgid "Minhas conexões"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/connections_list_content.html:74
+#, python-format
+msgid ""
+"\n"
+"                %(count)s conexão ativa no total\n"
+"              "
+msgid_plural ""
+"\n"
+"                %(count)s conexões ativas no total\n"
+"              "
+msgstr[0] ""
+msgstr[1] ""
+
+#: conexoes/templates/conexoes/partials/remove_connection_modal.html:18
+msgid "Fechar modal"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/remove_connection_modal.html:48
+msgid "Cancelar"
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/request_list.html:8
+#: conexoes/views.py:294
+msgid "Você não tem solicitações de conexão pendentes."
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/search_card.html:38
+#: conexoes/views.py:763
+msgid "Você não está vinculado a uma organização no momento."
+msgstr ""
+
+#: conexoes/templates/conexoes/partials/sent_request_list.html:8
+#: conexoes/views.py:299
+msgid "Você não enviou solicitações de conexão recentemente."
+msgstr ""
+
+#: conexoes/templates/conexoes/solicitacoes.html:4
+#: conexoes/templates/conexoes/solicitacoes.html:7
+msgid "Solicitações de conexão"
+msgstr ""
+
+#: conexoes/templates/conexoes/solicitacoes.html:7
+msgid "Gerencie as solicitações pendentes e enviadas na sua rede"
+msgstr ""
+
+#: conexoes/views.py:28
+msgid "Recursos de conexão não estão disponíveis para usuários root."
+msgstr ""
+
+#: conexoes/views.py:29
+msgid "Recursos de conexão não estão disponíveis para usuários convidados."
+msgstr ""
+
+#: conexoes/views.py:142
 msgid "Buscar conexões..."
 msgstr ""
 
-#: conexoes/views.py:178 conexoes/views.py:179 conexoes/views.py:224
-#: conexoes/views.py:225
+#: conexoes/views.py:143 conexoes/views.py:144
 msgid "Buscar conexões"
 msgstr ""
 
-#: conexoes/views.py:211 conexoes/views.py:213
+#: conexoes/views.py:290
+msgid "Lista de conexões ativas"
+msgstr ""
+
+#: conexoes/views.py:295
+msgid "Lista de solicitações de conexão pendentes"
+msgstr ""
+
+#: conexoes/views.py:300
+msgid "Lista de solicitações de conexão enviadas"
+msgstr ""
+
+#: conexoes/views.py:402
+msgid "Resultados da busca de conexões"
+msgstr ""
+
+#: conexoes/views.py:475 conexoes/views.py:477
 msgid "Esta seção está disponível apenas para o proprietário do perfil."
 msgstr ""
 
-#: conexoes/views.py:244 conexoes/views.py:266
+#: conexoes/views.py:513
+msgid "Seção inválida."
+msgstr ""
+
+#: conexoes/views.py:561 conexoes/views.py:623
+msgid "Seção não disponível."
+msgstr ""
+
+#: conexoes/views.py:609 conexoes/views.py:657 conexoes/views.py:685
 msgid "Buscar por nome, razão social ou CNPJ..."
 msgstr ""
 
-#: conexoes/views.py:246 conexoes/views.py:268
+#: conexoes/views.py:611 conexoes/views.py:659 conexoes/views.py:687
 msgid "Buscar por nome, razão social ou CNPJ"
 msgstr ""
 
-#: conexoes/views.py:350
+#: conexoes/views.py:790
 msgid "Você não pode conectar-se consigo mesmo."
 msgstr ""
 
-#: conexoes/views.py:352
+#: conexoes/views.py:792
 msgid "Vocês já estão conectados."
 msgstr ""
 
-#: conexoes/views.py:354
+#: conexoes/views.py:800
+#, python-format
+msgid "Conexão com %(nome)s aceita."
+msgstr ""
+
+#: conexoes/views.py:812
 msgid "Solicitação de conexão já enviada."
 msgstr ""
 
-#: conexoes/views.py:357
+#: conexoes/views.py:815
 msgid "Solicitação de conexão enviada."
+msgstr ""
+
+#: conexoes/views.py:872
+msgid "Remover conexão"
+msgstr ""
+
+#: conexoes/views.py:874
+#, python-brace-format
+msgid "Tem certeza que deseja remover a conexão com <strong>{nome}</strong>?"
+msgstr ""
+
+#: conexoes/views.py:877
+msgid "Remover"
 msgstr ""
