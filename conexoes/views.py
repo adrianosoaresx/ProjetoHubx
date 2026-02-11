@@ -446,8 +446,8 @@ def perfil_conexoes(request):
     if is_htmx_or_ajax(request):
         context.update(_profile_dashboard_hx_context())
         if tab == "solicitacoes":
-            return render(request, "conexoes/partiais/request_list.html", context)
-        return render(request, "conexoes/partiais/connections_list_content.html", context)
+            return render(request, "conexoes/partials/request_list.html", context)
+        return render(request, "conexoes/partials/connections_list_content.html", context)
 
     if tab == "solicitacoes":
         return render(request, "conexoes/solicitacoes.html", context)
@@ -497,8 +497,8 @@ def perfil_conexoes_partial(request):
     context.update(_profile_dashboard_hx_context())
     _refresh_minhas_conexoes_empty_cta(context)
     if tab == "solicitacoes":
-        return render(request, "conexoes/partiais/request_list.html", context)
-    return render(request, "conexoes/partiais/connections_list_content.html", context)
+        return render(request, "conexoes/partials/request_list.html", context)
+    return render(request, "conexoes/partials/connections_list_content.html", context)
 
 
 class ConexaoListCarouselView(LoginRequiredMixin, View):
@@ -667,7 +667,7 @@ def perfil_conexoes_buscar(request):
     if is_htmx_or_ajax(request):
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None
-        return render(request, "conexoes/partiais/search_card.html", context)
+        return render(request, "conexoes/partials/search_card.html", context)
 
     return render(request, "conexoes/busca.html", context)
 
@@ -828,7 +828,7 @@ def solicitar_conexao(request, id):
         context = _build_search_page_context(request, q, None)
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None
-        return render(request, "conexoes/partiais/search_card.html", context)
+        return render(request, "conexoes/partials/search_card.html", context)
 
     params = {"section": "conexoes", "view": "buscar"}
     if q:
@@ -882,7 +882,7 @@ def remover_conexao_modal(request, id):
         "query": query,
     }
 
-    return render(request, "conexoes/partiais/remove_connection_modal.html", context)
+    return render(request, "conexoes/partials/remove_connection_modal.html", context)
 
 
 @login_required
@@ -906,7 +906,7 @@ def remover_conexao(request, id):
             context = _build_search_page_context(request, q, None)
             context.update(_profile_search_hx_context(q))
             context["search_container_id"] = None
-            return render(request, "conexoes/partiais/search_card.html", context)
+            return render(request, "conexoes/partials/search_card.html", context)
         return _htmx_refresh_response()
     return redirect("conexoes:perfil_sections_conexoes")
 

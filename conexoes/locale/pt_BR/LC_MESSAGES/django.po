@@ -18,13 +18,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: conexoes/forms.py:6
-#: conexoes/templates/conexoes/partiais/connections_list.html:13
-#: conexoes/templates/conexoes/partiais/search_card.html:30
+#: conexoes/templates/conexoes/partials/connections_list.html:13
+#: conexoes/templates/conexoes/partials/search_card.html:30
 msgid "Buscar"
 msgstr ""
 
 #: conexoes/templates/conexoes/busca.html:4
-#: conexoes/templates/conexoes/partiais/search_card.html:4
+#: conexoes/templates/conexoes/partials/search_card.html:4
 #: conexoes/views.py:245 conexoes/views.py:267
 msgid "Adicionar conexão"
 msgstr "Adicionar conexão"
@@ -38,7 +38,7 @@ msgid "Adicione membros da sua organização para se conectar"
 msgstr "Adicione membros da sua organização para se conectar"
 
 #: conexoes/templates/conexoes/busca.html:7
-#: conexoes/templates/conexoes/partiais/search_card.html:13
+#: conexoes/templates/conexoes/partials/search_card.html:13
 msgid "Voltar para conexões"
 msgstr "Voltar para conexões"
 
@@ -52,68 +52,68 @@ msgid "Gerencie suas conexões dentro da organização"
 msgstr ""
 
 #: conexoes/templates/conexoes/connections_list.html:14
-#: conexoes/templates/conexoes/partiais/connections_list_content.html:5
+#: conexoes/templates/conexoes/partials/connections_list_content.html:5
 msgid "Minhas conexões"
 msgstr ""
 
 #: conexoes/templates/conexoes/connections_list.html:23
-#: conexoes/templates/conexoes/partiais/connections_list_content.html:14
+#: conexoes/templates/conexoes/partials/connections_list_content.html:14
 #: conexoes/templates/conexoes/solicitacoes.html:4
 #: conexoes/templates/conexoes/solicitacoes.html:14
 msgid "Solicitações de conexão"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/connections_list.html:45
-#: conexoes/templates/conexoes/partiais/search_card.html:71
+#: conexoes/templates/conexoes/partials/connections_list.html:45
+#: conexoes/templates/conexoes/partials/search_card.html:71
 msgid "Ver perfil"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/connections_list.html:53
+#: conexoes/templates/conexoes/partials/connections_list.html:53
 msgid "Tem certeza que deseja remover esta conexão?"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/connections_list.html:61
-#: conexoes/templates/conexoes/partiais/search_card.html:90
+#: conexoes/templates/conexoes/partials/connections_list.html:61
+#: conexoes/templates/conexoes/partials/search_card.html:90
 msgid "Desconectar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/connections_list.html:70
+#: conexoes/templates/conexoes/partials/connections_list.html:70
 msgid "Você ainda não tem conexões."
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/connections_list.html:79
+#: conexoes/templates/conexoes/partials/connections_list.html:79
 msgid "Buscar Pessoas"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/request_list.html:29
+#: conexoes/templates/conexoes/partials/request_list.html:29
 msgid "Aceitar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/request_list.html:40
+#: conexoes/templates/conexoes/partials/request_list.html:40
 msgid "Recusar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/request_list.html:48
+#: conexoes/templates/conexoes/partials/request_list.html:48
 msgid "Você não tem solicitações de conexão pendentes."
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/search_card.html:95
+#: conexoes/templates/conexoes/partials/search_card.html:95
 msgid "Solicitação enviada"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/search_card.html:105
+#: conexoes/templates/conexoes/partials/search_card.html:105
 msgid "Responder solicitação"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/search_card.html:123
+#: conexoes/templates/conexoes/partials/search_card.html:123
 msgid "Conectar"
 msgstr ""
 
-#: conexoes/templates/conexoes/partiais/search_card.html:133
+#: conexoes/templates/conexoes/partials/search_card.html:133
 msgid "Nenhum membro encontrado para os critérios informados."
 msgstr "Nenhum membro encontrado para os critérios informados."
 
-#: conexoes/templates/conexoes/partiais/search_card.html:136
+#: conexoes/templates/conexoes/partials/search_card.html:136
 msgid "Você não está vinculado a uma organização no momento."
 msgstr ""
 
