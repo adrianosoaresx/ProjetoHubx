@@ -134,8 +134,11 @@ class OrganizacaoUserCreateForm(UserCreationForm):
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
+        if isinstance(cnpj, str):
+            cnpj = cnpj.strip()
+
         if not cnpj:
-            return cnpj
+            return None
 
         try:
             cnpj = validate_cnpj(cnpj)
@@ -143,7 +146,7 @@ class OrganizacaoUserCreateForm(UserCreationForm):
             raise forms.ValidationError(exc.message)
 
         if User.objects.filter(cnpj=cnpj).exists():
-            raise forms.ValidationError(_("Este CNPJ já está em uso."))
+            raise forms.ValidationError(_("Este CNPJ informado já está em uso."))
 
         return cnpj
 
@@ -160,7 +163,7 @@ class OrganizacaoUserCreateForm(UserCreationForm):
         user.is_associado = selected_type == UserType.ASSOCIADO.value
         user.razao_social = self.cleaned_data.get("razao_social")
         user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
-        user.cnpj = self.cleaned_data.get("cnpj")
+        user.cnpj = self.cleaned_data.get("cnpj") or None
         user.cpf = self.cleaned_data.get("cpf")
         user.area_atuacao = self.cleaned_data.get("area_atuacao")
         user.descricao_atividade = self.cleaned_data.get("descricao_atividade")
