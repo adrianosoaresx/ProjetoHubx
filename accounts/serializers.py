@@ -7,6 +7,11 @@ from .models import AccountToken, User, UserRating
 class UserSerializer(serializers.ModelSerializer):
     tipo_usuario = serializers.CharField(source="get_tipo_usuario", read_only=True)
 
+    def validate_cnpj(self, value):
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
     class Meta:
         model = User
         fields = [
