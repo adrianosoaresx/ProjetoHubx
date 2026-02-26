@@ -150,6 +150,22 @@ class OrganizacaoUserCreateForm(UserCreationForm):
 
         return cnpj
 
+    def clean(self):
+        cleaned_data = super().clean()
+        cpf = cleaned_data.get("cpf")
+        cnpj = cleaned_data.get("cnpj")
+
+        cpf_normalizado = cpf.strip() if isinstance(cpf, str) else ""
+        cnpj_normalizado = cnpj.strip() if isinstance(cnpj, str) else ""
+
+        if not cpf_normalizado and not cnpj_normalizado:
+            erro = _("Informe CPF ou CNPJ.")
+            self.add_error("cpf", erro)
+            self.add_error("cnpj", erro)
+            raise forms.ValidationError(erro)
+
+        return cleaned_data
+
     def save(self, commit: bool = True, *, organizacao) -> User:
         if organizacao is None:
             raise ValueError("Organização é obrigatória para criar o usuário.")
