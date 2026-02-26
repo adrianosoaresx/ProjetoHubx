@@ -166,7 +166,6 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         max_length=18,
         blank=True,
         null=True,
-        unique=True,
     )
     razao_social = models.CharField("Razão Social", max_length=255, blank=True, null=True)
     nome_fantasia = models.CharField("Nome fantasia", max_length=255, blank=True, null=True)
@@ -336,6 +335,8 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         return self.user_type
 
     def save(self, *args, **kwargs):
+        if isinstance(self.cnpj, str) and not self.cnpj.strip():
+            self.cnpj = None
         if self.cnpj:
             self.cnpj = validate_cnpj(self.cnpj)
         if self.user_type == UserType.ROOT.value:
@@ -344,6 +345,8 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
 
     def clean(self):  # type: ignore[override]
         super().clean()
+        if isinstance(self.cnpj, str) and not self.cnpj.strip():
+            self.cnpj = None
         if self.cnpj:
             self.cnpj = validate_cnpj(self.cnpj)
 
@@ -423,6 +426,11 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
         constraints = [
+            models.UniqueConstraint(
+                fields=["cnpj"],
+                condition=Q(cnpj__isnull=False) & ~Q(cnpj=""),
+                name="accounts_user_unique_cnpj_when_present",
+            ),
             models.UniqueConstraint(
                 fields=["cpf"],
                 condition=Q(cnpj__isnull=True) | Q(cnpj=""),
