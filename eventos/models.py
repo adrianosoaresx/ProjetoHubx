@@ -262,6 +262,11 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         CANCELADO = 2, _("Cancelado")
         PLANEJAMENTO = 3, _("Planejamento")
 
+    class CoverFocalPreset(models.TextChoices):
+        TOP = "top", _("Topo")
+        CENTER = "center", _("Centro")
+        BOTTOM = "bottom", _("Base")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     titulo = models.CharField(max_length=150)
     slug = models.SlugField(unique=True, blank=True, null=True)
@@ -323,6 +328,13 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         blank=True,
         null=True,
     )
+    cover_focal_preset = models.CharField(
+        max_length=12,
+        choices=CoverFocalPreset.choices,
+        blank=True,
+        default="",
+        help_text=_("Define o enquadramento vertical da imagem de capa no hero."),
+    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -343,6 +355,13 @@ class Evento(TimeStampedModel, SoftDeleteModel):
 
     def endereco_completo(self) -> str:
         return f"{self.local}, {self.cidade} - {self.estado}, {self.cep}"
+
+    def get_cover_object_position_class(self) -> str:
+        return {
+            self.CoverFocalPreset.TOP: "object-top",
+            self.CoverFocalPreset.BOTTOM: "object-bottom",
+            self.CoverFocalPreset.CENTER: "object-center",
+        }.get(self.cover_focal_preset, "object-center")
 
     def clean(self):
         super().clean()
