@@ -11,7 +11,7 @@
   {% endif %}
   <div class="hero-content relative z-10 w-full">
     <div class="relative max-w-7xl mx-auto w-full px-4 py-10 pb-24 md:pb-10 min-h-[220px]">
-      <div class="absolute left-4 bottom-4 flex flex-wrap items-center gap-3 sm:gap-4">
+      <div class="absolute left-4 bottom-4 flex items-center">
           <div class="shrink-0">
             {% if evento.avatar %}
               <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
@@ -21,11 +21,6 @@
                 {{ evento.titulo|slice:':1'|upper }}
               </div>
             {% endif %}
-          </div>
-          <div class="inline-flex min-w-0 max-w-full items-center rounded-xl border border-black/5 bg-white/60 px-4 py-2 text-[var(--text-primary)] shadow-lg shadow-black/10 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/55 dark:text-white dark:shadow-black/40">
-            <div class="flex flex-wrap items-center gap-3">
-              <h1 class="text-3xl font-bold md:text-4xl">{{ evento.titulo }}</h1>
-            </div>
           </div>
         </div>
         <div class="flex flex-col gap-3 md:items-end md:self-start md:absolute md:right-6 md:top-6">
