@@ -514,13 +514,17 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
         super().clean()
         if self.file:
             ext = Path(self.file.name).suffix.lower()
-            allowed = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+            image_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
+            video_exts = set(getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"]))
+            pdf_exts = set(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"]))
+            allowed = image_exts | video_exts | pdf_exts
             if ext not in allowed:
                 raise ValidationError({"file": _("Formato de arquivo não suportado.")})
-            default_max_size = 50 * 1024 * 1024
-            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", default_max_size)
-            if ext == ".pdf":
-                max_size = getattr(settings, "USER_MEDIA_PDF_MAX_SIZE", 100 * 1024 * 1024)
+            max_size = getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)
+            if ext in image_exts:
+                max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
+            elif ext in pdf_exts:
+                max_size = getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)
             if self.file.size > max_size:
                 raise ValidationError(
                     {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}

@@ -26,17 +26,17 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     size = getattr(file, "size", 0)
     ext = Path(file.name).suffix.lower()
 
-    image_exts = getattr(settings, "FEED_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])
-    pdf_exts = getattr(settings, "FEED_PDF_ALLOWED_EXTS", [".pdf"])
-    video_exts = getattr(settings, "FEED_VIDEO_ALLOWED_EXTS", [".mp4", ".webm"])
+    image_exts = getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])
+    pdf_exts = getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"])
+    video_exts = getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"])
 
     is_video = False
     if ext in image_exts and content_type.startswith("image/"):
-        max_size = getattr(settings, "FEED_IMAGE_MAX_SIZE", 5 * 1024 * 1024)
+        max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
     elif ext in pdf_exts and content_type == "application/pdf":
-        max_size = getattr(settings, "FEED_PDF_MAX_SIZE", 10 * 1024 * 1024)
+        max_size = getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)
     elif ext in video_exts and content_type.startswith("video/"):
-        max_size = getattr(settings, "FEED_VIDEO_MAX_SIZE", 20 * 1024 * 1024)
+        max_size = getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)
         is_video = True
     else:
         raise ValidationError("Formato de arquivo não suportado")
