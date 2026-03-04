@@ -1,30 +1,26 @@
 import mimetypes
-import os
+from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from core.uploads.validators import validate_upload
+
 
 def validate_uploaded_file(f):
-    """Valida tipo, extensão e tamanho de arquivos de upload."""
-
-    ext = os.path.splitext(f.name)[1].lower()
+    """Valida uploads de eventos (imagem ou PDF)."""
     content_type = getattr(f, "content_type", "") or mimetypes.guess_type(f.name)[0] or ""
+    ext = Path(f.name).suffix.lower()
 
     image_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
     pdf_exts = set(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"]))
 
-    if content_type.startswith("image/"):
-        allowed_exts = image_exts
-        max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
-    elif content_type == "application/pdf":
-        allowed_exts = pdf_exts
-        max_size = getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)
+    if content_type.startswith("image/") or ext in image_exts:
+        category = "image"
+    elif content_type == "application/pdf" or ext in pdf_exts:
+        category = "pdf"
     else:
         raise ValidationError(_("Tipo de arquivo não permitido."))
 
-    if ext not in allowed_exts:
-        raise ValidationError(_("Extensão do arquivo não corresponde ao tipo MIME."))
-    if f.size > max_size:
-        raise ValidationError(_("Arquivo excede o tamanho máximo permitido."))
+    validate_upload(f, category)
