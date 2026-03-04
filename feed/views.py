@@ -361,7 +361,7 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
                 raise Http404
 
             context["nucleo"] = nucleo
-            context["hero_title"] = _("Mural Núcleo %(nome)s") % {"nome": nucleo.nome}
+            context["hero_title"] = _("Mural %(nome)s") % {"nome": nucleo.nome}
             context["hero_subtitle"] = _("Mural empresarial do núcleo %(nome)s") % {
                 "nome": nucleo.nome
             }
