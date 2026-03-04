@@ -122,7 +122,7 @@ class PDFClearableFileInput(ClearableFileInput):
         attrs["class"] = " ".join(filter(None, existing_classes))
         attrs.setdefault("data-file-upload-input", "true")
         attrs.setdefault("data-empty-text", self.empty_label)
-        attrs.setdefault("data-upload-pdf-max-bytes", str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)))
+        attrs.setdefault("data-upload-pdf-max-bytes", str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 50 * 1024 * 1024)))
         attrs.setdefault("data-upload-pdf-exts", ",".join(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"])))
         super().__init__(attrs=attrs)
 
@@ -134,7 +134,7 @@ class PDFClearableFileInput(ClearableFileInput):
         final_attrs = widget.get("attrs", {})
         final_attrs.setdefault("data-file-upload-input", "true")
         final_attrs.setdefault("data-empty-text", self.empty_label)
-        final_attrs.setdefault("data-upload-pdf-max-bytes", str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)))
+        final_attrs.setdefault("data-upload-pdf-max-bytes", str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 50 * 1024 * 1024)))
         final_attrs.setdefault("data-upload-pdf-exts", ",".join(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"])))
         widget["attrs"] = final_attrs
 
@@ -164,7 +164,7 @@ class ComprovanteFileInput(ClearableFileInput):
             attrs["class"] = f"{existing_classes} sr-only".strip()
         attrs["data-payment-proof-input"] = "true"
         attrs["data-upload-image-max-bytes"] = str(getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024))
-        attrs["data-upload-pdf-max-bytes"] = str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024))
+        attrs["data-upload-pdf-max-bytes"] = str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 50 * 1024 * 1024))
         attrs["data-upload-image-exts"] = ",".join(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
         attrs["data-upload-pdf-exts"] = ",".join(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"]))
         context = super().get_context(name, value, attrs)

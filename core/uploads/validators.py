@@ -29,7 +29,7 @@ def validate_upload(file, category):
         "pdf": {
             "allowed_exts": [".pdf"],
             "settings_exts": "UPLOAD_ALLOWED_PDF_EXTS",
-            "max_size": 100 * 1024 * 1024,
+            "max_size": 50 * 1024 * 1024,
             "settings_max": "UPLOAD_MAX_PDF_SIZE",
             "mime": lambda ct: ct == "application/pdf",
         },
