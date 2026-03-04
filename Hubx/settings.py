@@ -355,7 +355,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Configuração global de upload (fonte única de verdade)
 UPLOAD_MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB
 UPLOAD_MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
-UPLOAD_MAX_PDF_SIZE = 100 * 1024 * 1024  # 100MB
+UPLOAD_MAX_PDF_SIZE = 50 * 1024 * 1024  # 50MB
 UPLOAD_ALLOWED_IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
 UPLOAD_ALLOWED_VIDEO_EXTS = [".mp4", ".webm"]
 UPLOAD_ALLOWED_PDF_EXTS = [".pdf"]

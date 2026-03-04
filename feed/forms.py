@@ -114,7 +114,7 @@ class PostForm(forms.ModelForm):
             attrs={
                 "accept": "image/*,application/pdf,video/*,.pdf",
                 "data-upload-image-max-bytes": str(getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)),
-                "data-upload-pdf-max-bytes": str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)),
+                "data-upload-pdf-max-bytes": str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 50 * 1024 * 1024)),
                 "data-upload-video-max-bytes": str(getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)),
                 "data-upload-image-exts": ",".join(image_exts),
                 "data-upload-pdf-exts": ",".join(pdf_exts),
