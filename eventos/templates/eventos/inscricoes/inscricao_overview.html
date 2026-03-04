@@ -27,9 +27,12 @@
             </a>
           </div>
         {% else %}
-          <a href="{{ cta_url }}" class="btn btn-primary" role="button">
-            {{ cta_label }}
-          </a>
+          <form method="post" action="{{ cta_url }}" class="inline-flex">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+              {{ cta_label }}
+            </button>
+          </form>
         {% endif %}
       </header>
 

@@ -2540,7 +2540,7 @@ class InscricaoEventoOverviewView(InscricaoEventoBaseView, TemplateView):
                     "eventos:inscricao_pagamentos_criar", kwargs={"pk": self.evento.pk}
                 )
         else:
-            base_url = reverse("eventos:inscricao_criar", kwargs={"pk": self.evento.pk})
+            base_url = reverse("eventos:evento_subscribe", kwargs={"pk": self.evento.pk})
 
         querystring = self.request.GET.urlencode()
         if querystring:
