@@ -11,6 +11,7 @@ from nucleos.models import Nucleo
 
 from accounts.models import MediaTag, UserType
 from accounts.forms import ProfileImageFileInput
+from core.form_texts import COVER_PANORAMIC_HELP_TEXT
 
 from .validators import validate_uploaded_file
 from .models import (
@@ -287,9 +288,7 @@ class EventoForm(forms.ModelForm):
 
         if "cover" in self.fields:
             self.fields["cover"].label = _("Imagem da capa")
-            self.fields["cover"].help_text = _(
-                "Recomendado: proporção panorâmica entre 2.5:1 e 3:1 (ex.: 2400×960 px) para boa adaptação em mobile e desktop sem distorção."
-            )
+            self.fields["cover"].help_text = COVER_PANORAMIC_HELP_TEXT
 
         participantes_field = self.fields.get("participantes_maximo")
         if participantes_field:

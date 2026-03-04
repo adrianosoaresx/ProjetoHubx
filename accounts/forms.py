@@ -26,6 +26,7 @@ from .models import (
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
 from organizacoes.utils import validate_cnpj
+from core.form_texts import COVER_PANORAMIC_HELP_TEXT
 
 User = get_user_model()
 
@@ -358,6 +359,9 @@ class InformacoesPessoaisForm(forms.ModelForm):
         for field in ("facebook", "twitter", "instagram", "linkedin"):
             if redes.get(field):
                 self.fields[field].initial = redes[field]
+
+        if "cover" in self.fields:
+            self.fields["cover"].help_text = COVER_PANORAMIC_HELP_TEXT
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
