@@ -205,7 +205,6 @@ class EventoForm(forms.ModelForm):
             "informacoes_adicionais",
             "avatar",
             "cover",
-            "cover_focal_preset",
         ]
         widgets = {
             "data_inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}),
@@ -288,10 +287,6 @@ class EventoForm(forms.ModelForm):
 
         if "cover" in self.fields:
             self.fields["cover"].label = _("Imagem da capa")
-
-        if "cover_focal_preset" in self.fields:
-            self.fields["cover_focal_preset"].label = _("Foco da capa")
-            self.fields["cover_focal_preset"].help_text = _("Escolha o ponto de destaque para o recorte da capa no hero.")
 
         participantes_field = self.fields.get("participantes_maximo")
         if participantes_field:
