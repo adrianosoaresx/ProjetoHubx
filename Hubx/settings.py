@@ -393,16 +393,19 @@ DISCUSSAO_IMAGE_MAX_SIZE = 5 * 1024 * 1024
 DISCUSSAO_PDF_MAX_SIZE = 10 * 1024 * 1024
 
 _MAX_UPLOAD_SIZE = max(
-    USER_MEDIA_MAX_SIZE,
-    USER_MEDIA_PDF_MAX_SIZE,
-    FEED_IMAGE_MAX_SIZE,
-    FEED_PDF_MAX_SIZE,
-    FEED_VIDEO_MAX_SIZE,
-    DISCUSSAO_IMAGE_MAX_SIZE,
-    DISCUSSAO_PDF_MAX_SIZE,
+    UPLOAD_MAX_IMAGE_SIZE,
+    UPLOAD_MAX_VIDEO_SIZE,
+    UPLOAD_MAX_PDF_SIZE,
 )
+_UPLOAD_REQUEST_OVERHEAD_FACTOR = Decimal("1.10")
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = _MAX_UPLOAD_SIZE
+# Relação dos limites de upload:
+# 1) os limites por tipo (UPLOAD_MAX_*) controlam validação de negócio por arquivo;
+# 2) o limite global da request (DATA/FILE_UPLOAD_MAX_MEMORY_SIZE) precisa ser >= maior tipo
+#    aceito, com pequena folga operacional para multipart/form-data (headers, boundaries e campos);
+# 3) em produção, manter Nginx/Gunicorn/proxy de S3 com limite >= este valor para evitar 413/502
+#    antes da validação da aplicação.
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(_MAX_UPLOAD_SIZE * _UPLOAD_REQUEST_OVERHEAD_FACTOR)
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
