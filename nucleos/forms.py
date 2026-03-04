@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import MediaTag
 from accounts.forms import ProfileImageFileInput
+from core.form_texts import COVER_PANORAMIC_HELP_TEXT
 
 from .models import Nucleo, NucleoMidia, ParticipacaoNucleo
 
@@ -13,6 +14,8 @@ class NucleoForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
+        if "cover" in self.fields:
+            self.fields["cover"].help_text = COVER_PANORAMIC_HELP_TEXT
 
     class Meta:
         model = Nucleo
