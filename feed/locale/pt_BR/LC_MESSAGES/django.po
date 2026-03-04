@@ -18,6 +18,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: feed/views.py:351
+msgid "Onde empresas se encontram para colaborar e crescer."
+msgstr "Onde empresas se encontram para colaborar e crescer."
+
+#: feed/views.py:364
+#, python-format
+msgid "Mural %(nome)s"
+msgstr "Mural %(nome)s"
+
+#: feed/views.py:365
+#, python-format
+msgid "Mural empresarial do núcleo %(nome)s"
+msgstr "Mural empresarial do núcleo %(nome)s"
+
 #: templates/feed/_grid.html:7
 #, python-format
 msgid "Feed do Núcleo: %(nome)s"
