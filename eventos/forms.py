@@ -287,6 +287,9 @@ class EventoForm(forms.ModelForm):
 
         if "cover" in self.fields:
             self.fields["cover"].label = _("Imagem da capa")
+            self.fields["cover"].help_text = _(
+                "Recomendado: proporção panorâmica entre 2.5:1 e 3:1 (ex.: 2400×960 px) para boa adaptação em mobile e desktop sem distorção."
+            )
 
         participantes_field = self.fields.get("participantes_maximo")
         if participantes_field:
