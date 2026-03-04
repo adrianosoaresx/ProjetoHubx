@@ -1577,8 +1577,8 @@ def foto(request):
         arquivo = request.FILES.get("foto")
         if arquivo:
             ext = Path(arquivo.name).suffix.lower()
-            allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
-            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", 50 * 1024 * 1024)
+            allowed_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
+            max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
             if ext not in allowed_exts:
                 messages.error(request, _("Formato de arquivo não permitido."))
                 return redirect("accounts:foto")

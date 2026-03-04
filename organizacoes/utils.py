@@ -20,8 +20,8 @@ def validate_cnpj(value: str) -> str:
 def validate_organizacao_image(file) -> None:
     if not file:
         return
-    allowed_exts = {f".{ext.lower()}" for ext in settings.ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS}
-    max_size = settings.ORGANIZACOES_MAX_IMAGE_SIZE
+    allowed_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
+    max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in allowed_exts:
         raise ValidationError(_("Formato de imagem não suportado."))
