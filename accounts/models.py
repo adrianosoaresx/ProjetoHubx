@@ -517,7 +517,10 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
             allowed = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
             if ext not in allowed:
                 raise ValidationError({"file": _("Formato de arquivo não suportado.")})
-            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", 50 * 1024 * 1024)
+            default_max_size = 50 * 1024 * 1024
+            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", default_max_size)
+            if ext == ".pdf":
+                max_size = getattr(settings, "USER_MEDIA_PDF_MAX_SIZE", 100 * 1024 * 1024)
             if self.file.size > max_size:
                 raise ValidationError(
                     {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}
