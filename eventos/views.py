@@ -2276,6 +2276,7 @@ class InscricaoEventoUpdateView(
                 "valor_evento_usuario": evento.get_valor_para_usuario(
                     user=self.object.user
                 ),
+                "show_comprovante_pagamento": True,
             }
         )
         return context
@@ -2461,7 +2462,14 @@ class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("show_comprovante_pagamento", False)
+        return context
+
     def form_valid(self, form):
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+
         existing_inscricao = InscricaoEvento.all_objects.filter(
             user=self.request.user,
             evento=self.evento,
@@ -2476,7 +2484,6 @@ class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
 
         form.instance.user = self.request.user
         form.instance.evento = self.evento
-        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
         if valor_evento is not None:
             form.instance.valor_pago = valor_evento
 
@@ -2710,6 +2717,8 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             metodo_pagamento = transacao.metodo
             form.cleaned_data["metodo_pagamento"] = metodo_pagamento
 
+        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
+
         existing_inscricao = InscricaoEvento.all_objects.filter(
             user=self.request.user,
             evento=self.evento,
@@ -2717,14 +2726,30 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
 
         if existing_inscricao and not existing_inscricao.deleted:
             self.object = existing_inscricao
-            return self._redirect_to_result(
-                status="success",
-                message=_("Você já está inscrito neste evento."),
+            if existing_inscricao.status == "confirmada":
+                return self._redirect_to_result(
+                    status="success",
+                    message=_("Você já está inscrito neste evento."),
+                )
+
+            if valor_evento is not None:
+                existing_inscricao.valor_pago = valor_evento
+            if metodo_pagamento:
+                existing_inscricao.metodo_pagamento = metodo_pagamento
+            if transacao:
+                existing_inscricao.transacao = transacao
+                existing_inscricao.metodo_pagamento = transacao.metodo
+                existing_inscricao.pagamento_validado = (
+                    transacao.status == Transacao.Status.APROVADA
+                )
+            existing_inscricao.save()
+            return self._handle_confirmation_and_redirect(
+                transacao,
+                metodo_pagamento=existing_inscricao.metodo_pagamento,
             )
 
         form.instance.user = self.request.user
         form.instance.evento = self.evento
-        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
         if valor_evento is not None:
             form.instance.valor_pago = valor_evento
 
@@ -2740,9 +2765,6 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             existing_inscricao.presente = False
             existing_inscricao.valor_pago = form.cleaned_data.get("valor_pago")
             existing_inscricao.metodo_pagamento = form.cleaned_data.get("metodo_pagamento")
-            comprovante = form.cleaned_data.get("comprovante_pagamento")
-            if comprovante:
-                existing_inscricao.comprovante_pagamento = comprovante
             existing_inscricao.transacao = transacao or existing_inscricao.transacao
             existing_inscricao.pagamento_validado = form.instance.pagamento_validado
             existing_inscricao.save()
