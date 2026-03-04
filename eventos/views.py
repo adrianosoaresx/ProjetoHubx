@@ -87,6 +87,7 @@ from .models import (
     PreRegistroConvite,
 )
 from .querysets import filter_eventos_por_usuario
+from .services.inscricao import processar_inscricao_evento
 
 User = get_user_model()
 
@@ -2017,31 +2018,18 @@ class EventoSubscribeView(EventoInscricaoActionMixin, LoginRequiredMixin, NoSupe
         if _get_tipo_usuario(request.user) == UserType.ADMIN.value:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return self._redirect(request, pk)
-        inscricao, created = InscricaoEvento.all_objects.get_or_create(
-            user=request.user,
+        resultado = processar_inscricao_evento(
             evento=evento,
+            user=request.user,
+            remover_se_falhar_confirmacao=True,
         )
-
-        if inscricao.deleted:
-            update_fields = ["deleted", "deleted_at", "updated_at"]
-            inscricao.deleted = False
-            inscricao.deleted_at = None
-            if inscricao.status == "cancelada":
-                inscricao.status = "pendente"
-                update_fields.append("status")
-            inscricao.save(update_fields=update_fields)
-        if inscricao.status == "confirmada":
-            messages.info(request, _("Inscrição já confirmada."))
-            return self._redirect(request, pk)
-        try:
-            inscricao.confirmar_inscricao()
-        except ValueError as exc:
-            if created:
-                inscricao.delete()
-            messages.error(request, str(exc))
-        else:
-            messages.success(request, _("Inscrição realizada."))  # pragma: no cover
-        return self._redirect(request, pk)
+        getattr(messages, resultado.status)(request, resultado.message)
+        return redirect(
+            reverse(
+                "eventos:inscricao_resultado",
+                kwargs={"uuid": resultado.inscricao.uuid},
+            )
+        )
 
 
 class EventoCancelSubscriptionView(EventoInscricaoActionMixin, LoginRequiredMixin, NoSuperadminMixin, View):
@@ -2468,54 +2456,16 @@ class InscricaoEventoCreateView(InscricaoEventoBaseView, CreateView):
         return context
 
     def form_valid(self, form):
-        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
-
-        existing_inscricao = InscricaoEvento.all_objects.filter(
-            user=self.request.user,
+        resultado = processar_inscricao_evento(
             evento=self.evento,
-        ).first()
-
-        if existing_inscricao and not existing_inscricao.deleted:
-            self.object = existing_inscricao
-            return self._redirect_to_result(
-                status="success",
-                message=_("Você já está inscrito neste evento."),
-            )
-
-        form.instance.user = self.request.user
-        form.instance.evento = self.evento
-        if valor_evento is not None:
-            form.instance.valor_pago = valor_evento
-
-        if existing_inscricao and existing_inscricao.deleted:
-            # Reaproveita a inscrição cancelada, removendo o soft delete
-            existing_inscricao.deleted = False
-            existing_inscricao.deleted_at = None
-            existing_inscricao.status = "pendente"
-            existing_inscricao.presente = False
-            existing_inscricao.valor_pago = form.cleaned_data.get("valor_pago")
-            existing_inscricao.metodo_pagamento = form.cleaned_data.get("metodo_pagamento")
-            comprovante = form.cleaned_data.get("comprovante_pagamento")
-            if comprovante:
-                existing_inscricao.comprovante_pagamento = comprovante
-            existing_inscricao.save()
-            self.object = existing_inscricao
-            try:
-                self.object.confirmar_inscricao()
-            except ValueError as exc:
-                return self._redirect_to_result(status="error", message=str(exc))
-
-            messages.success(self.request, _("Inscrição realizada."))
-            return self._redirect_to_result()
-
-        super().form_valid(form)
-        try:
-            self.object.confirmar_inscricao()
-        except ValueError as exc:
-            return self._redirect_to_result(status="error", message=str(exc))
-
-        messages.success(self.request, _("Inscrição realizada."))
-        return self._redirect_to_result()
+            user=self.request.user,
+            valor_pago=form.cleaned_data.get("valor_pago"),
+            metodo_pagamento=form.cleaned_data.get("metodo_pagamento"),
+            comprovante_pagamento=form.cleaned_data.get("comprovante_pagamento"),
+        )
+        self.object = resultado.inscricao
+        getattr(messages, resultado.status)(self.request, resultado.message)
+        return self._redirect_to_result(status=resultado.status, message=resultado.message)
 
     def get_success_url(self):
         return reverse_lazy(
@@ -2700,14 +2650,6 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
         except (TypeError, ValueError, Transacao.DoesNotExist):
             return None
 
-    def _should_confirm_inscricao(
-        self, transacao: Transacao | None, metodo_pagamento: str | None = None
-    ) -> bool:
-        if self._checkout_required(metodo_pagamento):
-            return transacao is not None and transacao.status == Transacao.Status.APROVADA
-        if transacao is None:
-            return True
-        return transacao.status == Transacao.Status.APROVADA
 
     def form_valid(self, form):
         transacao = self._get_checkout_transacao()
@@ -2717,106 +2659,18 @@ class InscricaoEventoPagamentoCreateView(InscricaoEventoCreateView):
             metodo_pagamento = transacao.metodo
             form.cleaned_data["metodo_pagamento"] = metodo_pagamento
 
-        valor_evento = self.evento.get_valor_para_usuario(user=self.request.user)
-
-        existing_inscricao = InscricaoEvento.all_objects.filter(
-            user=self.request.user,
+        resultado = processar_inscricao_evento(
             evento=self.evento,
-        ).first()
-
-        if existing_inscricao and not existing_inscricao.deleted:
-            self.object = existing_inscricao
-            if existing_inscricao.status == "confirmada":
-                return self._redirect_to_result(
-                    status="success",
-                    message=_("Você já está inscrito neste evento."),
-                )
-
-            if valor_evento is not None:
-                existing_inscricao.valor_pago = valor_evento
-            if metodo_pagamento:
-                existing_inscricao.metodo_pagamento = metodo_pagamento
-            if transacao:
-                existing_inscricao.transacao = transacao
-                existing_inscricao.metodo_pagamento = transacao.metodo
-                existing_inscricao.pagamento_validado = (
-                    transacao.status == Transacao.Status.APROVADA
-                )
-            existing_inscricao.save()
-            return self._handle_confirmation_and_redirect(
-                transacao,
-                metodo_pagamento=existing_inscricao.metodo_pagamento,
-            )
-
-        form.instance.user = self.request.user
-        form.instance.evento = self.evento
-        if valor_evento is not None:
-            form.instance.valor_pago = valor_evento
-
-        form.instance.transacao = transacao
-        if transacao:
-            form.instance.metodo_pagamento = transacao.metodo
-            form.instance.pagamento_validado = transacao.status == Transacao.Status.APROVADA
-
-        if existing_inscricao and existing_inscricao.deleted:
-            existing_inscricao.deleted = False
-            existing_inscricao.deleted_at = None
-            existing_inscricao.status = "pendente"
-            existing_inscricao.presente = False
-            existing_inscricao.valor_pago = form.cleaned_data.get("valor_pago")
-            existing_inscricao.metodo_pagamento = form.cleaned_data.get("metodo_pagamento")
-            existing_inscricao.transacao = transacao or existing_inscricao.transacao
-            existing_inscricao.pagamento_validado = form.instance.pagamento_validado
-            existing_inscricao.save()
-            self.object = existing_inscricao
-            return self._handle_confirmation_and_redirect(transacao, metodo_pagamento=metodo_pagamento)
-
-        response = CreateView.form_valid(self, form)
-        return self._handle_confirmation_and_redirect(
-            transacao,
+            user=self.request.user,
+            valor_pago=form.cleaned_data.get("valor_pago"),
             metodo_pagamento=metodo_pagamento,
-            response=response,
+            comprovante_pagamento=form.cleaned_data.get("comprovante_pagamento"),
+            transacao=transacao,
+            exigir_checkout_aprovado=self._checkout_required(metodo_pagamento),
         )
-
-    def _handle_confirmation_and_redirect(
-        self,
-        transacao: Transacao | None,
-        *,
-        metodo_pagamento: str | None = None,
-        response=None,
-    ):
-        if self._checkout_required(metodo_pagamento) and (
-            transacao is None or transacao.status != Transacao.Status.APROVADA
-        ):
-            info_message = _("Pagamento iniciado. Confirme após a aprovação do checkout.")
-            messages.info(self.request, info_message)
-            return redirect(
-                reverse(
-                    "eventos:inscricao_pagamento_checkout",
-                    kwargs={"uuid": self.object.uuid},
-                )
-            )
-
-        should_confirm = self._should_confirm_inscricao(
-            transacao,
-            metodo_pagamento,
-        )
-        if should_confirm:
-            try:
-                self.object.confirmar_inscricao()
-            except ValueError as exc:
-                return self._redirect_to_result(status="error", message=str(exc))
-
-            messages.success(self.request, _("Inscrição realizada."))
-            return self._redirect_to_result(status="success")
-        else:
-            info_message = _("Pagamento iniciado. Confirmaremos a inscrição após a aprovação.")
-            messages.info(
-                self.request,
-                info_message,
-            )
-            return self._redirect_to_result(status="info", message=info_message)
-        return response or self._redirect_to_result()
+        self.object = resultado.inscricao
+        getattr(messages, resultado.status)(self.request, resultado.message)
+        return self._redirect_to_result(status=resultado.status, message=resultado.message)
 
 
 class InscricaoEventoCheckoutView(LoginRequiredMixin, NoSuperadminMixin, TemplateView):
