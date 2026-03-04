@@ -27,7 +27,7 @@
               {% else %}
                 {% if field_name == 'metodo_pagamento' %}
                   {% include 'eventos/inscricoes/_metodo_pagamento_cards.html' with field=field %}
-                {% elif field_name == 'comprovante_pagamento' %}
+                {% elif field_name == 'comprovante_pagamento' and show_comprovante_pagamento %}
                   {% with field_value=field.value %}
                     <div class="space-y-1" data-payment-proof-field>
                       <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
