@@ -60,7 +60,7 @@ class OrganizacaoUserCreateForm(UserCreationForm):
     birth_date = forms.DateField(
         label=_("Data de nascimento"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
 
     class Meta(UserCreationForm.Meta):

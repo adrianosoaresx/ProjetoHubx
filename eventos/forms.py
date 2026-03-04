@@ -76,8 +76,8 @@ class ConviteEventoForm(forms.ModelForm):
             "imagem",
         ]
         widgets = {
-            "data_inicio": forms.DateInput(attrs={"type": "date"}),
-            "data_fim": forms.DateInput(attrs={"type": "date"}),
+            "data_inicio": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+            "data_fim": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
             "cronograma": forms.Textarea,
             "informacoes_adicionais": forms.Textarea,
         }
@@ -87,8 +87,8 @@ class ConviteEventoForm(forms.ModelForm):
 
         if evento:
             initial.setdefault("publico_alvo", evento.get_publico_alvo_display())
-            initial.setdefault("data_inicio", evento.data_inicio.date())
-            initial.setdefault("data_fim", evento.data_fim.date())
+            initial.setdefault("data_inicio", evento.data_inicio.date().isoformat())
+            initial.setdefault("data_fim", evento.data_fim.date().isoformat())
             initial.setdefault("local", evento.local)
             initial.setdefault("cidade", evento.cidade)
             initial.setdefault("estado", evento.estado)
@@ -467,7 +467,7 @@ class BriefingEventoForm(forms.ModelForm):
             return forms.DateField(
                 label=label,
                 required=required,
-                widget=forms.DateInput(attrs={"type": "date"}),
+                widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
                 error_messages=error_messages,
             )
         if tipo == "select":
