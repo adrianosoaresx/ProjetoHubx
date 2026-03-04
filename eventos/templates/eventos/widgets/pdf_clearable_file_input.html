@@ -49,5 +49,6 @@
       {{ widget.value_name|default:widget.empty_label }}
     </span>
   </div>
+  <p class="hidden text-sm text-[var(--error)]" data-file-upload-error aria-live="polite"></p>
   <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
 </div>

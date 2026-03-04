@@ -443,6 +443,21 @@ function updatePasswordStrength(password, fillElement, textElement) {
     textElement.textContent = strength.text
 }
 
+function toMb(bytes) {
+    return Math.round((Number(bytes || 0) / (1024 * 1024)) * 10) / 10
+}
+
+function parseExts(rawValue) {
+    return String(rawValue || "")
+        .split(",")
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean)
+}
+
+function formatAcceptedTypes(exts) {
+    return exts.map((ext) => ext.replace('.', '').toUpperCase()).join(', ')
+}
+
 // Photo Upload
 function initPhotoUpload() {
     const fotoInput = document.getElementById("foto")
@@ -464,18 +479,20 @@ function handlePhotoUpload(event) {
 
     if (!file) return
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]
-    if (!allowedTypes.includes(file.type)) {
-        showValidation(null, fotoValidation, "Formato não suportado. Use JPG ou PNG", false)
+    const allowedExts = parseExts(event.target.dataset.uploadImageExts || ".jpg,.jpeg,.png")
+    const allowedLabel = event.target.dataset.uploadImageTypesLabel || formatAcceptedTypes(allowedExts)
+    const maxSize = Number(event.target.dataset.uploadImageMaxBytes || 0)
+    const fileExt = file.name && file.name.includes(".") ? `.${file.name.split(".").pop().toLowerCase()}` : ""
+    const isImageType = String(file.type || "").startsWith("image/")
+
+    if (!isImageType || (allowedExts.length && !allowedExts.includes(fileExt))) {
+        showValidation(null, fotoValidation, `Tipo aceito: ${allowedLabel}. Limite: ${toMb(maxSize)}MB.`, false)
         event.target.value = ""
         return
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024 // 5MB in bytes
-    if (file.size > maxSize) {
-        showValidation(null, fotoValidation, "Arquivo muito grande. Máximo 5MB", false)
+    if (maxSize > 0 && file.size > maxSize) {
+        showValidation(null, fotoValidation, `Tipo aceito: ${allowedLabel}. Limite: ${toMb(maxSize)}MB.`, false)
         event.target.value = ""
         return
     }
