@@ -1573,12 +1573,13 @@ def senha(request):
 
 
 def foto(request):
+    allowed_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
+    max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
+
     if request.method == "POST":
         arquivo = request.FILES.get("foto")
         if arquivo:
             ext = Path(arquivo.name).suffix.lower()
-            allowed_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
-            max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
             if ext not in allowed_exts:
                 messages.error(request, _("Formato de arquivo não permitido."))
                 return redirect("accounts:foto")
@@ -1589,7 +1590,15 @@ def foto(request):
             path = default_storage.save(temp_name, ContentFile(arquivo.read()))
             request.session["foto"] = path
         return redirect("accounts:termos")
-    return render(request, "register/foto.html", AUTH_RENDER_CONTEXT)
+
+    foto_upload_types_label = ", ".join(sorted({ext.lstrip(".").upper() for ext in allowed_exts}))
+    context = {
+        **AUTH_RENDER_CONTEXT,
+        "foto_upload_types_label": foto_upload_types_label,
+        "foto_upload_exts_csv": ",".join(sorted(allowed_exts)),
+        "foto_upload_max_image_bytes": max_size,
+    }
+    return render(request, "register/foto.html", context)
 
 
 def termos(request):

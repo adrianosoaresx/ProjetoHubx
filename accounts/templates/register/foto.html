@@ -36,9 +36,9 @@
       <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
         <div>
-          {% include "_forms/field.html" with id="foto" name="foto" type="file" label=_("Escolher Foto") placeholder=_("Selecione uma foto") describedby="foto_validation" attrs="accept='image/*'" %}
+          {% include "_forms/field.html" with id="foto" name="foto" type="file" label=_("Escolher Foto") placeholder=_("Selecione uma foto") describedby="foto_validation" attrs="accept='image/*' data-upload-image-max-bytes='{{ foto_upload_max_image_bytes }}' data-upload-image-exts='{{ foto_upload_exts_csv }}' data-upload-image-types-label='{{ foto_upload_types_label }}'" %}
           <div class="text-sm text-[var(--error)]" id="foto_validation"></div>
-          <small class="text-sm text-[var(--text-secondary)]">{% trans "Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB" %}</small>
+          <small class="text-sm text-[var(--text-secondary)]">{% blocktrans with types=foto_upload_types_label max_mb=foto_upload_max_image_bytes|filesizeformat %}Formatos aceitos: {{ types }}. Tamanho máximo: {{ max_mb }}{% endblocktrans %}</small>
         </div>
 
         <div class="flex gap-4">

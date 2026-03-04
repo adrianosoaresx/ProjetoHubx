@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -106,9 +107,18 @@ class PostForm(forms.ModelForm):
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        image_exts = getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])
+        pdf_exts = getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"])
+        video_exts = getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"])
         self.fields["arquivo"].widget = FeedMediaFileInput(
             attrs={
                 "accept": "image/*,application/pdf,video/*,.pdf",
+                "data-upload-image-max-bytes": str(getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)),
+                "data-upload-pdf-max-bytes": str(getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)),
+                "data-upload-video-max-bytes": str(getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)),
+                "data-upload-image-exts": ",".join(image_exts),
+                "data-upload-pdf-exts": ",".join(pdf_exts),
+                "data-upload-video-exts": ",".join(video_exts),
             },
             button_label=_("Selecionar"),
             empty_label=_("Nenhum arquivo selecionado"),

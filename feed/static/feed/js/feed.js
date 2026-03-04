@@ -168,6 +168,55 @@ const setupLinkPreview = (wrapper, scope) => {
   handleUrlChange();
 };
 
+function bytesToMb(bytes) {
+  return (Number(bytes || 0) / (1024 * 1024)).toFixed(0);
+}
+
+function normalizeExts(raw) {
+  return String(raw || '').split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
+}
+
+function getFileKind(file, input) {
+  const ext = file.name && file.name.includes('.') ? `.${file.name.split('.').pop().toLowerCase()}` : '';
+  const groups = [
+    { kind: 'image', exts: normalizeExts(input.dataset.uploadImageExts), mime: (type) => String(type || '').startsWith('image/') },
+    { kind: 'pdf', exts: normalizeExts(input.dataset.uploadPdfExts), mime: (type) => String(type || '') === 'application/pdf' },
+    { kind: 'video', exts: normalizeExts(input.dataset.uploadVideoExts), mime: (type) => String(type || '').startsWith('video/') },
+  ];
+
+  for (const group of groups) {
+    if (group.mime(file.type) || (ext && group.exts.includes(ext))) {
+      return group;
+    }
+  }
+  return null;
+}
+
+function validateUploadFile(file, input) {
+  const group = getFileKind(file, input);
+  if (!group) {
+    const accepted = [
+      ...normalizeExts(input.dataset.uploadImageExts),
+      ...normalizeExts(input.dataset.uploadPdfExts),
+      ...normalizeExts(input.dataset.uploadVideoExts),
+    ].map((ext) => ext.replace('.', '').toUpperCase()).join(', ');
+    return `Tipo não aceito. Use: ${accepted}.`;
+  }
+
+  const maxByKind = {
+    image: Number(input.dataset.uploadImageMaxBytes || 0),
+    pdf: Number(input.dataset.uploadPdfMaxBytes || 0),
+    video: Number(input.dataset.uploadVideoMaxBytes || 0),
+  };
+  const maxBytes = maxByKind[group.kind] || 0;
+  if (maxBytes > 0 && file.size > maxBytes) {
+    const accepted = group.exts.map((ext) => ext.replace('.', '').toUpperCase()).join(', ');
+    return `Tipo aceito: ${accepted}. Limite: ${bytesToMb(maxBytes)}MB.`;
+  }
+
+  return '';
+}
+
 function bindFeedEvents(root = document) {
   const textarea = root.querySelector('textarea[name="conteudo"]');
   const charCounter = root.querySelector("#char-count");
@@ -206,6 +255,7 @@ function bindFeedEvents(root = document) {
       const button = wrapper.querySelector('[data-feed-file-button]');
       const status = wrapper.querySelector('[data-feed-file-name]');
       const clearCheckbox = wrapper.querySelector('[data-feed-file-clear]');
+      const errorEl = wrapper.querySelector('[data-feed-file-error]');
 
       if (!input || !button || !status) {
         return;
@@ -245,6 +295,18 @@ function bindFeedEvents(root = document) {
       input.addEventListener('change', () => {
         if (clearCheckbox) {
           clearCheckbox.checked = false;
+        }
+        const file = input.files && input.files[0];
+        const validationMessage = file ? validateUploadFile(file, input) : '';
+        if (validationMessage) {
+          input.value = '';
+          if (errorEl) {
+            errorEl.textContent = validationMessage;
+            errorEl.classList.remove('hidden');
+          }
+        } else if (errorEl) {
+          errorEl.textContent = '';
+          errorEl.classList.add('hidden');
         }
         updateStatus();
       });

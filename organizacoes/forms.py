@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from accounts.models import UserType
@@ -56,6 +57,8 @@ class OrganizacaoForm(forms.ModelForm):
                 field.widget.attrs.setdefault("accept", "image/*")
                 field.widget.attrs.setdefault("data-preview-target", f"preview-{field_name}")
                 field.widget.attrs.setdefault("data-preview-placeholder", f"preview-placeholder-{field_name}")
+                field.widget.attrs.setdefault("data-upload-image-max-bytes", str(getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)))
+                field.widget.attrs.setdefault("data-upload-image-exts", ",".join(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])))
         rua_field = self.fields.get("rua")
         if rua_field:
             rua_field.label = "Endereço"
