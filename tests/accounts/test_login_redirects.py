@@ -13,6 +13,16 @@ django.setup()
 from tokens.models import TOTPDevice  # noqa: E402
 
 
+
+
+@pytest.mark.django_db
+def test_login_get_sem_next_renderiza_formulario() -> None:
+    client = Client()
+
+    response = client.get(reverse("accounts:login"))
+
+    assert response.status_code == 200
+
 @pytest.mark.django_db
 def test_login_simples_redireciona_para_next_valido() -> None:
     user_model = get_user_model()

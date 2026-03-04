@@ -27,7 +27,7 @@
 
       <form method="post" action="{% url 'accounts:login_totp' %}" class="space-y-5">
         {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next_url|default:request.GET.next|default:'' }}">
+        <input type="hidden" name="next" value="{{ next_url|default:'' }}">
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
