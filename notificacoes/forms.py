@@ -33,12 +33,12 @@ class HistoricoNotificacaoFilterForm(forms.Form):
     inicio = forms.DateField(
         label=_("Data inicial"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
     fim = forms.DateField(
         label=_("Data final"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
     canal = forms.ChoiceField(
         label=_("Canal"),
@@ -77,12 +77,12 @@ class NotificationLogFilterForm(forms.Form):
     inicio = forms.DateField(
         label=_("Data inicial"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
     fim = forms.DateField(
         label=_("Data final"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
     canal = forms.ChoiceField(
         label=_("Canal"),
@@ -111,10 +111,10 @@ class MetricsFilterForm(forms.Form):
     inicio = forms.DateField(
         label=_("Data inicial"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
     fim = forms.DateField(
         label=_("Data final"),
         required=False,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
     )
