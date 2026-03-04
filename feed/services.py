@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from core.uploads.validators import validate_upload
 
 
 def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
@@ -23,26 +24,23 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     ffmpeg_available = shutil.which("ffmpeg") is not None
 
     content_type = getattr(file, "content_type", "") or mimetypes.guess_type(file.name)[0] or ""
-    size = getattr(file, "size", 0)
     ext = Path(file.name).suffix.lower()
 
-    image_exts = getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])
-    pdf_exts = getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"])
-    video_exts = getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"])
+    image_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
+    pdf_exts = set(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"]))
+    video_exts = set(getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"]))
 
-    is_video = False
-    if ext in image_exts and content_type.startswith("image/"):
-        max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
-    elif ext in pdf_exts and content_type == "application/pdf":
-        max_size = getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)
-    elif ext in video_exts and content_type.startswith("video/"):
-        max_size = getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)
-        is_video = True
+    if ext in video_exts or content_type.startswith("video/"):
+        category = "video"
+    elif ext in pdf_exts or content_type == "application/pdf":
+        category = "pdf"
+    elif ext in image_exts or content_type.startswith("image/"):
+        category = "image"
     else:
-        raise ValidationError("Formato de arquivo não suportado")
+        raise ValidationError("Formato de arquivo não permitido.")
 
-    if size > max_size:
-        raise ValidationError("Arquivo maior que o limite permitido")
+    validate_upload(file, category)
+    is_video = category == "video"
 
     key = f"feed/{uuid.uuid4()}-{file.name}"
     file.seek(0)

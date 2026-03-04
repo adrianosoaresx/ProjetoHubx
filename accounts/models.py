@@ -21,6 +21,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import EncryptedCharField
 from core.models import SoftDeleteModel, TimeStampedModel
+from core.uploads.validators import validate_upload
 from organizacoes.utils import validate_cnpj
 
 from .validators import cpf_validator
@@ -517,18 +518,20 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
             image_exts = set(getattr(settings, "UPLOAD_ALLOWED_IMAGE_EXTS", [".jpg", ".jpeg", ".png", ".gif", ".webp"]))
             video_exts = set(getattr(settings, "UPLOAD_ALLOWED_VIDEO_EXTS", [".mp4", ".webm"]))
             pdf_exts = set(getattr(settings, "UPLOAD_ALLOWED_PDF_EXTS", [".pdf"]))
-            allowed = image_exts | video_exts | pdf_exts
-            if ext not in allowed:
-                raise ValidationError({"file": _("Formato de arquivo não suportado.")})
-            max_size = getattr(settings, "UPLOAD_MAX_VIDEO_SIZE", 50 * 1024 * 1024)
+
             if ext in image_exts:
-                max_size = getattr(settings, "UPLOAD_MAX_IMAGE_SIZE", 10 * 1024 * 1024)
+                category = "image"
+            elif ext in video_exts:
+                category = "video"
             elif ext in pdf_exts:
-                max_size = getattr(settings, "UPLOAD_MAX_PDF_SIZE", 100 * 1024 * 1024)
-            if self.file.size > max_size:
-                raise ValidationError(
-                    {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}
-                )
+                category = "pdf"
+            else:
+                raise ValidationError({"file": _("Formato de arquivo não permitido.")})
+
+            try:
+                validate_upload(self.file, category)
+            except ValidationError as exc:
+                raise ValidationError({"file": exc.messages[0]}) from exc
 
             file_field = self._meta.get_field("file")
             max_length = file_field.max_length or 100

@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import uuid
-from pathlib import Path
 
 from django.conf import settings
 
@@ -50,6 +49,7 @@ from accounts.tasks import (
     send_password_reset_email,
 )
 from audit.services import hash_ip, log_audit
+from core.uploads.validators import validate_upload
 from core.permissions import (
     IsAdmin,
     IsCoordenador,
@@ -1579,12 +1579,10 @@ def foto(request):
     if request.method == "POST":
         arquivo = request.FILES.get("foto")
         if arquivo:
-            ext = Path(arquivo.name).suffix.lower()
-            if ext not in allowed_exts:
-                messages.error(request, _("Formato de arquivo não permitido."))
-                return redirect("accounts:foto")
-            if arquivo.size > max_size:
-                messages.error(request, _("Arquivo excede o tamanho máximo permitido."))
+            try:
+                validate_upload(arquivo, "image")
+            except ValidationError as exc:
+                messages.error(request, exc.messages[0])
                 return redirect("accounts:foto")
             temp_name = f"temp/{uuid.uuid4()}_{arquivo.name}"
             path = default_storage.save(temp_name, ContentFile(arquivo.read()))
