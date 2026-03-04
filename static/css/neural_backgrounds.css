@@ -251,7 +251,7 @@
 /* Hero component integration */
 .hero-with-neural {
   position: relative;
-  min-height: 280px;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
