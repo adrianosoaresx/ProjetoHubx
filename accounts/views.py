@@ -30,6 +30,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET, require_POST
@@ -935,7 +936,19 @@ def _user_requires_totp(user: User) -> bool:
 
 def _clear_pending_2fa(request):
     request.session.pop("pending_2fa_user_id", None)
+    request.session.pop("pending_2fa_next_url", None)
     request.session.modified = True
+
+
+def _get_validated_redirect_url(request, fallback_url: str | None = None) -> str | None:
+    redirect_url = request.POST.get("next") or request.GET.get("next")
+    if redirect_url and url_has_allowed_host_and_scheme(
+        url=redirect_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect_url
+    return fallback_url
 
 
 def _get_pending_2fa_user(request):
@@ -977,26 +990,34 @@ def _register_login_success(user: User, request):
 
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):
+    fallback_url = reverse("accounts:perfil")
+    next_url = _get_validated_redirect_url(request, fallback_url=fallback_url)
+
     if request.user.is_authenticated:
-        return redirect("accounts:perfil")
+        return redirect(next_url)
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
         if form.requires_totp:
             request.session["pending_2fa_user_id"] = form.get_user().pk
+            request.session["pending_2fa_next_url"] = next_url
             request.session.modified = True
             return redirect("accounts:login_totp")
 
         user = form.get_user()
         if user and user.is_active:
             _register_login_success(user, request)
-            return redirect("accounts:perfil")
+            return redirect(next_url)
         if user and not user.is_active:
             messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
         else:
             messages.error(request, _("Credenciais inválidas."))
 
-    return render(request, "login/login.html", {"form": form, **AUTH_RENDER_CONTEXT})
+    return render(
+        request,
+        "login/login.html",
+        {"form": form, "next_url": next_url, **AUTH_RENDER_CONTEXT},
+    )
 
 
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
@@ -1010,14 +1031,29 @@ def login_totp(request):
 
     form = TotpLoginForm(user, request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
+        next_url = _get_validated_redirect_url(request)
+        if not next_url:
+            next_url = _get_validated_redirect_url(
+                request,
+                fallback_url=request.session.get("pending_2fa_next_url"),
+            )
         _clear_pending_2fa(request)
         _register_login_success(user, request)
-        return redirect("accounts:perfil")
+        return redirect(next_url or reverse("accounts:perfil"))
+
+    session_next_url = _get_validated_redirect_url(
+        request,
+        fallback_url=request.session.get("pending_2fa_next_url"),
+    )
+    next_url = _get_validated_redirect_url(
+        request,
+        fallback_url=session_next_url or reverse("accounts:perfil"),
+    )
 
     return render(
         request,
         "login/totp.html",
-        {"form": form, "email": user.email, **AUTH_RENDER_CONTEXT},
+        {"form": form, "email": user.email, "next_url": next_url, **AUTH_RENDER_CONTEXT},
     )
 
 

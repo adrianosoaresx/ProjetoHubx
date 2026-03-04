@@ -27,6 +27,7 @@
 
       <form method="post" action="{% url 'accounts:login' %}" class="space-y-5" id="login-form">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next_url|default:request.GET.next|default:'' }}">
         {% for field in form %}
           {% include '_forms/field.html' with field=field %}
         {% endfor %}
