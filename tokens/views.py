@@ -15,7 +15,15 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
-from accounts.models import SecurityEvent, UserType
+from accounts.auth import clear_login_failures, get_user_lockout_until, register_login_failure
+from accounts.mfa import (
+    is_totp_available,
+    is_email_otp_available,
+    issue_email_challenge,
+    verify_email_challenge,
+    verify_totp_code,
+)
+from accounts.models import MFALoginChallenge, SecurityEvent, UserType
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 from notificacoes.services.email_client import send_email
@@ -26,6 +34,8 @@ from eventos.models import Evento
 
 from .forms import (
     Ativar2FAForm,
+    AtivarEmail2FAForm,
+    Desativar2FAForm,
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
@@ -540,27 +550,65 @@ class Ativar2FAView(LoginRequiredMixin, View):
         img.save(buffer, format="PNG")
         return base64.b64encode(buffer.getvalue()).decode()
 
+    def _build_context(self, user, *, totp_form=None, email_form=None):
+        return {
+            "totp_form": totp_form or Ativar2FAForm(),
+            "email_form": email_form or AtivarEmail2FAForm(),
+            "qr_code": self._get_qr_code(user),
+            "secret": user.two_factor_secret,
+            "totp_enabled": bool(user.two_factor_enabled),
+            "email_2fa_enabled": bool(getattr(user, "two_factor_email_enabled", False)),
+        }
+
     def get(self, request, *args, **kwargs):
         user = request.user
-        if user.two_factor_enabled:
-            messages.info(request, _("2FA já está habilitado."))
-            return redirect("configuracoes:configuracoes")
         if not user.two_factor_secret:
             user.two_factor_secret = pyotp.random_base32()
             user.save(update_fields=["two_factor_secret"])
-        context = {
-            "form": Ativar2FAForm(),
-            "qr_code": self._get_qr_code(user),
-            "secret": user.two_factor_secret,
-        }
+        context = self._build_context(user)
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        form = Ativar2FAForm(request.POST, user=user)
-        if form.is_valid():
+        if not user.two_factor_secret:
+            user.two_factor_secret = pyotp.random_base32()
+            user.save(update_fields=["two_factor_secret"])
+        action = request.POST.get("action", "activate_totp")
+
+        if action == "activate_email":
+            email_form = AtivarEmail2FAForm(request.POST, user=user)
+            totp_form = Ativar2FAForm()
+            if email_form.is_valid():
+                user.two_factor_email_enabled = True
+                if not user.two_factor_enabled:
+                    user.two_factor_preferred_method = "email_otp"
+                    user.save(update_fields=["two_factor_email_enabled", "two_factor_preferred_method"])
+                else:
+                    user.save(update_fields=["two_factor_email_enabled"])
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="2fa_email_habilitado",
+                    ip=get_client_ip(request),
+                )
+                messages.success(request, _("2FA por e-mail ativado com sucesso."))
+                return redirect("configuracoes:configuracoes")
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_email_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
+            return render(
+                request,
+                self.template_name,
+                self._build_context(user, totp_form=totp_form, email_form=email_form),
+            )
+
+        totp_form = Ativar2FAForm(request.POST, user=user)
+        email_form = AtivarEmail2FAForm()
+        if totp_form.is_valid():
             user.two_factor_enabled = True
-            user.save(update_fields=["two_factor_enabled"])
+            user.two_factor_preferred_method = "totp"
+            user.save(update_fields=["two_factor_enabled", "two_factor_preferred_method"])
             TOTPDevice.all_objects.update_or_create(
                 usuario=user,
                 defaults={
@@ -575,33 +623,129 @@ class Ativar2FAView(LoginRequiredMixin, View):
                 evento="2fa_habilitado",
                 ip=get_client_ip(request),
             )
-            messages.success(request, _("2FA ativado"))
+            messages.success(request, _("2FA com aplicativo autenticador ativado."))
             return redirect("configuracoes:configuracoes")
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_habilitacao_falha",
             ip=get_client_ip(request),
         )
-        context = {
-            "form": form,
-            "qr_code": self._get_qr_code(user),
-            "secret": user.two_factor_secret,
-        }
-        return render(request, self.template_name, context)
+        return render(
+            request,
+            self.template_name,
+            self._build_context(user, totp_form=totp_form, email_form=email_form),
+        )
 
 
 class Desativar2FAView(LoginRequiredMixin, View):
     template_name = "configuracoes/seguranca/desativar_2fa.html"
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        context = {
+            "form": Desativar2FAForm(),
+            "totp_enabled": bool(request.user.two_factor_enabled),
+            "email_2fa_enabled": bool(getattr(request.user, "two_factor_email_enabled", False)),
+        }
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         user = request.user
+        form = Desativar2FAForm(request.POST, user=user)
+        challenge_session_key = "disable_2fa_email_challenge_id"
+        context = {
+            "form": form,
+            "totp_enabled": bool(user.two_factor_enabled),
+            "email_2fa_enabled": bool(getattr(user, "two_factor_email_enabled", False)),
+        }
+
+        if not form.is_valid():
+            return render(request, self.template_name, context)
+
+        action = request.POST.get("action", "disable")
+        if action == "send_email_code":
+            if not is_email_otp_available(user):
+                form.add_error(None, _("2FA por e-mail não está habilitado para esta conta."))
+                return render(request, self.template_name, context)
+            try:
+                challenge = issue_email_challenge(
+                    user=user,
+                    request=request,
+                    purpose=MFALoginChallenge.Purpose.DISABLE_2FA,
+                )
+                request.session[challenge_session_key] = str(challenge.pk)
+                request.session.modified = True
+                messages.success(request, _("Código enviado para seu e-mail."))
+            except ValueError as exc:
+                form.add_error(None, str(exc))
+            return render(request, self.template_name, context)
+
+        code = (form.cleaned_data.get("codigo") or "").strip()
+        totp_valid = verify_totp_code(user, code)
+        email_valid = False
+        if not totp_valid and is_email_otp_available(user):
+            email_valid, email_error = verify_email_challenge(
+                user=user,
+                request=request,
+                code=code,
+                purpose=MFALoginChallenge.Purpose.DISABLE_2FA,
+                challenge_id=request.session.get(challenge_session_key),
+            )
+            if not email_valid and email_error:
+                form.add_error("codigo", email_error)
+
+        needs_second_factor = bool(user.two_factor_enabled or user.two_factor_email_enabled)
+        allow_password_only_recovery = (
+            user.two_factor_enabled
+            and not is_totp_available(user)
+            and not is_email_otp_available(user)
+        )
+        if needs_second_factor and not (totp_valid or email_valid) and not allow_password_only_recovery:
+            lock_until = register_login_failure(
+                user,
+                email=user.email,
+                ip=get_client_ip(request),
+            )
+            if lock_until:
+                messages.error(
+                    request,
+                    _("Conta temporariamente bloqueada até %(time)s.")
+                    % {"time": lock_until.strftime("%H:%M")},
+                )
+            elif not form.errors.get("codigo"):
+                form.add_error("codigo", _("Código inválido."))
+            return render(request, self.template_name, context)
+        if allow_password_only_recovery:
+            messages.warning(
+                request,
+                _(
+                    "2FA estava inconsistente nesta conta. A desativação foi permitida apenas com senha para recuperação."
+                ),
+            )
+
+        lock_until = get_user_lockout_until(user)
+        if lock_until:
+            messages.error(
+                request,
+                _("Conta temporariamente bloqueada até %(time)s.")
+                % {"time": lock_until.strftime("%H:%M")},
+            )
+            return render(request, self.template_name, context)
+
         user.two_factor_enabled = False
         user.two_factor_secret = None
-        user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        user.two_factor_email_enabled = False
+        user.two_factor_preferred_method = "totp"
+        user.save(
+            update_fields=[
+                "two_factor_enabled",
+                "two_factor_secret",
+                "two_factor_email_enabled",
+                "two_factor_preferred_method",
+            ]
+        )
         TOTPDevice.objects.filter(usuario=user).delete()
+        clear_login_failures(user)
+        request.session.pop(challenge_session_key, None)
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_desabilitado",

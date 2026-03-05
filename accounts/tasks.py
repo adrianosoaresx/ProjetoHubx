@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.urls import reverse
 
 from notificacoes.services.notificacoes import enviar_para_usuario
+from notificacoes.services.email_client import send_email
 
 from .models import AccountToken, SecurityEvent, User
 
@@ -61,6 +62,18 @@ def send_cancel_delete_email(token_id: int) -> None:
         "cancel_delete",
         {"url": url, "nome": token.usuario.contato},
     )
+
+
+@shared_task
+def send_mfa_email_code(user_id: int, code: str, purpose: str = "login") -> None:
+    user = User.objects.get(pk=user_id)
+    if purpose == "disable_2fa":
+        subject = "Código para desativar a autenticação em duas etapas"
+        body = f"Use este código para confirmar a desativação do 2FA: {code}"
+    else:
+        subject = "Código de verificação de login"
+        body = f"Use este código para concluir seu login no Hubx: {code}"
+    send_email(user, subject, body)
 
 
 @shared_task

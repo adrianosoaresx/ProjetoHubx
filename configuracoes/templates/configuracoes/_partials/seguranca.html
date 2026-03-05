@@ -44,27 +44,33 @@
     <h2 class="text-lg font-semibold text-[var(--text-primary)]">
       {% trans 'Autenticação em duas etapas' %}
     </h2>
-    {% if two_factor_enabled %}
-      <p class="text-sm text-[var(--text-secondary)]">
-        {% trans '2FA está habilitado para sua conta.' %}
-      </p>
-      <div class="flex flex-wrap gap-3">
+    <ul class="space-y-2 text-sm text-[var(--text-secondary)]">
+      <li>
+        {% if two_factor_enabled %}
+          {% trans 'Aplicativo autenticador: habilitado' %}
+        {% else %}
+          {% trans 'Aplicativo autenticador: desabilitado' %}
+        {% endif %}
+      </li>
+      <li>
+        {% if two_factor_email_enabled %}
+          {% trans 'Código por e-mail: habilitado' %}
+        {% else %}
+          {% trans 'Código por e-mail: desabilitado' %}
+        {% endif %}
+      </li>
+    </ul>
+    <div class="flex flex-wrap gap-3">
+      <a href="{% url 'tokens:ativar_2fa' %}" class="btn btn-primary">
+        {% trans 'Gerenciar 2FA' %}
+      </a>
+      {% if two_factor_enabled or two_factor_email_enabled %}
         <a href="{% url 'tokens:desativar_2fa' %}" class="btn btn-danger">
           {% trans 'Desativar 2FA' %}
         </a>
-      </div>
-    {% else %}
-      <p class="text-sm text-[var(--text-secondary)]">
-        {% trans '2FA não está habilitado.' %}
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <a href="{% url 'tokens:ativar_2fa' %}" class="btn btn-primary">
-          {% trans 'Ativar 2FA' %}
-        </a>
-      </div>
-    {% endif %}
+      {% endif %}
+    </div>
   </div>
-{% endwith %}
 </article>
 
 <article class="card" aria-labelledby="delete-account-heading">
@@ -92,3 +98,4 @@
     </div>
   </div>
 </article>
+{% endwith %}

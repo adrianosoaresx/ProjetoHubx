@@ -1,15 +1,10 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans "Desativar 2FA" %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_configuracoes.html' with
-    title=_('Segurança da conta')
-    subtitle=_('Gerencie a autenticação em duas etapas da sua conta.')
-    hero_active_tab='seguranca'
-    tab='seguranca'
-  %}
+  {% include '_components/hero_configuracoes.html' with title=_('Segurança da conta') subtitle=_('Gerencie a autenticação em duas etapas da sua conta.') hero_active_tab='seguranca' tab='seguranca'%}
 {% endblock %}
 
 {% block content %}
@@ -27,13 +22,23 @@
         <div class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] p-4">
           <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Antes de continuar" %}</h2>
           <ul class="mt-2 list-disc space-y-2 pl-5 text-sm text-[var(--text-secondary)]">
-            <li>{% trans "Você precisará apenas da sua senha para entrar após desativar o 2FA." %}</li>
+            <li>{% trans "Informe sua senha atual e um código válido do segundo fator para confirmar." %}</li>
             <li>{% trans "Considere manter o 2FA ativo para evitar acessos não autorizados." %}</li>
           </ul>
         </div>
 
-        <form method="post" class="space-y-4">
+        <form method="post" class="space-y-4" autocomplete="off">
           {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error" role="alert">{{ form.non_field_errors }}</div>
+          {% endif %}
+          {% include '_forms/field.html' with field=form.password %}
+          {% include '_forms/field.html' with field=form.codigo %}
+          {% if email_2fa_enabled %}
+            <button type="submit" name="action" value="send_email_code" class="btn btn-outline">
+              {% trans "Enviar código por e-mail" %}
+            </button>
+          {% endif %}
           <p class="text-sm text-[var(--text-secondary)]">
             {% trans "Tem certeza de que deseja desativar a autenticação em duas etapas?" %}
           </p>
@@ -41,7 +46,7 @@
             <a href="{% url 'configuracoes:configuracoes' %}" class="btn btn-outline">
               {% trans "Cancelar" %}
             </a>
-            <button type="submit" class="btn btn-danger">
+            <button type="submit" name="action" value="disable" class="btn btn-danger">
               {% trans "Desativar 2FA" %}
             </button>
           </div>

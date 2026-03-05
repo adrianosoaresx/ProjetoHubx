@@ -24,6 +24,7 @@ try:
     from configuracoes.forms import ConfiguracaoContaForm, OperadorCreateForm  # type: ignore
     from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta  # type: ignore
     from accounts.models import AccountToken, UserType  # type: ignore
+    from accounts.mfa import is_totp_available  # type: ignore
     from tokens.utils import get_client_ip  # type: ignore
     from notificacoes.models import NotificationTemplate  # type: ignore
 except Exception:
@@ -39,6 +40,8 @@ except Exception:
         objects = None
     class UserType:  # type: ignore
         OPERADOR = "operador"
+    def is_totp_available(user):  # type: ignore
+        return bool(getattr(user, "two_factor_enabled", False))
     def get_client_ip(request: HttpRequest) -> str:  # type: ignore
         return "0.0.0.0"
     NotificationTemplate = None  # type: ignore
@@ -128,7 +131,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         Retorna se o usuário atual possui 2FA habilitado.  Algumas abas exibem
         opções relacionadas à autenticação em dois fatores.
         """
-        return bool(getattr(self.request.user, "two_factor_enabled", False))
+        return bool(is_totp_available(self.request.user))
+
+    def get_two_factor_email_enabled(self) -> bool:
+        return bool(getattr(self.request.user, "two_factor_email_enabled", False))
 
     def resolve_section(self, request: HttpRequest) -> str:
         """
@@ -302,6 +308,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         context: Dict[str, Any] = {
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
+            "two_factor_email_enabled": self.get_two_factor_email_enabled(),
             "hero_title": _("Configurações"),
             "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,
@@ -358,6 +365,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         context: Dict[str, Any] = {
             "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
+            "two_factor_email_enabled": self.get_two_factor_email_enabled(),
             "hero_title": _("Configurações"),
             "hero_subtitle": hero_subtitles.get(section, _("Personalize segurança, preferências e operadores da sua conta.")),
             "hero_active_tab": section,

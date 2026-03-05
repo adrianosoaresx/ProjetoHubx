@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -19,7 +18,6 @@ from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, BooleanField, Count, Exists, OuterRef, Q, Value
 from django.db.models.functions import Lower
-from django.core.cache import cache
 from django.http import (
     Http404,
     HttpResponse,
@@ -57,21 +55,32 @@ from core.permissions import (
 )
 from nucleos.models import ConviteNucleo
 from eventos.models import Evento, InscricaoEvento, PreRegistroConvite
-from tokens.models import TOTPDevice, TokenAcesso
+from tokens.models import TokenAcesso
 from tokens.services import find_token_by_code
 from tokens.utils import get_client_ip
 from organizacoes.utils import validate_cnpj
 from feed.models import Bookmark, Flag, Post, Reacao
+from .auth import clear_login_failures, get_user_lockout_until, register_login_failure
 from .forms import (
     CPF_REUSE_ERROR,
+    EmailOtpLoginForm,
     IDENTIFIER_REQUIRED_ERROR,
     EmailLoginForm,
     InformacoesPessoaisForm,
     TotpLoginForm,
     UserRatingForm,
 )
+from .mfa import (
+    MFA_METHOD_EMAIL_OTP,
+    get_active_email_challenge,
+    get_available_mfa_methods,
+    has_blocking_mfa_misconfiguration,
+    issue_email_challenge,
+    resolve_preferred_method,
+    verify_email_challenge,
+)
 from .utils import build_profile_section_url, is_htmx_or_ajax, redirect_to_profile_section
-from .models import AccountToken, LoginAttempt, SecurityEvent, UserRating, UserType
+from .models import AccountToken, LoginAttempt, MFALoginChallenge, SecurityEvent, UserRating, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
@@ -926,17 +935,15 @@ def check_2fa(request):
     return HttpResponse(status=204)
 
 
-def _user_requires_totp(user: User) -> bool:
-    return (
-        getattr(user, "two_factor_enabled", False)
-        and getattr(user, "two_factor_secret", None)
-        and TOTPDevice.objects.filter(usuario=user).exists()
-    )
+def _user_requires_mfa(user: User) -> bool:
+    return bool(get_available_mfa_methods(user))
 
 
 def _clear_pending_2fa(request):
     request.session.pop("pending_2fa_user_id", None)
     request.session.pop("pending_2fa_next_url", None)
+    request.session.pop("pending_2fa_method", None)
+    request.session.pop("pending_2fa_challenge_id", None)
     request.session.modified = True
 
 
@@ -963,20 +970,34 @@ def _get_pending_2fa_user(request):
     if not user.is_active:
         _clear_pending_2fa(request)
         return None
-    lock_until = cache.get(f"lockout_user_{user.pk}")
-    if lock_until and lock_until > timezone.now():
+    lock_until = get_user_lockout_until(user)
+    if lock_until:
         _clear_pending_2fa(request)
         return None
-    if not _user_requires_totp(user):
+    if has_blocking_mfa_misconfiguration(user):
+        _clear_pending_2fa(request)
+        return None
+    if not _user_requires_mfa(user):
         _clear_pending_2fa(request)
         return None
     return user
 
 
+def _resolve_pending_2fa_method(request, user: User) -> tuple[str | None, list[str]]:
+    methods = get_available_mfa_methods(user)
+    if not methods:
+        return None, []
+    current = request.session.get("pending_2fa_method")
+    if current not in methods:
+        current = resolve_preferred_method(user, methods)
+        request.session["pending_2fa_method"] = current
+        request.session.modified = True
+    return current, methods
+
+
 def _register_login_success(user: User, request):
     login(request, user, backend="accounts.backends.EmailBackend")
-    cache.delete(f"failed_login_attempts_user_{user.pk}")
-    cache.delete(f"lockout_user_{user.pk}")
+    clear_login_failures(user)
     LoginAttempt.objects.create(
         usuario=user,
         email=user.email,
@@ -998,9 +1019,27 @@ def login_view(request):
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
-        if form.requires_totp:
-            request.session["pending_2fa_user_id"] = form.get_user().pk
+        if form.requires_mfa:
+            pending_user = form.get_user()
+            request.session["pending_2fa_user_id"] = pending_user.pk
             request.session["pending_2fa_next_url"] = next_url
+            request.session["pending_2fa_method"] = form.mfa_method
+            request.session.pop("pending_2fa_challenge_id", None)
+            if form.mfa_method == MFA_METHOD_EMAIL_OTP:
+                try:
+                    challenge = issue_email_challenge(
+                        user=pending_user,
+                        request=request,
+                        purpose=MFALoginChallenge.Purpose.LOGIN,
+                    )
+                    request.session["pending_2fa_challenge_id"] = str(challenge.pk)
+                except ValueError as exc:
+                    messages.error(request, str(exc))
+                    return render(
+                        request,
+                        "login/login.html",
+                        {"form": form, "next_url": next_url, **AUTH_RENDER_CONTEXT},
+                    )
             request.session.modified = True
             return redirect("accounts:login_totp")
 
@@ -1029,17 +1068,126 @@ def login_totp(request):
     if not user:
         return redirect("accounts:login")
 
-    form = TotpLoginForm(user, request=request, data=request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        next_url = _get_validated_redirect_url(request)
-        if not next_url:
-            next_url = _get_validated_redirect_url(
+    method, methods = _resolve_pending_2fa_method(request, user)
+    if not method:
+        messages.error(request, _("Não foi possível continuar com a autenticação em duas etapas."))
+        return redirect("accounts:login")
+
+    if request.method == "POST":
+        switch_method = (request.POST.get("switch_method") or "").strip()
+        if switch_method in methods:
+            request.session["pending_2fa_method"] = switch_method
+            request.session.pop("pending_2fa_challenge_id", None)
+            if switch_method == MFA_METHOD_EMAIL_OTP:
+                try:
+                    challenge = issue_email_challenge(
+                        user=user,
+                        request=request,
+                        purpose=MFALoginChallenge.Purpose.LOGIN,
+                    )
+                    request.session["pending_2fa_challenge_id"] = str(challenge.pk)
+                except ValueError as exc:
+                    messages.error(request, str(exc))
+            request.session.modified = True
+            return redirect("accounts:login_totp")
+
+    challenge_id = request.session.get("pending_2fa_challenge_id")
+    if method == MFA_METHOD_EMAIL_OTP:
+        active_email_challenge = get_active_email_challenge(
+            user=user,
+            request=request,
+            purpose=MFALoginChallenge.Purpose.LOGIN,
+            challenge_id=challenge_id,
+        )
+        if not active_email_challenge:
+            try:
+                active_email_challenge = issue_email_challenge(
+                    user=user,
+                    request=request,
+                    purpose=MFALoginChallenge.Purpose.LOGIN,
+                )
+                request.session["pending_2fa_challenge_id"] = str(active_email_challenge.pk)
+                request.session.modified = True
+                if request.method == "POST":
+                    messages.info(request, _("Enviamos um novo código para seu e-mail."))
+            except ValueError as exc:
+                messages.error(request, str(exc))
+
+    form = (
+        EmailOtpLoginForm(data=request.POST or None)
+        if method == MFA_METHOD_EMAIL_OTP
+        else TotpLoginForm(user, request=request, data=request.POST or None)
+    )
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+        if method == MFA_METHOD_EMAIL_OTP and action == "resend_email_code":
+            try:
+                challenge = issue_email_challenge(
+                    user=user,
+                    request=request,
+                    purpose=MFALoginChallenge.Purpose.LOGIN,
+                )
+                request.session["pending_2fa_challenge_id"] = str(challenge.pk)
+                request.session.modified = True
+                messages.success(request, _("Código reenviado para seu e-mail."))
+                form = EmailOtpLoginForm()
+            except ValueError as exc:
+                messages.error(request, str(exc))
+        elif form.is_valid():
+            if method == MFA_METHOD_EMAIL_OTP:
+                ok, error = verify_email_challenge(
+                    user=user,
+                    request=request,
+                    code=form.cleaned_data.get("otp"),
+                    purpose=MFALoginChallenge.Purpose.LOGIN,
+                    challenge_id=request.session.get("pending_2fa_challenge_id"),
+                )
+                if not ok:
+                    lock_until = register_login_failure(
+                        user,
+                        email=user.email,
+                        ip=get_client_ip(request),
+                    )
+                    form.add_error(None, error)
+                    if lock_until:
+                        _clear_pending_2fa(request)
+                        messages.error(
+                            request,
+                            _("Conta bloqueada. Tente novamente após %(time)s.")
+                            % {"time": lock_until.strftime("%H:%M")},
+                        )
+                        return redirect("accounts:login")
+                else:
+                    next_url = _get_validated_redirect_url(request)
+                    if not next_url:
+                        next_url = _get_validated_redirect_url(
+                            request,
+                            fallback_url=request.session.get("pending_2fa_next_url"),
+                        )
+                    _clear_pending_2fa(request)
+                    _register_login_success(user, request)
+                    return redirect(next_url or reverse("accounts:perfil"))
+            else:
+                next_url = _get_validated_redirect_url(request)
+                if not next_url:
+                    next_url = _get_validated_redirect_url(
+                        request,
+                        fallback_url=request.session.get("pending_2fa_next_url"),
+                    )
+                _clear_pending_2fa(request)
+                _register_login_success(user, request)
+                return redirect(next_url or reverse("accounts:perfil"))
+
+        lock_until = get_user_lockout_until(user)
+        if lock_until:
+            _clear_pending_2fa(request)
+            messages.error(
                 request,
-                fallback_url=request.session.get("pending_2fa_next_url"),
+                _("Conta bloqueada. Tente novamente após %(time)s.")
+                % {"time": lock_until.strftime("%H:%M")},
             )
-        _clear_pending_2fa(request)
-        _register_login_success(user, request)
-        return redirect(next_url or reverse("accounts:perfil"))
+            return redirect("accounts:login")
 
     session_next_url = _get_validated_redirect_url(
         request,
@@ -1053,7 +1201,16 @@ def login_totp(request):
     return render(
         request,
         "login/totp.html",
-        {"form": form, "email": user.email, "next_url": next_url, **AUTH_RENDER_CONTEXT},
+        {
+            "form": form,
+            "email": user.email,
+            "next_url": next_url,
+            "mfa_method": method,
+            "is_email_otp": method == MFA_METHOD_EMAIL_OTP,
+            "has_multiple_mfa_methods": len(methods) > 1,
+            "available_mfa_methods": methods,
+            **AUTH_RENDER_CONTEXT,
+        },
     )
 
 
@@ -1257,8 +1414,7 @@ def password_reset_confirm(request, code: str):
             if form.is_valid():
                 form.save()
                 user = token.usuario
-                cache.delete(f"failed_login_attempts_user_{user.pk}")
-                cache.delete(f"lockout_user_{user.pk}")
+                clear_login_failures(user)
                 token.mark_used()
                 SecurityEvent.objects.create(
                     usuario=user,

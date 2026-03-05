@@ -1,6 +1,9 @@
 # accounts/models.py
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import secrets
 import posixpath
 from pathlib import Path
@@ -207,6 +210,15 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = EncryptedCharField(max_length=128, blank=True, null=True)
+    two_factor_email_enabled = models.BooleanField(default=False)
+    two_factor_preferred_method = models.CharField(
+        max_length=20,
+        default="totp",
+        choices=(
+            ("totp", "Aplicativo autenticador"),
+            ("email_otp", "Código por e-mail"),
+        ),
+    )
     email_confirmed = models.BooleanField(default=False)
 
     user_type = models.CharField(
@@ -709,6 +721,50 @@ class AccountToken(TimeStampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Token de Conta"
         verbose_name_plural = "Tokens de Conta"
+
+
+class MFALoginChallenge(TimeStampedModel):
+    class Method(models.TextChoices):
+        EMAIL_OTP = "email_otp", "Código por e-mail"
+
+    class Purpose(models.TextChoices):
+        LOGIN = "login", "Login"
+        DISABLE_2FA = "disable_2fa", "Desativar 2FA"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mfa_login_challenges",
+    )
+    method = models.CharField(max_length=20, choices=Method.choices)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.LOGIN)
+    code_hash = models.CharField(max_length=64)
+    code_salt = models.CharField(max_length=32)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    max_attempts = models.PositiveSmallIntegerField(default=5)
+    session_key = models.CharField(max_length=64, blank=True, default="")
+    ip = models.GenericIPAddressField(null=True, blank=True)
+
+    def set_code(self, code: str) -> None:
+        salt = secrets.token_bytes(16)
+        digest = hashlib.pbkdf2_hmac("sha256", code.encode(), salt, 120000)
+        self.code_salt = base64.b64encode(salt).decode()
+        self.code_hash = base64.b64encode(digest).decode()
+
+    def check_code(self, code: str) -> bool:
+        salt = base64.b64decode(self.code_salt)
+        expected = base64.b64decode(self.code_hash)
+        digest = hashlib.pbkdf2_hmac("sha256", code.encode(), salt, 120000)
+        return hmac.compare_digest(expected, digest)
+
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expires_at
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class LoginAttempt(TimeStampedModel, SoftDeleteModel):

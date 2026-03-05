@@ -4,55 +4,101 @@
 {% block title %}{% trans "Ativar 2FA" %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_configuracoes.html' with
-    title=_('Segurança da conta')
-    subtitle=_('Proteja sua conta habilitando a autenticação em duas etapas.')
-    hero_active_tab='seguranca'
-    tab='seguranca'
-  %}
+  {% include '_components/hero_configuracoes.html' with title=_('Segurança da conta') subtitle=_('Proteja sua conta habilitando a autenticação em duas etapas.') hero_active_tab='seguranca' tab='seguranca'%}
 {% endblock %}
 
 {% block content %}
-  <section class="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:flex-row">
+  <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <article class="card w-full">
       <header class="card-header space-y-2">
         <h1 class="text-2xl font-semibold text-[var(--text-primary)]">{% trans "Ativar autenticação em duas etapas" %}</h1>
         <p class="text-sm text-[var(--text-secondary)]">
-          {% blocktrans %}
-            Utilize um aplicativo autenticador para escanear o QR Code ou insira a chave manualmente.
-            Depois, informe o código de 6 dígitos gerado para finalizar a configuração.
-          {% endblocktrans %}
+          {% trans "Você pode proteger sua conta com aplicativo autenticador (Google Authenticator) e/ou código por e-mail." %}
         </p>
       </header>
 
-      <div class="card-body space-y-6">
-        <div class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-100)] p-6 text-center">
-          <img
-            src="data:image/png;base64,{{ qr_code }}"
-            alt="{% trans 'QR Code para configurar autenticação em duas etapas' %}"
-            class="h-48 w-48 rounded-lg border border-[var(--border-strong)] bg-white p-3 shadow"
-          />
-          <div class="space-y-1">
-            <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Chave secreta" %}</p>
-            <code class="inline-block rounded bg-[var(--surface-200)] px-3 py-2 text-sm font-mono tracking-wide text-[var(--text-primary)]">
-              {{ secret }}
-            </code>
-          </div>
-        </div>
+      <div class="card-body grid gap-6 lg:grid-cols-2">
+        <article class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] p-5 space-y-4">
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Aplicativo autenticador" %}</h2>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% trans "Compatível com Google Authenticator e apps TOTP." %}
+            </p>
+          </header>
 
-        <form method="post" class="space-y-6" autocomplete="off">
-          {% csrf_token %}
-          {% include '_forms/field.html' with field=form.codigo_totp %}
-          <div class="flex flex-wrap justify-between gap-3 border-t border-[var(--border)] pt-4">
-            <a href="{% url 'configuracoes:configuracoes' %}" class="btn btn-outline">
-              {% trans "Voltar" %}
-            </a>
-            <button type="submit" class="btn btn-primary">
-              {% trans "Ativar 2FA" %}
-            </button>
-          </div>
-        </form>
+          {% if totp_enabled %}
+            <div class="alert alert-success" role="status">
+              {% trans "2FA por aplicativo já está habilitado." %}
+            </div>
+          {% else %}
+            <div class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-0)] p-6 text-center">
+              <img
+                src="data:image/png;base64,{{ qr_code }}"
+                alt="{% trans 'QR Code para configurar autenticação em duas etapas' %}"
+                class="h-44 w-44 rounded-lg border border-[var(--border-strong)] bg-white p-3 shadow"
+              />
+              <div class="space-y-1">
+                <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Chave secreta" %}</p>
+                <code class="inline-block rounded bg-[var(--surface-200)] px-3 py-2 text-sm font-mono tracking-wide text-[var(--text-primary)]">
+                  {{ secret }}
+                </code>
+              </div>
+            </div>
+
+            <form method="post" class="space-y-4" autocomplete="off">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="activate_totp">
+              {% if totp_form.non_field_errors %}
+                <div class="alert alert-error" role="alert">{{ totp_form.non_field_errors }}</div>
+              {% endif %}
+              {% include '_forms/field.html' with field=totp_form.codigo_totp %}
+              <button type="submit" class="btn btn-primary w-full">
+                {% trans "Ativar com aplicativo" %}
+              </button>
+            </form>
+          {% endif %}
+        </article>
+
+        <article class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] p-5 space-y-4">
+          <header class="space-y-1">
+            <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Código por e-mail" %}</h2>
+            <p class="text-sm text-[var(--text-secondary)]">
+              {% trans "Envia um código de uso único para seu e-mail no momento do login." %}
+            </p>
+          </header>
+
+          {% if email_2fa_enabled %}
+            <div class="alert alert-success" role="status">
+              {% trans "2FA por e-mail já está habilitado." %}
+            </div>
+          {% else %}
+            <form method="post" class="space-y-4" autocomplete="off">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="activate_email">
+              {% if email_form.non_field_errors %}
+                <div class="alert alert-error" role="alert">{{ email_form.non_field_errors }}</div>
+              {% endif %}
+              {% include '_forms/field.html' with field=email_form.password %}
+              <button type="submit" class="btn btn-secondary w-full">
+                {% trans "Ativar 2FA por e-mail" %}
+              </button>
+            </form>
+          {% endif %}
+        </article>
       </div>
+
+      <footer class="card-body pt-0">
+        <div class="flex flex-wrap justify-between gap-3 border-t border-[var(--border)] pt-4">
+          <a href="{% url 'configuracoes:configuracoes' %}" class="btn btn-outline">
+            {% trans "Voltar" %}
+          </a>
+          {% if totp_enabled or email_2fa_enabled %}
+            <a href="{% url 'tokens:desativar_2fa' %}" class="btn btn-danger">
+              {% trans "Desativar 2FA" %}
+            </a>
+          {% endif %}
+        </div>
+      </footer>
     </article>
   </section>
 {% endblock %}

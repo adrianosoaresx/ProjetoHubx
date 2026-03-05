@@ -29,6 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
             "deleted",
             "deleted_at",
             "two_factor_enabled",
+            "two_factor_email_enabled",
         ]
 
 

@@ -4,21 +4,23 @@ from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.forms import ClearableFileInput
-from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
 
-from .auth import validate_totp
+from .auth import get_user_lockout_until, register_login_failure, validate_totp
+from .mfa import (
+    get_available_mfa_methods,
+    has_blocking_mfa_misconfiguration,
+    resolve_preferred_method,
+)
 
 from .models import (
     AREA_ATUACAO_CHOICES,
     AccountToken,
-    LoginAttempt,
     PerfilFeedback,
     SecurityEvent,
     UserRating,
@@ -440,6 +442,9 @@ class EmailLoginForm(forms.Form):
         self.request = request
         self.user = None
         self.requires_totp = False
+        self.requires_mfa = False
+        self.mfa_method = None
+        self.mfa_methods: list[str] = []
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -452,10 +457,8 @@ class EmailLoginForm(forms.Form):
         except User.DoesNotExist:
             authenticate(self.request, username=email, password=password)
             raise forms.ValidationError("Credenciais inválidas.")
-        lock_key = f"lockout_user_{user.pk}"
-        lock_until = cache.get(lock_key)
-        now = timezone.now()
-        if lock_until and lock_until > now:
+        lock_until = get_user_lockout_until(user)
+        if lock_until:
             authenticate(self.request, username=email, password=password)
             SecurityEvent.objects.create(
                 usuario=user,
@@ -470,10 +473,22 @@ class EmailLoginForm(forms.Form):
             self._register_failed_attempt(user, email=email, ip=ip)
             raise forms.ValidationError("Credenciais inválidas.")
 
-        if self._user_requires_totp(user):
+        methods = get_available_mfa_methods(user)
+        if methods:
             self.requires_totp = True
+            self.requires_mfa = True
+            self.mfa_methods = methods
+            self.mfa_method = resolve_preferred_method(user, methods)
             self.user = user
             return self.cleaned_data
+        if has_blocking_mfa_misconfiguration(user):
+            register_login_failure(user, email=email, ip=ip)
+            raise forms.ValidationError(
+                _(
+                    "Não foi possível validar sua autenticação em duas etapas. "
+                    "Reconfigure o 2FA na sua conta."
+                )
+            )
 
         auth_user = authenticate(self.request, username=email, password=password)
         if auth_user is None:
@@ -484,24 +499,8 @@ class EmailLoginForm(forms.Form):
     def get_user(self):
         return self.user
 
-    def _user_requires_totp(self, user: User) -> bool:
-        return (
-            getattr(user, "two_factor_enabled", False)
-            and getattr(user, "two_factor_secret", None)
-            and TOTPDevice.objects.filter(usuario=user).exists()
-        )
-
     def _register_failed_attempt(self, user: User, *, email: str, ip: str | None) -> None:
-        attempts_key = f"failed_login_attempts_user_{user.pk}"
-        attempts = cache.get(attempts_key, 0) + 1
-        cache.set(attempts_key, attempts, 60 * 15)
-
-        lock_key = f"lockout_user_{user.pk}"
-        now = timezone.now()
-        if attempts >= 3:
-            cache.set(lock_key, now + timezone.timedelta(minutes=15), 60 * 15)
-
-        LoginAttempt.objects.create(usuario=user, email=email, sucesso=False, ip=ip)
+        register_login_failure(user, email=email, ip=ip)
 
 
 class TotpLoginForm(forms.Form):
@@ -523,6 +522,20 @@ class TotpLoginForm(forms.Form):
         if error:
             raise forms.ValidationError(error)
         return self.cleaned_data
+
+
+class EmailOtpLoginForm(forms.Form):
+    otp = forms.CharField(
+        label=_("Código enviado por e-mail"),
+        max_length=8,
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "one-time-code"}),
+    )
+
+    def clean_otp(self):
+        otp = (self.cleaned_data.get("otp") or "").strip()
+        if not otp.isdigit():
+            raise forms.ValidationError(_("Informe um código numérico válido."))
+        return otp
 
 
 class PerfilFeedbackForm(forms.ModelForm):

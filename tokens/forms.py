@@ -143,3 +143,45 @@ class Ativar2FAForm(forms.Form):
         return codigo
 
 
+class AtivarEmail2FAForm(forms.Form):
+    password = forms.CharField(
+        label=_("Senha atual"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+
+    def __init__(self, *args, user: User | None = None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user or not self.user.check_password(password):
+            raise forms.ValidationError(_("Senha incorreta."))
+        if not getattr(self.user, "email", ""):
+            raise forms.ValidationError(_("Conta sem e-mail válido para 2FA por e-mail."))
+        return password
+
+
+class Desativar2FAForm(forms.Form):
+    password = forms.CharField(
+        label=_("Senha atual"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+    codigo = forms.CharField(
+        label=_("Código do segundo fator"),
+        max_length=8,
+        required=False,
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "one-time-code"}),
+    )
+
+    def __init__(self, *args, user: User | None = None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user or not self.user.check_password(password):
+            raise forms.ValidationError(_("Senha incorreta."))
+        return password
+
+
