@@ -264,7 +264,7 @@ class TOTPDevice(TimeStampedModel, SoftDeleteModel):
         related_name="totp_device",
     )
     # ``secret`` é persistido cifrado em Base32 para permitir geração/validação TOTP
-    secret = EncryptedCharField(max_length=128)
+    secret = EncryptedCharField(max_length=512)
     confirmado = models.BooleanField(default=False)
 
     @staticmethod

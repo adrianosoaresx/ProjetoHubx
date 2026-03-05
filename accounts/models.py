@@ -209,7 +209,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
 
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
-    two_factor_secret = EncryptedCharField(max_length=128, blank=True, null=True)
+    two_factor_secret = EncryptedCharField(max_length=512, blank=True, null=True)
     two_factor_email_enabled = models.BooleanField(default=False)
     two_factor_preferred_method = models.CharField(
         max_length=20,
