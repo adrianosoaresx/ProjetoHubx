@@ -18,9 +18,9 @@
       </header>
 
       <div class="card-body space-y-4" data-accordion data-accordion-single="false">
-        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='smartphone' title=_('Aplicativo autenticador') subtitle=_('Compatível com Google Authenticator e apps TOTP.') is_open=totp_form.errors icon_badge_class='bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]' content_template='configuracoes/seguranca/_2fa_totp_content.html' %}
+        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='smartphone' title=_('Aplicativo autenticador') subtitle=_('Compatível com Google Authenticator e apps TOTP.') is_open=totp_form.errors icon_badge_class='bg-[var(--color-primary-500)]/10 text-[var(--color-primary-600)]' content_template='configuracoes/seguranca/_2fa_totp_content.html' %}
 
-        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='mail' title=_('Código por e-mail') subtitle=_('Envia um código de uso único para seu e-mail no momento do login.') is_open=email_form.errors icon_badge_class='bg-[var(--color-info-500)]/10 text-[var(--color-info-500)]' content_template='configuracoes/seguranca/_2fa_email_content.html' %}
+        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='mail' title=_('Código por e-mail') subtitle=_('Envia um código de uso único para seu e-mail no momento do login.') is_open=email_form.errors icon_badge_class='bg-[var(--color-info-500)]/10 text-[var(--color-info-600)]' content_template='configuracoes/seguranca/_2fa_email_content.html' %}
       </div>
 
       <footer class="card-body pt-0">
