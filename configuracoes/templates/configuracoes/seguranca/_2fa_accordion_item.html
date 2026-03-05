@@ -1,0 +1,32 @@
+{% load lucide_icons %}
+{#
+  Partial de item de accordion para 2FA.
+  Segue o mesmo padrão visual/estrutural dos accordions de configuracoes/configuracao.html.
+
+  Parâmetros esperados:
+  - icon: nome do ícone Lucide
+  - title: título do item
+  - subtitle: subtítulo do item
+  - is_open: boolean para estado inicial open
+  - content_template: template com o conteúdo interno do item
+#}
+<details class="card group" data-accordion-item {% if is_open %}open{% endif %}>
+  <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
+    <div class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-full {{ icon_badge_class }}">
+        {% lucide icon class='h-5 w-5' aria_hidden='true' %}
+      </span>
+      <div class="space-y-1">
+        <h2 class="text-lg font-semibold text-[var(--text-primary)]">{{ title }}</h2>
+        <p class="text-sm text-[var(--text-secondary)]">{{ subtitle }}</p>
+      </div>
+    </div>
+    <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180" data-accordion-icon>
+      {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
+    </span>
+  </summary>
+
+  <div class="card-body space-y-4">
+    {% include content_template %}
+  </div>
+</details>

@@ -1,0 +1,18 @@
+{% load i18n %}
+{% if email_2fa_enabled %}
+  <div class="alert alert-success" role="status">
+    {% trans "2FA por e-mail já está habilitado." %}
+  </div>
+{% else %}
+  <form method="post" class="space-y-4" autocomplete="off">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="activate_email">
+    {% if email_form.non_field_errors %}
+      <div class="alert alert-error" role="alert">{{ email_form.non_field_errors }}</div>
+    {% endif %}
+    {% include '_forms/field.html' with field=email_form.password %}
+    <button type="submit" class="btn btn-secondary w-full">
+      {% trans "Ativar 2FA por e-mail" %}
+    </button>
+  </form>
+{% endif %}

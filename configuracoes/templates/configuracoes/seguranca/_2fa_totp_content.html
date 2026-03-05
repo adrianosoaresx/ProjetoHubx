@@ -1,0 +1,32 @@
+{% load i18n %}
+{% if totp_enabled %}
+  <div class="alert alert-success" role="status">
+    {% trans "2FA por aplicativo já está habilitado." %}
+  </div>
+{% else %}
+  <div class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-0)] p-6 text-center">
+    <img
+      src="data:image/png;base64,{{ qr_code }}"
+      alt="{% trans 'QR Code para configurar autenticação em duas etapas' %}"
+      class="h-44 w-44 rounded-lg border border-[var(--border-strong)] bg-white p-3 shadow"
+    />
+    <div class="space-y-1">
+      <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Chave secreta" %}</p>
+      <code class="inline-block rounded bg-[var(--surface-200)] px-3 py-2 text-sm font-mono tracking-wide text-[var(--text-primary)]">
+        {{ secret }}
+      </code>
+    </div>
+  </div>
+
+  <form method="post" class="space-y-4" autocomplete="off">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="activate_totp">
+    {% if totp_form.non_field_errors %}
+      <div class="alert alert-error" role="alert">{{ totp_form.non_field_errors }}</div>
+    {% endif %}
+    {% include '_forms/field.html' with field=totp_form.codigo_totp %}
+    <button type="submit" class="btn btn-primary w-full">
+      {% trans "Ativar com aplicativo" %}
+    </button>
+  </form>
+{% endif %}
