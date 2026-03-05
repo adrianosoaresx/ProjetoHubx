@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n widget_tweaks lucide_icons %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans "Ativar 2FA" %} | Hubx{% endblock %}
 
@@ -18,97 +18,9 @@
       </header>
 
       <div class="card-body space-y-4" data-accordion data-accordion-single="false">
-        <details class="card group" data-accordion-item {% if totp_form.errors %}open{% endif %}>
-          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-            <div class="flex items-center gap-3">
-              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]">
-                {% lucide 'smartphone' class='h-5 w-5' aria_hidden='true' %}
-              </span>
-              <div class="space-y-1">
-                <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Aplicativo autenticador" %}</h2>
-                <p class="text-sm text-[var(--text-secondary)]">
-                  {% trans "Compatível com Google Authenticator e apps TOTP." %}
-                </p>
-              </div>
-            </div>
-            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180" data-accordion-icon>
-              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-            </span>
-          </summary>
+        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='smartphone' title=_('Aplicativo autenticador') subtitle=_('Compatível com Google Authenticator e apps TOTP.') is_open=totp_form.errors icon_badge_class='bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]' content_template='configuracoes/seguranca/_2fa_totp_content.html' %}
 
-          <div class="card-body space-y-4">
-            {% if totp_enabled %}
-              <div class="alert alert-success" role="status">
-                {% trans "2FA por aplicativo já está habilitado." %}
-              </div>
-            {% else %}
-              <div class="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-0)] p-6 text-center">
-                <img
-                  src="data:image/png;base64,{{ qr_code }}"
-                  alt="{% trans 'QR Code para configurar autenticação em duas etapas' %}"
-                  class="h-44 w-44 rounded-lg border border-[var(--border-strong)] bg-white p-3 shadow"
-                />
-                <div class="space-y-1">
-                  <p class="text-sm font-medium text-[var(--text-secondary)]">{% trans "Chave secreta" %}</p>
-                  <code class="inline-block rounded bg-[var(--surface-200)] px-3 py-2 text-sm font-mono tracking-wide text-[var(--text-primary)]">
-                    {{ secret }}
-                  </code>
-                </div>
-              </div>
-
-              <form method="post" class="space-y-4" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="activate_totp">
-                {% if totp_form.non_field_errors %}
-                  <div class="alert alert-error" role="alert">{{ totp_form.non_field_errors }}</div>
-                {% endif %}
-                {% include '_forms/field.html' with field=totp_form.codigo_totp %}
-                <button type="submit" class="btn btn-primary w-full">
-                  {% trans "Ativar com aplicativo" %}
-                </button>
-              </form>
-            {% endif %}
-          </div>
-        </details>
-
-        <details class="card group" data-accordion-item {% if email_form.errors %}open{% endif %}>
-          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
-            <div class="flex items-center gap-3">
-              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-500)]">
-                {% lucide 'mail' class='h-5 w-5' aria_hidden='true' %}
-              </span>
-              <div class="space-y-1">
-                <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Código por e-mail" %}</h2>
-                <p class="text-sm text-[var(--text-secondary)]">
-                  {% trans "Envia um código de uso único para seu e-mail no momento do login." %}
-                </p>
-              </div>
-            </div>
-            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180" data-accordion-icon>
-              {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
-            </span>
-          </summary>
-
-          <div class="card-body space-y-4">
-            {% if email_2fa_enabled %}
-              <div class="alert alert-success" role="status">
-                {% trans "2FA por e-mail já está habilitado." %}
-              </div>
-            {% else %}
-              <form method="post" class="space-y-4" autocomplete="off">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="activate_email">
-                {% if email_form.non_field_errors %}
-                  <div class="alert alert-error" role="alert">{{ email_form.non_field_errors }}</div>
-                {% endif %}
-                {% include '_forms/field.html' with field=email_form.password %}
-                <button type="submit" class="btn btn-secondary w-full">
-                  {% trans "Ativar 2FA por e-mail" %}
-                </button>
-              </form>
-            {% endif %}
-          </div>
-        </details>
+        {% include 'configuracoes/seguranca/_2fa_accordion_item.html' with icon='mail' title=_('Código por e-mail') subtitle=_('Envia um código de uso único para seu e-mail no momento do login.') is_open=email_form.errors icon_badge_class='bg-[var(--color-info-500)]/10 text-[var(--color-info-500)]' content_template='configuracoes/seguranca/_2fa_email_content.html' %}
       </div>
 
       <footer class="card-body pt-0">
