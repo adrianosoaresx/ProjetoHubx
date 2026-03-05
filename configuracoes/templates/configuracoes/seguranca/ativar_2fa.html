@@ -18,8 +18,8 @@
       </header>
 
       <div class="card-body space-y-4">
-        <details class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] group" {% if totp_form.errors %}open{% endif %}>
-          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
+        <details class="card group" {% if totp_form.errors %}open{% endif %}>
+          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-center gap-3">
               <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]">
                 {% lucide 'smartphone' class='h-5 w-5' aria_hidden='true' %}
@@ -36,7 +36,7 @@
             </span>
           </summary>
 
-          <div class="border-t border-[var(--border)] p-5 pt-4 space-y-4">
+          <div class="card-body space-y-4">
             {% if totp_enabled %}
               <div class="alert alert-success" role="status">
                 {% trans "2FA por aplicativo já está habilitado." %}
@@ -71,8 +71,8 @@
           </div>
         </details>
 
-        <details class="rounded-lg border border-[var(--border)] bg-[var(--surface-100)] group" {% if email_form.errors %}open{% endif %}>
-          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
+        <details class="card group" {% if email_form.errors %}open{% endif %}>
+          <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-center gap-3">
               <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-500)]">
                 {% lucide 'mail' class='h-5 w-5' aria_hidden='true' %}
@@ -89,7 +89,7 @@
             </span>
           </summary>
 
-          <div class="border-t border-[var(--border)] p-5 pt-4 space-y-4">
+          <div class="card-body space-y-4">
             {% if email_2fa_enabled %}
               <div class="alert alert-success" role="status">
                 {% trans "2FA por e-mail já está habilitado." %}
