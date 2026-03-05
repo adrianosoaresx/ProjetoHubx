@@ -549,6 +549,7 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script type="module" src="{% static 'js/carousel.js' %}"></script>
   {% if pode_ver_inscritos %}
     <script
       src="{% static 'js/vendor/html5-qrcode-2.3.8.min.js' %}"
