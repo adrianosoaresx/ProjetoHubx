@@ -16,8 +16,10 @@ class URLField(models.URLField):
         return super().formfield(**defaults)
 
 
-class EncryptedCharField(models.CharField):
-    """CharField that stores values encrypted using Fernet."""
+class _EncryptedFieldMixin:
+    """Shared Fernet encryption/decryption behavior for text-based model fields."""
+
+    _fernet_prefix = "gAAAA"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,7 +29,7 @@ class EncryptedCharField(models.CharField):
         value = super().get_prep_value(value)
         if value is None:
             return value
-        if isinstance(value, str) and value.startswith("gAAAA"):
+        if isinstance(value, str) and value.startswith(self._fernet_prefix):
             return value
         return self._fernet.encrypt(value.encode()).decode()
 
@@ -43,9 +45,25 @@ class EncryptedCharField(models.CharField):
         value = super().to_python(value)
         if value is None:
             return value
-        if isinstance(value, str) and value.startswith("gAAAA"):
+        if isinstance(value, str) and value.startswith(self._fernet_prefix):
             try:
                 return self._fernet.decrypt(value.encode()).decode()
             except InvalidToken:
                 return value
         return value
+
+
+class EncryptedCharField(_EncryptedFieldMixin, models.CharField):
+    """
+    CharField that stores values encrypted using Fernet.
+
+    Notes:
+        The ciphertext is substantially larger than the plaintext because Fernet
+        includes metadata, IV and signature before Base64 encoding. Always set
+        ``max_length`` considering encrypted expansion (not just plaintext size)
+        to avoid PostgreSQL ``value too long for type character varying`` errors.
+    """
+
+
+class EncryptedTextField(_EncryptedFieldMixin, models.TextField):
+    """TextField variant for encrypted values with unpredictable plaintext size."""

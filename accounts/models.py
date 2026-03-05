@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
-from core.fields import EncryptedCharField
+from core.fields import EncryptedCharField, EncryptedTextField
 from core.models import SoftDeleteModel, TimeStampedModel
 from core.uploads.validators import validate_upload
 from organizacoes.utils import validate_cnpj
@@ -209,7 +209,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
 
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
-    two_factor_secret = EncryptedCharField(max_length=512, blank=True, null=True)
+    two_factor_secret = EncryptedTextField(blank=True, null=True)
     two_factor_email_enabled = models.BooleanField(default=False)
     two_factor_preferred_method = models.CharField(
         max_length=20,
