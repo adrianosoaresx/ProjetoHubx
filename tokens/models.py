@@ -14,7 +14,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from core.fields import EncryptedCharField
+from core.fields import EncryptedCharField, EncryptedTextField
 from core.models import SoftDeleteModel, TimeStampedModel
 
 User = get_user_model()
@@ -45,8 +45,8 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         default=Estado.NOVO,
     )
     data_expiracao = models.DateTimeField(null=True, blank=True)
-    ip_gerado = EncryptedCharField(max_length=128, null=True, blank=True)
-    ip_utilizado = EncryptedCharField(max_length=128, null=True, blank=True)
+    ip_gerado = EncryptedCharField(max_length=255, null=True, blank=True)
+    ip_utilizado = EncryptedCharField(max_length=255, null=True, blank=True)
     revogado_em = models.DateTimeField(null=True, blank=True)
     revogado_por = models.ForeignKey(
         get_user_model(),
@@ -150,7 +150,7 @@ class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
     )
     acao = models.CharField(max_length=20, choices=Acao.choices)
-    ip = EncryptedCharField(max_length=128, null=True, blank=True)
+    ip = EncryptedCharField(max_length=255, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
 
     class Meta:
@@ -243,7 +243,7 @@ class CodigoAutenticacaoLog(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
     )
     acao = models.CharField(max_length=20, choices=Acao.choices)
-    ip = EncryptedCharField(max_length=128, null=True, blank=True)
+    ip = EncryptedCharField(max_length=255, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
     status_envio = models.CharField(
         max_length=20,
@@ -264,7 +264,7 @@ class TOTPDevice(TimeStampedModel, SoftDeleteModel):
         related_name="totp_device",
     )
     # ``secret`` é persistido cifrado em Base32 para permitir geração/validação TOTP
-    secret = EncryptedCharField(max_length=512)
+    secret = EncryptedTextField()
     confirmado = models.BooleanField(default=False)
 
     @staticmethod
