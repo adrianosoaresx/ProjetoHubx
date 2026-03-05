@@ -17,8 +17,8 @@
         </p>
       </header>
 
-      <div class="card-body space-y-4">
-        <details class="card group" {% if totp_form.errors %}open{% endif %}>
+      <div class="card-body space-y-4" data-accordion data-accordion-single="false">
+        <details class="card group" data-accordion-item {% if totp_form.errors %}open{% endif %}>
           <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-center gap-3">
               <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-500)]/10 text-[var(--color-primary-500)]">
@@ -31,7 +31,7 @@
                 </p>
               </div>
             </div>
-            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180" data-accordion-icon>
               {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
             </span>
           </summary>
@@ -71,7 +71,7 @@
           </div>
         </details>
 
-        <details class="card group" {% if email_form.errors %}open{% endif %}>
+        <details class="card group" data-accordion-item {% if email_form.errors %}open{% endif %}>
           <summary class="card-header flex items-center justify-between gap-4 cursor-pointer">
             <div class="flex items-center gap-3">
               <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-info-500)]/10 text-[var(--color-info-500)]">
@@ -84,7 +84,7 @@
                 </p>
               </div>
             </div>
-            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180">
+            <span class="text-[var(--text-secondary)] transition-transform duration-200 group-open:-rotate-180" data-accordion-icon>
               {% lucide 'chevron-down' class='h-5 w-5' aria_hidden='true' %}
             </span>
           </summary>
