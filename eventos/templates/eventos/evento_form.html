@@ -6,9 +6,9 @@
 {% block hero %}
   
   {% if object %}
-    {% include "components/hero_evento_detail.html" with evento=form.instance %}
+    {% include "eventos/componentes/hero_evento_detail.html" with evento=form.instance %}
   {% else %}
-    {% include "components/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
+    {% include "eventos/componentes/hero_eventos.html" with title=_("Adicionar eventos") subtitle=_("Cadastre novos eventos para a sua organização.") %}
   {% endif %}
 {% endblock %}
 

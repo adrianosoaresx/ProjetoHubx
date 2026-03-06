@@ -10,7 +10,7 @@
 
 <div class="card-grid items-stretch gap-4">
   {% for ev in eventos %}
-    {% include '_components/card_evento.html' with evento=ev %}
+    {% include 'eventos/componentes/card_evento.html' with evento=ev %}
   {% empty %}
     <p class="text-sm text-[var(--text-muted)]">{% trans "Sem eventos." %}</p>
   {% endfor %}

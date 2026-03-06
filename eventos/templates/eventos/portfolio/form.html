@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Editar portfólio do evento') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento_detail.html' with evento=evento %}{% endblock %}
+{% block hero %}{% include 'eventos/componentes/hero_evento_detail.html' with evento=evento %}{% endblock %}
 
 {% block content %}
   <div class="flex flex-col gap-6">

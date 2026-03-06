@@ -3,7 +3,7 @@
 
 {% block title %}{{ title }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with title=title subtitle=subtitle %}{% endblock %}
+{% block hero %}{% include 'eventos/componentes/hero_evento.html' with title=title subtitle=subtitle %}{% endblock %}
 
 {% block content %}
   {% url 'eventos:briefing_template_list' as default_back %}

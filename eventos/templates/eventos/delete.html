@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Remover Evento') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with title=title|default:_('Remover Evento') subtitle=subtitle|default:object.descricao %}{% endblock %}
+{% block hero %}{% include 'eventos/componentes/hero_evento.html' with title=title|default:_('Remover Evento') subtitle=subtitle|default:object.descricao %}{% endblock %}
 
 {% block content %}
 

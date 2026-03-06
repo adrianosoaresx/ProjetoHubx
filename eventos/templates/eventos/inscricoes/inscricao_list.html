@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Inscrições') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
+{% block hero %}{% include 'eventos/componentes/hero_evento.html' with evento=evento title=title subtitle=subtitle %}{% endblock %}
 
 {% block content %}
   

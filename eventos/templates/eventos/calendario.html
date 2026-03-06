@@ -3,7 +3,7 @@
 
 {% block title %}{{ title|default:_('Calendário de eventos') }}{% endblock %}
 
-{% block hero %}{% include '_components/hero_evento.html' with title=title|default:_('Eventos') subtitle=subtitle %}{% endblock %}
+{% block hero %}{% include 'eventos/componentes/hero_evento.html' with title=title|default:_('Eventos') subtitle=subtitle %}{% endblock %}
 
 {% block content %}
   
