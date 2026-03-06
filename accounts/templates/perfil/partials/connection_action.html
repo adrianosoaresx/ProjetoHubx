@@ -24,7 +24,10 @@
         <input type="hidden" name="public_id" value="{{ perfil_connection_public_id|default:'' }}">
         <input type="hidden" name="username" value="{{ perfil_connection_username|default:'' }}">
         <button type="submit" class="btn btn-primary btn-sm" aria-label="{% trans 'Conectar com usuário' %}">
-          <span class="inline-flex items-center gap-2 htmx-request:hidden">{% trans "Conectar" %}</span>
+          <span class="inline-flex items-center gap-2 htmx-request:hidden">
+            {% lucide 'user-plus' class='h-4 w-4' aria_hidden='true' %}
+            <span>{% trans "Conectar" %}</span>
+          </span>
           <span id="{{ loading_id }}" class="htmx-indicator inline-flex items-center gap-2" role="status" aria-live="polite">
             <span class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true"></span>
             <span>{% trans "Enviando…" %}</span>
