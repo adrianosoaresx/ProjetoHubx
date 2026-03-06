@@ -242,6 +242,29 @@ def _resolve_profile_connection_state(viewer, profile) -> str | None:
     return "available"
 
 
+def _build_profile_connection_action_context(
+    viewer,
+    profile,
+    *,
+    next_url: str | None = None,
+):
+    if next_url is None:
+        if profile.perfil_publico:
+            next_url = reverse("accounts:perfil_publico_uuid", args=[profile.public_id])
+        else:
+            next_url = reverse("accounts:perfil")
+
+    return {
+        "perfil_connection_state": _resolve_profile_connection_state(viewer, profile),
+        "perfil_connect_url": reverse("conexoes:solicitar_conexao", args=[profile.id]),
+        "perfil_connection_requests_url": reverse("conexoes:perfil_sections_conexoes") + "?filter=pendentes",
+        "perfil_connection_container_id": f"perfil-connection-action-{profile.id}",
+        "perfil_connection_next": next_url,
+        "perfil_connection_public_id": str(profile.public_id),
+        "perfil_connection_username": profile.username,
+    }
+
+
 def _can_toggle_user_active(viewer, profile) -> bool:
     if not _can_manage_profile(viewer, profile):
         return False
@@ -442,7 +465,11 @@ def perfil(request):
     user_rating = rating_qs.filter(rated_by=request.user).first()
 
     can_promote_profile = _can_promote_profile(viewer, target_user)
-    perfil_connection_state = _resolve_profile_connection_state(viewer, target_user)
+    connection_context = _build_profile_connection_action_context(
+        viewer,
+        target_user,
+        next_url=request.get_full_path(),
+    )
     promote_profile_url = None
     if can_promote_profile:
         promote_profile_url = reverse(
@@ -457,9 +484,7 @@ def perfil(request):
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "can_promote_profile": can_promote_profile,
-        "perfil_connection_state": perfil_connection_state,
-        "perfil_connect_url": reverse("conexoes:solicitar_conexao", args=[target_user.id]),
-        "perfil_connection_requests_url": reverse("conexoes:perfil_sections_conexoes") + "?filter=pendentes",
+        **connection_context,
         "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
@@ -574,7 +599,11 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         user_rating = rating_qs.filter(rated_by=request.user).first()
 
     can_promote_profile = _can_promote_profile(viewer, perfil)
-    perfil_connection_state = _resolve_profile_connection_state(viewer, perfil)
+    connection_context = _build_profile_connection_action_context(
+        viewer,
+        perfil,
+        next_url=request.get_full_path(),
+    )
     promote_profile_url = None
     if can_promote_profile:
         promote_profile_url = reverse("membros:membro_promover_form", args=[perfil.pk])
@@ -587,9 +616,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "can_promote_profile": can_promote_profile,
-        "perfil_connection_state": perfil_connection_state,
-        "perfil_connect_url": reverse("conexoes:solicitar_conexao", args=[perfil.id]),
-        "perfil_connection_requests_url": reverse("conexoes:perfil_sections_conexoes") + "?filter=pendentes",
+        **connection_context,
         "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
@@ -774,6 +801,21 @@ def perfil_section(request, section):
         return HttpResponseBadRequest("Invalid section")
 
     return render(request, template, context)
+
+
+@require_GET
+def perfil_connection_action_partial(request):
+    profile, _, error = _resolve_profile_for_partial(request)
+    if error:
+        return error
+
+    viewer = request.user if request.user.is_authenticated else None
+    context = _build_profile_connection_action_context(
+        viewer,
+        profile,
+        next_url=request.GET.get("next") or request.get_full_path(),
+    )
+    return render(request, "perfil/partials/connection_action.html", context)
 
 
 def _profile_toggle_response(request, target_user, *, is_owner: bool):

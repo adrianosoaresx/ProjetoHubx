@@ -20,6 +20,7 @@ from django.views import View
 
 from accounts.models import UserType
 from accounts.utils import is_htmx_or_ajax
+from accounts.views import _build_profile_connection_action_context
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .forms import ConnectionsSearchForm
@@ -827,6 +828,19 @@ def solicitar_conexao(request, id):
     next_url = (request.POST.get("next") or "").strip()
 
     if is_htmx_or_ajax(request):
+        hx_target = (request.headers.get("HX-Target") or "").strip()
+        from_public_profile = bool(request.POST.get("public_id") or request.POST.get("username"))
+        if not from_public_profile and hx_target:
+            from_public_profile = hx_target.startswith("perfil-connection-action")
+
+        if from_public_profile:
+            context = _build_profile_connection_action_context(
+                request.user,
+                other_user,
+                next_url=next_url or request.get_full_path(),
+            )
+            return render(request, "perfil/partials/connection_action.html", context)
+
         context = _build_search_page_context(request, q, None)
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None

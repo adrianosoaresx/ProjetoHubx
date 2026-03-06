@@ -51,6 +51,11 @@ urlpatterns = [
         {"section": "info"},
         name="perfil_info_partial",
     ),
+    path(
+        "perfil/partials/connection-action/",
+        views.perfil_connection_action_partial,
+        name="perfil_connection_action_partial",
+    ),
     path("perfil/desativar/", views.deactivate_user, name="deactivate_user"),
     path("perfil/ativar/", views.activate_user, name="activate_user"),
 

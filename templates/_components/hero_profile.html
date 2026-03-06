@@ -93,31 +93,7 @@
                   <span>{% trans "Promover" %}</span>
                 </a>
               {% endif %}
-              {% if perfil_connection_state == 'available' and perfil_connect_url %}
-                <form method="post" action="{{ perfil_connect_url }}" class="inline-flex">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <button type="submit" class="btn btn-primary btn-sm" aria-label="{% trans 'Conectar com usuário' %}">
-                    {% trans "Conectar" %}
-                  </button>
-                </form>
-              {% elif perfil_connection_state == 'sent' %}
-                <button type="button" class="btn btn-secondary btn-sm opacity-70" disabled>
-                  {% trans "Solicitação enviada" %}
-                </button>
-              {% elif perfil_connection_state == 'received' and perfil_connection_requests_url %}
-                <a
-                  href="{{ perfil_connection_requests_url }}"
-                  class="btn btn-secondary btn-sm"
-                  aria-label="{% trans 'Responder solicitação de conexão' %}"
-                >
-                  {% trans "Responder solicitação" %}
-                </a>
-              {% elif perfil_connection_state == 'connected' %}
-                <button type="button" class="btn btn-secondary btn-sm opacity-70" disabled>
-                  {% trans "Conectados" %}
-                </button>
-              {% endif %}
+              {% include 'perfil/partials/connection_action.html' %}
               {% if perfil_avaliar_url and request.user.is_authenticated and not is_owner and not perfil_feedback_exists %}
                 <button
                   type="button"
