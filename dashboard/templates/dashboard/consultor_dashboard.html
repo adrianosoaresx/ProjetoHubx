@@ -4,7 +4,7 @@
 {% block title %}{% trans "Dashboard do consultor" %}{% endblock %}
 
 {% block hero %}
-  {% include "_components/hero.html" with title=_("Dashboard do consultor") subtitle=_("Acompanhe o desempenho dos núcleos em que você oferece consultoria e os eventos relacionados.") breadcrumb_template=None neural_background="dashboard" section_classes="relative isolate overflow-hidden text-white" container_classes="max-w-6xl mx-auto w-full px-6 py-14 md:py-16" %}
+  {% include "dashboard/componentes/dashboard_hero.html" with title=_("Dashboard do consultor") subtitle=_("Acompanhe o desempenho dos núcleos em que você oferece consultoria e os eventos relacionados.") container_classes="max-w-6xl mx-auto w-full px-6 py-14 md:py-16" %}
 {% endblock %}
 
 {% block content %}

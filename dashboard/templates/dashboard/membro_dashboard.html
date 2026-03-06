@@ -4,7 +4,7 @@
 {% block title %}{% trans "Meu dashboard" %}{% endblock %}
 
 {% block hero %}
-  {% include "_components/hero.html" with title=_("Meu dashboard") subtitle=_("Acompanhe suas conexões, eventos e destaques pessoais.") breadcrumb_template=None neural_background="dashboard" section_classes="relative isolate overflow-hidden text-white" container_classes="max-w-5xl mx-auto w-full px-6 py-14 md:py-16" %}
+  {% include "dashboard/componentes/dashboard_hero.html" with title=_("Meu dashboard") subtitle=_("Acompanhe suas conexões, eventos e destaques pessoais.") container_classes="max-w-5xl mx-auto w-full px-6 py-14 md:py-16" %}
 {% endblock %}
 
 {% block content %}
