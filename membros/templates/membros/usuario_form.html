@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Adicionar usuário' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_membros.html' with title=_('Adicionar membro') subtitle=_('Cadastre novos membros para a sua organização.') total_usuarios=None total_membros=None total_nucleados=None action_template=None %}
+  {% include 'membros/componentes/hero_membros.html' with title=_('Adicionar membro') subtitle=_('Cadastre novos membros para a sua organização.') total_usuarios=None total_membros=None total_nucleados=None action_template=None %}
 {% endblock %}
 
 {% block content %}
