@@ -205,6 +205,47 @@ npm run build
 
 ---
 
+## 🧩 Convenção oficial de componentes de template
+
+Para padronizar a organização dos templates reutilizáveis entre os apps, o
+projeto adota o seguinte caminho como padrão:
+
+- `templates/<nome_app>/componentes/`
+
+### Regras de localização
+
+- Todo componente compartilhável de um app deve ficar em
+  `templates/<nome_app>/componentes/`.
+- Templates de página completa continuam no diretório convencional do app
+  (por exemplo, `templates/<nome_app>/`).
+- Componentes globais (reutilizados por múltiplos apps) podem permanecer em
+  diretórios globais já existentes, como `templates/_components/` e
+  `templates/_partials/`.
+
+### Regras de nomenclatura
+
+- **Pastas**: usar `snake_case` e nomes curtos orientados ao domínio
+  (ex.: `componentes/filtros/`, `componentes/cards/`).
+- **Arquivos de componente**: usar `snake_case.html` e nomes descritivos
+  (ex.: `cabecalho_lista.html`, `card_evento_resumo.html`).
+- Evitar prefixos genéricos como `novo_`, `tmp_` ou `teste_` em componentes
+  versionados.
+
+### Exemplo de uso em templates
+
+```django
+{# componente do app eventos #}
+{% include "eventos/componentes/cabecalho_lista.html" with titulo=_("Eventos") %}
+
+{# componente do app feed #}
+{% include "feed/componentes/card_post_resumo.html" with post=post %}
+```
+
+Para detalhes de estilo e estrutura frontend, consulte também
+`docs/style_guide_frontend.md`.
+
+---
+
 ## 🧭 Front-end Next.js (pasta `app/`)
 
 Este repositório inclui um front-end Next.js (pastas `app/`, `components/`, `hooks/`, `lib/`)
