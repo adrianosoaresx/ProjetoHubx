@@ -1,5 +1,7 @@
 import json
+import logging
 import re
+import time
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -21,9 +23,9 @@ from django.views import View
 from accounts.models import UserType
 from accounts.utils import is_htmx_or_ajax
 from accounts.views import _build_profile_connection_action_context
-from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .forms import ConnectionsSearchForm
+from .tasks import enviar_notificacao_conexao_async
 
 User = get_user_model()
 
@@ -35,6 +37,8 @@ CONNECTION_NOTIFICATION_TEMPLATES = {
     "declined": "connection_declined",
 }
 CONNECTIONS_REFRESH_TRIGGER = json.dumps({"conexoes:refresh": True})
+
+logger = logging.getLogger(__name__)
 
 
 def _get_display_name(user):
@@ -777,86 +781,121 @@ def _build_conexoes_busca_context(
     }
 
 
+def _dispatch_connection_notification(user, template_key: str, context: dict[str, str]) -> float:
+    start = time.perf_counter()
+    try:
+        enviar_notificacao_conexao_async.delay(
+            str(user.id),
+            CONNECTION_NOTIFICATION_TEMPLATES[template_key],
+            context,
+        )
+    except Exception:
+        logger.exception(
+            "falha_agendamento_notificacao_conexao",
+            user_id=getattr(user, "id", None),
+            template_key=template_key,
+        )
+    return (time.perf_counter() - start) * 1000
+
+
+
 @login_required
 def solicitar_conexao(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    response = _deny_root_connections_access(request)
-    if response:
-        return response
+    start = time.perf_counter()
+    notification_dispatch_ms = 0.0
+    try:
+        response = _deny_root_connections_access(request)
+        if response:
+            return response
 
-    other_user = get_object_or_404(User, id=id)
+        other_user = get_object_or_404(User, id=id)
 
-    if other_user == request.user:
-        messages.error(request, _("Você não pode conectar-se consigo mesmo."))
-    elif request.user.connections.filter(id=other_user.id).exists():
-        messages.info(request, _("Vocês já estão conectados."))
-    elif request.user.followers.filter(id=other_user.id).exists():
-        request.user.connections.add(other_user)
-        request.user.followers.remove(other_user)
-        if other_user.followers.filter(id=request.user.id).exists():
-            other_user.followers.remove(request.user)
-        messages.success(
-            request,
-            _("Conexão com %(nome)s aceita.")
-            % {"nome": _get_display_name(other_user)},
-        )
-        enviar_para_usuario(
-            other_user,
-            CONNECTION_NOTIFICATION_TEMPLATES["accepted"],
-            {
-                "solicitado": _get_display_name(request.user),
-                "actor_id": str(request.user.id),
-            },
-        )
-    elif other_user.followers.filter(id=request.user.id).exists():
-        messages.info(request, _("Solicitação de conexão já enviada."))
-    else:
-        other_user.followers.add(request.user)
-        messages.success(request, _("Solicitação de conexão enviada."))
-        enviar_para_usuario(
-            other_user,
-            CONNECTION_NOTIFICATION_TEMPLATES["request"],
-            {
-                "solicitante": _get_display_name(request.user),
-                "actor_id": str(request.user.id),
-            },
-        )
-
-    q = request.POST.get("q", "").strip()
-    next_url = (request.POST.get("next") or "").strip()
-
-    if is_htmx_or_ajax(request):
-        hx_target = (request.headers.get("HX-Target") or "").strip()
-        from_public_profile = bool(request.POST.get("public_id") or request.POST.get("username"))
-        if not from_public_profile and hx_target:
-            from_public_profile = hx_target.startswith("perfil-connection-action")
-
-        if from_public_profile:
-            context = _build_profile_connection_action_context(
-                request.user,
-                other_user,
-                next_url=next_url or request.get_full_path(),
+        if other_user == request.user:
+            messages.error(request, _("Você não pode conectar-se consigo mesmo."))
+        elif request.user.connections.filter(id=other_user.id).exists():
+            messages.info(request, _("Vocês já estão conectados."))
+        elif request.user.followers.filter(id=other_user.id).exists():
+            request.user.connections.add(other_user)
+            request.user.followers.remove(other_user)
+            if other_user.followers.filter(id=request.user.id).exists():
+                other_user.followers.remove(request.user)
+            messages.success(
+                request,
+                _("Conexão com %(nome)s aceita.")
+                % {"nome": _get_display_name(other_user)},
             )
-            return render(request, "perfil/partials/connection_action.html", context)
+            notification_dispatch_ms += _dispatch_connection_notification(
+                other_user,
+                "accepted",
+                {
+                    "solicitado": _get_display_name(request.user),
+                    "actor_id": str(request.user.id),
+                },
+            )
+        elif other_user.followers.filter(id=request.user.id).exists():
+            messages.info(request, _("Solicitação de conexão já enviada."))
+        else:
+            other_user.followers.add(request.user)
+            messages.success(request, _("Solicitação de conexão enviada."))
+            notification_dispatch_ms += _dispatch_connection_notification(
+                other_user,
+                "request",
+                {
+                    "solicitante": _get_display_name(request.user),
+                    "actor_id": str(request.user.id),
+                },
+            )
 
-        context = _build_search_page_context(request, q, None)
-        context.update(_profile_search_hx_context(q))
-        context["search_container_id"] = None
-        return render(request, "conexoes/partials/search_card.html", context)
+        q = request.POST.get("q", "").strip()
+        next_url = (request.POST.get("next") or "").strip()
 
-    if next_url and url_has_allowed_host_and_scheme(
-        next_url,
-        allowed_hosts={request.get_host()},
-        require_https=request.is_secure(),
-    ):
-        return redirect(next_url)
+        if is_htmx_or_ajax(request):
+            hx_target = (request.headers.get("HX-Target") or "").strip()
+            from_public_profile = bool(request.POST.get("public_id") or request.POST.get("username"))
+            if not from_public_profile and hx_target:
+                from_public_profile = hx_target.startswith("perfil-connection-action")
 
-    params = {"section": "conexoes", "view": "buscar"}
-    if q:
-        params["q"] = q
-    return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?{urlencode(params)}")
+            if from_public_profile:
+                context = _build_profile_connection_action_context(
+                    request.user,
+                    other_user,
+                    next_url=next_url or request.get_full_path(),
+                )
+                return render(request, "perfil/partials/connection_action.html", context)
+
+            context = _build_search_page_context(request, q, None)
+            context.update(_profile_search_hx_context(q))
+            context["search_container_id"] = None
+            return render(request, "conexoes/partials/search_card.html", context)
+
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
+
+        params = {"section": "conexoes", "view": "buscar"}
+        if q:
+            params["q"] = q
+        return redirect(f"{reverse('conexoes:perfil_sections_conexoes')}?{urlencode(params)}")
+
+    finally:
+        duration_ms = (time.perf_counter() - start) * 1000
+        logger.info(
+            "solicitar_conexao_duration",
+            extra={
+                "user_id": request.user.id,
+                "target_user_id": id,
+                "is_htmx": is_htmx_or_ajax(request),
+                "duration_ms_total": round(duration_ms, 2),
+                "duration_ms_notification_dispatch": round(notification_dispatch_ms, 2),
+                "duration_ms_before_notification_dispatch": round(max(duration_ms - notification_dispatch_ms, 0), 2),
+            },
+        )
 
 
 @login_required
