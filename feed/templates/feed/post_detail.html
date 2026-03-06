@@ -3,7 +3,7 @@
 {% block title %}{% trans "Postagem" %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_feed.html' with title=_('Postagem') %}
+  {% include 'feed/componentes/hero_feed.html' with title=_('Postagem') %}
 {% endblock %}
 
 {% block content %}
@@ -85,7 +85,7 @@
 
     <div class="mt-4 flex items-center gap-4 text-sm text-[var(--text-secondary)]">
       <div id="like-btn-{{ post.id }}">
-        {% include 'feed/_like_button.html' with post=post %}
+        {% include 'feed/componentes/like_button.html' with post=post %}
       </div>
       <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %}" aria-label="{% trans 'Compartilhar' %}">
         {% lucide 'share-2' class='w-4 h-4' %}
@@ -116,7 +116,7 @@
 
       <ul id="comments" class="space-y-4">
         {% for comment in post.comments.all %}
-          {% include 'feed/_comment.html' with comment=comment %}
+          {% include 'feed/partials/comment.html' with comment=comment %}
         {% endfor %}
       </ul>
     </div>

@@ -166,7 +166,7 @@
             </div>
             <div class="flex flex-shrink-0 items-center gap-2 sm:gap-3">
               <div id="like-btn-{{ post.id }}" class="relative z-20">
-                {% include 'feed/_like_button.html' with post=post %}
+                {% include 'feed/componentes/like_button.html' with post=post %}
               </div>
               <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
                 {% lucide 'share-2' class='w-4 h-4' %}

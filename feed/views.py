@@ -130,7 +130,7 @@ def user_feed(request, username):
 
     posts = posts.order_by("-created_at").distinct()
     context = {"posts": posts}
-    template = "feed/_grid.html" if request.headers.get("HX-Request") else "feed/mural.html"
+    template = "feed/partials/grid.html" if request.headers.get("HX-Request") else "feed/mural.html"
     return render(request, template, context)
 
 
@@ -373,7 +373,7 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
     def render_to_response(self, context, **response_kwargs):
         if self.request.headers.get("HX-Request"):
-            return render(self.request, "feed/_grid.html", context, **response_kwargs)
+            return render(self.request, "feed/partials/grid.html", context, **response_kwargs)
         return super().render_to_response(context, **response_kwargs)
 
 
@@ -698,7 +698,7 @@ def toggle_like(request, pk):
     else:
         Reacao.objects.create(post=post, user=request.user, vote="like")
     if request.headers.get("HX-Request"):
-        html = render_to_string("feed/_like_button.html", {"post": post, "user": request.user}, request=request)
+        html = render_to_string("feed/componentes/like_button.html", {"post": post, "user": request.user}, request=request)
         return HttpResponse(html)
     return redirect("feed:post_detail", pk=post.id)
 

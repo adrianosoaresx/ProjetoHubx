@@ -4,7 +4,7 @@
 {% block title %}{{ page_title|default:'' }}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_feed.html' with title=hero_title subtitle=hero_subtitle action_template=hero_action_template %}
+  {% include 'feed/componentes/hero_feed.html' with title=hero_title subtitle=hero_subtitle action_template=hero_action_template %}
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
   {% else %}
     <article class="p-0">
       <div class="card-body space-y-4 sm:space-y-6">
-        {% include "feed/_grid.html" with posts=posts %}
+        {% include "feed/partials/grid.html" with posts=posts %}
       </div>
     </article>
     <div id="modal" role="presentation" aria-live="polite"></div>

@@ -13,7 +13,7 @@
   </div>
   <ul class="mt-2 space-y-2 ml-4" id="replies-{{ comment.id }}">
     {% for reply in comment.replies.all %}
-      {% include 'feed/_comment.html' with comment=reply %}
+      {% include 'feed/partials/comment.html' with comment=reply %}
     {% endfor %}
   </ul>
 </div>

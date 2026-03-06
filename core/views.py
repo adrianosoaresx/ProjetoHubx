@@ -14,7 +14,7 @@ def home(request):
 @login_required
 def posts_highlights(request):
     posts = Post.objects.select_related("autor").order_by("-created_at")[:3]
-    return render(request, "feed/_post_list.html", {"posts": posts})
+    return render(request, "feed/partials/post_list.html", {"posts": posts})
 
 
 class AboutView(TemplateView):
