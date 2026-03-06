@@ -32,6 +32,9 @@
         hx-post="{{ form_action }}"
         {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
         {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+        hx-disabled-elt="button"
+        hx-indicator="#remove-connection-loading-{{ modal_suffix }}"
+        hx-on="htmx:beforeRequest: this.setAttribute('aria-busy', 'true'); htmx:afterRequest: this.removeAttribute('aria-busy');"
         data-modal-form
         {% if remove_target %}data-remove-target="{{ remove_target }}"{% endif %}
       >
@@ -47,8 +50,12 @@
           >
             {% trans 'Cancelar' %}
           </button>
-          <button type="submit" class="btn btn-danger">
-            {{ submit_label }}
+          <button type="submit" class="btn btn-danger" aria-label="{{ submit_label }}">
+            <span class="inline-flex items-center gap-2 htmx-request:hidden">{{ submit_label }}</span>
+            <span id="remove-connection-loading-{{ modal_suffix }}" class="htmx-indicator inline-flex items-center gap-2" role="status" aria-live="polite">
+              <span class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true"></span>
+              <span>{% trans "Enviando…" %}</span>
+            </span>
           </button>
         </div>
       </form>

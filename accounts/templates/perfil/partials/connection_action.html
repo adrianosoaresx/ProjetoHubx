@@ -3,6 +3,7 @@
 {% if perfil_connection_state %}
   <div id="{{ perfil_connection_container_id|default:'perfil-connection-action' }}" class="inline-flex">
     {% if perfil_connection_state == 'available' and perfil_connect_url %}
+      {% with loading_id=perfil_connection_container_id|default:'perfil-connection-action'|add:'-loading' %}
       <form
         method="post"
         action="{{ perfil_connect_url }}"
@@ -10,15 +11,27 @@
         hx-post="{{ perfil_connect_url }}"
         hx-target="#{{ perfil_connection_container_id|default:'perfil-connection-action' }}"
         hx-swap="outerHTML"
+        hx-disabled-elt="button"
+        hx-indicator="#{{ loading_id }}"
+        hx-on="
+          htmx:beforeRequest: this.setAttribute('aria-busy', 'true');
+          htmx:afterRequest: this.removeAttribute('aria-busy');
+          htmx:responseError: if (typeof window.HubxToast === 'function') { window.HubxToast('{% trans 'Não foi possível enviar a solicitação. Tente novamente.' %}'); }
+        "
       >
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ perfil_connection_next|default:request.get_full_path }}">
         <input type="hidden" name="public_id" value="{{ perfil_connection_public_id|default:'' }}">
         <input type="hidden" name="username" value="{{ perfil_connection_username|default:'' }}">
         <button type="submit" class="btn btn-primary btn-sm" aria-label="{% trans 'Conectar com usuário' %}">
-          {% trans "Conectar" %}
+          <span class="inline-flex items-center gap-2 htmx-request:hidden">{% trans "Conectar" %}</span>
+          <span id="{{ loading_id }}" class="htmx-indicator inline-flex items-center gap-2" role="status" aria-live="polite">
+            <span class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true"></span>
+            <span>{% trans "Enviando…" %}</span>
+          </span>
         </button>
       </form>
+      {% endwith %}
     {% elif perfil_connection_state == 'sent' %}
       <button type="button" class="btn btn-secondary btn-sm opacity-70" disabled>
         {% trans "Solicitação enviada" %}

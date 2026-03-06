@@ -53,6 +53,7 @@
           {% trans "Responder solicitação" %}
         </a>
       {% else %}
+        {% with loading_id='connection-search-'|add:membro_id|add:'-loading' %}
         <form
           method="post"
           action="{% url 'conexoes:solicitar_conexao' membro.id %}"
@@ -62,15 +63,27 @@
             hx-swap="innerHTML"
           {% endif %}
           class="w-full"
+          hx-disabled-elt="button"
+          hx-indicator="#{{ loading_id }}"
+          hx-on="
+            htmx:beforeRequest: this.setAttribute('aria-busy', 'true');
+            htmx:afterRequest: this.removeAttribute('aria-busy');
+            htmx:responseError: if (typeof window.HubxToast === 'function') { window.HubxToast('{% trans 'Não foi possível enviar a solicitação. Tente novamente.' %}'); }
+          "
         >
           {% csrf_token %}
           {% if form.q.value %}
             <input type="hidden" name="q" value="{{ form.q.value }}" />
           {% endif %}
-          <button type="submit" class="btn btn-primary btn-sm w-full justify-center">
-            {% trans "Conectar" %}
+          <button type="submit" class="btn btn-primary btn-sm w-full justify-center" aria-label="{% trans 'Conectar com usuário' %}">
+            <span class="inline-flex items-center gap-2 htmx-request:hidden">{% trans "Conectar" %}</span>
+            <span id="{{ loading_id }}" class="htmx-indicator inline-flex items-center gap-2" role="status" aria-live="polite">
+              <span class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true"></span>
+              <span>{% trans "Enviando…" %}</span>
+            </span>
           </button>
         </form>
+        {% endwith %}
       {% endif %}
     </div>
   {% endwith %}
