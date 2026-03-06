@@ -1,0 +1,204 @@
+{% load i18n %}
+{% if form %}
+  {% if form.errors or form.non_field_errors %}
+  <div class="rounded-lg border border-red-300 bg-red-50 p-4 mb-4 dark:border-red-500/40 dark:bg-red-500/10">
+    <p class="font-semibold text-red-700 mb-2 dark:text-red-200">{% trans "Corrija os erros abaixo:" %}</p>
+    {% if form.non_field_errors %}
+      <ul class="list-disc list-inside text-red-700 text-sm mb-2 dark:text-red-200">
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <ul class="list-disc list-inside text-red-700 text-sm dark:text-red-200">
+      {% for field in form %}
+        {% if field.errors %}
+          <li class="mb-1">
+            <span class="font-semibold">{{ field.label }}:</span>
+            {{ field.errors|join:"; " }}
+            {% if field.value %}
+              <span class="text-xs text-red-600 block dark:text-red-300">{% trans "Valor enviado" %}: <code class="break-all">{{ field.value }}</code></span>
+            {% endif %}
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endif %}
+{% if mensagem %}
+  <div class="rounded-lg border border-orange-300 bg-orange-50 p-4 mb-4 dark:border-orange-500/40 dark:bg-orange-500/10">
+    <p class="font-semibold text-orange-800 dark:text-orange-200">{{ mensagem }}</p>
+  </div>
+{% endif %}
+{% if faturamento_interno and inscricao %}
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-[var(--text-secondary)] uppercase font-semibold">{% trans "Inscrição" %} #{{ inscricao.id }}</p>
+        <p class="text-lg font-bold text-[var(--text-primary)]">{% trans "Faturamento interno" %}</p>
+        <p class="text-sm text-[var(--text-secondary)]">
+          {% trans "Condição" %}:
+          {% if inscricao.condicao_faturamento %}
+            {{ inscricao.get_condicao_faturamento_display }}
+          {% else %}
+            {{ inscricao.get_metodo_pagamento_display }}
+          {% endif %}
+        </p>
+        {% if inscricao.valor_pago %}
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Valor registrado" %}: {{ inscricao.valor_pago }}</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4">
+      <p class="font-semibold text-[var(--text-primary)]">{% trans "Cobrança registrada" %}</p>
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans "O faturamento interno foi salvo e será validado pela equipe financeira." %}
+      </p>
+    </div>
+    {% if inscricao.pagamento_validado %}
+      <div class="alert alert-success flex items-start gap-3">
+        <div>
+          <p class="font-semibold">{% trans "Pagamento validado" %}</p>
+          <p class="text-sm">{% trans "Sua inscrição está confirmada." %}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="alert alert-warning">
+        <p class="font-semibold">{% trans "Aguardando validação" %}</p>
+        <p class="text-sm">{% trans "Nossa equipe irá confirmar o faturamento manualmente." %}</p>
+      </div>
+    {% endif %}
+  </div>
+{% elif transacao %}
+  <div
+    class="space-y-4"
+    {% if transacao.status == 'pending' %}
+      hx-get="{% url 'pagamentos:status' transacao.pk %}"
+      hx-trigger="load, every 6s"
+      hx-target="this"
+      hx-swap="outerHTML"
+    {% endif %}
+    data-transacao-id="{{ transacao.id }}"
+    data-transacao-status="{{ transacao.status }}"
+    data-metodo="{{ transacao.metodo }}"
+  >
+    <div class="flex items-center justify-between" data-metodo="{{ transacao.metodo }}">
+      <div>
+        <p class="text-sm text-[var(--text-secondary)] uppercase font-semibold">{% trans "Transação" %} #{{ transacao.id }}</p>
+        <p class="text-lg font-bold text-[var(--text-primary)]">{{ transacao.get_metodo_display }}</p>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Status" %}: {{ transacao.get_status_display }}</p>
+      </div>
+      {% if transacao.external_id %}
+        <span
+          class="px-3 py-1 text-xs bg-[var(--surface-secondary)] text-[var(--text-secondary)] border border-[var(--border)] rounded-full"
+        >{% trans "ID externo" %}: {{ transacao.external_id }}</span>
+      {% endif %}
+    </div>
+
+    {% if transacao.metodo == 'pix' and transacao.pix_qr_code %}
+      <div
+        class="bg-[var(--surface-secondary)] rounded-lg border border-[var(--border)] p-4 flex flex-col md:flex-row gap-4 items-start"
+      >
+        {% if transacao.pix_qr_code_base64 %}
+          <img
+            src="data:image/png;base64,{{ transacao.pix_qr_code_base64 }}"
+            alt="{% trans "QR Code Pix" %}"
+            class="w-40 h-40 border border-[var(--border)] rounded"
+          />
+        {% endif %}
+        <div class="flex-1 space-y-2">
+          <p class="text-sm text-[var(--text-primary)]">{% trans "Use o QR Code ou copie o código Pix abaixo" %}</p>
+          <div class="flex flex-wrap sm:flex-nowrap items-start gap-2">
+            <div class="flex-1 min-w-0">
+              <code
+                class="block max-w-full overflow-x-auto break-all whitespace-pre-wrap text-xs bg-[var(--surface-tertiary)] text-[var(--text-primary)] border border-[var(--border)] rounded px-2 py-1"
+              >{{ transacao.pix_qr_code }}</code>
+            </div>
+            <button
+              type="button"
+              class="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              data-copy="{{ transacao.pix_qr_code }}"
+              data-label="{% trans "Copiar" %}"
+              data-label-copied="{% trans "Copiado" %}"
+            >{% trans "Copiar" %}</button>
+          </div>
+        </div>
+      </div>
+      {% if transacao.detalhes.date_of_expiration %}
+        <p class="text-xs text-[var(--text-secondary)]">{% blocktrans with data=transacao.detalhes.date_of_expiration %}Válido até {{ data }}{% endblocktrans %}</p>
+      {% endif %}
+    {% endif %}
+
+    {% if transacao.metodo == 'paypal' %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 space-y-2">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Pagamento pelo PayPal" %}</p>
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Abriremos uma ordem no PayPal para aprovação e captura." %}</p>
+        {% if transacao.paypal_approval_url %}
+          <a
+            href="{{ transacao.paypal_approval_url }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            target="_blank"
+            rel="noopener"
+          >
+            {% trans "Acessar ordem no PayPal" %}
+          </a>
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Após aprovar, retornaremos aqui para confirmar o status." %}</p>
+        {% else %}
+          <p class="text-xs text-[var(--text-secondary)]">{% trans "Aguardando o provedor liberar o link de aprovação." %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if transacao.metodo == 'boleto' and transacao.boleto_url %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-[var(--text-primary)]">{% trans "Boleto disponível" %}</p>
+          {% if transacao.boleto_expiracao %}
+            <p class="text-sm text-[var(--text-secondary)]">{% blocktrans with data=transacao.boleto_expiracao %}Vencimento: {{ data }}{% endblocktrans %}</p>
+          {% endif %}
+        </div>
+        <a href="{{ transacao.boleto_url }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" target="_blank" rel="noopener">
+          {% trans "Baixar PDF" %}
+        </a>
+      </div>
+    {% elif transacao.metodo == 'boleto' and transacao.detalhes.transaction_details.external_resource_url %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Link do boleto" %}</p>
+        <a href="{{ transacao.detalhes.transaction_details.external_resource_url }}" class="text-blue-600 underline" target="_blank" rel="noopener">{% trans "Abrir boleto" %}</a>
+      </div>
+    {% endif %}
+
+    {% if transacao.detalhes.instructions %}
+      <div class="bg-[var(--surface-secondary)] border border-[var(--border)] rounded-lg p-4 space-y-2">
+        <p class="font-semibold text-[var(--text-primary)]">{% trans "Instruções do provedor" %}</p>
+        <ul class="list-disc list-inside text-sm text-[var(--text-secondary)]">
+          {% for instrucao in transacao.detalhes.instructions %}
+            <li>{{ instrucao }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if transacao.status == 'approved' %}
+      <div class="alert alert-success flex items-start gap-3">
+        <div>
+          <p class="font-semibold">{% trans "Pagamento aprovado" %}</p>
+          <p class="text-sm">{% trans "Você receberá uma confirmação por e-mail em instantes." %}</p>
+        </div>
+      </div>
+    {% elif transacao.status == 'failed' %}
+      <div class="alert alert-error">
+        <p class="font-semibold">{% trans "Pagamento falhou" %}</p>
+        <p class="text-sm">{% trans "Revise os dados e tente novamente ou escolha outro método." %}</p>
+      </div>
+    {% else %}
+      <div class="alert alert-warning">
+        <p class="font-semibold">{% trans "Aguardando confirmação" %}</p>
+        <p class="text-sm">{% trans "Atualizamos o status automaticamente a cada poucos segundos." %}</p>
+      </div>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-sm text-[var(--text-secondary)]">{% trans "Envie o formulário para gerar a cobrança e acompanhar por aqui." %}</p>
+{% endif %}
