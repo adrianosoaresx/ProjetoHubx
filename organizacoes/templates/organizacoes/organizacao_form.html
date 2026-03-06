@@ -12,13 +12,13 @@
 {% block hero %}
   {% if form.instance.pk %}
     {% if request.user.user_type == 'root' %}
-      {% include '_components/hero_organizacao.html' with organizacao=form.instance title=_('Editar Organização') subtitle=_('Atualize as informações da organização.') neural_background='home' show_stats=True usuarios_total=organizacao_usuarios_total nucleos_total=organizacao_nucleos_total eventos_total=organizacao_eventos_total %}
+      {% include 'organizacoes/componentes/hero_organizacao.html' with organizacao=form.instance title=_('Editar Organização') subtitle=_('Atualize as informações da organização.') neural_background='home' show_stats=True usuarios_total=organizacao_usuarios_total nucleos_total=organizacao_nucleos_total eventos_total=organizacao_eventos_total %}
     {% else %}
-      {% include '_components/hero_organizacao.html' with organizacao=form.instance title=_('Editar Organização') subtitle=_('Atualize as informações da organização.') neural_background='home' show_stats=False usuarios_total=organizacao_usuarios_total nucleos_total=organizacao_nucleos_total eventos_total=organizacao_eventos_total %}
+      {% include 'organizacoes/componentes/hero_organizacao.html' with organizacao=form.instance title=_('Editar Organização') subtitle=_('Atualize as informações da organização.') neural_background='home' show_stats=False usuarios_total=organizacao_usuarios_total nucleos_total=organizacao_nucleos_total eventos_total=organizacao_eventos_total %}
     {% endif %}
 
   {% else %}
-    {% include '_components/hero_organizacao.html' with organizacao=form.instance title=_('Nova Organização') subtitle=_('Cadastre uma nova organização no Hubx.') neural_background='home' show_stats=False %}
+    {% include 'organizacoes/componentes/hero_organizacao.html' with organizacao=form.instance title=_('Nova Organização') subtitle=_('Cadastre uma nova organização no Hubx.') neural_background='home' show_stats=False %}
 
   {% endif %}
 {% endblock %}

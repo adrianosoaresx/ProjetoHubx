@@ -5,9 +5,9 @@
 
 {% block hero %}
   {% if request.user.user_type == 'root' %}
-    {% include '_components/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=True usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
+    {% include 'organizacoes/componentes/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=True usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
   {% else %}
-    {% include '_components/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=False usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
+    {% include 'organizacoes/componentes/hero_organizacao.html' with organizacao=object title=object.nome subtitle=_('Acompanhe os detalhes da organização.') neural_background='home' show_stats=False usuarios_total=usuarios|length nucleos_total=nucleos|length eventos_total=eventos|length %}
   {% endif %}
 
 {% endblock %}
@@ -183,25 +183,25 @@
       <section class="space-y-6" aria-label="{% trans 'Relacionamentos da organização' %}">
         <article class="card" id="usuarios-section">
           <div class="card-body space-y-4">
-            {% include '_partials/organizacoes/usuarios_list.html' %}
+            {% include 'organizacoes/partials/usuarios_list.html' %}
           </div>
         </article>
 
         <article class="card" id="nucleos-section">
           <div class="card-body space-y-4">
-            {% include '_partials/organizacoes/nucleos_list.html' %}
+            {% include 'organizacoes/partials/nucleos_list.html' %}
           </div>
         </article>
 
         <article class="card" id="eventos-section">
           <div class="card-body space-y-4">
-            {% include '_partials/organizacoes/eventos_list.html' %}
+            {% include 'organizacoes/partials/eventos_list.html' %}
           </div>
         </article>
 
         <article class="card" id="posts-section">
           <div class="card-body space-y-4">
-            {% include '_partials/organizacoes/posts_list.html' %}
+            {% include 'organizacoes/partials/posts_list.html' %}
           </div>
         </article>
       </section>

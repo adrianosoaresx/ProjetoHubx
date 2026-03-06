@@ -4,12 +4,12 @@
 {% block title %}{% trans 'Organizações' %} | Hubx{% endblock %}
 
 {% block hero %}
-    {% include '_components/hero.html' with title=_('Organizações') subtitle=_('Gerencie as organizações cadastradas') action_template='_components/hero_action_organizacao.html' neural_background='home' %}
+    {% include '_components/hero.html' with title=_('Organizações') subtitle=_('Gerencie as organizações cadastradas') action_template='organizacoes/componentes/hero_action_organizacao.html' neural_background='home' %}
 {% endblock %}
 
 {% block content %}
 
 <section class="space-y-6" id="org-list">
-    {% include '_partials/organizacoes/list_section.html' %}
+    {% include 'organizacoes/partials/list_section.html' %}
 </section>
 {% endblock %}

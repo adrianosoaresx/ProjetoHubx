@@ -93,7 +93,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if is_htmx:
             response = render(
                 self.request,
-                "_partials/organizacoes/list_section.html",
+                "organizacoes/partials/list_section.html",
                 context,
                 **response_kwargs,
             )
@@ -355,7 +355,7 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
         }:
             return render(
                 self.request,
-                f"_partials/organizacoes/{section}_list.html",
+                f"organizacoes/partials/{section}_list.html",
                 context,
             )
         return super().render_to_response(context, **response_kwargs)
