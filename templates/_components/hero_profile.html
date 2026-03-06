@@ -97,7 +97,7 @@
               {% if perfil_avaliar_url and request.user.is_authenticated and not is_owner and not perfil_feedback_exists %}
                 <button
                   type="button"
-                  class="btn btn-primary btn-sm"
+                  class="btn btn-secondary btn-sm"
                   hx-get="{{ perfil_avaliar_url }}"
                   hx-target="#modal"
                   hx-swap="innerHTML"
