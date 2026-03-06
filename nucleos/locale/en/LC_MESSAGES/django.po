@@ -184,7 +184,7 @@ msgstr ""
 msgid "Próxima"
 msgstr ""
 
-#: templates/_components/card_nucleo.html:17
+#: templates/nucleos/componentes/card_nucleo.html:17
 msgid "Formação"
 msgstr "Formation"
 
