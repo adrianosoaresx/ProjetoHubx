@@ -864,7 +864,7 @@ def solicitar_conexao(request, id):
                     other_user,
                     next_url=next_url or request.get_full_path(),
                 )
-                return render(request, "perfil/partials/connection_action.html", context)
+                return render(request, "conexoes/partials/connection_action.html", context)
 
             context = _build_search_page_context(request, q, None)
             context.update(_profile_search_hx_context(q))

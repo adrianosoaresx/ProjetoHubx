@@ -93,7 +93,7 @@
                   <span>{% trans "Promover" %}</span>
                 </a>
               {% endif %}
-              {% include 'perfil/partials/connection_action.html' %}
+              {% include 'conexoes/partials/connection_action.html' %}
               {% if perfil_avaliar_url and request.user.is_authenticated and not is_owner and not perfil_feedback_exists %}
                 <button
                   type="button"
