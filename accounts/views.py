@@ -815,7 +815,7 @@ def perfil_connection_action_partial(request):
         profile,
         next_url=request.GET.get("next") or request.get_full_path(),
     )
-    return render(request, "perfil/partials/connection_action.html", context)
+    return render(request, "conexoes/partials/connection_action.html", context)
 
 
 def _profile_toggle_response(request, target_user, *, is_owner: bool):
