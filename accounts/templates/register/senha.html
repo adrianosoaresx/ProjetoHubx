@@ -2,13 +2,13 @@
 {% load i18n %}
 
 {% block extra_css %}
-  {% include '_force_sidebar_collapsed.html' %}
+  {% include 'accounts/partials/force_sidebar_collapsed.html' %}
 {% endblock %}
 
 {% block title %}{% trans "Registro - Senha" %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include 'register/_hero.html' %}
+  {% include 'accounts/componentes/register_hero.html' %}
 {% endblock %}
 
 {% block content %}

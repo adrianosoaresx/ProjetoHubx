@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block extra_css %}
-  {% include '_force_sidebar_collapsed.html' %}
+  {% include 'accounts/partials/force_sidebar_collapsed.html' %}
 {% endblock %}
 
 {% block title %}{% trans "Registro Concluído" %} | Hubx{% endblock %}
@@ -10,7 +10,7 @@
 {% block hero %}
   {% translate "Registro concluído" as success_hero_title %}
   {% translate "Verifique seu e-mail para ativar sua conta e começar a utilizar o HubX." as success_hero_subtitle %}
-  {% include 'register/_hero.html' with title=success_hero_title subtitle=success_hero_subtitle %}
+  {% include 'accounts/componentes/register_hero.html' with title=success_hero_title subtitle=success_hero_subtitle %}
 {% endblock %}
 
 {% block content %}

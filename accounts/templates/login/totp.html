@@ -2,7 +2,7 @@
 {% load static i18n %}
 
 {% block extra_css %}
-  {% include '_force_sidebar_collapsed.html' %}
+  {% include 'accounts/partials/force_sidebar_collapsed.html' %}
 {% endblock %}
 
 {% block title %}{% trans "Verificação em duas etapas" %} - HubX{% endblock %}
@@ -14,7 +14,7 @@
   {% else %}
     {% translate "Digite o código do seu aplicativo autenticador para continuar." as totp_hero_subtitle %}
   {% endif %}
-  {% include '_components/hero_auth.html' with title=totp_hero_title subtitle=totp_hero_subtitle %}
+  {% include 'accounts/componentes/hero_auth.html' with title=totp_hero_title subtitle=totp_hero_subtitle %}
 {% endblock %}
 
 {% block content %}
