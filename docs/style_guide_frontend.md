@@ -32,6 +32,28 @@ Evite JavaScript customizado sempre que possível. Utilize `hx-get` e `hx-post` 
 
 Aplique utilitários Tailwind diretamente nas tags para garantir consistência entre páginas.
 
+
+## Convenção de componentes de template por app
+
+Para componentes reutilizáveis específicos de um módulo, adote como padrão:
+
+- `templates/<nome_app>/componentes/`
+
+### Nomenclatura
+
+- Pastas em `snake_case`, organizadas por finalidade (ex.: `cards/`, `filtros/`, `cabecalhos/`).
+- Arquivos em `snake_case.html` com nome semântico (ex.: `card_evento_resumo.html`, `filtro_periodo.html`).
+- Evite nomes temporários (`tmp`, `novo`, `copia`) em arquivos versionados.
+
+### Exemplos de include
+
+```django
+{% include "eventos/componentes/cabecalho_lista.html" with titulo=_("Eventos") %}
+{% include "organizacoes/componentes/card_organizacao.html" with organizacao=item %}
+```
+
+Quando o componente for compartilhado por vários apps, prefira os diretórios globais já existentes (`templates/_components/` e `templates/_partials/`).
+
 ## Ícones
 
 - Utilize ícones [Lucide](https://lucide.dev) embutidos como SVG diretamente nos templates ou componentes.
