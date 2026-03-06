@@ -1,0 +1,40 @@
+{% load i18n %}
+
+{% if perfil_connection_state %}
+  <div id="{{ perfil_connection_container_id|default:'perfil-connection-action' }}" class="inline-flex">
+    {% if perfil_connection_state == 'available' and perfil_connect_url %}
+      <form
+        method="post"
+        action="{{ perfil_connect_url }}"
+        class="inline-flex"
+        hx-post="{{ perfil_connect_url }}"
+        hx-target="#{{ perfil_connection_container_id|default:'perfil-connection-action' }}"
+        hx-swap="outerHTML"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ perfil_connection_next|default:request.get_full_path }}">
+        <input type="hidden" name="public_id" value="{{ perfil_connection_public_id|default:'' }}">
+        <input type="hidden" name="username" value="{{ perfil_connection_username|default:'' }}">
+        <button type="submit" class="btn btn-primary btn-sm" aria-label="{% trans 'Conectar com usuário' %}">
+          {% trans "Conectar" %}
+        </button>
+      </form>
+    {% elif perfil_connection_state == 'sent' %}
+      <button type="button" class="btn btn-secondary btn-sm opacity-70" disabled>
+        {% trans "Solicitação enviada" %}
+      </button>
+    {% elif perfil_connection_state == 'received' and perfil_connection_requests_url %}
+      <a
+        href="{{ perfil_connection_requests_url }}"
+        class="btn btn-secondary btn-sm"
+        aria-label="{% trans 'Responder solicitação de conexão' %}"
+      >
+        {% trans "Responder solicitação" %}
+      </a>
+    {% elif perfil_connection_state == 'connected' %}
+      <button type="button" class="btn btn-secondary btn-sm opacity-70" disabled>
+        {% trans "Conectados" %}
+      </button>
+    {% endif %}
+  </div>
+{% endif %}
