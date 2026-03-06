@@ -5,7 +5,7 @@
       <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number|default:1 }}">
         <div role="listitem" class="flex h-full flex-col gap-3">
           {% if evento %}
-            {% include '_components/card_evento.html' with evento=evento %}
+            {% include 'eventos/componentes/card_evento.html' with evento=evento %}
           {% else %}
             <div class="flex h-full flex-col justify-between rounded-xl border border-[var(--border-muted)] bg-[var(--bg-secondary)] p-4">
               <p class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Evento indisponível" %}</p>
@@ -34,7 +34,7 @@
       {% endif %}
           <div role="listitem" class="flex h-full flex-col gap-3">
             {% if evento %}
-              {% include '_components/card_evento.html' with evento=evento %}
+              {% include 'eventos/componentes/card_evento.html' with evento=evento %}
             {% else %}
               <div class="flex h-full flex-col justify-between rounded-xl border border-[var(--border-muted)] bg-[var(--bg-secondary)] p-4">
                 <p class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Evento indisponível" %}</p>

@@ -670,7 +670,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
         ctx.setdefault("object_list", ctx.get(self.context_object_name, []))
-        ctx.setdefault("card_template", "_components/card_evento.html")
+        ctx.setdefault("card_template", "eventos/componentes/card_evento.html")
         ctx.setdefault("item_context_name", "evento")
         ctx.setdefault("empty_message", _("Nenhum evento encontrado."))
 

@@ -1,7 +1,7 @@
 {# Exceção: conteúdo HTMX flat injetado dinamicamente, sem wrapper de card. #}
 {% load i18n %}
 
-{% with card_template=list_card_template|default_if_none:'_components/card_evento.html'|default:'_components/card_evento.html' %}
+{% with card_template=list_card_template|default_if_none:'eventos/componentes/card_evento.html'|default:'eventos/componentes/card_evento.html' %}
 {% with card_item_name=item_context_name|default_if_none:'evento'|default:'evento' %}
   <div
     id="eventos-lista"
