@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -823,12 +824,20 @@ def solicitar_conexao(request, id):
         )
 
     q = request.POST.get("q", "").strip()
+    next_url = (request.POST.get("next") or "").strip()
 
     if is_htmx_or_ajax(request):
         context = _build_search_page_context(request, q, None)
         context.update(_profile_search_hx_context(q))
         context["search_container_id"] = None
         return render(request, "conexoes/partials/search_card.html", context)
+
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
 
     params = {"section": "conexoes", "view": "buscar"}
     if q:
