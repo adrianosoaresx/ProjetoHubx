@@ -419,7 +419,7 @@ class MembroSectionListView(
             base_queryset, section, page_number=request.GET.get("page")
         )
 
-        slide_template = "membros/_carousel_slide.html"
+        slide_template = "membros/partials/carousel_slide.html"
         if show_promote_button:
             slide_template = "membros/partials/promover_carousel_slide.html"
 

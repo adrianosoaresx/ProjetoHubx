@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Promover membro' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_membros.html' with title=_('Promover membro') action_template='membros/hero_action.html' filter_target='#membros-grid' filter_indicator='#membros-loading' %}
+  {% include 'membros/componentes/hero_membros.html' with title=_('Promover membro') action_template='membros/componentes/hero_action.html' filter_target='#membros-grid' filter_indicator='#membros-loading' %}
 {% endblock %}
 
 {% block content %}
