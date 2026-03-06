@@ -177,7 +177,7 @@ def delete(request: HttpRequest, pk: int) -> HttpResponse:
     if hx_target == "modal":
         return render(
             request,
-            "portfolio/delete_modal.html",
+            "portfolio/partials/delete_modal.html",
             {
                 "media": media,
                 "titulo": _("Remover item do portfólio"),
