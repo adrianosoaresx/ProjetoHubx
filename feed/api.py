@@ -599,7 +599,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         if request.headers.get("HX-Request"):
-            html = render_to_string("feed/_comment.html", {"comment": serializer.instance}, request=request)
+            html = render_to_string("feed/partials/comment.html", {"comment": serializer.instance}, request=request)
             return HttpResponse(html, status=status.HTTP_201_CREATED)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

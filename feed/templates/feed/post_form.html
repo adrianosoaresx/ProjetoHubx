@@ -11,9 +11,9 @@
 
 {% block hero %}
   {% if is_update %}
-    {% include '_components/hero_feed.html' with title=_('Editar Postagem') %}
+    {% include 'feed/componentes/hero_feed.html' with title=_('Editar Postagem') %}
   {% else %}
-    {% include '_components/hero_feed.html' with title=_('Nova Postagem') %}
+    {% include 'feed/componentes/hero_feed.html' with title=_('Nova Postagem') %}
   {% endif %}
 {% endblock %}
 
