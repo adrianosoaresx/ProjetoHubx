@@ -227,6 +227,21 @@ def _can_promote_profile(viewer, profile) -> bool:
     return viewer_org is not None and profile_org is not None and viewer_org == profile_org
 
 
+def _resolve_profile_connection_state(viewer, profile) -> str | None:
+    if viewer is None or not getattr(viewer, "is_authenticated", False):
+        return None
+    if viewer == profile:
+        return None
+
+    if viewer.connections.filter(id=profile.id).exists():
+        return "connected"
+    if profile.followers.filter(id=viewer.id).exists():
+        return "sent"
+    if viewer.followers.filter(id=profile.id).exists():
+        return "received"
+    return "available"
+
+
 def _can_toggle_user_active(viewer, profile) -> bool:
     if not _can_manage_profile(viewer, profile):
         return False
@@ -427,6 +442,7 @@ def perfil(request):
     user_rating = rating_qs.filter(rated_by=request.user).first()
 
     can_promote_profile = _can_promote_profile(viewer, target_user)
+    perfil_connection_state = _resolve_profile_connection_state(viewer, target_user)
     promote_profile_url = None
     if can_promote_profile:
         promote_profile_url = reverse(
@@ -441,6 +457,9 @@ def perfil(request):
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "can_promote_profile": can_promote_profile,
+        "perfil_connection_state": perfil_connection_state,
+        "perfil_connect_url": reverse("conexoes:solicitar_conexao", args=[target_user.id]),
+        "perfil_connection_requests_url": reverse("conexoes:perfil_sections_conexoes") + "?filter=pendentes",
         "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
@@ -555,6 +574,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         user_rating = rating_qs.filter(rated_by=request.user).first()
 
     can_promote_profile = _can_promote_profile(viewer, perfil)
+    perfil_connection_state = _resolve_profile_connection_state(viewer, perfil)
     promote_profile_url = None
     if can_promote_profile:
         promote_profile_url = reverse("membros:membro_promover_form", args=[perfil.pk])
@@ -567,6 +587,9 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "portfolio_medias": portfolio_medias,
         "profile_posts": profile_posts,
         "can_promote_profile": can_promote_profile,
+        "perfil_connection_state": perfil_connection_state,
+        "perfil_connect_url": reverse("conexoes:solicitar_conexao", args=[perfil.id]),
+        "perfil_connection_requests_url": reverse("conexoes:perfil_sections_conexoes") + "?filter=pendentes",
         "promote_profile_url": promote_profile_url,
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
