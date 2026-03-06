@@ -4,7 +4,7 @@
 {% block title %}{% trans "Gerar Token" %} | HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_tokens.html' with title=_('Gerar Token') subtitle=_('Emita tokens para convidar novos membros à sua organização.') %}
+  {% include 'tokens/componentes/hero_tokens.html' with title=_('Gerar Token') subtitle=_('Emita tokens para convidar novos membros à sua organização.') %}
 {% endblock %}
 
 {% block content %}
@@ -32,7 +32,7 @@
       </form>
 
       <div id="resultado" class="text-center" aria-live="polite">
-        {% include "tokens/_resultado.html" %}
+        {% include "tokens/partials/resultado.html" %}
       </div>
 
    

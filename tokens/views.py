@@ -242,7 +242,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 resp = render(
                     request,
-                    "tokens/_resultado.html",
+                    "tokens/partials/resultado.html",
                     {"error": _("Muitas requisições, tente novamente mais tarde.")},
                     status=429,
                 )
@@ -268,7 +268,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
-                    "tokens/_resultado.html",
+                    "tokens/partials/resultado.html",
                     {"error": message},
                     status=400,
                 )
@@ -290,7 +290,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
-                    "tokens/_resultado.html",
+                    "tokens/partials/resultado.html",
                     {"error": message},
                     status=400,
                 )
@@ -311,7 +311,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
-                    "tokens/_resultado.html",
+                    "tokens/partials/resultado.html",
                     {"error": message},
                     status=403,
                 )
@@ -342,7 +342,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 if request.headers.get("HX-Request") == "true":
                     return render(
                         request,
-                        "tokens/_resultado.html",
+                        "tokens/partials/resultado.html",
                         {"error": _("Limite diário atingido.")},
                         status=429,
                     )
@@ -380,7 +380,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             token.codigo = codigo
 
             if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"token": codigo})
+                return render(request, "tokens/partials/resultado.html", {"token": codigo})
             messages.success(request, _("Token gerado"))
             form = GerarTokenConviteForm(user=request.user)
             return render(
@@ -395,7 +395,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         if request.headers.get("HX-Request") == "true":
             return render(
                 request,
-                "tokens/_resultado.html",
+                "tokens/partials/resultado.html",
                 {"error": _("Dados inválidos")},
                 status=400,
             )
@@ -458,7 +458,7 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
                 log.mensagem_envio = "; ".join(str(e) for e in erros)
             log.save(update_fields=["status_envio", "mensagem_envio"])
             if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
+                return render(request, "tokens/partials/resultado.html", {"codigo": codigo.codigo})
             messages.success(request, _("Código gerado"))
             form = GerarCodigoAutenticacaoForm()
             return render(
@@ -469,7 +469,7 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
         if request.headers.get("HX-Request") == "true":
             return render(
                 request,
-                "tokens/_resultado.html",
+                "tokens/partials/resultado.html",
                 {"error": _("Dados inválidos")},
                 status=400,
             )
@@ -502,7 +502,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
                     user_agent=user_agent,
                 )
             if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"success": _("Código validado")})
+                return render(request, "tokens/partials/resultado.html", {"success": _("Código validado")})
             messages.success(request, _("Código validado"))
             form = ValidarCodigoAutenticacaoForm(usuario=request.user)
             return render(
@@ -527,7 +527,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
         if request.headers.get("HX-Request") == "true":
             return render(
                 request,
-                "tokens/_resultado.html",
+                "tokens/partials/resultado.html",
                 {"error": form.errors.as_text()},
                 status=400,
             )
