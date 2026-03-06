@@ -67,7 +67,7 @@ def _serialize_message(message: ChatMessage) -> dict[str, Any] | None:
 
 
 class ChatPageView(LoginRequiredMixin, TemplateView):
-    template_name = "ai_chat/chat.html"
+    template_name = "ai_chat/pages/chat.html"
 
     def _get_or_create_session(self):
         user = self.request.user
@@ -149,7 +149,7 @@ def send_message(request: HttpRequest, session_id: str) -> HttpResponse:
     serialized_messages = [_serialize_message(msg) for msg in queryset]
     context = {"chat_messages": [msg for msg in serialized_messages if msg]}
 
-    return render(request, "ai_chat/_messages.html", context)
+    return render(request, "ai_chat/partials/_messages.html", context)
 
 
 @login_required
@@ -165,4 +165,4 @@ def clear_session_messages(request: HttpRequest, session_id: str) -> HttpRespons
 
     session.messages.all().delete()
 
-    return render(request, "ai_chat/_messages.html", {"chat_messages": []})
+    return render(request, "ai_chat/partials/_messages.html", {"chat_messages": []})
