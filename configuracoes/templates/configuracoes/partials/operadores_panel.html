@@ -5,7 +5,7 @@
   </p>
   {% if can_manage_operadores %}
     <div class="flex flex-wrap gap-3">
-      {% include 'configuracoes/_partials/operadores_action.html' %}
+      {% include 'configuracoes/partials/operadores_action.html' %}
     </div>
     <div
       data-operadores-list
@@ -15,7 +15,7 @@
       hx-swap="innerHTML"
       class="space-y-4"
     >
-      {% include 'configuracoes/_partials/operadores_lista.html' with operadores=operadores %}
+      {% include 'configuracoes/partials/operadores_lista.html' with operadores=operadores %}
     </div>
   {% else %}
     <div class="alert alert-warning" role="alert">
