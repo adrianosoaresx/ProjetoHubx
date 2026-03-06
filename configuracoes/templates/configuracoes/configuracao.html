@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Configurações' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle hero_active_tab=hero_active_tab tab=tab can_manage_operadores=can_manage_operadores %}
+  {% include 'configuracoes/componentes/hero_configuracoes.html' with title=hero_title subtitle=hero_subtitle hero_active_tab=hero_active_tab tab=tab can_manage_operadores=can_manage_operadores %}
 {% endblock %}
 
 {% block content %}
@@ -22,7 +22,7 @@
         </span>
       </summary>
       <div id="{{ seguranca_panel_target_id }}" class="card-body space-y-6" data-accordion-panel>
-        {% include 'configuracoes/_partials/seguranca.html' with hx_target_id=seguranca_panel_target_id %}
+        {% include 'configuracoes/partials/seguranca.html' with hx_target_id=seguranca_panel_target_id %}
       </div>
     </details>
 
@@ -39,7 +39,7 @@
         </span>
       </summary>
       <div id="{{ preferencias_panel_target_id }}" class="card-body space-y-6" data-accordion-panel>
-        {% include 'configuracoes/_partials/preferencias.html' with hx_target_id=preferencias_panel_target_id %}
+        {% include 'configuracoes/partials/preferencias.html' with hx_target_id=preferencias_panel_target_id %}
       </div>
     </details>
 

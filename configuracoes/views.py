@@ -89,9 +89,9 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
     # Mapeamento das seções para seus templates de fragmento.
     partial_templates: Dict[str, str] = {
-        "seguranca": "configuracoes/_partials/seguranca.html",
-        "preferencias": "configuracoes/_partials/preferencias.html",
-        "operadores": "configuracoes/_partials/operadores_panel.html",
+        "seguranca": "configuracoes/partials/seguranca.html",
+        "preferencias": "configuracoes/partials/preferencias.html",
+        "operadores": "configuracoes/partials/operadores_panel.html",
     }
 
     def get_user(self) -> Any:
@@ -401,7 +401,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     """Retorna o fragmento da lista de operadores para o painel de configurações."""
 
-    template_name = "configuracoes/_partials/operadores_lista.html"
+    template_name = "configuracoes/partials/operadores_lista.html"
 
     def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if UserType is None:  # type: ignore
@@ -435,7 +435,7 @@ class OperadorListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
 class OperadorCreateView(LoginRequiredMixin, AdminRequiredMixin, FormView):
     """Formulário para criação de usuários operadores."""
 
-    template_name = "configuracoes/_partials/operador_form.html"
+    template_name = "configuracoes/partials/operador_form.html"
     form_class = OperadorCreateForm  # type: ignore[assignment]
     success_url = reverse_lazy("configuracoes:configuracoes_operadores")
 
