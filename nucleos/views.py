@@ -482,9 +482,9 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx.setdefault("list_title", _("Núcleos"))
         ctx.setdefault("list_aria_label", _("Lista de núcleos"))
         ctx.setdefault("empty_message", _("Nenhum núcleo encontrado."))
-        ctx.setdefault("list_hero_template", "_components/hero_nucleo.html")
+        ctx.setdefault("list_hero_template", "nucleos/componentes/hero_nucleo.html")
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
-        ctx.setdefault("list_card_template", "_components/card_nucleo.html")
+        ctx.setdefault("list_card_template", "nucleos/componentes/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
         form = NucleoSearchForm(self.request.GET or None)
         ctx["form"] = form
@@ -786,10 +786,10 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, NucleoVisibilityMixi
         ctx.setdefault("list_aria_label", _("Lista de núcleos do usuário"))
         ctx.setdefault("empty_message", _("Nenhum núcleo encontrado."))
         # Usa o mesmo hero padrão, apenas trocando o título
-        ctx.setdefault("list_hero_template", "_components/hero_nucleo.html")
+        ctx.setdefault("list_hero_template", "nucleos/componentes/hero_nucleo.html")
         # Mantém as ações do hero iguais às da listagem principal
         ctx.setdefault("list_hero_action_template", "nucleos/hero_actions_nucleo.html")
-        ctx.setdefault("list_card_template", "_components/card_nucleo.html")
+        ctx.setdefault("list_card_template", "nucleos/componentes/card_nucleo.html")
         ctx.setdefault("item_context_name", "nucleo")
         ctx.setdefault("show_totals", False)
         search_term = ""

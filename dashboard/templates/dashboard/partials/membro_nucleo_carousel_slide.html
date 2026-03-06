@@ -3,7 +3,7 @@
   {% for participacao in participacoes %}
     <div class="w-full min-w-full flex-shrink-0 p-4 sm:p-6 lg:hidden" role="list" data-carousel-page="{{ page_number|default:1 }}">
       <div role="listitem" class="h-full">
-        {% include '_components/card_nucleo.html' with nucleo=participacao.nucleo item=participacao.nucleo %}
+        {% include 'nucleos/componentes/card_nucleo.html' with nucleo=participacao.nucleo item=participacao.nucleo %}
       </div>
     </div>
   {% endfor %}
@@ -13,7 +13,7 @@
       <div class="hidden h-full min-h-full w-full min-w-full flex-shrink-0 gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-3" role="list" data-carousel-page="{{ page_number|default:1 }}">
     {% endif %}
         <div role="listitem" class="h-full">
-          {% include '_components/card_nucleo.html' with nucleo=participacao.nucleo item=participacao.nucleo %}
+          {% include 'nucleos/componentes/card_nucleo.html' with nucleo=participacao.nucleo item=participacao.nucleo %}
         </div>
         {% if forloop.last and not forloop.counter|divisibleby:3 %}
           <div class="hidden h-full opacity-0 pointer-events-none lg:block" aria-hidden="true"></div>
