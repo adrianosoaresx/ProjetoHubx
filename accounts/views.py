@@ -422,6 +422,7 @@ def perfil(request):
         "rated_by"
     )
     avaliacao_stats, avaliacao_media, avaliacao_display = _get_rating_stats(rating_qs)
+    perfil_conexoes_total = target_user.connections.count()
     ratings_page = _get_rating_page(rating_qs)
     user_rating = rating_qs.filter(rated_by=request.user).first()
 
@@ -444,6 +445,7 @@ def perfil(request):
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
         "perfil_avaliacao_total": avaliacao_stats["total"],
+        "perfil_conexoes_total": perfil_conexoes_total,
         "perfil_avaliacoes_page": ratings_page,
         "perfil_avaliacoes_fetch_url": reverse(
             "accounts:perfil_avaliacoes_carousel", args=[target_user.public_id]
@@ -546,6 +548,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     rating_qs = UserRating.objects.filter(rated_user=perfil).select_related("rated_by")
     avaliacao_stats, avaliacao_media, avaliacao_display = _get_rating_stats(rating_qs)
+    perfil_conexoes_total = perfil.connections.count()
     ratings_page = _get_rating_page(rating_qs)
     user_rating = None
     if request.user.is_authenticated:
@@ -568,6 +571,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "perfil_avaliacao_media": avaliacao_media,
         "perfil_avaliacao_display": avaliacao_display,
         "perfil_avaliacao_total": avaliacao_stats["total"],
+        "perfil_conexoes_total": perfil_conexoes_total,
         "perfil_avaliar_url": reverse("accounts:perfil_avaliar", args=[perfil.public_id]),
         "perfil_avaliar_identifier": str(perfil.public_id),
         "perfil_feedback_exists": user_rating is not None,

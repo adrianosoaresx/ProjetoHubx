@@ -166,3 +166,10 @@ msgstr "Deve ser maior que zero."
 #: organizacoes/forms.py:?? organizacoes/serializers.py:??
 msgid "Deve ser entre 0 e 1."
 msgstr "Deve ser entre 0 e 1."
+
+#: templates/_components/hero_profile.html:80
+#, python-format
+msgid "%(conexoes_total)s conexão"
+msgid_plural "%(conexoes_total)s conexões"
+msgstr[0] "%(conexoes_total)s conexão"
+msgstr[1] "%(conexoes_total)s conexões"

@@ -74,6 +74,14 @@
                 <span class="text-xs text-[var(--text-secondary)]" data-user-rating-count>
                   ({{ perfil_avaliacao_total|default:0 }})
                 </span>
+                <span class="text-xs text-[var(--text-secondary)]">
+                  •
+                  {% blocktrans count conexoes_total=perfil_conexoes_total|default:0 %}
+                    {{ conexoes_total }} conexão
+                  {% plural %}
+                    {{ conexoes_total }} conexões
+                  {% endblocktrans %}
+                </span>
               </div>
               {% if can_promote_profile and promote_profile_url %}
                 <a
