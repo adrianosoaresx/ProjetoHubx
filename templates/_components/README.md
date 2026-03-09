@@ -274,10 +274,12 @@ Mantidos no diretório global por uso multiapp:
 - `_partials/cards/badge_list.html` ➜ `membros/templates/membros/partials/cards/badge_list.html`
   - Motivo: uso exclusivo no app `membros`.
 
-### Itens órfãos (sem referência direta por `include`, `extends`, `render_to_string`, `render(..., template)`)
+### Itens removidos (órfãos deprecados)
 
-Após varredura por referência literal de caminho e nome de template, não foram
-identificados apontamentos em código, constantes ou configurações para:
+Após varredura por referência literal de caminho e nome de template (`include`,
+`extends`, `render_to_string`, `render(..., template)` e `template_name`), os
+seguintes itens deprecados foram removidos por não possuírem apontamentos
+ativos no repositório:
 
 - `_components/card_details_empresa.html`
 - `_components/chart.html`
@@ -289,5 +291,4 @@ identificados apontamentos em código, constantes ou configurações para:
 - `_partials/org_cards.html`
 - `_partials/upcoming_events.html`
 
-Status: **marcados como deprecados**.
-Prazo sugerido para remoção segura: **2026-06-30** (se não houver reativação documentada).
+Status: **removidos do diretório global**.
