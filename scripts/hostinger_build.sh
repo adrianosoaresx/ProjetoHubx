@@ -22,4 +22,4 @@ if ! find . -type f -path "*/locale/*/LC_MESSAGES/django.mo" -print -quit | grep
 fi
 
 # 5) Assets estáticos
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --clear
