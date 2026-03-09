@@ -245,3 +245,49 @@ durante as trocas HTMX.
 - Atributos como `aria-label`, `alt` e placeholders precisam ser traduzíveis.
 - Componentes adicionais (cards, formulários, etc.) devem seguir as mesmas
   regras ao serem criados.
+
+## Inventário de uso (`templates/_components` e `templates/_partials`)
+
+### Convenção objetiva
+
+- **global = compartilhado por 2+ apps**;
+- **app-local = uso exclusivo do app**.
+
+### Itens globais compartilhados (`shared`)
+
+Mantidos no diretório global por uso multiapp:
+
+- `_components/back_button.html`
+- `_components/cancel_button.html`
+- `_components/card_usuario.html`
+- `_components/card_details_usuario.html` (dependência interna de `card_usuario`)
+- `_components/_details_badges_usuario.html` (dependência interna de `card_details_usuario`)
+- `_partials/cards/base_card.html`
+- `_partials/cards/total_card.html`
+- `_partials/htmx_filter_state.html`
+- `_partials/pagination.html`
+- `_partials/toasts.html`
+- `_partials/cards/card_generic.html` (base global `templates/base_list.html`)
+
+### Itens movidos para app-local
+
+- `_partials/cards/badge_list.html` ➜ `membros/templates/membros/partials/cards/badge_list.html`
+  - Motivo: uso exclusivo no app `membros`.
+
+### Itens órfãos (sem referência direta por `include`, `extends`, `render_to_string`, `render(..., template)`)
+
+Após varredura por referência literal de caminho e nome de template, não foram
+identificados apontamentos em código, constantes ou configurações para:
+
+- `_components/card_details_empresa.html`
+- `_components/chart.html`
+- `_components/hero_evento_create.html`
+- `_components/metric_card.html`
+- `_components/perfil_nav.html`
+- `_components/search_form.html`
+- `_components/table_wrapper.html`
+- `_partials/org_cards.html`
+- `_partials/upcoming_events.html`
+
+Status: **marcados como deprecados**.
+Prazo sugerido para remoção segura: **2026-06-30** (se não houver reativação documentada).
