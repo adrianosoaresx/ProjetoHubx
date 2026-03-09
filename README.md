@@ -228,6 +228,9 @@ projeto adota o seguinte caminho como padrão:
   (ex.: `componentes/filtros/`, `componentes/cards/`).
 - **Arquivos de componente**: usar `snake_case.html` e nomes descritivos
   (ex.: `cabecalho_lista.html`, `card_evento_resumo.html`).
+- **JavaScript de dashboard** (em `dashboard/static/dashboard/js/`): usar
+  `kebab-case.js` para scripts de página (ex.: `admin-dashboard.js`,
+  `consultor-dashboard.js`) e evitar variações em `snake_case`.
 - Evitar prefixos genéricos como `novo_`, `tmp_` ou `teste_` em componentes
   versionados.
 
