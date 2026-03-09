@@ -28,7 +28,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  if (window.Html5Qrcode && readerEl && codigoInput && feedback) {
+  const initQrScanner = () => {
+    if (!window.Html5Qrcode || !readerEl || !codigoInput || !feedback) {
+      return;
+    }
+
     const qr = new Html5Qrcode("reader");
 
     const startWithCameraId = (cameraId) =>
@@ -92,6 +96,12 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch(() => {
         startWithFacingMode();
       });
+  };
+
+  if (window.Html5Qrcode) {
+    initQrScanner();
+  } else {
+    document.addEventListener('html5-qrcode-ready', initQrScanner, { once: true });
   }
 
   form.addEventListener("submit", function (e) {

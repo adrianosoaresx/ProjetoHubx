@@ -551,11 +551,8 @@
   {{ block.super }}
   <script type="module" src="{% static 'js/carousel.js' %}"></script>
   {% if pode_ver_inscritos %}
-    <script
-      src="{% static 'js/vendor/html5-qrcode-2.3.8.min.js' %}"
-      defer
-      onerror="if (!this.dataset.fallbackLoaded) { this.dataset.fallbackLoaded = 'true'; this.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'; }"
-    ></script>
+    <script src="{% static 'js/cdn-script-loader.js' %}" defer></script>
+    <script src="{% static 'eventos/js/checkin-cdn-loader.js' %}" defer></script>
   {% endif %}
   <script src="{% static 'eventos/js/evento-detail.js' %}" defer></script>
 {% endblock %}
