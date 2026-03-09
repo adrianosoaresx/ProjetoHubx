@@ -86,7 +86,7 @@
         <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
       </div>
     </dl>
-    {% include '_partials/cards/badge_list.html' with badges=user_badges container_classes='flex flex-wrap justify-center gap-2 pt-2' %}
+    {% include 'membros/partials/cards/badge_list.html' with badges=user_badges container_classes='flex flex-wrap justify-center gap-2 pt-2' %}
   </div>
   <footer class="card-footer">
     {% if user.get_tipo_usuario == 'convidado' %}
