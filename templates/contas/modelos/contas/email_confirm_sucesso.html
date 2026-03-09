@@ -6,7 +6,7 @@
 {% block hero %}
   {% translate "Seja bem vindo ao Hubx.Space" as hero_title %}
   {% translate "Seu e-mail foi confirmado com sucesso. Agora você pode explorar todas as experiências da comunidade." as hero_subtitle %}
-  {% include '_components/hero.html' with title=hero_title subtitle=hero_subtitle neural_background='congratulation' alignment='center' %}
+  {% include 'core/componentes/hero.html' with title=hero_title subtitle=hero_subtitle neural_background='congratulation' alignment='center' %}
 {% endblock %}
 
 {% block content %}
