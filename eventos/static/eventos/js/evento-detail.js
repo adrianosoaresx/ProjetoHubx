@@ -1,4 +1,8 @@
-    document.addEventListener('DOMContentLoaded', () => {
+const initEventoDetailPage = () => {
+  if (document.body.dataset.eventoDetailInitialized === 'true') {
+    return;
+  }
+  document.body.dataset.eventoDetailInitialized = 'true';
       const checkinRoot = document.querySelector('[data-checkin-root]');
       if (checkinRoot) {
         const scannerModal = document.getElementById('checkin-scanner-modal');
@@ -476,5 +480,11 @@
 
         sortCards();
       });
-    });
-  
+};
+
+if (window.Html5Qrcode) {
+  initEventoDetailPage();
+} else {
+  document.addEventListener('html5-qrcode-ready', initEventoDetailPage, { once: true });
+  document.addEventListener('DOMContentLoaded', initEventoDetailPage, { once: true });
+}

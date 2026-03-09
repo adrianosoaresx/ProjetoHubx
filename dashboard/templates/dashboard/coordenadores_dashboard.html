@@ -197,7 +197,7 @@
           <form method="get" class="flex flex-wrap items-center justify-end gap-3 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
             <label class="flex items-center gap-3 text-sm font-medium text-[var(--text-secondary)]">
               <span>{% trans "Período" %}</span>
-              <select name="months" class="form-select w-32" onchange="this.form.submit()">
+              <select name="months" class="form-select w-32" data-dashboard-period-select="true">
                 {% for option in dashboard_period_choices %}
                   <option value="{{ option }}" {% if option == dashboard_period_months %}selected{% endif %}>
                     {% blocktrans trimmed count months=option %}
@@ -286,5 +286,6 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'dashboard/js/dashboard-period-filter.js' %}" defer></script>
   <script type="module" src="{% static 'js/carousel.js' %}"></script>
 {% endblock %}

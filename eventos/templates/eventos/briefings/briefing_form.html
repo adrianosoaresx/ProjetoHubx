@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n widget_tweaks %}
+{% load i18n widget_tweaks static %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -14,7 +14,7 @@
       {% endif %}
     </div>
     <div class="card-body space-y-6">
-      <form method="post" class="space-y-6"{% if readonly %} onsubmit="return false;"{% endif %}>
+      <form method="post" class="space-y-6"{% if readonly %} data-briefing-readonly-form="true"{% endif %}>
         {% if not readonly %}
           {% csrf_token %}
         {% endif %}
@@ -37,4 +37,10 @@
       </form>
     </div>
   </article>
+{% endblock %}
+
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'eventos/js/briefing-form.js' %}" defer></script>
 {% endblock %}
