@@ -1569,7 +1569,7 @@ def confirmar_email(request, token: str):
         )
     return render(
         request,
-        "contas/modelos/contas/email_confirm_sucesso.html",
+        "accounts/email_confirm_sucesso.html",
         {
             "status": "sucesso",
             "message": _("Seu e-mail foi confirmado com sucesso."),
