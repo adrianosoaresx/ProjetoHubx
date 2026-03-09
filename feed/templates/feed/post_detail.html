@@ -10,7 +10,10 @@
 {% if request.user.user_type == 'root' %}
   <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
-  <article class="card">
+  <article class="card" data-post-detail-root
+           data-csrf-token="{{ csrf_token }}"
+           data-open-view-url="/api/feed/posts/{{ post.id }}/views/open/"
+           data-close-view-url="/api/feed/posts/{{ post.id }}/views/close/">
     <div class="card-body space-y-6">
     <div class="flex items-center gap-4">
       {% if post.autor.avatar %}
@@ -146,55 +149,7 @@
 
   <div id="modal" role="presentation" aria-live="polite"></div>
 
-<script>
-  const csrfToken = '{{ csrf_token }}';
-  fetch('/api/feed/posts/{{ post.id }}/views/open/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrfToken }
-  });
-  window.addEventListener('beforeunload', function () {
-    fetch('/api/feed/posts/{{ post.id }}/views/close/', {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrfToken },
-      keepalive: true
-    });
-  });
-
-  document.querySelectorAll('.bookmark-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const postId = btn.dataset.postId;
-      const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (!res.ok) return;
-      const data = await res.json();
-      btn.classList.toggle('text-yellow-600', data.bookmarked);
-    });
-  });
-  document.querySelectorAll('.flag-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const postId = btn.dataset.postId;
-      const res = await fetch(`/api/feed/posts/${postId}/flag/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (res.ok) {
-        btn.classList.add('text-red-600', 'cursor-not-allowed');
-        btn.setAttribute('disabled', 'disabled');
-      }
-    });
-  });
-
-
-  function setReplyTo(commentId) {
-    const replyInput = document.getElementById('id_reply_to');
-    const form = document.getElementById('comment-form');
-    if (commentId) {
-      replyInput.value = commentId;
-      form.setAttribute('hx-target', `#replies-${commentId}`);
-    } else {
-      replyInput.value = '';
-      form.setAttribute('hx-target', '#comments');
-    }
-    document.getElementById('id_texto').focus();
-  }
-
-</script>
+<script src="{% static 'feed/js/post-detail.js' %}" defer></script>
 {% endif %}
 {% endblock %}
 

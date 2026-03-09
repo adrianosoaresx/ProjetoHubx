@@ -12,7 +12,12 @@
         <h2 class="text-xl font-semibold">{{ title|default:_('Check-in do evento') }}</h2>
       </div>
       <div class="card-body space-y-6">
-        <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
+        <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4"
+              data-success-message="{% trans 'Check-in realizado com sucesso!' %}"
+              data-no-camera-message="{% trans 'Nenhuma câmera encontrada' %}"
+              data-camera-denied-message="{% trans 'Permissão da câmera negada' %}"
+              data-camera-error-message="{% trans 'Não foi possível acessar a câmera' %}"
+              data-checkin-error-message="{% trans 'Erro ao realizar check-in' %}">
           {% csrf_token %}
           <div>
             <label for="codigo" class="block text-sm font-medium">{% trans "Código do check-in" %}</label>
@@ -36,124 +41,5 @@
     defer
     onerror="if (!this.dataset.fallbackLoaded) { this.dataset.fallbackLoaded = 'true'; this.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'; }"
   ></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById("checkin-form");
-      const codigoInput = document.getElementById("codigo");
-      const feedback = document.getElementById("feedback");
-      const successMessage = "{% trans 'Check-in realizado com sucesso!' %}";
-      const noCameraMessage = "{% trans 'Nenhuma câmera encontrada' %}";
-      const readerEl = document.getElementById("reader");
-      const submitButton = form.querySelector('button[type="submit"]');
-
-      const showCameraError = (error) => {
-        const message = (error?.name === "NotAllowedError" || `${error}`.toLowerCase().includes("denied"))
-          ? "{% trans 'Permissão da câmera negada' %}"
-          : "{% trans 'Não foi possível acessar a câmera' %}";
-
-        feedback.classList.remove("text-[var(--success)]");
-        feedback.classList.add("text-[var(--error)]");
-        feedback.textContent = message;
-        if (submitButton) {
-          submitButton.disabled = false;
-        }
-      };
-
-      if (window.Html5Qrcode && readerEl) {
-        const qr = new Html5Qrcode("reader");
-
-        const startWithCameraId = (cameraId) =>
-          qr
-            .start(
-              cameraId,
-              { fps: 10, qrbox: 250 },
-              (decoded) => {
-                codigoInput.value = decoded;
-                qr.stop();
-              },
-              (err) => {
-                showCameraError(err);
-              }
-            )
-            .catch((err) => {
-              showCameraError(err);
-            });
-
-        const startWithFacingMode = () =>
-          qr
-            .start(
-              { facingMode: "environment" },
-              { fps: 10, qrbox: 250 },
-              (decoded) => {
-                codigoInput.value = decoded;
-                qr.stop();
-              },
-              (err) => {
-                showCameraError(err);
-              }
-            )
-            .catch((err) => {
-              showCameraError(err);
-            });
-
-        const camerasPromise =
-          typeof Html5Qrcode.getCameras === "function"
-            ? Html5Qrcode.getCameras()
-            : Promise.reject(new Error("getCameras not available"));
-
-        camerasPromise
-          .then((devices) => {
-            if (!Array.isArray(devices) || devices.length === 0) {
-              feedback.classList.remove("text-[var(--success)]");
-              feedback.classList.add("text-[var(--error)]");
-              feedback.textContent = noCameraMessage;
-              return;
-            }
-
-            const preferredDevice =
-              devices.find(
-                (device) =>
-                  device?.facingMode === "environment" ||
-                  `${device?.label || ""}`.toLowerCase().includes("back") ||
-                  `${device?.label || ""}`.toLowerCase().includes("rear")
-              ) || devices[0];
-
-            startWithCameraId(preferredDevice.id);
-          })
-          .catch(() => {
-            startWithFacingMode();
-          });
-      }
-
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        feedback.textContent = "";
-        const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
-        fetch(form.action, {
-          method: "POST",
-          headers: { "X-CSRFToken": csrf },
-          body: new FormData(form),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              return response.text().then((text) => {
-                throw new Error(text || "{% trans 'Erro ao realizar check-in' %}");
-              });
-            }
-            return response.json();
-          })
-          .then(() => {
-            feedback.classList.remove("text-[var(--error)]");
-            feedback.classList.add("text-[var(--success)]");
-            feedback.textContent = successMessage;
-            form.reset();
-          })
-          .catch((err) => {
-            feedback.classList.remove("text-[var(--success)]");
-            feedback.classList.add("text-[var(--error)]");
-            feedback.textContent = err.message;
-          });
-      });
-    });
-  </script>
+  <script src="{% static 'eventos/js/checkin-form.js' %}" defer></script>
 {% endblock %}
