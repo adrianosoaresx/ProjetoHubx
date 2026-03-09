@@ -7,7 +7,16 @@ Este guia resume o padrão visual dos templates do Hubx.
 - HTML5 semântico
 - Tailwind CSS 3
 - HTMX para interações dinâmicas
-- CSS base em `app/static/css/hubx.css`
+- CSS base global em `app/static/css/hubx.css`
+
+## Convenção de arquivos estáticos
+
+Para assets por domínio, use sempre o padrão `app/static/app/...` (nome do app repetido):
+
+- `accounts/static/accounts/js/perfil.js`
+- `eventos/static/eventos/css/lista.css`
+
+Evite caminhos genéricos como `static/perfil/...`, pois eles dificultam organização e `collectstatic`.
 
 Evite JavaScript customizado sempre que possível. Utilize `hx-get` e `hx-post` para enviar e atualizar partes da página.
 
