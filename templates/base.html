@@ -61,12 +61,12 @@
   </div>
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
   {% if not hide_nav %}
-    {% include '_partials/sidebar.html' %}
+    {% include 'core/partials/sidebar.html' %}
     <div id="sidebar-backdrop" class="sidebar-backdrop hidden md:hidden" aria-hidden="true"></div>
   {% endif %}
 
   <div id="content" class="flex flex-col flex-1 w-full md:w-auto transition-all ml-0 mobile-header-offset md:pt-0 {% if not hide_nav %}md:ml-64{% endif %}">
-    {% include '_partials/header.html' %}
+    {% include 'core/partials/header.html' %}
     {% block hero %}{% endblock %}
 
     <main id="main-content" class="container mx-auto px-[2px] sm:px-6 py-6 flex-grow">
@@ -75,7 +75,7 @@
     </main>
     {% include '_partials/toasts.html' %}
 
-    {% include '_partials/footer.html' %}
+    {% include 'core/partials/footer.html' %}
   </div>
 
   {% if WEBSOCKETS_ENABLED %}

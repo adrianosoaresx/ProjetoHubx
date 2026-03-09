@@ -14,7 +14,7 @@ Todo texto visível e atributos de acessibilidade (`aria-label`, `aria-current`,
 `{% blocktrans %}` para suporte a i18n e conformidade com padrões ARIA.
 
 ```django
-{% include "_partials/sidebar.html" %}
+{% include "core/partials/sidebar.html" %}
 ```
 
 ## hero.html
@@ -45,17 +45,17 @@ mesmo fundo neural utilizado nos módulos especializados.
 
 ```django
 {# Hero simples com gradiente padrão #}
-{% include "_components/hero.html" with title=_("Título") subtitle=_("Resumo da página") %}
+{% include "core/componentes/hero.html" with title=_("Título") subtitle=_("Resumo da página") %}
 
 {# Hero com fundo neural reutilizando o tema "home" #}
-{% include "_components/hero.html" with
+{% include "core/componentes/hero.html" with
     title=_("Bem-vindo")
     subtitle=_("Plataforma colaborativa do HubX")
     neural_background='home'
 %}
 
 {# Alterando as cores do gradiente via CSS custom properties #}
-{% include "_components/hero.html" with
+{% include "core/componentes/hero.html" with
     title=_("Área de Relatórios")
     style="--hero-from: var(--color-accent-500); --hero-to: var(--color-accent-700);"
 %}
