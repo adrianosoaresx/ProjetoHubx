@@ -57,17 +57,7 @@
             </tbody>
           </table>
         </div>
-        <script>
-          (() => {
-            const tbody = document.getElementById('pending-push-logs-body');
-            const emptyRow = document.getElementById('empty-push-logs-row');
-            const hasVisibleRows = tbody?.querySelector('[data-log-row]');
-
-            if (emptyRow) {
-              emptyRow.classList.toggle('hidden', Boolean(hasVisibleRows));
-            }
-          })();
-        </script>
+        <script src="{% static 'notificacoes/js/notificacoes-list.js' %}" defer></script>
         <p id="pending-notifications-description" class="sr-only">{% trans 'A tabela apresenta notificações enviadas aguardando confirmação de leitura.' %}</p>
       </div>
     </article>
